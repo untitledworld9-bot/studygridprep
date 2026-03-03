@@ -131,6 +131,66 @@ footer{
     margin:30px 15px;
   }
 }
+
+/* Fade Animation */
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.contact-container{
+  animation:fadeIn 0.8s ease-out;
+}
+
+/* Success Modal */
+.success-modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(5px);
+  visibility:hidden;
+  opacity:0;
+  transition:0.3s ease;
+}
+
+.success-modal.active{
+  visibility:visible;
+  opacity:1;
+}
+
+.success-box{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(12px);
+  padding:35px 30px;
+  border-radius:20px;
+  text-align:center;
+  max-width:350px;
+  animation:fadeIn 0.5s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.success-box h2{
+  margin-bottom:15px;
+  background:linear-gradient(to right,#00f2fe,#4facfe);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.success-box button{
+  margin-top:20px;
+  padding:10px 25px;
+  border:none;
+  border-radius:25px;
+  background:linear-gradient(45deg,#00f2fe,#4facfe);
+  color:white;
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -183,12 +243,26 @@ footer{
 </div>
 
 <footer>
+<div class="success-modal" id="successModal">
+  <div class="success-box">
+    <h2>Message Sent 🚀</h2>
+    <p>Your message has been successfully delivered.</p>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
 © 2026 Untitled World. All rights reserved.
 </footer>
 
 <script>
+const modal = document.getElementById("successModal");
+
 if(window.location.search.includes("success=true")){
-    alert("Your message has been sent successfully!");
+    modal.classList.add("active");
+}
+
+function closeModal(){
+    modal.classList.remove("active");
+    window.history.replaceState({}, document.title, "contact.html");
 }
 </script>
 
