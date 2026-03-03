@@ -121,19 +121,22 @@ footer{
 <h1>Contact Untitled World</h1>
 <p class="subtitle">Have questions or feedback? We’d love to hear from you.</p>
 
-<form action="https://formsubmit.co/support@untitledworld.us.cc" method="POST">
+<form action="https://formsubmit.co/support@untitledworld.us.cc" method="POST" id="contactForm">
 
-  <!-- Important Hidden Settings -->
+  <!-- Hidden Settings (ONLY ONCE) -->
   <input type="hidden" name="_captcha" value="false">
   <input type="hidden" name="_subject" value="New Contact Message - Untitled World">
   <input type="hidden" name="_template" value="table">
+  <input type="hidden" name="_next" value="https://untitledworld.us.cc/contact.html?success=true">
 
+  <!-- User Fields -->
   <input type="text" name="name" placeholder="Your Name" required>
   <input type="email" name="email" placeholder="Your Email" required>
   <input type="text" name="phone" placeholder="+91 (Optional)">
   <textarea name="message" placeholder="Write your message..." required></textarea>
 
   <button type="submit">Submit Message</button>
+
 </form>
 
 <div class="follow">
@@ -155,6 +158,12 @@ footer{
 <footer>
 © 2026 Untitled World. All rights reserved.
 </footer>
+
+<script>
+if(window.location.search.includes("success=true")){
+    alert("Your message has been sent successfully!");
+}
+</script>
 
 </body>
 </html>
