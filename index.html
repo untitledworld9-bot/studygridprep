@@ -145,8 +145,29 @@ iframe {
   transform: scale(0.96);
 }
 
-.contact-section{text-align:center;padding:40px 10%;background:rgba(0,0,0,.3);}
-footer{text-align:center;padding:15px;background:rgba(0,0,0,.5);font-size:14px;}
+.contact-section{
+  text-align:center;
+  padding:40px 10%;
+  background:rgba(0,0,0,.3);
+  font-size:17px;   /* text medium bada */
+}
+
+.contact-section a{
+  color:white;
+  text-decoration: underline;   /* permanent underline */
+  font-weight:500;
+  transition:0.2s ease;
+}
+
+.contact-section a:hover{
+  opacity:0.8;
+}
+
+.contact-section img{
+  width:18px;      /* yt icon medium */
+  vertical-align:middle;
+  margin:0 5px;
+}
 
 @media(max-width:768px){
     .hero h2{font-size:32px;}
