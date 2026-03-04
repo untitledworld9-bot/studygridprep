@@ -307,15 +307,15 @@ footer{
 }
 
 .logo-icon{
-  background: linear-gradient(45deg,#00f2fe,#4facfe);
-  width:36px;
-  height:36px;
+  background: linear-gradient(135deg,#00f2fe,#4facfe);
+  width:40px;
+  height:40px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  border-radius:8px;
+  border-radius:12px;
   margin-right:10px;
-  font-size:14px;
+  font-size:15px;
   font-weight:700;
   color:#000;
 }
@@ -330,6 +330,13 @@ footer{
   opacity:0.85;
 }
 
+.hero-sub{
+  margin-top:10px;
+  font-size:20px;
+  font-weight:400;
+  opacity:0.9;
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -338,8 +345,8 @@ footer{
 
 <header>
 <h1 class="site-title">
-  <span class="logo-icon">U/W</span>
-  Untitled World - Smart Study Platform
+  <span class="logo-icon">UW</span>
+  Untitled World
 </h1>
 <div class="menu-toggle" onclick="toggleMenu()">☰</div>
 <nav id="navMenu">
@@ -353,7 +360,7 @@ footer{
 
 <section class="hero">
 <h2>Welcome To Untitled World</h2>
-<p>Distraction Free Study + Smart Progress Tracking</p>
+<p class="hero-sub">Smart Study Platform</p>
 <button class="btn" onclick="goToStudy()" aria-label="Start Learning">
 Start Learning 👇
 </button>
@@ -424,8 +431,8 @@ Start Learning 👇
 
   <div class="contact-links">
     <a href="contact.html">Contact</a>
-    <a href="terms.html">Terms</a>
     <a href="about.html">About Us</a>
+    <a href="terms.html">Terms</a>
     <a href="privacy.html">Privacy Policy</a>
   </div>
 
