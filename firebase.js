@@ -28,6 +28,13 @@ import {
 } from 
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+import {
+ getMessaging,
+ getToken,
+ onMessage
+} from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
@@ -40,12 +47,42 @@ const firebaseConfig = {
 };
 
 
-// FIREBASE INIT
+// INIT FIREBASE
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
+
 const auth = getAuth(app);
+
 const provider = new GoogleAuthProvider();
 
 
-// EXPORT FOR OTHER FILES
-export { db, auth, provider };
+// PUSH NOTIFICATION
+const messaging = getMessaging(app);
+
+
+// EXPORT
+export {
+ db,
+ auth,
+ provider,
+ messaging,
+ getToken,
+ onMessage,
+ signInWithPopup,
+ onAuthStateChanged,
+ signOut,
+ collection,
+ addDoc,
+ onSnapshot,
+ doc,
+ setDoc,
+ updateDoc,
+ increment,
+ deleteDoc,
+ query,
+ orderBy,
+ getDocs,
+ getDoc,
+ where
+};
