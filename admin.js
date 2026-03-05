@@ -1,23 +1,57 @@
-onAuthStateChanged(auth,user=>{
- if(!user) location.href="/timer";
+import {
+db,
+collection,
+onSnapshot
+} from "./firebase.js";
 
- if(user.email !== "untitledworld9@gmail.com"){
-   alert("Not admin");
-   location.href="/timer";
- }
+const totalUsers=document.getElementById("totalUsers");
+const onlineUsers=document.getElementById("onlineUsers");
+const focusTime=document.getElementById("focusTime");
+const rooms=document.getElementById("rooms");
+const messages=document.getElementById("messages");
+const visitors=document.getElementById("visitors");
 
-async function sendAnnouncement(){
+/* USERS DATA */
 
- const text=document.getElementById("msg").value;
+onSnapshot(collection(db,"users"), snap=>{
 
- if(!text) return alert("Write something");
+let total=0;
+let online=0;
+let focus=0;
 
- await addDoc(collection(db,"announcements"),{
-   text:text,
-   time:Date.now(),
-   active:true
- });
+snap.forEach(doc=>{
+const u=doc.data();
 
- alert("Sent ✔");
+total++;
+
+if(u.status==="Online" || u.status==="Focusing 👋"){
+online++;
 }
+
+focus += u.focusTime || 0;
+
+});
+
+totalUsers.innerText=total;
+onlineUsers.innerText=online;
+focusTime.innerText=Math.floor(focus/60)+"h";
+
+});
+
+/* ROOMS */
+
+onSnapshot(collection(db,"rooms"), snap=>{
+rooms.innerText=snap.size;
+});
+
+/* MESSAGES */
+
+onSnapshot(collection(db,"messages"), snap=>{
+messages.innerText=snap.size;
+});
+
+/* LIVE VISITORS */
+
+onSnapshot(collection(db,"users"), snap=>{
+visitors.innerText=snap.size;
 });
