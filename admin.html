@@ -1,5 +1,62 @@
-<h2>Admin Panel</h2>
+<!DOCTYPE html><html>
+<head>
+<meta charset="UTF-8">
+<title>Untitled World Admin</title><style>
 
-<textarea id="msg" placeholder="Type announcement"></textarea>
+body{
+font-family:Poppins,sans-serif;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+padding:40px;
+}
 
-<button onclick="sendAnnouncement()">Send</button>
+h1{
+text-align:center;
+margin-bottom:30px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.08);
+border-radius:18px;
+padding:25px;
+text-align:center;
+backdrop-filter:blur(10px);
+}
+
+.label{
+font-size:16px;
+opacity:.8;
+}
+
+.value{
+font-size:34px;
+color:#00f2fe;
+margin-top:8px;
+}
+
+</style></head><body><h1>Untitled World Admin Dashboard</h1><div class="grid"><div class="card">
+<div class="label">Total Users</div>
+<div id="totalUsers" class="value">0</div>
+</div><div class="card">
+<div class="label">Online Users</div>
+<div id="onlineUsers" class="value">0</div>
+</div><div class="card">
+<div class="label">Focus Time Today</div>
+<div id="focusTime" class="value">0</div>
+</div><div class="card">
+<div class="label">Active Rooms</div>
+<div id="rooms" class="value">0</div>
+</div><div class="card">
+<div class="label">Messages Sent</div>
+<div id="messages" class="value">0</div>
+</div><div class="card">
+<div class="label">Live Visitors</div>
+<div id="visitors" class="value">0</div>
+</div></div><script type="module" src="admin.js"></script></body>
+</html>
