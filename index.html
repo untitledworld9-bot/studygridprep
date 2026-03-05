@@ -7,6 +7,8 @@
 <title>Untitled World - Smart Study Platform</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
 <meta name="description" content="Distraction free study platform for JEE, NEET & Boards. Mock tests, focus timer, progress tracking.">
 <meta name="keywords" content="JEE preparation, NEET study, mock test platform, study timer, focus study">
 <meta name="author" content="Untitled World">
@@ -308,18 +310,18 @@ footer{
   line-height:1.2;
 }
 
-.logo-icon{
-  background: linear-gradient(135deg,#00c6ff,#0072ff);
-  width:34px;
-  height:34px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.logo-img{
+  width:36px;
+  height:36px;
   border-radius:10px;
-  font-size:14px;
-  font-weight:700;
-  color:white;
-  margin-right:8px;
+  margin-right:10px;
+  object-fit:cover;
+  box-shadow:0 4px 12px rgba(0,242,254,0.4);
+  transition:0.3s;
+}
+
+.logo-img:hover{
+  transform:scale(1.05);
 }
 
 .made-line{
@@ -347,15 +349,43 @@ footer{
 }
 
 }
+
+#app-loader{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0f2027;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+#app-loader img{
+width:90px;
+animation:pulse 1.4s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(.9);opacity:.6;}
+50%{transform:scale(1);opacity:1;}
+100%{transform:scale(.9);opacity:.6;}
+}
 /* --- CSS END --- */
 </style>
 </head>
 
 <body>
 
+<div id="app-loader">
+  <img src="/icon-512.png">
+</div>
+
 <header>
 <h1 class="site-title">
-  <span class="logo-icon">UW</span>
+  <img src="/icon-512.png" class="logo-img">
   Untitled World
 </h1>
 <div class="menu-toggle" onclick="toggleMenu()">☰</div>
@@ -373,6 +403,9 @@ footer{
 <p class="hero-sub">Smart Study Platform</p>
 <button class="btn" onclick="goToStudy()" aria-label="Start Learning">
 Start Learning 👇
+</button>
+<button id="installBtn" class="btn" style="display:none;margin-top:15px;">
+Install App 📲
 </button>
   
 <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;">
@@ -679,6 +712,63 @@ function openYouTube(){
   window.open("https://m.youtube.com", "_blank");
 }
 </script>
+
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  installBtn.style.display = "inline-block";
+});
+
+installBtn.addEventListener("click", async () => {
+
+  installBtn.style.display = "none";
+
+  deferredPrompt.prompt();
+
+  const { outcome } = await deferredPrompt.userChoice;
+
+  if(outcome === "accepted"){
+    console.log("App Installed");
+  }
+
+  deferredPrompt = null;
+});
+
+window.addEventListener("appinstalled", () => {
+  installBtn.style.display = "none";
+});
+
+window.addEventListener("load", function(){
+  const loader = document.getElementById("app-loader");
+  if(loader){
+    loader.style.display="none";
+  }
+});
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();
+
+Notification.requestPermission().then((permission)=>{
+  if(permission==="granted"){
+    messaging.getToken().then((token)=>{
+      console.log("Notification token:",token);
+    });
+  }
+});
+
 <script>
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js");
