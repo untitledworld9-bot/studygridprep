@@ -416,6 +416,57 @@ margin-top:50px;
 margin-top:15px;
 }
 
+.pwa-home{
+display:none;
+text-align:center;
+padding:20px;
+}
+
+.start-text{
+font-size:22px;
+margin:20px 0;
+animation:fade 1.5s ease infinite alternate;
+}
+
+@keyframes fade{
+from{opacity:.6}
+to{opacity:1}
+}
+
+.app-box{
+
+background:rgba(255,255,255,0.08);
+
+border:2px solid #00f2fe;
+
+border-radius:18px;
+
+padding:18px;
+
+margin:12px auto;
+
+max-width:340px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.app-box:hover{
+transform:scale(1.03);
+}
+
+.app-box.focus{
+
+border-color:#00ff88;
+
+background:rgba(0,255,136,.08);
+
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -461,6 +512,20 @@ Install App 📲
 
 </div>
   </section>
+
+<section class="pwa-home" id="pwaHome">
+
+<h2 class="start-text">Start Learning 🚀</h2>
+
+<div class="app-box" onclick="location.href='mocktest.html'">
+📝 Mock Test Platform
+</div>
+
+<div class="app-box focus" onclick="location.href='focus.html'">
+🤓 Smart Focus Timer ⏳
+</div>
+
+</section>
 
 <section class="pwa-dashboard" id="pwaDashboard">
 
@@ -873,7 +938,7 @@ let title = document.querySelector(".site-title");
 
 title.innerHTML = `
 <img src="/icon-512.png" class="logo-img">
-${user}
+👋 Hey, ${user}
 `;
 
 }
@@ -887,6 +952,19 @@ Notification.requestPermission();
 }
 
 }
+
+if(isPWA()){
+
+document.querySelector(".hero").style.display="none";
+
+}
+
+if(isPWA()){
+
+document.getElementById("pwaHome").style.display="block";
+
+}
+
 </script>
 
 </body>
