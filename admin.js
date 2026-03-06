@@ -135,47 +135,26 @@ alert("Announcement Sent")
 
 }
 
-/* PUSH NOTIFICATION */
+/* PUSH NOTIFICATION (Firestore Method) */
 
-window.sendUserNotification=async()=>{
+window.sendUserNotification = async ()=>{
 
-const name=document.getElementById("notifyUser").value
-const text=document.getElementById("notifyText").value
+const name = document.getElementById("notifyUser").value
+const text = document.getElementById("notifyText").value
 
 if(!name || !text){
 alert("Enter username & message")
 return
 }
 
-const snap=await getDoc(doc(db,"users",name))
+/* SAVE NOTIFICATION REQUEST */
 
-if(!snap.exists()){
-alert("User not found")
-return
-}
+await addDoc(collection(db,"notifications"),{
 
-const token=snap.data().fcmToken
-
-fetch("https://fcm.googleapis.com/fcm/send",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json",
-"Authorization":"key=YOUR_SERVER_KEY"
-},
-
-body:JSON.stringify({
-
-to:token,
-
-notification:{
-title:"Untitled World",
-body:text,
-icon:"/icon-192.png"
-}
-
-})
+user: name,
+title: "Untitled World",
+body: text,
+time: Date.now()
 
 })
 
