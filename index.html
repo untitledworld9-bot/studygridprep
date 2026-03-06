@@ -601,6 +601,70 @@ cursor:pointer;
 
 }
 
+/* PWA BOTTOM NAV */
+
+.pwa-bottom-nav{
+
+position:fixed;
+
+bottom:0;
+
+left:0;
+
+width:100%;
+
+height:65px;
+
+background:#0f2027;
+
+display:none;
+
+justify-content:space-around;
+
+align-items:center;
+
+z-index:2000;
+
+border-top:1px solid rgba(255,255,255,0.1);
+
+}
+
+.pwa-bottom-nav a{
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+justify-content:center;
+
+text-decoration:none;
+
+color:white;
+
+font-size:12px;
+
+}
+
+.pwa-bottom-nav a span{
+
+font-size:11px;
+
+margin-top:2px;
+
+}
+
+.pwa-bottom-nav a:hover{
+
+color:#00f2fe;
+
+}
+
+body.pwa-mode{
+padding-bottom:70px;
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -792,6 +856,35 @@ Install App 📲
 </p>
 
 </section>
+
+<div id="pwaBottomNav" class="pwa-bottom-nav">
+
+<a href="index.html">
+🏠
+<span>Home</span>
+</a>
+
+<a href="mocktest.html">
+📝
+<span>Mock Test</span>
+</a>
+
+<a href="timer.html">
+⏳
+<span>Focus</span>
+</a>
+
+<a href="playlist.html">
+🎬
+<span>Playlist</span>
+</a>
+
+<a href="profile.html">
+👤
+<span>Profile</span>
+</a>
+
+</div>
 
 <footer>
 © 2026 Untitled World. All rights reserved.
@@ -1178,6 +1271,18 @@ document.getElementById("pwaName").innerText=name;
 document.getElementById("pwaEmail").innerText=email;
 
 document.getElementById("pwaAvatar").innerText=name.charAt(0);
+
+}
+
+if(isPWA()){
+
+document.getElementById("pwaBottomNav").style.display="flex";
+
+}
+
+if(isPWA()){
+
+document.body.classList.add("pwa-mode");
 
 }
 
