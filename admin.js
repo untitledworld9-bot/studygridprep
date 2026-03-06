@@ -120,3 +120,36 @@ time:Date.now()
 alert("Announcement Sent")
 
 }
+
+async function sendUserNotification(){
+
+const name=document.getElementById("notifyUser").value
+const text=document.getElementById("notifyText").value
+
+const snap=await getDoc(doc(db,"users",name))
+
+const token=snap.data().fcmToken
+
+fetch("https://fcm.googleapis.com/fcm/send",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"Authorization":"key=YOUR_SERVER_KEY"
+},
+
+body:JSON.stringify({
+
+to:token,
+
+notification:{
+title:"Untitled World",
+body:text
+}
+
+})
+
+})
+
+}
