@@ -665,6 +665,46 @@ body.pwa-mode{
 padding-bottom:70px;
 }
 
+.sidebar-footer{
+
+margin-top:30px;
+font-size:14px;
+
+}
+
+.sidebar-footer p{
+
+opacity:.7;
+margin-bottom:8px;
+
+}
+
+.sidebar-link{
+
+display:flex;
+align-items:center;
+
+gap:8px;
+
+color:white;
+text-decoration:none;
+
+margin-top:8px;
+
+}
+
+.sidebar-link img{
+
+width:16px;
+
+}
+
+.pwa-email{
+font-size:12px;
+opacity:.7;
+margin-top:2px;
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -695,6 +735,7 @@ padding-bottom:70px;
 <div>
 <div id="pwaName">User</div>
 <div id="pwaEmail" class="pwa-email"></div>
+<div id="pwaGoal" class="pwa-email"></div>
 </div>
 
 </div>
@@ -710,6 +751,21 @@ padding-bottom:70px;
 <a href="leaderboard.html">🏆 Leaderboard</a>
 
 <button onclick="logout()">🚪 Logout</button>
+
+</div>
+
+<div class="sidebar-footer">
+
+<p>Follow us on</p>
+
+<a href="https://youtube.com/@jexplain0001" target="_blank" class="sidebar-link">
+<img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png">
+Untitled World
+</a>
+
+<a href="contact.html" class="sidebar-link">
+Contact Us
+</a>
 
 </div>
 
@@ -1284,6 +1340,12 @@ if(isPWA()){
 
 document.body.classList.add("pwa-mode");
 
+}
+
+let goal = localStorage.getItem("goal");
+
+if(goal){
+document.getElementById("pwaGoal").innerText = "Goal: " + goal;
 }
 
 </script>
