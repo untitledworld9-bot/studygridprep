@@ -1380,49 +1380,6 @@ document.getElementById("pwaGoal").innerText="Goal: "+goal;
 }
 });
 
-/* XP + RANK DISPLAY */
-
-if(
- !window.matchMedia('(display-mode: standalone)').matches &&
- !window.navigator.standalone
-){
- const box = document.getElementById("xpRankBox");
- if(box) box.style.display="none";
-}
-
-onAuthStateChanged(auth, async user => {
-
- if(!user) return;
-
- const ref = doc(db,"users",user.displayName);
- const snap = await getDoc(ref);
-
- if(!snap.exists()) return;
-
- const data = snap.data();
-
- const xp = data.weeklyXP || 0;
-
- const usersSnap = await getDocs(collection(db,"users"));
- let arr = [];
-
- usersSnap.forEach(d=>{
-  arr.push(d.data());
- });
-
- arr.sort((a,b)=>(b.weeklyXP||0)-(a.weeklyXP||0));
-
- const rank =
- arr.findIndex(u=>u.name===user.displayName)+1;
-
- const xpEl = document.getElementById("xpValue");
- const rankEl = document.getElementById("rankValue");
-
- if(xpEl) xpEl.innerText = xp;
- if(rankEl) rankEl.innerText = rank;
-
-});
-
 // ===== LIVE XP + RANK =====
 
 onAuthStateChanged(auth, user => {
