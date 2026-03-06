@@ -81,7 +81,7 @@ font-weight:600;
 .profile-container{
 max-width:420px;
 margin:auto;
-padding:10px 20px 120px;
+padding:10px 20px 30px;
 }
 
 .profile-card{
@@ -193,7 +193,7 @@ color:#00f2fe;
 }
 
 .follow-section{
-margin-top:80px;
+margin-top:40px;
 text-align:center;
 }
 
@@ -275,6 +275,7 @@ padding-bottom:70px;
 </label>
 
 <button onclick="saveGoal()">Save Goal</button>
+<div id="msg" style="color:#00ff88;margin-top:10px;"></div>
 
 <button class="logout-btn" onclick="logout()">Logout</button>
 
@@ -344,16 +345,15 @@ function saveGoal(){
 let goal=document.querySelector('input[name="goal"]:checked');
 
 if(!goal){
-
 alert("Select goal");
-
 return;
-
 }
 
 localStorage.setItem("goal",goal.value);
 
 document.getElementById("goalBadge").innerText=goal.value;
+
+document.getElementById("msg").innerText="Goal saved successfully ✔";
 
 }
 
