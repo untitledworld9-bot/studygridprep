@@ -1,125 +1,218 @@
-<!DOCTYPE html><html lang="en">
-<head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Weekly Study Progress | Untitled World</title><link rel="icon" href="/icon-192.png"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Analytics | Untitled World</title>
+    <link rel="icon" href="/icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Modern Reset & Smooth Scroll */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            background: radial-gradient(circle at top left, #1e3c72, #2a5298, #0f2027);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        /* Entrance Animation */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-body{
-background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-min-height:100vh;
-}
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px 10%;
-}
+        .site-title {
+            display: flex;
+            align-items: center;
+            font-size: clamp(16px, 4vw, 24px);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
 
-.site-title{
-display:flex;
-align-items:center;
-font-size:clamp(18px,3.5vw,28px);
-font-weight:700;
-}
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            margin-right: 12px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+            animation: pulse 2s infinite;
+        }
 
-.logo-img{
-width:36px;
-height:36px;
-border-radius:10px;
-margin-right:10px;
-object-fit:cover;
-box-shadow:0 4px 12px rgba(0,242,254,0.4);
-}
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
 
-.graph-section{
-text-align:center;
-padding:60px 10%;
-max-width:900px;
-margin:auto;
-}
+        .graph-section {
+            text-align: center;
+            padding: 40px 5%;
+            max-width: 1000px;
+            margin: auto;
+            animation: fadeInUp 0.8s ease-out;
+        }
 
-.chart-box{
-position:relative;
-height:420px;
-width:100%;
-background:rgba(255,255,255,0.05);
-border-radius:20px;
-padding:20px;
-backdrop-filter:blur(8px);
-}
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.back-btn{
-margin-top:30px;
-padding:12px 28px;
-border:none;
-border-radius:30px;
-background:linear-gradient(45deg,#00f2fe,#4facfe);
-cursor:pointer;
-font-weight:600;
-color:#fff;
-}
+        p.subtitle {
+            opacity: 0.7;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
 
-.back-btn:hover{
-transform:scale(1.05);
-transition:.3s;
-}
+        /* Glassmorphism Chart Box */
+        .chart-box {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 24px;
+            padding: 25px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease;
+        }
 
-</style></head><body><header>
-<h1 class="site-title">
-<img src="/icon-512.png" class="logo-img">
-Untitled World
-</h1>
-</header><section class="graph-section"><h2>Weekly Study Progress 📊</h2><div class="chart-box">
-<canvas id="studyChart"></canvas>
-</div><button class="back-btn" onclick="window.location.href='index.html'">
-⬅ Back
-</button></section><script>
+        .chart-box:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 242, 254, 0.3);
+        }
 
-let studyData = JSON.parse(localStorage.getItem("studyGraphData")) || [0,0,0,0,0,0,0];
+        /* Buttons & Interactions */
+        .back-btn {
+            margin-top: 40px;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            cursor: pointer;
+            font-weight: 700;
+            color: #002e4d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
+            transition: all 0.3s ease;
+        }
 
-const ctx = document.getElementById('studyChart').getContext('2d');
+        .back-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 242, 254, 0.5);
+        }
 
-new Chart(ctx,{
-type:'bar',
+        .back-btn:active {
+            transform: scale(0.95);
+        }
 
-data:{
-labels:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-datasets:[{
-label:'Videos Completed',
-data:studyData,
-backgroundColor:'#00f2fe',
-borderRadius:6
-}]
-},
+        /* Mobile Specific */
+        @media (max-width: 600px) {
+            .chart-box { height: 320px; padding: 15px; }
+            header { padding: 15px 5%; }
+        }
+    </style>
+</head>
 
-options:{
-responsive:true,
-maintainAspectRatio:false,
+<body>
 
-scales:{
-y:{
-beginAtZero:true,
-ticks:{color:'white'},
-grid:{color:'rgba(255,255,255,0.1)'}
-},
+<header>
+    <h1 class="site-title">
+        <img src="/icon-512.png" class="logo-img" alt="logo">
+        Untitled World
+    </h1>
+</header>
 
-x:{
-ticks:{color:'white'},
-grid:{display:false}
-}
-},
+<section class="graph-section">
+    <h2>Learning Analytics 📊</h2>
+    <p class="subtitle">Keep track of your consistency and daily goals</p>
+    
+    <div class="chart-box">
+        <canvas id="studyChart"></canvas>
+    </div>
 
-plugins:{
-legend:{
-labels:{color:'white'}
-}
-}
+    <button class="back-btn" onclick="window.location.href='playlist.html'">
+        ⬅ Back to Study
+    </button>
+</section>
 
-}
+<script>
+    // Logic remains exactly the same
+    let studyData = JSON.parse(localStorage.getItem("studyGraphData")) || [0,0,0,0,0,0,0];
 
-});
+    const ctx = document.getElementById('studyChart').getContext('2d');
+    
+    // Creating a Gradient for the bars
+    const barGradient = ctx.createLinearGradient(0, 0, 0, 400);
+    barGradient.addColorStop(0, '#00f2fe');
+    barGradient.addColorStop(1, 'rgba(79, 172, 254, 0.2)');
 
-</script></body>
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            datasets: [{
+                label: 'Lessons Completed',
+                data: studyData,
+                backgroundColor: barGradient,
+                borderColor: '#00f2fe',
+                borderWidth: 1,
+                borderRadius: 8,
+                hoverBackgroundColor: '#4facfe'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2000,
+                easing: 'easeOutQuart'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 12 } },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                x: {
+                    ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 12 } },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: 'white', font: { weight: '600' } }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleFont: { family: 'Poppins' },
+                    bodyFont: { family: 'Poppins' },
+                    cornerRadius: 10,
+                    padding: 12
+                }
+            }
+        }
+    });
+</script>
+
+</body>
 </html>
