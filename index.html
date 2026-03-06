@@ -706,27 +706,14 @@ opacity:.7;
 margin-top:2px;
 }
 
-.xp-rank-box{
-display:flex;
-justify-content:center;
-gap:20px;
-
-margin-top:10px;
-font-size:14px;
-
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.15);
-
-border-radius:12px;
-padding:6px 12px;
-
-cursor:pointer;
-
-backdrop-filter:blur(10px);
-}
-
-.xp-rank-box:hover{
-background:rgba(255,255,255,0.15);
+.xp-rank{
+position:absolute;
+top:60px;
+right:20px;
+font-size:13px;
+opacity:.8;
+background:none;
+border:none;
 }
 
 /* --- CSS END --- */
@@ -797,9 +784,10 @@ Contact Us
 
 <div id="pwaOverlay"></div>
 
-<div class="xp-rank-box" onclick="location.href='leaderboard.html'">
-<span id="xpText">⭐ XP: 0</span>
-<span id="rankText">🏆 Rank: --</span>
+<div id="xpRankBox" class="xp-rank"
+onclick="location.href='leaderboard.html'">
+⭐ XP: <span id="xpValue">0</span>
+🏆 Rank: <span id="rankValue">--</span>
 </div>
 
 <section class="hero">
@@ -1384,11 +1372,63 @@ document.getElementById("pwaGoal").innerText="Goal: "+goal;
 }
 });
 
-let xp = localStorage.getItem("userXP") || 0;
-let rank = localStorage.getItem("userRank") || "--";
+/* ===== XP + RANK DISPLAY ===== */
 
-document.getElementById("xpText").innerText = "⭐ XP: " + xp;
-document.getElementById("rankText").innerText = "🏆 Rank: " + rank;
+if(
+ !window.matchMedia('(display-mode: standalone)').matches &&
+ !window.navigator.standalone
+){
+ const box = document.getElementById("xpRankBox");
+ if(box) box.style.display="none";
+}
+
+import { doc, getDoc, getDocs, collection } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const auth = getAuth();
+
+onAuthStateChanged(auth, async user => {
+
+ if(!user) return;
+
+ const ref = doc(db,"users",user.displayName);
+ const snap = await getDoc(ref);
+
+ if(!snap.exists()) return;
+
+ const data = snap.data();
+
+ const xp = data.weeklyXP || 0;
+
+ const usersSnap = await getDocs(collection(db,"users"));
+ let arr = [];
+
+ usersSnap.forEach(d=>{
+  arr.push(d.data());
+ });
+
+ arr.sort((a,b)=>(b.weeklyXP||0)-(a.weeklyXP||0));
+
+ const rank =
+ arr.findIndex(u=>u.name===user.displayName)+1;
+
+ const xpEl = document.getElementById("xpValue");
+ const rankEl = document.getElementById("rankValue");
+
+ if(xpEl) xpEl.innerText = xp;
+ if(rankEl) rankEl.innerText = rank;
+
+});
+
+if(
+ !window.matchMedia('(display-mode: standalone)').matches &&
+ !window.navigator.standalone
+){
+ document.getElementById("xpRankBox").style.display="none";
+}
 
 </script>
 
