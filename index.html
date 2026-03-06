@@ -1348,6 +1348,13 @@ if(goal){
 document.getElementById("pwaGoal").innerText = "Goal: " + goal;
 }
 
+window.addEventListener("storage", function(){
+let goal = localStorage.getItem("goal");
+if(goal){
+document.getElementById("pwaGoal").innerText="Goal: "+goal;
+}
+});
+
 </script>
 
 </body>
