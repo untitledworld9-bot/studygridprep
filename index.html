@@ -798,6 +798,11 @@ Install App 📲
 </footer>
 
 <script>
+function isPWA(){
+return window.matchMedia('(display-mode: standalone)').matches
+|| window.navigator.standalone;
+}
+
 function toggleMenu(){
 
 if(isPWA()){
@@ -1156,7 +1161,11 @@ document.getElementById("pwaOverlay").classList.remove("active");
 
 }
 
-document.getElementById("pwaOverlay").onclick=closePwaMenu;
+window.addEventListener("load",function(){
+
+document.getElementById("pwaOverlay").onclick = closePwaMenu;
+
+});
 
 if(isPWA()){
 
