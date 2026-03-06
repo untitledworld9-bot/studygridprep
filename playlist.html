@@ -159,137 +159,104 @@ Untitled World
 
 <script>
 
+function goToStudy(){
+document.getElementById("study").scrollIntoView({behavior:"smooth"});
+}
+
 let videos = JSON.parse(localStorage.getItem("myVideos")) || [];
 
 function extractVideoID(url){
-try{
+    try {
+        let u = new URL(url);
 
-let u=new URL(url);
+        // Playlist detection
+        if(u.searchParams.get("list")){
+            return "playlist:" + u.searchParams.get("list");
+        }
 
-if(u.searchParams.get("list")){
-return "playlist:"+u.searchParams.get("list");
-}
+        if(u.hostname.includes("youtu.be")){
+            return u.pathname.slice(1,12);
+        }
 
-if(u.hostname.includes("youtu.be")){
-return u.pathname.slice(1,12);
-}
+        if(u.searchParams.get("v")){
+            return u.searchParams.get("v");
+        }
 
-if(u.searchParams.get("v")){
-return u.searchParams.get("v");
-}
+        if(u.pathname.includes("/live/")){
+            return u.pathname.split("/live/")[1].substring(0,11);
+        }
 
-if(u.pathname.includes("/live/")){
-return u.pathname.split("/live/")[1].substring(0,11);
-}
+        if(u.pathname.includes("/embed/")){
+            return u.pathname.split("/embed/")[1].substring(0,11);
+        }
 
-if(u.pathname.includes("/embed/")){
-return u.pathname.split("/embed/")[1].substring(0,11);
-}
-
-return false;
-
-}catch{
-return false;
-}
+        return false;
+    } catch {
+        return false;
+    }
 }
 
 function addVideo(){
+    let input = document.getElementById("ytLink");
+    let url = input.value.trim();
+    let videoID = extractVideoID(url);
 
-let input=document.getElementById("ytLink");
-
-let url=input.value.trim();
-
-let videoID=extractVideoID(url);
-
-if(videoID){
-
-videos.push({id:videoID,completed:false});
-
-saveAndRender();
-
-input.value="";
-
-}else{
-
-alert("Please enter a valid YouTube URL");
-
-}
-
+    if(videoID){
+        videos.push({ id: videoID, completed: false });
+        saveAndRender();
+        input.value = "";
+    } else {
+        alert("Please enter a valid YouTube URL");
+    }
 }
 
 function deleteVideo(index){
-
-if(confirm("Delete this video?")){
-
-videos.splice(index,1);
-
-saveAndRender();
-
-}
-
+    if(confirm("Delete this video?")){
+        videos.splice(index, 1);
+        saveAndRender();
+    }
 }
 
 function toggleComplete(index){
-
-videos[index].completed=!videos[index].completed;
-
-if(videos[index].completed){
-updateGraph(1);
-}else{
-updateGraph(-1);
-}
-
-saveAndRender();
-
+    videos[index].completed = !videos[index].completed;
+    if(videos[index].completed){
+        updateGraph(1);
+    } else {
+        updateGraph(-1);
+    }
+    saveAndRender();
 }
 
 function saveAndRender(){
+    localStorage.setItem("myVideos", JSON.stringify(videos));
+    let container = document.getElementById("videoContainer");
+    container.innerHTML = "";
 
-localStorage.setItem("myVideos",JSON.stringify(videos));
+    videos.forEach((video, index) => {
+        let isDone = video.completed ? "active" : "";
+        let btnText = video.completed ? "Completed ✔" : "Mark Complete";
 
-let container=document.getElementById("videoContainer");
-
-container.innerHTML="";
-
-videos.forEach((video,index)=>{
-
-let isDone=video.completed?"active":"";
-
-let btnText=video.completed?"Completed ✔":"Mark Complete";
-
-let html=`
-
-<div class="video-card">
-
-<iframe src="${
+        let html = `
+            <div class="video-card">
+                <iframe src="${
 video.id.startsWith('playlist:')
-? \`https://www.youtube.com/embed/videoseries?list=\${video.id.replace('playlist:','')}\`
-: \`https://www.youtube.com/embed/\${video.id}\`
-}"
+? `https://www.youtube.com/embed/videoseries?list=${video.id.replace('playlist:','')}`
+: `https://www.youtube.com/embed/${video.id}`
+}" 
 loading="lazy"
 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 allowfullscreen>
 </iframe>
-
-<button class="complete-btn ${isDone}" onclick="toggleComplete(${index})">${btnText}</button>
-
-<button onclick="deleteVideo(${index})"
-style="margin-top:10px;background:none;border:none;color:white;opacity:0.6;cursor:pointer;font-size:12px;">
-Remove
-</button>
-
-</div>
-
-`;
-
-container.innerHTML+=html;
-
-});
-
+                <button class="complete-btn ${isDone}" onclick="toggleComplete(${index})">${btnText}</button>
+                <button onclick="deleteVideo(${index})" style="margin-top:10px; background:none; border:none; color:white; opacity:0.6; cursor:pointer; font-size:12px;">Remove</button>
+            </div>
+        `;
+        container.innerHTML += html;
+    });
 }
 
-window.onload=function(){
-saveAndRender();
+window.onload = function(){
+    saveAndRender();
 }
 
 function openYouTube(){
