@@ -1372,7 +1372,7 @@ document.getElementById("pwaGoal").innerText="Goal: "+goal;
 }
 });
 
-/* ===== XP + RANK DISPLAY ===== */
+/* XP + RANK DISPLAY */
 
 if(
  !window.matchMedia('(display-mode: standalone)').matches &&
@@ -1381,14 +1381,6 @@ if(
  const box = document.getElementById("xpRankBox");
  if(box) box.style.display="none";
 }
-
-import { doc, getDoc, getDocs, collection } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-import { getAuth, onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const auth = getAuth();
 
 onAuthStateChanged(auth, async user => {
 
