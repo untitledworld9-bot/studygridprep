@@ -1640,21 +1640,6 @@ if(!isPWA()){
 
 }
 
-const xp = me.weeklyXP || 0;
-const rank = users.findIndex(u=>u.name===user.displayName)+1;
-
-const xpHome = document.getElementById("xpValue");
-const rankHome = document.getElementById("rankValue");
-
-const xpSide = document.getElementById("xpValueSide");
-const rankSide = document.getElementById("rankValueSide");
-
-if(xpHome) xpHome.innerText = xp;
-if(rankHome) rankHome.innerText = rank;
-
-if(xpSide) xpSide.innerText = xp;
-if(rankSide) rankSide.innerText = rank;
-
 onAuthStateChanged(auth, user => {
 
  if(!user) return;
