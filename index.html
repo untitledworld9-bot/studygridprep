@@ -1675,7 +1675,8 @@ onAuthStateChanged(auth, user => {
 // 1. APP INSTALL POPUP (Tera original)
 // ==========================================
 let deferredPrompt;
-function isAppInstalled() {
+// Yahan function ka naam badal diya taki purane kisi isPWA ya isAppInstalled se clash na ho
+function checkStandaloneMode() {
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
@@ -1683,7 +1684,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   if (localStorage.getItem("installPopupShown") === "yes") return;
-  if (isAppInstalled()) return;
+  if (checkStandaloneMode()) return;
   setTimeout(() => { showInstallPopup(); }, 4000);
 });
 
@@ -1703,30 +1704,27 @@ function showInstallPopup() {
 }
 
 // ==========================================
-// 2. PROMO POPUP (For PWA Only)
+// 2. PROMO POPUP (For PWA Only) - FIREPROOF METHOD
 // ==========================================
 function closePromo() {
   const popup = document.getElementById("promoPopup");
   if (popup) { popup.style.display = "none"; }
 }
 
-window.addEventListener("load", () => {
-  // Check if opening inside PWA
+// Hum window.onload ka wait nahi karenge, bas thoda defer karenge
+setTimeout(() => {
+  // Directly check without calling the conflicting isPWA() function
   const isRealPWA = window.matchMedia('(display-mode: standalone)').matches || 
                     window.navigator.standalone === true || 
                     window.location.search.includes("mode=pwa");
   
   if (isRealPWA) {
-    // 2 Second Timer
-    setTimeout(() => {
-      const popup = document.getElementById("promoPopup");
-      if (popup) {
-        // Display flex is strictly required for your CSS centering
-        popup.style.display = "flex"; 
-      }
-    }, 2000);
+    const popup = document.getElementById("promoPopup");
+    if (popup) {
+      popup.style.setProperty("display", "flex", "important"); 
+    }
   }
-});
+}, 2000); // Trigger 2 seconds after this script parses
 </script>
 
 </body>
