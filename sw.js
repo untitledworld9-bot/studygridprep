@@ -1,4 +1,4 @@
-const CACHE = "uw-cache-v3";
+const CACHE = "uw-cache-v4";
 
 const ASSETS = [
 "/icon-192.png",
