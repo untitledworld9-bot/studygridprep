@@ -1672,59 +1672,27 @@ onAuthStateChanged(auth, user => {
 
 <script>
 // ==========================================
-// 1. APP INSTALL POPUP (Tera original)
+// PROMO POPUP — PWA MODE ONLY, 2s DELAY
 // ==========================================
-let deferredPrompt;
-// Yahan function ka naam badal diya taki purane kisi isPWA ya isAppInstalled se clash na ho
-function checkStandaloneMode() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (localStorage.getItem("installPopupShown") === "yes") return;
-  if (checkStandaloneMode()) return;
-  setTimeout(() => { showInstallPopup(); }, 4000);
-});
-
-function showInstallPopup() {
-  const popup = document.createElement("div");
-  popup.innerHTML = `
-  <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f2027;color:white;padding:15px 20px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:9999;font-family:sans-serif;">
-    Install Untitled World App
-    <button id="installBtn" style="margin-left:10px;background:#00c853;border:none;color:white;padding:6px 12px;border-radius:6px;">Install</button>
-  </div>`;
-  document.body.appendChild(popup);
-  localStorage.setItem("installPopupShown", "yes");
-  document.getElementById("installBtn").onclick = async () => {
-    popup.remove();
-    if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-  };
-}
-
-// ==========================================
-// 2. PROMO POPUP (For PWA Only) - FIREPROOF METHOD
-// ==========================================
+// Called by the ✕ button in promoPopup HTML
 function closePromo() {
-  const popup = document.getElementById("promoPopup");
-  if (popup) { popup.style.display = "none"; }
+  var popup = document.getElementById("promoPopup");
+  if (popup) popup.style.setProperty("display", "none", "important");
 }
 
-// Hum window.onload ka wait nahi karenge, bas thoda defer karenge
-setTimeout(() => {
-  // Directly check without calling the conflicting isPWA() function
-  const isRealPWA = window.matchMedia('(display-mode: standalone)').matches || 
-                    window.navigator.standalone === true || 
-                    window.location.search.includes("mode=pwa");
-  
-  if (isRealPWA) {
-    const popup = document.getElementById("promoPopup");
-    if (popup) {
-      popup.style.setProperty("display", "flex", "important"); 
-    }
-  }
-}, 2000); // Trigger 2 seconds after this script parses
+// IIFE — zero event dependencies, zero scope pollution, zero isPWA() conflicts
+(function () {
+  var inPWA = window.matchMedia("(display-mode: standalone)").matches
+              || window.navigator.standalone === true;
+
+  if (!inPWA) return; // Not PWA — bail immediately, install popup unaffected
+
+  setTimeout(function () {
+    var popup = document.getElementById("promoPopup");
+    if (popup) popup.style.setProperty("display", "flex", "important");
+  }, 2000);
+})();
 </script>
 
 </body>
