@@ -1671,17 +1671,26 @@ onAuthStateChanged(auth, user => {
 </script>
 
 <script>
-// --- 1. APP INSTALL POPUP (Isme koi chhed-chhad nahi) ---
-let deferredPrompt;
-function isAppInstalled() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+// ==========================================
+// 1. NUCLEAR OPTION: JABARDASTI CACHE DELETE KARO
+// ==========================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let r of registrations) { 
+      r.unregister(); // Ye purane ziddi cache ko hamesha ke liye uda dega
+    }
+  });
 }
 
+// ==========================================
+// 2. APP INSTALL POPUP (Tumhara purana code)
+// ==========================================
+let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   if (localStorage.getItem("installPopupShown") === "yes") return;
-  if (isAppInstalled()) return;
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
   setTimeout(() => { showInstallPopup(); }, 4000);
 });
 
@@ -1700,34 +1709,32 @@ function showInstallPopup() {
   };
 }
 
-// --- 2. PROMO POPUP (ULTIMATE FIX - LOOP METHOD) ---
+// ==========================================
+// 3. PROMO POPUP (WITH DEBUG ALERT)
+// ==========================================
 function closePromo() {
   const popup = document.getElementById("promoPopup");
   if (popup) { popup.style.display = "none"; }
 }
 
-// Hum har 500 milliseconds (aadha second) me check karenge
-let pwaCheckInterval = setInterval(() => {
-  const isRealPWA = window.matchMedia('(display-mode: standalone)').matches || 
-                    window.navigator.standalone === true || 
-                    window.location.search.includes("mode=pwa");
-  
-  if (isRealPWA) {
-    // Jaise hi PWA detect ho jaye, loop ko turant band kar do
-    clearInterval(pwaCheckInterval); 
-    
-    // PWA mil gaya, ab exactly 2 second ka timer lagao
-    setTimeout(() => {
-      const popup = document.getElementById("promoPopup");
-      if (popup) {
-        popup.style.cssText = "display: flex !important; z-index: 999999 !important;";
-      }
-    }, 2000);
-  }
-}, 500);
+setTimeout(function() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const isPwaUrl = window.location.search.includes("mode=pwa");
+  const isRealPWA = isStandalone || window.navigator.standalone === true || isPwaUrl;
 
-// Agar 10 second tak PWA detect nahi hua (matlab normal browser hai), toh loop ko band kar do taaki memory waste na ho
-setTimeout(() => { clearInterval(pwaCheckInterval); }, 10000);
+  // 🚨🚨 DEBUG ALERT: Ye tere phone par ek message dega 2 second baad
+  alert("Checking PWA Status: " + isRealPWA);
+
+  if (isRealPWA) {
+    const popup = document.getElementById("promoPopup");
+    if (popup) {
+      // Forcefully screen ke upar laane ka CSS
+      popup.style.cssText = "display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;";
+    } else {
+      alert("Bhai, HTML mein id='promoPopup' wala element hi nahi mil raha!");
+    }
+  }
+}, 2000);
 </script>
 
 </body>
