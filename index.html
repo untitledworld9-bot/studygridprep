@@ -1412,22 +1412,30 @@ document.getElementById("pwaGoal").innerText="Goal: "+goal;
 }
 });
 
-// ===== XP + RANK SYSTEM =====
-
-window.addEventListener("DOMContentLoaded", ()=>{
+window.addEventListener("load",()=>{
 
 const isStandalone =
 window.matchMedia('(display-mode: standalone)').matches
 || window.navigator.standalone;
 
-// hide on website
 if(!isStandalone){
  const box = document.getElementById("xpRankBox");
  if(box) box.style.display="none";
- return;
 }
 
-// wait firebase auth
+});
+
+</script>
+
+<script>
+const { auth, db } = window;
+
+import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js")
+.then(({ collection, onSnapshot }) => {
+
+import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js")
+.then(({ onAuthStateChanged }) => {
+
 onAuthStateChanged(auth, user => {
 
  if(!user) return;
@@ -1443,13 +1451,14 @@ onAuthStateChanged(auth, user => {
   users.sort((a,b)=>(b.weeklyXP||0)-(a.weeklyXP||0));
 
   const me = users.find(u=>u.name===user.displayName);
+
   if(!me) return;
 
   const xp = me.weeklyXP || 0;
   const rank = users.findIndex(u=>u.name===user.displayName)+1;
 
-  document.getElementById("xpValue").textContent=xp;
-  document.getElementById("rankValue").textContent=rank;
+  document.getElementById("xpValue").textContent = xp;
+  document.getElementById("rankValue").textContent = rank;
 
  });
 
@@ -1457,19 +1466,7 @@ onAuthStateChanged(auth, user => {
 
 });
 
-window.addEventListener("load",()=>{
-
-const isStandalone =
-window.matchMedia('(display-mode: standalone)').matches
-|| window.navigator.standalone;
-
-if(!isStandalone){
- const box = document.getElementById("xpRankBox");
- if(box) box.style.display="none";
-}
-
 });
-
 </script>
 
 </body>
