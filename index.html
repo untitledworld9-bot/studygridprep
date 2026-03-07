@@ -782,6 +782,18 @@ opacity:0.9;
 margin-top:4px;
 }
 
+#todayFocusCard{
+font-size:16px;
+text-align:center;
+}
+
+#todayFocusValue{
+font-size:20px;
+font-weight:600;
+margin-top:5px;
+color:#00f2fe;
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -817,7 +829,7 @@ margin-top:4px;
 
 <div id="xpRankSide" class="pwa-xp">
 ⭐ <span id="xpValue">0</span> XP
-&nbsp;&nbsp;🏆 Rank <span id="rankValue">--</span>
+🏆 Rank <span id="rankValue">--</span>
 </div>
 
 </div>
@@ -827,6 +839,11 @@ margin-top:4px;
 <a href="mocktest.html">📝 Mock Test</a>
 
 <a href="timer.html">⏳ Smart Focus Timer</a>
+
+<div id="todayFocusCard" class="pwa-card">
+🔥 Today Focus
+<div id="todayFocusValue">0m</div>
+</div>
 
 <a href="playlist.html">🎬 Your Study Playlist</a>
 
@@ -1496,6 +1513,33 @@ onAuthStateChanged(auth, user => {
 });
 
 });
+
+});
+
+onAuthStateChanged(auth, user => {
+
+ if(!user) return;
+
+ onSnapshot(doc(db,"users",user.displayName), snap=>{
+
+  const data = snap.data();
+
+  const mins = data.focusTime || 0;
+
+  const h = Math.floor(mins/60);
+  const m = mins % 60;
+
+  let text="";
+
+  if(h>0){
+   text = h+"h "+m+"m";
+  }else{
+   text = m+"m";
+  }
+
+  document.getElementById("todayFocusValue").innerText = text;
+
+ });
 
 });
 </script>
