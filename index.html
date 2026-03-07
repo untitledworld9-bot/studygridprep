@@ -803,6 +803,9 @@ margin-left:4px;
 margin:12px auto;
 }
 
+#todayFocusCard{
+margin:20px auto 35px auto;
+}
 /* --- CSS END --- */
 </style>
 </head>
@@ -834,13 +837,13 @@ margin:12px auto;
 <div id="pwaName">User</div>
 <div id="pwaEmail" class="pwa-email"></div>
 <div id="pwaGoal" class="pwa-email"></div>
-</div>
-
-</div>
 
 <div class="pwa-xp-mini">
-⭐ <span id="xpValue">0</span> XP
-🏆 <span id="rankValue">--</span>
+⭐ <span id="xpValueSide">0</span> XP
+🏆 <span id="rankValueSide">--</span>
+</div>
+
+</div>
 </div>
 
 <div class="pwa-links">
@@ -920,8 +923,7 @@ Install App 📲
 </div>
 
 <div id="todayFocusCard" class="today-focus-mini">
-🔥 Today Focus
-<span id="todayFocusValue">0m</span>
+🔥 Today Focus • <span id="todayFocusValue">0m</span>
 </div>
 
 </section>
@@ -1568,6 +1570,50 @@ if(!isPWA()){
  if(xp) xp.style.display="none";
 
 }
+
+const xp = me.weeklyXP || 0;
+const rank = users.findIndex(u=>u.name===user.displayName)+1;
+
+const xpHome = document.getElementById("xpValue");
+const rankHome = document.getElementById("rankValue");
+
+const xpSide = document.getElementById("xpValueSide");
+const rankSide = document.getElementById("rankValueSide");
+
+if(xpHome) xpHome.innerText = xp;
+if(rankHome) rankHome.innerText = rank;
+
+if(xpSide) xpSide.innerText = xp;
+if(rankSide) rankSide.innerText = rank;
+
+onAuthStateChanged(auth, user => {
+
+ if(!user) return;
+
+ onSnapshot(doc(db,"users",user.displayName), snap=>{
+
+  const data = snap.data();
+
+  const mins = data.focusTime || 0;
+
+  const h = Math.floor(mins/60);
+  const m = mins % 60;
+
+  let text = "";
+
+  if(h > 0){
+   text = h + "h " + m + "m";
+  } else {
+   text = m + "m";
+  }
+
+  const el = document.getElementById("todayFocusValue");
+  if(el) el.innerText = text;
+
+ });
+
+});
+
 </script>
 
 </body>
