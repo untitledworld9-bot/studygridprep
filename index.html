@@ -1750,15 +1750,9 @@ function showInstallPopup() {
 
 function closePromo(){
 document.getElementById("promoPopup").style.display="none";
-localStorage.setItem("promoShownDate", new Date().toDateString());
 }
 
 if(isPWA()){
-
-let lastShown = localStorage.getItem("promoShownDate");
-let today = new Date().toDateString();
-
-if(lastShown !== today){
 
 setTimeout(()=>{
 
