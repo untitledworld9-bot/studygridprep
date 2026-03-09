@@ -106,7 +106,7 @@ async function getOfflinePage() {
 </head>
 <body>
   <h1>📡 You're Offline</h1>
-  <p>Please check your connection.</p>
+  <p>Please check your internet connection.</p>
   <button onclick="location.href='/'">Retry</button>
   <script>window.addEventListener("online",()=>location.href="/");<\/script>
 </body>
