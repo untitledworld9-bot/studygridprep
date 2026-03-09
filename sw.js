@@ -1,6 +1,8 @@
-const CACHE = "uw-cache-v5"; 
+const CACHE = "uw-cache-v6";
 
 const ASSETS = [
+"/",
+"/offline.html",
 "/icon-192.png",
 "/icon-512.png",
 "/background.webp",
@@ -23,13 +25,17 @@ self.addEventListener("activate", e=>{
 
 self.addEventListener("fetch", e=>{
 
-  // Pages always load from network
   if(e.request.mode === "navigate"){
-    e.respondWith(fetch(e.request));
+
+    e.respondWith(
+      fetch(e.request).catch(()=>{
+        return caches.match("/offline.html");
+      })
+    );
+
     return;
   }
 
-  // Static files cache
   e.respondWith(
     caches.match(e.request).then(res=>{
       return res || fetch(e.request);
