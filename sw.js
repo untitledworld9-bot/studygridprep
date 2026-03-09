@@ -1,45 +1,57 @@
-const CACHE = "uw-cache-v6";
+const CACHE = "uw-cache-v7";
 
-const ASSETS = [
+const OFFLINE_URL = "/offline.html";
+
+self.addEventListener("install", event => {
+
+self.skipWaiting();
+
+event.waitUntil(
+
+caches.open(CACHE).then(cache => {
+return cache.addAll([
 "/",
+"/index.html",
 "/offline.html",
 "/icon-192.png",
-"/icon-512.png",
-"/background.webp",
-"/manifest.json"
-];
+"/icon-512.png"
+]);
+})
 
-self.addEventListener("install", e=>{
-  self.skipWaiting();
+);
 
-  e.waitUntil(
-    caches.open(CACHE).then(cache=>{
-      return cache.addAll(ASSETS);
-    })
-  );
 });
 
-self.addEventListener("activate", e=>{
-  e.waitUntil(self.clients.claim());
+self.addEventListener("activate", event => {
+
+event.waitUntil(self.clients.claim());
+
 });
 
-self.addEventListener("fetch", e=>{
+self.addEventListener("fetch", event => {
 
-  if(e.request.mode === "navigate"){
+if(event.request.mode === "navigate"){
 
-    e.respondWith(
-      fetch(e.request).catch(()=>{
-        return caches.match("/offline.html");
-      })
-    );
+event.respondWith(
 
-    return;
-  }
+fetch(event.request).catch(()=>{
 
-  e.respondWith(
-    caches.match(e.request).then(res=>{
-      return res || fetch(e.request);
-    })
-  );
+return caches.match(OFFLINE_URL);
+
+})
+
+);
+
+return;
+
+}
+
+event.respondWith(
+
+caches.match(event.request).then(res=>{
+return res || fetch(event.request);
+})
+
+);
 
 });
