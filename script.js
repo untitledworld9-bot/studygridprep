@@ -149,8 +149,6 @@ if(googleBtn){
   room: roomId
 },{merge:true});        
 
-window.location.href = "welcome.html";
-
   }catch(err){
     console.log(err);
   }
