@@ -44,12 +44,26 @@ self.addEventListener("fetch", event => {
 
   // ── Navigation requests (HTML page loads) ──────────────────────────────────
   if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => getOfflinePage())   // network failed → serve offline UI
-    );
-    return;
-  }
+
+  event.respondWith(
+    fetch(event.request)
+      .catch(async () => {
+
+        const cache = await caches.open(CACHE);
+        const offline = await cache.match("/offline.html");
+
+        if (offline) {
+          return new Response(await offline.text(), {
+            headers: { "Content-Type": "text/html" }
+          });
+        }
+
+        return getOfflinePage();
+      })
+  );
+
+  return;
+}
 
   // ── Static assets (cache-first) ────────────────────────────────────────────
   event.respondWith(
