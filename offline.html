@@ -125,15 +125,19 @@ p {
 
     <p>Connect to internet to continue studying</p>
 
-    <button class="retry" onclick="location.reload()">Retry</button>
-</div>
+    <button class="retry" onclick="goHome()">Retry</button>
 
 <script>
-    // Ye line check karegi ki internet wapas aaya ya nahi
-    window.addEventListener('online', function() {
-        // Jaise hi net aayega, page apne aap reload ho jayega
-        window.location.reload();
-    });
+
+function goHome(){
+    window.location.href = "/";
+}
+
+// Internet aate hi home open
+window.addEventListener('online', function(){
+    window.location.href = "/";
+});
+
 </script>
 
 </body>
