@@ -23,6 +23,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+
+<script>
+
+const user = localStorage.getItem("userName");
+
+if(!user){
+ window.location.href="login.html";
+}
+
+</script>
     
     <header>
         <div class="brand">Focus Mode 📚</div>
