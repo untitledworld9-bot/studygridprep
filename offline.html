@@ -3,151 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offline</title>
-
+<title>Offline – Untitled World</title>
 <style>
-/* CSS Variables for easy theme management */
 :root {
-    --primary-color: #ff7a18;
-    --primary-hover: #e66a10;
-    --bg-color: #f4f6f8;
-    --text-main: #1f2937;
-    --text-muted: #6b7280;
+  --primary:       #ff7a18;
+  --primary-hover: #e66a10;
+  --bg:            #f4f6f8;
+  --text:          #1f2937;
+  --muted:         #6b7280;
 }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    /* Modern system fonts for App-like feel */
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    text-align: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  text-align: center;
+  padding: 16px;
 }
 
-/* Modern Card Layout */
-.offline-card {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    width: 85%;
-    max-width: 320px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.card {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Animated Icon Container */
-.icon-container {
-    width: 80px;
-    height: 80px;
-    background-color: #fff0e6;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 36px;
-    margin-bottom: 24px;
-    /* Pulse Animation to show "trying to reconnect" */
-    animation: pulse 2s infinite;
+.icon-wrap {
+  width: 80px;
+  height: 80px;
+  background: #fff0e6;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36px;
+  margin-bottom: 24px;
+  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 122, 24, 0.4); }
-    70% { box-shadow: 0 0 0 20px rgba(255, 122, 24, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 122, 24, 0); }
+  0%   { box-shadow: 0 0 0 0   rgba(255,122,24,.40); }
+  70%  { box-shadow: 0 0 0 20px rgba(255,122,24,.00); }
+  100% { box-shadow: 0 0 0 0   rgba(255,122,24,.00); }
 }
 
-h1 {
-    font-size: 22px;
-    margin: 0 0 8px 0;
-    font-weight: 700;
-}
+h1 { font-size: 22px; margin-bottom: 8px; font-weight: 700; }
 
 p {
-    font-size: 15px;
-    color: var(--text-muted);
-    margin: 0 0 28px 0;
-    line-height: 1.5;
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
 }
 
-/* Modern App Button with Hover/Active states */
 .retry {
-    width: 100%;
-    padding: 14px 20px;
-    border: none;
-    border-radius: 12px;
-    background: var(--primary-color);
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: 0 4px 12px rgba(255,122,24,.30);
 }
 
-.retry:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(255, 122, 24, 0.4);
-}
+.retry:hover  { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,122,24,.40); }
+.retry:active { transform: translateY(0);          box-shadow: 0 2px 8px  rgba(255,122,24,.30); }
 
-.retry:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(255, 122, 24, 0.3);
-}
-
-/* Tablet responsive design */
-@media (min-width: 768px) {
-    .offline-card {
-        max-width: 400px;
-        padding: 50px;
-    }
-    h1 { font-size: 28px; }
+@media (min-width: 480px) {
+  .card  { max-width: 400px; padding: 50px; }
+  h1     { font-size: 28px; }
 }
 </style>
-
 </head>
 
 <body>
-
-<div class="offline-card">
-    <div class="icon-container">
-        📡
-    </div>
-
-    <h1>Offline, Trying to reconnect...</h1>
-
-    <p>Connect to internet to continue studying</p>
-
-    <button class="retry" onclick="goHome()">Retry</button>
+<div class="card">
+  <div class="icon-wrap">📡</div>
+  <h1>You're Offline</h1>
+  <p>Connect to the internet to continue studying.</p>
+  <button class="retry" id="retryBtn">Retry</button>
+</div>
 
 <script>
+  // Retry button → go home (SW will serve live page if back online)
+  document.getElementById("retryBtn").addEventListener("click", function () {
+    window.location.href = "/";
+  });
 
-function goHome(){
-  window.location.href="/";
-}
+  // Auto-redirect the moment the browser regains connectivity
+  window.addEventListener("online", function () {
+    window.location.href = "/";
+  });
 
-document.querySelector(".retry").onclick = goHome;
-
-/* Internet आते ही auto home */
-window.addEventListener("online", function(){
-  goHome();
-});
-
-/* हर 2 सेकंड में check */
-setInterval(()=>{
-  if(navigator.onLine){
-    goHome();
-  }
-},2000);
-
+  // Polling fallback – navigator.onLine can lag on some Android WebViews
+  var poll = setInterval(function () {
+    if (navigator.onLine) {
+      clearInterval(poll);
+      window.location.href = "/";
+    }
+  }, 2000);
 </script>
-
 </body>
 </html>
