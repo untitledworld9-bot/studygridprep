@@ -13,17 +13,6 @@ const today = new Date().toISOString().slice(0,10)
 
 let tasks=[]
 
-// PWA CHECK
-
-function isPWA(){
-return window.matchMedia('(display-mode: standalone)').matches
-|| window.navigator.standalone
-}
-
-if(!isPWA()){
-console.log("Running in browser")
-}
-
 // LOAD TASKS
 
 async function load(){
