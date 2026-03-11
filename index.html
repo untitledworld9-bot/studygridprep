@@ -1406,8 +1406,12 @@ window.addEventListener("load", function(){
 });
 
 function logout(){
-  localStorage.removeItem("loggedIn");
-  window.location="login.html";
+
+localStorage.removeItem("userName");
+localStorage.removeItem("userEmail");
+
+window.location="login.html";
+
 }
 
 function openYouTube(){
@@ -1761,6 +1765,34 @@ window.addEventListener("offline", showOffline);
 
 /* Page load पर check */
 window.addEventListener("load", showOffline);
+
+</script>
+
+<script>
+
+(function(){
+
+function isPWA(){
+ return window.matchMedia('(display-mode: standalone)').matches
+ || window.navigator.standalone;
+}
+
+if(isPWA()){
+
+ const user = localStorage.getItem("userName");
+
+ if(!user){
+
+  // stop page render
+  document.documentElement.style.display="none";
+
+  window.location.replace("login.html");
+
+ }
+
+}
+
+})();
 
 </script>
 
