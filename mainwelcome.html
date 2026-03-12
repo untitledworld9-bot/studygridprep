@@ -99,6 +99,33 @@ pointer-events:none;
 
 }
 
+.agree-box{
+
+margin-top:20px;
+font-size:13px;
+opacity:.9;
+
+display:flex;
+align-items:flex-start;
+gap:6px;
+text-align:left;
+
+}
+
+.agree-box input{
+
+margin-top:3px;
+cursor:pointer;
+
+}
+
+.agree-box a{
+
+color:#4da6ff;
+text-decoration:underline;
+
+}
+
 </style>
 
 </head>
@@ -118,6 +145,19 @@ pointer-events:none;
 A distraction-free study platform built to help you stay focused, track progress and study smarter with tools like Focus Timer, playlists and upcoming mock tests.
 
 </p>
+
+<div class="agree-box">
+
+<input type="checkbox" id="agree">
+
+<label for="agree">
+By continuing you agree to 
+<a href="terms.html">Terms & Conditions</a> 
+and 
+<a href="privacy.html">Privacy Policy</a>
+</label>
+
+</div>
 
 <button class="btn" onclick="goHome()">
 
@@ -152,8 +192,17 @@ name.charAt(0).toUpperCase()
 
 function goHome(){
 
-localStorage.setItem("seenWelcome","yes")
+let agree=document.getElementById("agree")
 
+if(!agree.checked){
+
+alert("Please agree to Terms & Privacy Policy")
+
+return
+
+}
+
+localStorage.setItem("seenWelcome","yes")
 window.location="index.html"
 
 }
