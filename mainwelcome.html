@@ -126,6 +126,58 @@ text-decoration:underline;
 
 }
 
+.popup{
+
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+
+background:rgba(0,0,0,0.6);
+
+display:none;
+align-items:center;
+justify-content:center;
+
+z-index:9999;
+
+}
+
+.popup-box{
+
+background:#1e2f36;
+
+padding:25px;
+
+border-radius:14px;
+
+text-align:center;
+
+width:260px;
+
+box-shadow:0 10px 40px rgba(0,0,0,0.5);
+
+}
+
+.popup-box button{
+
+margin-top:20px;
+
+padding:10px 25px;
+
+border:none;
+
+border-radius:20px;
+
+background:linear-gradient(135deg,#5f7cff,#7c4dff);
+
+color:white;
+
+cursor:pointer;
+
+}
+
 </style>
 
 </head>
@@ -167,6 +219,18 @@ Explore →
 
 </div>
 
+<div id="agreePopup" class="popup">
+
+<div class="popup-box">
+
+<p>Please agree to Terms & Privacy Policy</p>
+
+<button onclick="closeAgree()">OK</button>
+
+</div>
+
+</div>
+
 <script>
 
 function isPWA(){
@@ -196,7 +260,7 @@ let agree=document.getElementById("agree")
 
 if(!agree.checked){
 
-alert("Please agree to Terms & Privacy Policy")
+document.getElementById("agreePopup").style.display="flex"
 
 return
 
@@ -266,6 +330,12 @@ requestAnimationFrame(update)
 }
 
 update()
+
+function closeAgree(){
+
+document.getElementById("agreePopup").style.display="none"
+
+}
 
 </script>
 
