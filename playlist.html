@@ -162,30 +162,16 @@ height:auto;
 overflow-x:hidden;
 }
 
-.tap-open{
+.yt-wrapper{
 display:flex;
 flex-direction:column;
 align-items:center;
-margin-top:8px;
-cursor:pointer;
 }
 
 .tap-text{
 font-size:12px;
+margin-bottom:4px;
 opacity:0.8;
-margin-bottom:3px;
-}
-
-.yt-icon{
-background:#ff0000;
-color:white;
-width:36px;
-height:36px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-font-size:16px;
 }
     </style>
 </head>
@@ -196,11 +182,9 @@ font-size:16px;
     <h2>My Study Playlist</h2>
 
     <div class="input-container">
-        <input type="text" id="ytLink" placeholder="Paste YouTube Video URL or Playlist URL">
-<div class="tap-open">
+        <input type="text" id="ytLink" placeholder="Paste YouTube Video URL or Playlist URL">          <div class="button-group">
+            <div class="yt-wrapper">
 <span class="tap-text">Tap To Open</span>
-<span class="yt-icon">▶</span>
-</div>        <div class="button-group">
             <button class="yt-open" onclick="openYouTube()" title="Open YouTube">▶</button>
             <button class="add-btn" onclick="addVideo()">+ Add to List</button>
         </div>
