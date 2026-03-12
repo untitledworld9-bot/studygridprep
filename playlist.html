@@ -86,12 +86,24 @@ width:100%;
         }
 
         /* Video Grid Fix */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 10px;
-        }
+        .video-row{
+display:flex;
+gap:16px;
+overflow-x:auto;
+scroll-snap-type:x mandatory;
+padding-bottom:10px;
+}
+
+.video-row::-webkit-scrollbar{
+display:none;
+}
+
+.video-card{
+min-width:260px;
+max-width:260px;
+flex-shrink:0;
+scroll-snap-align:start;
+}
 
         /* Mobile specific grid adjustment */
         @media (max-width: 400px) {
@@ -100,34 +112,31 @@ width:100%;
             }
         }
 
-        .video-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
+        .video-card{
+width:260px;
+border-radius:18px;
+padding:14px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(10px);
+display:flex;
+flex-direction:column;
+}
 
-        .iframe-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            margin-bottom: 15px;
-        }
+.iframe-container{
+position:relative;
+width:100%;
+padding-bottom:56.25%;
+}
 
-        .iframe-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
-            border: none;
-        }
+.iframe-container iframe{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+border-radius:12px;
+border:none;
+}
 
         .complete-btn {
             width: 100%;
@@ -288,6 +297,7 @@ width:0%;
 <option value="Physics">Physics</option>
 <option value="Chemistry">Chemistry</option>
 <option value="Maths">Maths</option>
+<option value="Music">Music</option>
 </select>
             <button class="add-btn" onclick="addVideo()">+ Add to List</button>
         </div>
@@ -296,6 +306,9 @@ width:0%;
     <div class="video-grid" id="videoContainer">
         </div>
 </section>
+
+<h3>🎧 Study Music</h3>
+<div class="video-row" id="musicRow"></div>
 
 <script>
     // Local Storage se data nikalna
@@ -384,7 +397,7 @@ return;
 
 }
 
-const subjects=["Physics","Chemistry","Maths"];
+const subjects=["Physics","Chemistry","Maths","Music"];
 
 subjects.forEach(sub=>{
 
@@ -469,6 +482,50 @@ let embed = id.startsWith("playlist:")
 el.innerHTML=`<iframe src="${embed}" allowfullscreen></iframe>`;
 
 }
+
+// MUSIC SECTION
+const musicList = videos.filter(v=>v.subject==="Music");
+
+const musicRow = document.getElementById("musicRow");
+
+musicRow.innerHTML="";
+
+musicList.forEach(video=>{
+
+let embedURL = video.id.startsWith('playlist')
+? `https://www.youtube.com/embed/videoseries?list=${video.id.replace('playlist:','')}`
+: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+
+let card=document.createElement("div");
+
+card.className="video-card";
+
+card.innerHTML=`
+
+<div class="thumbnail" onclick="playVideo('${video.id}',this)">
+<img src="${embedURL}">
+<div class="play-overlay">▶</div>
+</div>
+
+<div class="progress-bar">
+<div class="progress" style="width:${video.completed?100:0}%"></div>
+</div>
+
+<button class="complete-btn ${video.completed?'active':''}"
+onclick="toggleComplete(${videos.indexOf(video)})">
+${video.completed?"Completed ✔":"Mark Complete"}
+</button>
+
+<button class="remove-link"
+onclick="deleteVideo(${videos.indexOf(video)})">
+Remove Video
+</button>
+
+`;
+
+musicRow.appendChild(card);
+
+});
 </script>
 
 </body>
