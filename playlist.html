@@ -97,14 +97,6 @@ padding-bottom:10px;
 .video-row::-webkit-scrollbar{
 display:none;
 }
-
-.video-card{
-min-width:260px;
-max-width:260px;
-flex-shrink:0;
-scroll-snap-align:start;
-}
-
         /* Mobile specific grid adjustment */
         @media (max-width: 400px) {
             .video-grid {
@@ -113,13 +105,16 @@ scroll-snap-align:start;
         }
 
         .video-card{
-width:260px;
+min-width:300px;
+max-width:300px;
 border-radius:18px;
 padding:14px;
 background:rgba(255,255,255,0.08);
 backdrop-filter:blur(10px);
 display:flex;
 flex-direction:column;
+flex-shrink:0;
+scroll-snap-align:start;
 }
 
 .iframe-container{
@@ -225,29 +220,24 @@ color:#00f2fe;
 
 .horizontal-row{
 display:flex;
+gap:16px;
 overflow-x:auto;
-gap:15px;
 padding-bottom:10px;
 scroll-snap-type:x mandatory;
-}
-
-.horizontal-row::-webkit-scrollbar{
-display:none;
-}
-
-.video-card{
-min-width:260px;
-scroll-snap-align:start;
+-webkit-overflow-scrolling:touch;
 }
 
 .thumbnail{
 position:relative;
 border-radius:12px;
 overflow:hidden;
+aspect-ratio:16/9;
 }
 
 .thumbnail img{
 width:100%;
+height:100%;
+object-fit:cover;
 display:block;
 }
 
@@ -275,6 +265,39 @@ overflow:hidden;
 height:100%;
 background:#00f2fe;
 width:0%;
+}
+
+.complete-btn{
+margin-top:10px;
+}
+
+.mini-player{
+position:fixed;
+bottom:20px;
+right:20px;
+width:220px;
+height:124px;
+background:black;
+border-radius:10px;
+overflow:hidden;
+display:none;
+z-index:999;
+box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.mini-player iframe{
+width:100%;
+height:100%;
+border:none;
+}
+
+.mini-player span{
+position:absolute;
+top:5px;
+right:8px;
+color:white;
+cursor:pointer;
+font-size:14px;
 }
     </style>
 </head>
@@ -309,6 +332,9 @@ width:0%;
 
 <h3>🎧 Study Music</h3>
 <div class="video-row" id="musicRow"></div>
+
+<h3>▶ Continue Watching</h3>
+<div class="video-row" id="continueRow"></div>
 
 <script>
     // Local Storage se data nikalna
@@ -386,6 +412,34 @@ subject:subject
     function saveAndRender(){
 
 localStorage.setItem("myVideos", JSON.stringify(videos));
+
+let continueRow = document.getElementById("continueRow");
+continueRow.innerHTML="";
+
+const watching = videos.filter(v=>!v.completed);
+
+watching.forEach(video=>{
+
+let thumb = video.id.startsWith('playlist')
+? `https://img.youtube.com/vi/${video.id.replace('playlist:','')}/hqdefault.jpg`
+: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+
+let card=document.createElement("div");
+
+card.className="video-card";
+
+card.innerHTML=`
+
+<div class="thumbnail" onclick="playVideo('${video.id}',this)">
+<img src="${thumb}">
+<div class="play-overlay">▶</div>
+</div>
+
+`;
+
+continueRow.appendChild(card);
+
+});
 
 let container = document.getElementById("videoContainer");
 container.innerHTML="";
@@ -476,10 +530,17 @@ row.appendChild(card);
     function playVideo(id,el){
 
 let embed = id.startsWith("playlist:")
-? `https://www.youtube.com/embed/videoseries?list=${id.replace('playlist:','')}`
+? `https://www.youtube.com/embed/videoseries?list=${id.replace('playlist:','')}&autoplay=1`
 : `https://www.youtube.com/embed/${id}?autoplay=1`;
 
 el.innerHTML=`<iframe src="${embed}" allowfullscreen></iframe>`;
+
+// MINI PLAYER
+let mini = document.getElementById("miniPlayer");
+let frame = document.getElementById("miniFrame");
+
+frame.src = embed;
+mini.style.display="block";
 
 }
 
@@ -526,7 +587,20 @@ Remove Video
 musicRow.appendChild(card);
 
 });
+
+function closeMini(){
+
+document.getElementById("miniPlayer").style.display="none";
+document.getElementById("miniFrame").src="";
+
+}
+
 </script>
+
+<div id="miniPlayer" class="mini-player">
+<iframe id="miniFrame"></iframe>
+<span onclick="closeMini()">✕</span>
+</div>
 
 </body>
 </html>
