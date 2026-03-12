@@ -115,22 +115,6 @@ flex-shrink:0;
 scroll-snap-align:start;
 }
 
-.iframe-container{
-position:relative;
-width:100%;
-padding-bottom:56.25%;
-}
-
-.iframe-container iframe{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-border-radius:12px;
-border:none;
-}
-
         .complete-btn {
             width: 100%;
             padding: 12px;
@@ -411,7 +395,11 @@ color:white;
      let currentVideo = null;
      
     // Local Storage se data nikalna
-    let videos = JSON.parse(localStorage.getItem("myVideos")) || [];
+    let videos = JSON.parse(localStorage.getItem("myVideos"));
+
+if(!Array.isArray(videos)){
+videos=[];
+}
     let studyData = JSON.parse(localStorage.getItem("studyGraphData")) || [0,0,0,0,0,0,0];
 
     // URL se ID nikalne ka sahi tarika
@@ -514,7 +502,7 @@ watching.forEach(video=>{
 
 let thumb = video.id.startsWith('playlist')
 ? `https://img.youtube.com/vi/${video.id.replace('playlist:','')}/hqdefault.jpg`
-: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
 
 let card=document.createElement("div");
 
@@ -567,7 +555,7 @@ list.forEach((video,index)=>{
 
 let embedURL = video.id.startsWith('playlist:')
 ? `https://www.youtube.com/embed/videoseries?list=${video.id.replace('playlist:','')}`
-: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
 
 let card=document.createElement("div");
 
@@ -658,7 +646,7 @@ musicList.forEach(video=>{
 
 let thumb = video.id.startsWith('playlist:')
 ? `https://img.youtube.com/vi/${video.id.replace('playlist:','')}/hqdefault.jpg`
-: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
 
 let card=document.createElement("div");
 
