@@ -106,8 +106,7 @@ display:none;
 
         .video-card{
 min-width:280px;
-max-width:340px;
-width:100%;
+max-width:280px;
 padding:14px;
 border-radius:18px;
 background:rgba(255,255,255,0.08);
@@ -328,7 +327,8 @@ width:260px;
 .popup-btns{
 margin-top:20px;
 display:flex;
-justify-content:space-between;
+justify-content:center;
+gap:10px;
 }
 
 .popup-btns button{
@@ -467,7 +467,7 @@ videos=[];
         if (videoID) {
             // Check for duplicates
             if (videos.some(v => v.id === videoID)) {
-                showError();
+                alert("This video is already in your playlist");
                 return;
             }
             videos.push({
@@ -478,8 +478,8 @@ subject:subject
             saveAndRender();
             input.value = "";
         } else {
-            alert("Please enter a valid YouTube link.");
-        }
+showError();
+}
     }
 
     let deleteIndex=null;
