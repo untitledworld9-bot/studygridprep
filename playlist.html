@@ -73,17 +73,29 @@ width:100%;
             box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
         }
 
-        .add-btn {
-            background: #00f2fe;
-            color: #000;
-            padding: 0 30px;
-            border-radius: 30px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            height: 50px;
-            flex-grow: 0;
-        }
+        .add-btn{
+background:#00f2fe;
+color:#000;
+padding:0 30px;
+border-radius:30px;
+border:none;
+font-weight:bold;
+cursor:pointer;
+height:50px;
+position:relative;
+overflow:hidden;
+transition:0.3s;
+box-shadow:0 0 12px rgba(0,242,254,0.6);
+}
+
+.add-btn:hover{
+transform:scale(1.05);
+box-shadow:0 0 25px rgba(0,242,254,1);
+}
+
+.add-btn:active{
+transform:scale(0.95);
+}
 
         /* Video Grid Fix */
         .video-row{
@@ -107,12 +119,23 @@ display:none;
         .video-card{
 min-width:280px;
 max-width:280px;
+width:100%;
 padding:14px;
 border-radius:18px;
 background:rgba(255,255,255,0.08);
 backdrop-filter:blur(10px);
 flex-shrink:0;
 scroll-snap-align:start;
+transition:transform 0.25s, box-shadow 0.25s;
+}
+
+.video-card:hover{
+transform:translateY(-6px) scale(1.02);
+box-shadow:0 12px 30px rgba(0,0,0,0.4);
+}
+
+.video-card:active{
+transform:scale(0.97);
 }
 
         .complete-btn {
@@ -249,6 +272,12 @@ color:white;
 background:rgba(0,0,0,0.5);
 border-radius:50%;
 padding:10px 14px;
+transition:0.25s;
+}
+
+.video-card:hover .play-overlay{
+transform:translate(-50%,-50%) scale(1.2);
+background:rgba(0,0,0,0.7);
 }
 
 .progress-bar{
@@ -407,7 +436,7 @@ margin:auto;
 
 <div id="errorPopup" class="remove-popup">
 <div class="popup-box">
-<p>Please enter a valid YouTube link</p>
+<p id="errorText">Please enter a valid YouTube link</p>
 
 <div class="popup-btns">
 <button onclick="closeError()">OK</button>
@@ -467,7 +496,7 @@ videos=[];
         if (videoID) {
             // Check for duplicates
             if (videos.some(v => v.id === videoID)) {
-                alert("This video is already in your playlist");
+                showError("This video is already in your playlist");
                 return;
             }
             videos.push({
@@ -478,7 +507,7 @@ subject:subject
             saveAndRender();
             input.value = "";
         } else {
-showError();
+showError("Please enter a valid YouTube link");
 }
     }
 
@@ -768,7 +797,8 @@ function goHome(){
 window.location.href="index.html";
 }
 
-function showError(){
+function showError(msg){
+document.getElementById("errorText").innerText = msg;
 document.getElementById("errorPopup").style.display="flex";
 }
 
