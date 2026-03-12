@@ -192,6 +192,81 @@ transition:transform 0.2s, box-shadow 0.2s;
 transform:scale(1.08);
 box-shadow:0 0 25px rgba(255,0,0,0.9);
 }
+
+.subject-select{
+height:50px;
+border-radius:30px;
+border:none;
+padding:0 15px;
+font-weight:600;
+background:white;
+color:#333;
+}
+
+.subject-section{
+margin-top:35px;
+text-align:left;
+}
+
+.subject-title{
+font-size:18px;
+margin-bottom:10px;
+color:#00f2fe;
+}
+
+.horizontal-row{
+display:flex;
+overflow-x:auto;
+gap:15px;
+padding-bottom:10px;
+scroll-snap-type:x mandatory;
+}
+
+.horizontal-row::-webkit-scrollbar{
+display:none;
+}
+
+.video-card{
+min-width:260px;
+scroll-snap-align:start;
+}
+
+.thumbnail{
+position:relative;
+border-radius:12px;
+overflow:hidden;
+}
+
+.thumbnail img{
+width:100%;
+display:block;
+}
+
+.play-overlay{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:40px;
+color:white;
+background:rgba(0,0,0,0.5);
+border-radius:50%;
+padding:10px 14px;
+}
+
+.progress-bar{
+height:5px;
+background:#333;
+margin-top:6px;
+border-radius:5px;
+overflow:hidden;
+}
+
+.progress{
+height:100%;
+background:#00f2fe;
+width:0%;
+}
     </style>
 </head>
 
@@ -209,6 +284,11 @@ box-shadow:0 0 25px rgba(255,0,0,0.9);
 <button class="yt-open" onclick="openYouTube()" title="Open YouTube">▶</button>
 </div>
 
+<select id="subjectSelect" class="subject-select">
+<option value="Physics">Physics</option>
+<option value="Chemistry">Chemistry</option>
+<option value="Maths">Maths</option>
+</select>
             <button class="add-btn" onclick="addVideo()">+ Add to List</button>
         </div>
     </div>
@@ -256,6 +336,7 @@ box-shadow:0 0 25px rgba(255,0,0,0.9);
         let input = document.getElementById("ytLink");
         let url = input.value.trim();
         let videoID = extractVideoID(url);
+        let subject = document.getElementById("subjectSelect").value;
 
         if (videoID) {
             // Check for duplicates
@@ -263,7 +344,11 @@ box-shadow:0 0 25px rgba(255,0,0,0.9);
                 alert("This video is already in your playlist!");
                 return;
             }
-            videos.push({ id: videoID, completed: false });
+            videos.push({
+id: videoID,
+completed:false,
+subject:subject
+});
             saveAndRender();
             input.value = "";
         } else {
@@ -285,36 +370,81 @@ box-shadow:0 0 25px rgba(255,0,0,0.9);
         saveAndRender();
     }
 
-    function saveAndRender() {
-        localStorage.setItem("myVideos", JSON.stringify(videos));
-        let container = document.getElementById("videoContainer");
-        container.innerHTML = "";
+    function saveAndRender(){
 
-        if (videos.length === 0) {
-            container.innerHTML = "<p style='opacity:0.5; grid-column: 1/-1;'>No videos added yet. Start learning!</p>";
-        }
+localStorage.setItem("myVideos", JSON.stringify(videos));
 
-        videos.forEach((video, index) => {
-            let isDone = video.completed ? "active" : "";
-            let btnText = video.completed ? "Completed ✔" : "Mark as Finished";
-            
-            // Embed URL logic
-            let embedURL = video.id.startsWith('playlist:') 
-                ? `https://www.youtube.com/embed/videoseries?list=${video.id.replace('playlist:','')}`
-                : `https://www.youtube.com/embed/${video.id}`;
+let container = document.getElementById("videoContainer");
+container.innerHTML="";
 
-            let html = `
-                <div class="video-card">
-                    <div class="iframe-container">
-                        <iframe src="${embedURL}" loading="lazy" allowfullscreen></iframe>
-                    </div>
-                    <button class="complete-btn ${isDone}" onclick="toggleComplete(${index})">${btnText}</button>
-                    <button class="remove-link" onclick="deleteVideo(${index})">Remove Video</button>
-                </div>
-            `;
-            container.innerHTML += html;
-        });
-    }
+if(videos.length===0){
+
+container.innerHTML="<p style='opacity:0.5;'>No videos added yet. Start learning!</p>";
+return;
+
+}
+
+const subjects=["Physics","Chemistry","Maths"];
+
+subjects.forEach(sub=>{
+
+const list = videos.filter(v=>v.subject===sub);
+
+if(list.length===0) return;
+
+let section=document.createElement("div");
+section.className="subject-section";
+
+section.innerHTML=`
+<div class="subject-title">${sub}</div>
+<div class="horizontal-row" id="row-${sub}"></div>
+`;
+
+container.appendChild(section);
+
+let row = section.querySelector(".horizontal-row");
+
+list.forEach((video,index)=>{
+
+let embedURL = video.id.startsWith('playlist:')
+? `https://www.youtube.com/embed/videoseries?list=${video.id.replace('playlist:','')}`
+: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+
+let card=document.createElement("div");
+
+card.className="video-card";
+
+card.innerHTML=`
+
+<div class="thumbnail" onclick="playVideo('${video.id}',this)">
+
+<img src="${embedURL}">
+
+<div class="play-overlay">▶</div>
+
+</div>
+
+<div class="progress-bar">
+<div class="progress" style="width:${video.completed?100:0}%"></div>
+</div>
+
+<button class="complete-btn ${video.completed?'active':''}" onclick="toggleComplete(${videos.indexOf(video)})">
+${video.completed?"Completed ✔":"Mark Complete"}
+</button>
+
+<button class="remove-link" onclick="deleteVideo(${videos.indexOf(video)})">
+Remove Video
+</button>
+
+`;
+
+row.appendChild(card);
+
+});
+
+});
+
+}
 
     function updateGraph(val) {
         let day = new Date().getDay();
@@ -329,6 +459,16 @@ box-shadow:0 0 25px rgba(255,0,0,0.9);
 
     // Initial Load
     window.onload = saveAndRender;
+
+    function playVideo(id,el){
+
+let embed = id.startsWith("playlist:")
+? `https://www.youtube.com/embed/videoseries?list=${id.replace('playlist:','')}`
+: `https://www.youtube.com/embed/${id}?autoplay=1`;
+
+el.innerHTML=`<iframe src="${embed}" allowfullscreen></iframe>`;
+
+}
 </script>
 
 </body>
