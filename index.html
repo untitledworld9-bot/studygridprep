@@ -1095,6 +1095,105 @@ max-width:900px;
   font-size: 16px;
 }
 
+/* --- DAILY STREAK CARD (EDTECH STYLE) --- */
+.daily-streak-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 15px 20px;
+  margin: 10px auto 25px auto;
+  max-width: 360px;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.streak-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.streak-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.streak-progress {
+  font-size: 13px;
+  color: #a4b0be;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.streak-bar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding: 0 5px;
+}
+
+.streak-line {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-50%);
+  z-index: 0;
+  border-radius: 5px;
+}
+
+.streak-line-fill {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  height: 3px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  transform: translateY(-50%);
+  z-index: 0;
+  width: 0%; /* JS se control hoga */
+  transition: width 0.6s ease-in-out;
+  border-radius: 5px;
+}
+
+.streak-step {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  background: #1a2a30;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  transition: 0.3s ease;
+}
+
+.streak-step.completed {
+  border-color: #00f2fe;
+  color: #00f2fe;
+  background: rgba(0, 242, 254, 0.1);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+}
+
+.streak-step.target {
+  border-color: #ff9f43;
+  color: #ff9f43;
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -1190,6 +1289,26 @@ Install App 📲
   </section>
 
 <section class="pwa-home" id="pwaHome">
+
+<div class="daily-streak-card">
+    <div class="streak-header">
+      <div class="streak-title">
+        <i class="fa-solid fa-fire" style="color: #ff9f43; font-size: 18px;"></i> Daily Goal
+      </div>
+      <div class="streak-progress">
+        (<span id="dailyXpDisplay">0</span>/10 XP) <i class="fa-solid fa-circle-chevron-right"></i>
+      </div>
+    </div>
+    
+    <div class="streak-bar-container">
+      <div class="streak-line"></div>
+      <div class="streak-line-fill" id="streakFill"></div>
+      
+      <div class="streak-step completed" id="step0"><i class="fa-solid fa-play"></i></div>
+      <div class="streak-step" id="step5"><i class="fa-solid fa-bolt"></i></div>
+      <div class="streak-step target" id="step10"><i class="fa-solid fa-bullseye"></i></div> </div>
+  </div>
+
   <h2 class="start-text">Start Studying 🚀</h2>
 
   <div class="app-box" style="border-color: #00f2fe; background: rgba(0, 242, 254, 0.08);" onclick="location.href='mocktest.html'">
@@ -1972,6 +2091,33 @@ if(isPWA()){
 }
 
 })();
+
+// --- DAILY STREAK PROGRESS LOGIC ---
+window.addEventListener("load", function() {
+  if(isPWA()) {
+    // Playlist.html se dailyXP aayega (default 0)
+    let dailyXP = parseInt(localStorage.getItem("dailyXP")) || 0;
+    
+    document.getElementById("dailyXpDisplay").innerText = dailyXP;
+
+    let fillBar = document.getElementById("streakFill");
+    let step5 = document.getElementById("step5");
+    let step10 = document.getElementById("step10");
+
+    // XP ke hisaab se progress bar aur icons update honge
+    if (dailyXP >= 10) {
+      fillBar.style.width = "100%";
+      step5.classList.add("completed");
+      step10.classList.add("completed");
+      step10.classList.remove("target");
+    } else if (dailyXP >= 5) {
+      fillBar.style.width = "50%";
+      step5.classList.add("completed");
+    } else {
+      fillBar.style.width = "0%";
+    }
+  }
+});
 
 </script>
 
