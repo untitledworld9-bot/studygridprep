@@ -745,23 +745,23 @@ opacity:.7;
 margin-top:2px;
 }
 
-.xp-rank{
-position:absolute;
-
-top:70px;      /* header के नीचे */
-right:18px;
-
-font-size:13px;
-
-background:rgba(255,255,255,0.08);
-
-padding:4px 10px;
-border-radius:10px;
-
-backdrop-filter:blur(8px);
-
-display:inline-block;
-z-index: 10;
+.xp-rank {
+  position: relative;
+  margin: 15px auto 25px auto; /* Center karne ke liye */
+  width: 90%;
+  max-width: 360px; /* Baaki cards ke barabar size */
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  gap: 30px; /* XP aur Rank ke beech ka gap */
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  cursor: pointer;
 }
 
 .contact-line{
@@ -1106,6 +1106,13 @@ max-width:900px;
   max-width: 360px;
   text-align: left;
   box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.daily-streak-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
 .streak-header {
@@ -1194,6 +1201,15 @@ max-width:900px;
   color: #ff9f43;
 }
 
+/* --- SPACING FIX FOR TODAY FOCUS & EDTECH CARD --- */
+#todayFocusCard {
+  margin-bottom: 12px !important; /* Isne Today Focus ke niche ka faltu gap hata diya */
+}
+
+.edtech-section-card {
+  margin-top: 5px !important; /* Isne Edtech card ko thoda upar khiska diya */
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -1257,12 +1273,6 @@ max-width:900px;
 
 <div id="pwaOverlay"></div>
 
-<div id="xpRankBox" class="xp-rank"
-onclick="location.href='leaderboard.html'">
-⭐ XP: <span id="xpValue">0</span>
-🏆 Rank: <span id="rankValue">--</span>
-</div>
-
 <section class="hero">
 <h2>Welcome To Untitled World</h2>
 <p class="hero-sub">Smart Study Platform</p>
@@ -1290,7 +1300,13 @@ Install App 📲
 
 <section class="pwa-home" id="pwaHome">
 
-<div class="daily-streak-card">
+<div id="xpRankBox" class="xp-rank"
+onclick="location.href='leaderboard.html'">
+⭐ XP: <span id="xpValue">0</span>
+🏆 Rank: <span id="rankValue">--</span>
+</div>
+
+<div class="daily-streak-card" onclick="location.href='playlist.html'">
     <div class="streak-header">
       <div class="streak-title">
         <i class="fa-solid fa-fire" style="color: #ff9f43; font-size: 18px;"></i> Daily Goal
@@ -1303,10 +1319,10 @@ Install App 📲
     <div class="streak-bar-container">
       <div class="streak-line"></div>
       <div class="streak-line-fill" id="streakFill"></div>
-      
       <div class="streak-step completed" id="step0"><i class="fa-solid fa-play"></i></div>
       <div class="streak-step" id="step5"><i class="fa-solid fa-bolt"></i></div>
-      <div class="streak-step target" id="step10"><i class="fa-solid fa-bullseye"></i></div> </div>
+      <div class="streak-step target" id="step10"><i class="fa-solid fa-bullseye"></i></div>
+    </div>
   </div>
 
   <h2 class="start-text">Start Studying 🚀</h2>
@@ -2092,25 +2108,34 @@ if(isPWA()){
 
 })();
 
-// --- DAILY STREAK PROGRESS LOGIC ---
+// --- DAILY STREAK PROGRESS LOGIC (index.html) ---
 window.addEventListener("load", function() {
   if(isPWA()) {
-    // Playlist.html se dailyXP aayega (default 0)
-    let dailyXP = parseInt(localStorage.getItem("dailyXP")) || 0;
-    
-    document.getElementById("dailyXpDisplay").innerText = dailyXP;
+    let today = new Date().toDateString();
+    let savedDate = localStorage.getItem("dailyXPDate");
+    let dailyXP = 0;
+
+    // Check karo ki XP aaj ka hai ya purana
+    if (savedDate === today) {
+        dailyXP = parseInt(localStorage.getItem("dailyXP")) || 0;
+    } else {
+        localStorage.setItem("dailyXP", 0);
+        localStorage.setItem("dailyXPDate", today);
+    }
+
+    let displayXP = dailyXP > 10 ? 10 : dailyXP; // Max 10 dikhayega
+    document.getElementById("dailyXpDisplay").innerText = displayXP;
 
     let fillBar = document.getElementById("streakFill");
     let step5 = document.getElementById("step5");
     let step10 = document.getElementById("step10");
 
-    // XP ke hisaab se progress bar aur icons update honge
-    if (dailyXP >= 10) {
+    if (displayXP >= 10) {
       fillBar.style.width = "100%";
       step5.classList.add("completed");
       step10.classList.add("completed");
       step10.classList.remove("target");
-    } else if (dailyXP >= 5) {
+    } else if (displayXP >= 5) {
       fillBar.style.width = "50%";
       step5.classList.add("completed");
     } else {
