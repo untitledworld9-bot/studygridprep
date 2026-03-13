@@ -385,6 +385,61 @@ margin:auto;
 }
 
 }
+
+.success-popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999999;
+}
+
+.success-box{
+background:#1e2f36;
+padding:30px;
+border-radius:16px;
+text-align:center;
+width:280px;
+animation:scalePop 0.25s ease;
+}
+
+@keyframes scalePop{
+0%{transform:scale(0.6);opacity:0}
+100%{transform:scale(1);opacity:1}
+}
+
+.success-circle{
+width:70px;
+height:70px;
+border-radius:50%;
+border:4px solid #2ecc71;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:auto;
+margin-bottom:12px;
+animation:spinTick 0.5s ease;
+}
+
+@keyframes spinTick{
+0%{transform:rotate(-180deg) scale(0.5);opacity:0}
+100%{transform:rotate(0) scale(1);opacity:1}
+}
+
+.success-circle span{
+font-size:32px;
+color:#2ecc71;
+}
+
+.success-text{
+font-size:15px;
+opacity:0.9;
+}
     </style>
 </head>
 
@@ -441,6 +496,18 @@ margin:auto;
 <div class="popup-btns">
 <button onclick="closeError()">OK</button>
 </div>
+
+</div>
+</div>
+
+<div id="successPopup" class="success-popup">
+<div class="success-box">
+
+<div class="success-circle">
+<span>✔</span>
+</div>
+
+<p class="success-text" id="successText"></p>
 
 </div>
 </div>
@@ -505,6 +572,7 @@ completed:false,
 subject:subject
 });
             saveAndRender();
+            showSuccess(subject);
             input.value = "";
         } else {
 showError("Please enter a valid YouTube link");
@@ -807,6 +875,22 @@ document.getElementById("errorPopup").style.display="flex";
 
 function closeError(){
 document.getElementById("errorPopup").style.display="none";
+}
+
+function showSuccess(subject){
+
+let text = "Video successfully added in your " + subject + " Playlist";
+
+document.getElementById("successText").innerText = text;
+
+let pop = document.getElementById("successPopup");
+
+pop.style.display="flex";
+
+setTimeout(()=>{
+pop.style.display="none";
+},500);
+
 }
 
 setInterval(()=>{
