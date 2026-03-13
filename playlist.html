@@ -519,6 +519,26 @@ opacity:0;
 }
 
 }
+
+.stats-box{
+display:flex;
+gap:10px;
+}
+
+#xpBox{
+background:rgba(0,200,255,0.15);
+padding:6px 12px;
+border-radius:20px;
+font-size:16px;
+font-weight:600;
+color:#00e5ff;
+animation:xpGlow 1.5s infinite alternate;
+}
+
+@keyframes xpGlow{
+from{box-shadow:0 0 5px #00e5ff;}
+to{box-shadow:0 0 15px #00e5ff;}
+}
     </style>
 </head>
 
@@ -527,7 +547,12 @@ opacity:0;
 <section class="study-section">
     <h2 class="playlist-title">
 My Study Playlist
+
+<div style="display:flex; gap:8px;">
 <span id="streakBox">🔥 0</span>
+<span id="xpBox">⚡ 0</span>
+</div>
+
 </h2>
 
     <div class="input-container">
@@ -918,7 +943,9 @@ xp += 10;
 
 localStorage.setItem("xpPoints", xp);
 
-showXP(xp);
+renderXP();   // header XP update
+
+showXP(xp);   // +10 XP animation
 
 }
 
@@ -946,6 +973,7 @@ box.remove();
     window.onload = ()=>{
 saveAndRender();
 renderStreak();
+renderXP();
 }
 
     function playVideo(id,el){
@@ -1098,6 +1126,10 @@ if(index>=0 && !videos[index].completed){
 
 videos[index].completed=true;
 
+addXP(); 
+
+updateDailyStreak();  // streak update
+
 saveAndRender();
 
 }
@@ -1111,6 +1143,16 @@ saveAndRender();
 }
 
 });
+
+function renderXP(){
+
+let xp = localStorage.getItem("xpPoints") || 0;
+
+let box = document.getElementById("xpBox");
+
+if(box) box.innerText = "⚡ " + xp;
+
+}
 
 </script>
 
