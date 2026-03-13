@@ -456,6 +456,10 @@ border-radius:20px;
 font-size:16px;
 font-weight:600;
 color:#ff7a00;
+
+min-width:60px;
+text-align:center;
+
 animation:fireGlow 1.5s infinite alternate;
 }
 
@@ -532,6 +536,10 @@ border-radius:20px;
 font-size:16px;
 font-weight:600;
 color:#00e5ff;
+
+min-width:70px;        /* size fix */
+text-align:center;
+
 animation:xpGlow 1.5s infinite alternate;
 }
 
@@ -1128,13 +1136,14 @@ if(index>=0 && !videos[index].completed){
 
 videos[index].completed=true;
 
-addXP();
+updateGraph(1);
 
-updateDailyStreak();
-
-showXP();
+addXP();          // ⚡ popup
+updateDailyStreak();   // 🔥 popup
 
 saveAndRender();
+
+playNext();       // ▶ next video autoplay
 
 }
 
