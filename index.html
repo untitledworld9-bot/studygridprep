@@ -915,6 +915,88 @@ max-width:900px;
   }
 }
 
+/* --- EDTECH UNIFIED CARD (PWA ONLY) --- */
+.edtech-section-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 360px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.app-box.playlist-box {
+  border-color: #ff4757;
+  background: rgba(255, 71, 87, 0.08);
+  margin: 0 auto 20px auto; /* Niche wale grid se gap */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px;
+}
+
+.playlist-title {
+  color: #ff4757;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playlist-sub {
+  color: #fff;
+  font-size: 11px;
+  font-weight: normal;
+  margin-top: 5px;
+  opacity: 0.8;
+}
+
+.pwa-tools-grid {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 20px;
+}
+
+.tool-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.2s;
+  text-decoration: none;
+}
+
+.tool-item:hover {
+  transform: scale(1.05);
+}
+
+.tool-icon {
+  font-size: 26px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.08);
+  padding: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.tool-item span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Bottom Nav Icons Fix */
+.pwa-bottom-nav a i {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
 /* --- CSS END --- */
 </style>
 </head>
@@ -961,7 +1043,7 @@ max-width:900px;
 
 <a href="timer.html">⏳ Smart Focus Timer</a>
 
-<a href="playlist.html">▶️ Your Study Playlist</a>
+<a href="playlist.html">▶️ Study Playlist</a>
 
 <a href="leaderboard.html">🏆 Leaderboard</a>
 
@@ -1020,43 +1102,44 @@ Install App 📲
   </section>
 
 <section class="pwa-home" id="pwaHome">
+  <h2 class="start-text">Start Studying 🚀</h2>
 
-<h2 class="start-text">Start Studying 🚀</h2>
+  <div class="app-box" onclick="location.href='mocktest.html'">
+  📝 Mock Test Platform
+  </div>
 
-<div class="app-box" onclick="location.href='mocktest.html'">
-📝 Mock Test Platform
-</div>
+  <div class="app-box focus" onclick="location.href='timer.html'">
+  🤓 Smart Focus Timer ⏳
+  </div>
 
-<div class="app-box focus" onclick="location.href='timer.html'">
-🤓 Smart Focus Timer ⏳
-</div>
-
-<div id="todayFocusCard" class="today-focus-mini">
-🔥 Today Focus • <span id="todayFocusValue">0m</span>
-</div>
-
+  <div id="todayFocusCard" class="today-focus-mini">
+  🔥 Today Focus • <span id="todayFocusValue">0m</span>
+  </div>
 </section>
 
 <section class="pwa-dashboard" id="pwaDashboard">
+  
+  <div class="edtech-section-card">
+    
+    <div class="app-box playlist-box" onclick="location.href='playlist.html'">
+      <div class="playlist-title">
+        <i class="fa-brands fa-youtube" style="color: red; font-size: 20px; margin-right: 6px;"></i> My Study Playlist
+      </div>
+      <div class="playlist-sub">Paste yt video URL subject wise & learn</div>
+    </div>
 
-<div class="pwa-card" onclick="location.href='playlist.html'">
-<h3>
-<i class="fa-brands fa-youtube" style="color:red;font-size:28px;margin-right:8px;"></i>
-Study by Adding YT Videos
-</h3>
+    <div class="pwa-tools-grid">
+      <div class="tool-item" onclick="location.href='focus.html'">
+        <i class="fa-solid fa-stopwatch tool-icon" style="color: #ff9f43;"></i>
+        <span>Timer</span>
+      </div>
+      <div class="tool-item" onclick="location.href='progress.html'">
+        <i class="fa-solid fa-chart-simple tool-icon" style="color: #10ac84;"></i>
+        <span>Weekly Analysis</span>
+      </div>
+    </div>
 
-<p>Paste YouTube links & create your study playlist</p>
-</div>
-
-<div class="pwa-card" onclick="location.href='focus.html'">
-<h3>Timer</h3>
-<p>Solve with countdown timer</p>
-</div>
-
-<div class="pwa-card" onclick="location.href='progress.html'">
-<h3>📊 Weekly Analysis</h3>
-<p>Track your study progress & video complete history</p>
-</div>
+  </div>
 
   <div class="follow-section">
     <p>Follow us on</p>
@@ -1158,33 +1241,30 @@ Study by Adding YT Videos
 
 <div id="pwaBottomNav" class="pwa-bottom-nav">
 
-<a href="index.html">
-🔳
-<span>Home</span>
-</a>
+  <a href="index.html">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </a>
 
-<a href="mocktest.html">
-📝
-<span>Mock Test</span>
-</a>
+  <a href="mocktest.html">
+    📝
+    <span>Mock Test</span>
+  </a>
 
-<a href="timer.html">
-⏳
-<span>Focus</span>
-</a>
+  <a href="timer.html">
+    <i class="fa-solid fa-stopwatch"></i>
+    <span>Focus</span>
+  </a>
 
-<a href="playlist.html">
+  <a href="playlist.html">
+    <i class="fa-brands fa-youtube" style="color:red;font-size:16px;"></i>
+    <span>Playlist</span>
+  </a>
 
-<i class="fa-brands fa-youtube" style="color:red;font-size:16px;margin-right:5px;"></i>
-
-<span>Playlist</span>
-
-</a>
-
-<a onclick="location.href='profile.html'">
-👤
-<span>Profile</span>
-</a>
+  <a onclick="location.href='profile.html'">
+    <i class="fa-regular fa-user"></i>
+    <span>Profile</span>
+  </a>
 
 </div>
 
