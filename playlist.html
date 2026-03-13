@@ -713,18 +713,20 @@ closePopup();
 
 }
 
-    function toggleComplete(index) {
+    function toggleComplete(index){
 
-        videos[index].completed = !videos[index].completed;
-        updateGraph(videos[index].completed ? 1 : -1);
+if(videos[index].completed) return;  // already completed
 
-if(videos[index].completed){
+videos[index].completed=true;
+
+updateGraph(1);
+
 addXP();
 updateDailyStreak();
-}
 
-        saveAndRender();
-    }
+saveAndRender();
+
+}
 
     function saveAndRender(){
 
@@ -937,19 +939,19 @@ fire.remove();
 
 function addXP(){
 
-let xp = parseInt(localStorage.getItem("xpPoints") || 0);
+let xp=parseInt(localStorage.getItem("xpPoints")||0);
 
-xp += 10;
+xp+=10;
 
-localStorage.setItem("xpPoints", xp);
+localStorage.setItem("xpPoints",xp);
 
-renderXP();   // header XP update
+renderXP();
 
-showXP(xp);   // +10 XP animation
+showXP();
 
 }
 
-function showXP(xp){
+function showXP(){
 
 let box=document.createElement("div");
 
@@ -1126,9 +1128,11 @@ if(index>=0 && !videos[index].completed){
 
 videos[index].completed=true;
 
-addXP(); 
+addXP();
 
-updateDailyStreak();  // streak update
+updateDailyStreak();
+
+showXP();
 
 saveAndRender();
 
