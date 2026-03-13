@@ -547,21 +547,157 @@ animation:xpGlow 1.5s infinite alternate;
 from{box-shadow:0 0 5px #00e5ff;}
 to{box-shadow:0 0 15px #00e5ff;}
 }
+
+.playlist-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.playlist-title{
+font-size:28px;
+font-weight:700;
+color:#00f2fe;
+}
+
+.stats-box{
+display:flex;
+gap:6px;
+}
+
+#streakBox,
+#xpBox{
+padding:5px 10px;
+border-radius:14px;
+font-size:14px;
+font-weight:600;
+min-width:45px;
+text-align:center;
+}
+
+#streakBox{
+background:rgba(255,120,0,0.15);
+color:#ff7a00;
+box-shadow:0 0 10px rgba(255,120,0,0.6);
+}
+
+#xpBox{
+background:rgba(0,200,255,0.15);
+color:#00e5ff;
+box-shadow:0 0 10px rgba(0,200,255,0.6);
+}
+
+/* XP progress bar */
+
+.xp-progress{
+width:100%;
+height:5px;
+background:rgba(255,255,255,0.15);
+border-radius:10px;
+margin-top:6px;
+overflow:hidden;
+}
+
+.xp-bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#00e5ff,#00f2fe);
+transition:width 0.5s ease;
+}
+
+/* streak pulse animation */
+
+#streakBox{
+animation:streakPulse 1.6s infinite;
+}
+
+@keyframes streakPulse{
+0%{transform:scale(1)}
+50%{transform:scale(1.08)}
+100%{transform:scale(1)}
+}
+
+.badge-box{
+margin-top:8px;
+font-size:14px;
+font-weight:600;
+color:#ffd700;
+background:rgba(255,215,0,0.1);
+padding:4px 10px;
+border-radius:12px;
+display:inline-block;
+box-shadow:0 0 10px rgba(255,215,0,0.4);
+}
+
+.badge-box{
+margin-top:8px;
+font-size:14px;
+font-weight:600;
+color:#ffd700;
+background:rgba(255,215,0,0.1);
+padding:4px 10px;
+border-radius:12px;
+display:inline-block;
+box-shadow:0 0 10px rgba(255,215,0,0.4);
+}
+
+.badge-popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999999;
+}
+
+.badge-content{
+background:#1e2f36;
+padding:30px;
+border-radius:16px;
+text-align:center;
+animation:badgeScale 0.4s ease;
+}
+
+.badge-icon{
+font-size:50px;
+margin-bottom:10px;
+}
+
+@keyframes badgeScale{
+0%{transform:scale(0.5);opacity:0}
+100%{transform:scale(1);opacity:1}
+}
     </style>
 </head>
 
 <body>
 
 <section class="study-section">
-    <h2 class="playlist-title">
-My Study Playlist
+    <div class="playlist-header">
 
-<div style="display:flex; gap:8px;">
+<h2 class="playlist-title">My Study Playlist</h2>
+
+<div class="stats-box">
 <span id="streakBox">🔥 0</span>
 <span id="xpBox">⚡ 0</span>
 </div>
 
-</h2>
+</div>
+
+<div class="xp-progress">
+<div class="xp-bar" id="xpBar"></div>
+</div>
+
+<div class="badge-box" id="badgeBox">
+🏅 Beginner
+</div>
+
+<span id="levelBox">🏆 Lv1</span>
 
     <div class="input-container">
         <input type="text" id="ytLink" placeholder="Paste YouTube Video URL or Playlist URL"> 
@@ -984,6 +1120,8 @@ box.remove();
 saveAndRender();
 renderStreak();
 renderXP();
+renderLevel();
+updateBadge();
 }
 
     function playVideo(id,el){
@@ -1159,11 +1297,101 @@ playNext();       // ▶ next video autoplay
 
 function renderXP(){
 
-let xp = localStorage.getItem("xpPoints") || 0;
+let xp = parseInt(localStorage.getItem("xpPoints") || 0);
 
 let box = document.getElementById("xpBox");
 
-if(box) box.innerText = "⚡ " + xp;
+if(box){
+box.innerText = "⚡ " + xp;
+}
+
+updateXPBar();
+updateBadge();
+
+}
+
+function updateXPBar(){
+
+let xp = parseInt(localStorage.getItem("xpPoints") || 0);
+
+let levelXP = xp % 100;
+
+let percent = (levelXP/100)*100;
+
+let bar = document.getElementById("xpBar");
+
+if(bar){
+bar.style.width = percent + "%";
+}
+
+}
+
+function getLevel(){
+
+let xp = parseInt(localStorage.getItem("xpPoints") || 0);
+
+return Math.floor(xp/100)+1;
+
+}
+
+function renderLevel(){
+
+let level = getLevel();
+
+let box = document.getElementById("levelBox");
+
+if(box){
+box.innerText="🏆 Lv"+level;
+}
+
+}
+
+function updateBadge(){
+
+let xp=parseInt(localStorage.getItem("xpPoints")||0);
+
+let badge="🏅 Beginner";
+
+if(xp>=500){
+badge="🏆 Untitled Champion";
+}
+else if(xp>=300){
+badge="⚡ Study Master";
+}
+else if(xp>=150){
+badge="🔥 Focused Learner";
+}
+else if(xp>=50){
+badge="⭐ Rising Learner";
+}
+
+let oldBadge=localStorage.getItem("userBadge");
+
+if(oldBadge!==badge){
+localStorage.setItem("userBadge",badge);
+showBadgePopup("New Badge Unlocked: "+badge);
+}
+
+let box=document.getElementById("badgeBox");
+
+if(box){
+box.innerText=badge;
+}
+
+}
+
+function showBadgePopup(text){
+
+let popup=document.getElementById("badgePopup");
+let label=document.getElementById("badgeText");
+
+label.innerText=text;
+
+popup.style.display="flex";
+
+setTimeout(()=>{
+popup.style.display="none";
+},2000);
 
 }
 
@@ -1171,6 +1399,13 @@ if(box) box.innerText = "⚡ " + xp;
 
 <div class="back-home-btn" onclick="goHome()">
 Back
+</div>
+
+<div id="badgePopup" class="badge-popup">
+<div class="badge-content">
+<div class="badge-icon">🏆</div>
+<p id="badgeText">New Badge Unlocked!</p>
+</div>
 </div>
 
 </body>
