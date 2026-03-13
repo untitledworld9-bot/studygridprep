@@ -1123,6 +1123,13 @@ xp+=10;
 
 localStorage.setItem("xpPoints",xp);
 
+let today = new Date().toDateString();
+  let savedDate = localStorage.getItem("dailyXPDate");
+  let dailyXP = (savedDate === today) ? parseInt(localStorage.getItem("dailyXP")||0) : 0;
+  dailyXP += 10;
+  localStorage.setItem("dailyXP", dailyXP);
+  localStorage.setItem("dailyXPDate", today);
+
 renderXP();
 
 showXP();
