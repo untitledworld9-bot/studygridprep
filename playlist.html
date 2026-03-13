@@ -440,13 +440,55 @@ color:#2ecc71;
 font-size:15px;
 opacity:0.9;
 }
+
+.playlist-title{
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:22px;
+font-weight:700;
+}
+
+#streakBox{
+background:rgba(255,120,0,0.15);
+padding:6px 12px;
+border-radius:20px;
+font-size:16px;
+font-weight:600;
+color:#ff7a00;
+animation:fireGlow 1.5s infinite alternate;
+}
+
+@keyframes fireGlow{
+from{box-shadow:0 0 5px #ff7a00;}
+to{box-shadow:0 0 15px #ff7a00;}
+}
+
+.fire-pop{
+position:fixed;
+top:40%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:42px;
+animation:firePop 0.6s ease;
+z-index:999999;
+}
+
+@keyframes firePop{
+0%{transform:translate(-50%,-50%) scale(0);opacity:0}
+70%{transform:translate(-50%,-50%) scale(1.4)}
+100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+}
     </style>
 </head>
 
 <body>
 
 <section class="study-section">
-    <h2>My Study Playlist</h2>
+    <h2 class="playlist-title">
+My Study Playlist
+<span id="streakBox">🔥 0</span>
+</h2>
 
     <div class="input-container">
         <input type="text" id="ytLink" placeholder="Paste YouTube Video URL or Playlist URL"> 
@@ -607,8 +649,14 @@ closePopup();
 }
 
     function toggleComplete(index) {
+
         videos[index].completed = !videos[index].completed;
         updateGraph(videos[index].completed ? 1 : -1);
+
+if(videos[index].completed){
+updateDailyStreak();
+}
+
         saveAndRender();
     }
 
@@ -772,23 +820,75 @@ musicRow.appendChild(card);
         localStorage.setItem("studyGraphData", JSON.stringify(studyData));
     }
 
+function updateDailyStreak(){
+
+let today = new Date().toDateString();
+
+let last = localStorage.getItem("lastStreakDay");
+
+let count = parseInt(localStorage.getItem("dailyStreak")||0);
+
+if(last===today) return;
+
+count++;
+
+if(count>7) count=1;
+
+localStorage.setItem("dailyStreak",count);
+localStorage.setItem("lastStreakDay",today);
+
+renderStreak();
+
+showFire();
+
+}
+
+function renderStreak(){
+
+let count = localStorage.getItem("dailyStreak") || 0;
+
+let box=document.getElementById("streakBox");
+
+if(box) box.innerText="🔥 "+count;
+
+}
+
+function showFire(){
+
+let fire=document.createElement("div");
+
+fire.className="fire-pop";
+
+fire.innerText="🔥";
+
+document.body.appendChild(fire);
+
+setTimeout(()=>{
+fire.remove();
+},600);
+
+}
+
     function openYouTube() {
         window.open("https://www.youtube.com", "_blank");
     }
 
     // Initial Load
-    window.onload = saveAndRender;
+    window.onload = ()=>{
+saveAndRender();
+renderStreak();
+}
 
     function playVideo(id,el){
 
 let saved = localStorage.getItem("time_"+id) || 0;
 
 let embed = id.startsWith("playlist:")
-? `https://www.youtube.com/embed/videoseries?list=${id.replace('playlist:','')}&autoplay=1&enablejsapi=1`
-: `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1`;
+? `https://www.youtube.com/embed/videoseries?list=${id.replace('playlist:','')}&autoplay=1&enablejsapi=1&start=${saved}`
+: `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1&start=${saved}`;
 
 el.innerHTML = `
-<iframe id="ytPlayer" src="${embed}" allow="autoplay" allowfullscreen></iframe>
+<iframe id="ytPlayer" src="${embed}&playsinline=1" allow="autoplay" allowfullscreen></iframe>
 `;
 
 document.querySelector(".back-home-btn").style.display="none";
@@ -889,7 +989,7 @@ pop.style.display="flex";
 
 setTimeout(()=>{
 pop.style.display="none";
-},500);
+},1000);
 
 }
 
@@ -902,6 +1002,46 @@ if(!player) return;
 player.contentWindow.postMessage('{"event":"listening"}',"*");
 
 },1000);
+
+window.addEventListener("message",(e)=>{
+
+if(typeof e.data==="string" && e.data.includes("infoDelivery")){
+
+try{
+
+let data = JSON.parse(e.data);
+
+if(data.info){
+
+let current = data.info.currentTime || 0;
+let duration = data.info.duration || 0;
+
+localStorage.setItem(
+"time_"+currentVideo,
+Math.floor(current)
+);
+
+if(duration>0 && current/duration > 0.9){
+
+let index = videos.findIndex(v=>v.id===currentVideo);
+
+if(index>=0 && !videos[index].completed){
+
+videos[index].completed=true;
+
+saveAndRender();
+
+}
+
+}
+
+}
+
+}catch(err){}
+
+}
+
+});
 
 </script>
 
