@@ -551,7 +551,13 @@ localStorage.setItem("myVideos", JSON.stringify(videos));
 let continueRow = document.getElementById("continueRow");
 continueRow.innerHTML="";
 
-const watching = videos.filter(v=>!v.completed);
+let lastVideo = localStorage.getItem("lastVideo");
+
+let watching = videos.filter(v=>!v.completed);
+
+if(lastVideo){
+watching.sort((a,b)=> a.id===lastVideo ? -1 : 1);
+}
 
 watching.forEach(video=>{
 
@@ -720,6 +726,8 @@ el.innerHTML = `
 document.querySelector(".back-home-btn").style.display="none";
 
 currentVideo = id;
+localStorage.setItem("lastVideo", id);
+saveAndRender();
 
 }
 
@@ -811,17 +819,6 @@ if(!player) return;
 player.contentWindow.postMessage('{"event":"listening"}',"*");
 
 },1000);
-
-
-window.addEventListener("message",(e)=>{
-
-if(typeof e.data === "string" && e.data.includes("ended")){
-
-playNext();
-
-}
-
-});
 
 </script>
 
