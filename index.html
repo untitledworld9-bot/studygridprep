@@ -1598,33 +1598,62 @@ document.getElementById("study").scrollIntoView({behavior:"smooth"});
 }
 
 <script>
+// ==========================================
+// 🚀 PWA INSTALL AUTO-DETECT & BUTTON FIX
+// ==========================================
 let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
+const mainInstallBtn = document.getElementById("installBtn");
+const popupInstallBtn = document.getElementById("popupInstallBtn");
 
+// 1. Auto-Detect: Agar app install nahi hai, toh prompt ready rakho aur button dikhao
 window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
+  // Chrome ka default bottom banner rokne ke liye
+  e.preventDefault(); 
   deferredPrompt = e;
-
-  installBtn.style.display = "inline-block";
-});
-
-installBtn.addEventListener("click", async () => {
-
-  installBtn.style.display = "none";
-
-  deferredPrompt.prompt();
-
-  const { outcome } = await deferredPrompt.userChoice;
-
-  if(outcome === "accepted"){
-    console.log("App Installed");
+  
+  // Custom button ko 'Start Learning' ke theek niche dikhao
+  if (mainInstallBtn) {
+    mainInstallBtn.style.display = "inline-block";
   }
-
-  deferredPrompt = null;
 });
 
+// 2. MAIN BUTTON LOGIC ("Start Learning" ke niche wala)
+if (mainInstallBtn) {
+  mainInstallBtn.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt(); // Install popup dikhao
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        mainInstallBtn.style.display = "none"; // Install ho jaye toh button hata do
+      }
+      deferredPrompt = null;
+    }
+  });
+}
+
+// 3. POPUP BUTTON LOGIC (Jo website ke cards tap karne par aata hai)
+if (popupInstallBtn) {
+  popupInstallBtn.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt(); // Prompt trigger karo
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        if(mainInstallBtn) mainInstallBtn.style.display = "none";
+      }
+      deferredPrompt = null;
+      closeFeaturePopup(); // Popup band kardo
+    } else {
+      // Agar browser prevent kar de, ya app already background me installed ho
+      alert("App is either already installed or your browser requires you to install it manually from the menu (⋮) -> 'Install App'.");
+    }
+  });
+}
+
+// 4. JAISE HI APP INSTALL HO JAYE (Auto hide buttons)
 window.addEventListener("appinstalled", () => {
-  installBtn.style.display = "none";
+  console.log("App Successfully Installed!");
+  if (mainInstallBtn) mainInstallBtn.style.display = "none";
+  deferredPrompt = null;
 });
 </script>
 
