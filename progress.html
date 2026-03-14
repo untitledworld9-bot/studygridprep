@@ -6,17 +6,51 @@
     <title>Study Analytics | Untitled World</title>
     <link rel="icon" href="/icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         /* Modern Reset & Smooth Scroll */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        
+
         body {
-            background: radial-gradient(circle at top left, #1e3c72, #2a5298, #0f2027);
+            /* Timer wala same background */
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-analytics-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 32, 39, 0.98);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 9999;
+            padding: 15px 20px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            border-bottom: 1px solid rgba(0, 242, 254, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            margin: 0;
+        }
+
+        .header-title i {
+            color: #00f2fe; /* Premium Cyan Icon */
         }
 
         /* Entrance Animation */
@@ -33,18 +67,11 @@
 
         .graph-section {
             text-align: center;
-            padding: 40px 5%;
+            /* Header se bachne ke liye top padding 100px kar di */
+            padding: 100px 5% 40px 5%;
             max-width: 1000px;
             margin: auto;
             animation: fadeInUp 0.8s ease-out;
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #00f2fe, #4facfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         p.subtitle {
@@ -100,23 +127,26 @@
         /* Mobile Specific */
         @media (max-width: 600px) {
             .chart-box { height: 320px; padding: 15px; }
-            header { padding: 15px 5%; }
+            .graph-section { padding-top: 90px; }
         }
     </style>
 </head>
 
 <body>
 
+<div class="fixed-analytics-header">
+    <h2 class="header-title"><i class="fa-solid fa-chart-simple"></i> Weekly Analytics</h2>
+</div>
+
 <section class="graph-section">
-    <h2>Weekly Analytics 📊</h2>
     <p class="subtitle">Keep track of your consistency and daily goals</p>
-    
+
     <div class="chart-box">
         <canvas id="studyChart"></canvas>
     </div>
 
-    <button class="back-btn" onclick="window.location.href='playlist.html'">
-        ⬅ Back to Study
+    <button class="back-btn" onclick="window.location.href='index.html'">
+        ⬅ Back
     </button>
 </section>
 
@@ -125,7 +155,7 @@
     let studyData = JSON.parse(localStorage.getItem("studyGraphData")) || [0,0,0,0,0,0,0];
 
     const ctx = document.getElementById('studyChart').getContext('2d');
-    
+
     // Creating a Gradient for the bars
     const barGradient = ctx.createLinearGradient(0, 0, 0, 400);
     barGradient.addColorStop(0, '#00f2fe');
