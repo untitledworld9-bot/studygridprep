@@ -51,7 +51,6 @@ const ADMIN_CODE = "7905";
 const ADMIN_EMAILS = [
  "untitledworld9@gmail.com",
  "ayushgupt640@gmail.com"
-];
   // Add additional admin emails here
 ];
 
