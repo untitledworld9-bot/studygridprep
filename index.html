@@ -27,6 +27,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script type="module">
 
 import { initializeApp } from 
@@ -458,7 +459,7 @@ padding:20px 20px 5px 20px;
 
 .pwa-home{
 padding-bottom:0;
-margin-bottom:-80px;
+margin-bottom:-120px;
 }
 
 .start-text{
@@ -2272,7 +2273,16 @@ function closeRatingPopup() {
 // 3. Silent Email Submit Logic
 async function submitAppFeedback() {
     if(selectedRating === 0) {
-        alert("Please select a star rating first!");
+        // Ghatiya alert ki jagah wahi par error dikhayenge
+        const statusText = document.getElementById('ratingStatusText');
+        statusText.innerText = "Please tap a star to rate! ⭐";
+        statusText.style.color = "#ff4757"; // Red error color
+        
+        // Wapas normal white color karne ke liye thodi der baad
+        setTimeout(() => {
+            statusText.style.color = "#fff";
+        }, 2000);
+        
         return;
     }
 
