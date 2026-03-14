@@ -1323,6 +1323,42 @@ max-width:900px;
 }
 .submit-rating-btn:hover { box-shadow: 0 0 15px #00f2fe; }
 .submit-rating-btn:disabled { background: #555; color: #999; cursor: not-allowed; box-shadow: none; }
+
+.rate-promo-card {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid #ffd700;
+  border-radius: 10px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffd700 !important;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+  transition: 0.2s;
+  margin-top: 10px;
+  width: auto;
+}
+
+/* PWA Mode me Header Fix */
+body.pwa-mode header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    background: #0f2027; /* Stable background to avoid blink */
+    padding: 12px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+/* Content ko header ke niche dabne se bachane ke liye */
+body.pwa-mode #pwaHome, 
+body.pwa-mode #pwaDashboard {
+    padding-top: 80px !important; 
+}
 /* --- CSS END --- */
 </style>
 </head>
@@ -1377,6 +1413,10 @@ max-width:900px;
     <a href="https://www.youtube.com/@untitledworld01" target="_blank" class="yt-promo-card">
       <i class="fa-brands fa-youtube"></i> YouTube
     </a><br>
+
+    <a href="javascript:void(0)" onclick="openRatingFromSidebar()" class="rate-promo-card" id="sidebarRateBtn">
+  <i class="fa-solid fa-star"></i> <span id="rateBtnText">Rate Us</span>
+</a><br>   
 
     <a href="contact.html" class="contact-promo-card">
       <i class="fa-solid fa-headset"></i> Contact Us
@@ -2190,13 +2230,38 @@ document.querySelectorAll('.rating-star').forEach(star => {
     });
 });
 
-// 2. Show Popup after 3 minutes of usage
+// Sidebar UI Update function
+function updateRateUI() {
+    if(localStorage.getItem("appRated") === "true") {
+        const btnText = document.getElementById("rateBtnText");
+        const btnLink = document.getElementById("sidebarRateBtn");
+        if(btnText) btnText.innerText = "Submitted ✅";
+        if(btnLink) {
+            btnLink.style.opacity = "0.7";
+            btnLink.style.pointerEvents = "none";
+        }
+    }
+}
+
+// Sidebar click handler
+function openRatingFromSidebar() {
+    if(localStorage.getItem("appRated") === "true") return;
+    document.getElementById('ratingOverlay').style.display = 'flex';
+    closePwaMenu(); 
+}
+
+// 2. Show Popup after 2 minutes of usage & Auto-Update Sidebar
 window.addEventListener('load', () => {
-    if(isPWA() && !localStorage.getItem("appRated")) {
-        // 3 minutes = 180,000 milliseconds
-        setTimeout(() => {
-            document.getElementById('ratingOverlay').style.display = 'flex';
-        }, 180000); 
+    if(isPWA()) {
+        updateRateUI(); // Sidebar text ko check karega
+        
+        if(!localStorage.getItem("appRated")) {
+            setTimeout(() => {
+                if(!localStorage.getItem("appRated")) {
+                    document.getElementById('ratingOverlay').style.display = 'flex';
+                }
+            }, 120000); // 2 minutes me change kar diya
+        }
     }
 });
 
@@ -2239,7 +2304,7 @@ async function submitAppFeedback() {
         if(response.ok) {
             // Success: Save in local storage so it never shows again
             localStorage.setItem("appRated", "true");
-            
+                     updateRateUI();
             // Show Thank You inside the box
             document.querySelector('.rating-box').innerHTML = `
                 <div style="padding: 20px;">
@@ -2249,10 +2314,10 @@ async function submitAppFeedback() {
                 </div>
             `;
             
-            // Auto close after 3 seconds
+            // Auto close after 30 seconds
             setTimeout(() => {
                 document.getElementById('ratingOverlay').style.display = 'none';
-            }, 3000);
+            }, 30000);
         } else {
             alert("Oops! Something went wrong. Please try again.");
             btn.innerText = "Submit Feedback";
@@ -2264,6 +2329,25 @@ async function submitAppFeedback() {
         btn.disabled = false;
     }
 }
+
+// --- PWA HEADER SCROLL EFFECT ---
+window.addEventListener('scroll', () => {
+    // Ye effect sirf PWA app ke andar aayega
+    if (isPWA()) {
+        const header = document.querySelector('header');
+        if (window.scrollY > 15) {
+            // Scroll karne par glass/blur effect
+            header.style.background = 'rgba(15, 32, 39, 0.85)';
+            header.style.backdropFilter = 'blur(12px)';
+            header.style.borderBottom = '1px solid rgba(0, 242, 254, 0.2)';
+        } else {
+            // Top par aane par wapas normal solid color
+            header.style.background = '#0f2027';
+            header.style.backdropFilter = 'none';
+            header.style.borderBottom = 'none';
+        }
+    }
+});
 
 </script>
 
