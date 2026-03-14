@@ -926,24 +926,26 @@ watching.sort((a,b)=> a.id===lastVideo ? -1 : 1);
 }
 
 watching.forEach(video=>{
-
-let thumb = video.id.startsWith("playlist:") ? (video.id.split(":")[2] ? `https://i.ytimg.com/vi/${video.id.split(":")[2]}/hqdefault.jpg` : `https://img.youtube.com/vi/00000000000/hqdefault.jpg`) : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
-
-let card=document.createElement("div");
-
-card.className="video-card";
-
-card.innerHTML=`
-
-<div class="thumbnail" onclick="playVideo('${video.id}',this)">
-<img src="${thumb}">
-<div class="play-overlay">▶</div>
-</div>
-
-`;
-
-continueRow.appendChild(card);
-
+    let card=document.createElement("div");
+    card.className="video-card";
+    
+    if(video.id.startsWith("playlist:")) {
+        let listId = video.id.split(":")[1]; 
+        card.innerHTML=`
+            <div class="thumbnail">
+                <iframe src="https://www.youtube.com/embed/videoseries?list=${listId}" allowfullscreen></iframe>
+            </div>
+        `;
+    } else {
+        let thumb = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+        card.innerHTML=`
+            <div class="thumbnail" onclick="playVideo('${video.id}',this)">
+                <img src="${thumb}">
+                <div class="play-overlay">▶</div>
+            </div>
+        `;
+    }
+    continueRow.appendChild(card);
 });
 
 let container = document.getElementById("videoContainer");
@@ -977,39 +979,39 @@ container.appendChild(section);
 let row = section.querySelector(".horizontal-row");
 
 list.forEach((video,index)=>{
+    let card=document.createElement("div");
+    card.className="video-card";
 
-let embedURL = video.id.startsWith("playlist:") ? (video.id.split(":")[2] ? `https://i.ytimg.com/vi/${video.id.split(":")[2]}/hqdefault.jpg` : `https://img.youtube.com/vi/00000000000/hqdefault.jpg`) : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+    let thumbHTML = "";
+    if(video.id.startsWith("playlist:")) {
+        let listId = video.id.split(":")[1];
+        thumbHTML = `
+            <div class="thumbnail">
+                <iframe src="https://www.youtube.com/embed/videoseries?list=${listId}" allowfullscreen></iframe>
+            </div>
+        `;
+    } else {
+        let thumb = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+        thumbHTML = `
+            <div class="thumbnail" onclick="playVideo('${video.id}',this)">
+                <img src="${thumb}">
+                <div class="play-overlay">▶</div>
+            </div>
+        `;
+    }
 
-let card=document.createElement("div");
-
-card.className="video-card";
-
-card.innerHTML=`
-
-<div class="thumbnail" onclick="playVideo('${video.id}',this)">
-
-<img src="${embedURL}">
-
-<div class="play-overlay">▶</div>
-
-</div>
-
-<div class="progress-bar">
-<div class="progress" style="width:${video.completed?100:0}%"></div>
-</div>
-
-<button class="complete-btn ${video.completed?'active':''}" onclick="toggleComplete(${videos.indexOf(video)})">
-${video.completed?"Completed ✔":"Mark Complete"}
-</button>
-
-<button class="remove-link" onclick="deleteVideo(${videos.indexOf(video)})">
-Remove Video
-</button>
-
-`;
-
-row.appendChild(card);
-
+    card.innerHTML = thumbHTML + `
+        <div class="progress-bar">
+        <div class="progress" style="width:${video.completed?100:0}%"></div>
+        </div>
+        <button class="complete-btn ${video.completed?'active':''}" onclick="toggleComplete(${videos.indexOf(video)})">
+        ${video.completed?"Completed ✔":"Mark Complete"}
+        </button>
+        <button class="remove-link" onclick="deleteVideo(${videos.indexOf(video)})">
+        Remove Video
+        </button>
+    `;
+    row.appendChild(card);
 });
 
 });
@@ -1021,38 +1023,41 @@ musicRow.innerHTML="";
 const musicList = videos.filter(v=>v.subject==="Music");
 
 musicList.forEach(video=>{
+    let card=document.createElement("div");
+    card.className="video-card";
 
-let thumb = video.id.startsWith("playlist:") ? (video.id.split(":")[2] ? `https://i.ytimg.com/vi/${video.id.split(":")[2]}/hqdefault.jpg` : `https://img.youtube.com/vi/00000000000/hqdefault.jpg`) : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+    let thumbHTML = "";
+    if(video.id.startsWith("playlist:")) {
+        let listId = video.id.split(":")[1];
+        thumbHTML = `
+            <div class="thumbnail">
+                <iframe src="https://www.youtube.com/embed/videoseries?list=${listId}" allowfullscreen></iframe>
+            </div>
+        `;
+    } else {
+        let thumb = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+        thumbHTML = `
+            <div class="thumbnail" onclick="playVideo('${video.id}',this)">
+                <img src="${thumb}">
+                <div class="play-overlay">▶</div>
+            </div>
+        `;
+    }
 
-let card=document.createElement("div");
-
-card.className="video-card";
-
-card.innerHTML=`
-
-<div class="thumbnail" onclick="playVideo('${video.id}',this)">
-<img src="${thumb}">
-<div class="play-overlay">▶</div>
-</div>
-
-<div class="progress-bar">
-<div class="progress" style="width:${video.completed?100:0}%"></div>
-</div>
-
-<button class="complete-btn ${video.completed?'active':''}"
-onclick="toggleComplete(${videos.indexOf(video)})">
-${video.completed?"Completed ✔":"Mark Complete"}
-</button>
-
-<button class="remove-link"
-onclick="deleteVideo(${videos.indexOf(video)})">
-Remove Video
-</button>
-
-`;
-
-musicRow.appendChild(card);
-
+    card.innerHTML = thumbHTML + `
+        <div class="progress-bar">
+        <div class="progress" style="width:${video.completed?100:0}%"></div>
+        </div>
+        <button class="complete-btn ${video.completed?'active':''}"
+        onclick="toggleComplete(${videos.indexOf(video)})">
+        ${video.completed?"Completed ✔":"Mark Complete"}
+        </button>
+        <button class="remove-link"
+        onclick="deleteVideo(${videos.indexOf(video)})">
+        Remove Video
+        </button>
+    `;
+    musicRow.appendChild(card);
 });
 
 }
