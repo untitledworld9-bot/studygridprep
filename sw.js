@@ -1,10 +1,10 @@
 // ─── Untitled World – Service Worker ───────────────────────────────────────
 // Strategy:
-//   • Navigation  → Network-first  → offline.html fallback (never ERR_FAILED)
+//   • Navigation  → Network-first  → cache fallback → offline.html fallback
 //   • Static      → Cache-first    → network fallback
 // ────────────────────────────────────────────────────────────────────────────
 
-const CACHE = "uw-cache-v11";          // bump version when assets change
+const CACHE = "uw-cache-v12";          // ← bumped from v11 to force fresh install
 
 const ASSETS = [
   "/",
@@ -28,7 +28,6 @@ self.addEventListener("install", event => {
 
 // ── ACTIVATE ─────────────────────────────────────────────────────────────────
 self.addEventListener("activate", event => {
-  // Delete old cache versions so stale files don't linger
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
@@ -36,7 +35,7 @@ self.addEventListener("activate", event => {
           .filter(key => key !== CACHE)
           .map(key => caches.delete(key))
       )
-    ).then(() => self.clients.claim())  // take control of all open tabs NOW
+    ).then(() => self.clients.claim())
   );
 });
 
@@ -44,29 +43,10 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
 
   // ── Navigation requests (HTML page loads) ──────────────────────────────────
-   if (event.request.mode === "navigate") {
+  if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(async () => {
-        const cache = await caches.open(CACHE);
-        
-                // NAYA LOGIC: Path aur Request dono se match karo taaki koi galti na ho
-        const url = new URL(event.request.url);
-        const cachedPage = await cache.match(url.pathname) || await cache.match(event.request, { ignoreSearch: true });
-        
-        if (cachedPage) {
-          return cachedPage; // Agar save hai, toh bina net ke usi ko khol do!
-        }
-
-        // Agar save nahi hai, tab jaake 'offline.html' dikhao
-        const offline = await cache.match("/offline.html");
-        if (offline) {
-          return new Response(await offline.text(), {
-            headers: { "Content-Type": "text/html" }
-          });
-        }
-
-        return getOfflinePage();
-      })
+      fetch(event.request)
+        .catch(() => serveCachedPageOrOffline(event.request))
     );
     return;
   }
@@ -76,7 +56,6 @@ self.addEventListener("fetch", event => {
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Opportunistically cache successful responses for static assets
         if (response && response.status === 200 && response.type === "basic") {
           const clone = response.clone();
           caches.open(CACHE).then(cache => cache.put(event.request, clone));
@@ -85,13 +64,49 @@ self.addEventListener("fetch", event => {
       });
     })
   );
-
 });
+
+// ── Core helper: serve a navigation request from cache ───────────────────────
+// Uses a 4-layer matching chain so path quirks can never cause a miss.
+async function serveCachedPageOrOffline(request) {
+  const cache = await caches.open(CACHE);
+  const url   = new URL(request.url);
+
+  // ── Layer 1 ─ Exact request match (full URL, as the browser sent it)
+  //    This is the most reliable match; it hits when the URL is identical to
+  //    what cache.addAll() stored (same origin + pathname, no query string).
+  let response = await cache.match(request, { ignoreVary: true });
+  if (response) return response;
+
+  // ── Layer 2 ─ Canonical URL (origin + pathname, query string stripped)
+  //    Guards against cases like /focus.html?v=2 not matching /focus.html.
+  const canonicalUrl = url.origin + url.pathname;
+  response = await cache.match(canonicalUrl, { ignoreVary: true });
+  if (response) return response;
+
+  // ── Layer 3 ─ Pathname resolved against the SW's own origin
+  //    Handles rare browsers that don't resolve bare strings the same way.
+  const resolvedUrl = new URL(url.pathname, self.location.origin).href;
+  response = await cache.match(resolvedUrl, { ignoreVary: true });
+  if (response) return response;
+
+  // ── Layer 4 ─ Trailing-slash variants
+  //    Catches /focus.html/ ↔ /focus.html mismatches.
+  const withoutSlash = url.pathname.replace(/\/$/, "");
+  const withSlash    = withoutSlash + "/";
+  response = await cache.match(new URL(withoutSlash, self.location.origin).href, { ignoreVary: true })
+          || await cache.match(new URL(withSlash,    self.location.origin).href, { ignoreVary: true });
+  if (response) return response;
+
+  // ── Nothing matched → serve offline.html ───────────────────────────────────
+  return getOfflinePage();
+}
 
 // ── Helper: always return a valid Response for the offline page ───────────────
 async function getOfflinePage() {
   const cache  = await caches.open(CACHE);
-  const cached = await cache.match("/offline.html");
+  const cached = await cache.match("/offline.html", { ignoreVary: true })
+              || await cache.match(new URL("/offline.html", self.location.origin).href, { ignoreVary: true });
 
   if (cached) return cached;
 
