@@ -298,38 +298,30 @@ width:0%;
 margin-top:10px;
 }
 
-.back-home-btn{
-position:fixed;
-bottom:20px;
-right:20px;
-
-width:55px;
-height:55px;
-
-background:#00f2fe;
-color:#000;
-
-border-radius:50%;
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-font-size:24px;
-font-weight:bold;
-
-box-shadow:0 0 20px rgba(0,242,254,0.8);
-
-z-index:9999;
-
-cursor:pointer;
-
-transition:0.25s;
+.back-home-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: auto;
+    height: auto;
+    padding: 10px 20px;
+    background: #ff4d4d; /* 2nd screenshot jaisa red color */
+    color: white;
+    border-radius: 8px; /* Rectangular shape with curved edges */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(255, 77, 77, 0.4);
+    z-index: 9999;
+    cursor: pointer;
+    transition: 0.25s;
 }
 
-.back-home-btn:hover{
-transform:scale(1.1);
-box-shadow:0 0 30px rgba(0,242,254,1);
+.back-home-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(255, 77, 77, 0.7);
 }
 
 .remove-popup{
@@ -1552,7 +1544,7 @@ window.addEventListener("deviceorientation", (event) => {
 </script>
 
 <div class="back-home-btn" onclick="goHome()">
-Back
+⬅ Back
 </div>
 
 <div id="badgePopup" class="badge-popup">
