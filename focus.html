@@ -3,33 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Focus Timer | Untitled World</title>
+<title>Timer | Untitled World</title>
 <link rel="icon" href="/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 
-/* --- ORIGINAL CSS (UNTOUCHED EXCEPT TIMER FONT SIZE) --- */
+/* --- BASE CSS --- */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 
 body{
 background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
 color:white;
 min-height:100vh;
+position: relative;
 }
 
 .timer-section{
 text-align:center;
-padding:80px 10%;
+padding: 60px 5% 50px 5%; 
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+}
+
+.header-title {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+}
+
+.header-title i {
+    color: #00f2fe;
+}
+
+/* --- PREMIUM EDTECH RECTANGULAR TIMER BOX --- */
+.timer-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(0, 242, 254, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 242, 254, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 30px 60px;
+    margin: 20px 0 35px 0;
+    display: inline-block;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timer-container:hover {
+    box-shadow: 0 10px 40px 0 rgba(0, 242, 254, 0.2), inset 0 0 25px rgba(0, 242, 254, 0.2);
+    transform: translateY(-5px);
 }
 
 .timer{
-/* Timer ke digits bada kar diya hai (responsive size) */
-font-size:clamp(70px, 16vw, 120px); 
-margin:25px 0;
+font-size:clamp(60px, 14vw, 110px);
 font-weight:700;
 color:#00f2fe;
+line-height: 1;
+letter-spacing: 2px;
+font-variant-numeric: tabular-nums; /* Keeps digits stable/aligned when changing */
+text-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
 }
 
+/* --- BUTTONS --- */
 .btn{
 margin:10px;
 padding:14px 30px;
@@ -39,30 +82,36 @@ background:linear-gradient(45deg,#00f2fe,#4facfe);
 cursor:pointer;
 font-weight:600;
 color:#fff;
+font-size: 16px;
+box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
 }
 
 .btn:hover{
 transform:scale(1.05);
 transition:.3s;
+box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
 }
 
 .pause-btn{
-background:orange;
+background: linear-gradient(45deg, #f39c12, #e67e22);
+box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
 }
+.pause-btn:hover { box-shadow: 0 6px 20px rgba(243, 156, 18, 0.5); }
 
 .stop-btn{
-background:#e74c3c;
+background: linear-gradient(45deg, #e74c3c, #c0392b);
+box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
+.stop-btn:hover { box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5); }
 
-/* --- NEW CSS ADDED FOR NEW FEATURES --- */
-
-/* Custom Input Styling (EdTech Feel) */
+/* --- CUSTOM INPUT STYLING --- */
 .custom-time-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap; 
 }
 
 .time-input {
@@ -96,18 +145,18 @@ background:#e74c3c;
     color: #00f2fe;
 }
 
-/* Glowing 'Study with Friends' Button */
+/* --- STUDY WITH FRIENDS BUTTON --- */
 .study-friends-btn {
     position: absolute;
-    top: 5px;
-    right: 10%;
+    top: 25px;
+    right: 5%; 
     background: linear-gradient(45deg, #ff9a9e, #fecfef);
     color: #333;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 30px;
     text-decoration: none;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 15px;
     box-shadow: 0 0 10px rgba(255, 154, 158, 0.8);
     animation: glowPulse 1.5s infinite alternate;
     transition: 0.3s;
@@ -126,15 +175,36 @@ background:#e74c3c;
     100% { box-shadow: 0 0 20px rgba(255, 154, 158, 1), 0 0 30px rgba(254, 207, 239, 0.8); }
 }
 
-/* Responsive fix for small screens */
+/* --- RESPONSIVE MEDIA QUERIES --- */
 @media (max-width: 768px) {
     .study-friends-btn {
-        top: 75px;
-        font-size: 12px;
-        padding: 8px 15px;
+        top: 20px;
+        right: 20px;
+        font-size: 13px;
+        padding: 10px 18px;
+    }
+    .timer-container {
+        padding: 30px 20px;
+        width: 90%;
     }
     .timer-section {
-        padding-top: 110px;
+        padding-top: 90px;
+    }
+}
+
+@media (max-width: 480px) {
+    .study-friends-btn {
+        position: relative; /* Flow smoothly on tiny phones to avoid overlapping */
+        top: 0;
+        right: 0;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    .timer-section {
+        padding-top: 20px; 
+    }
+    .timer-container {
+        padding: 20px;
     }
 }
 
@@ -147,8 +217,11 @@ background:#e74c3c;
 </a>
 
 <section class="timer-section">
-<h2>Focus Timer ⏳</h2>
-<div class="timer" id="timer">00:00:00</div>
+<h2 class="header-title"><i class="fa-solid fa-stopwatch"></i> Timer</h2>
+
+<div class="timer-container">
+    <div class="timer" id="timer">00:00:00</div>
+</div>
 
 <div class="custom-time-container">
     <input type="number" id="customHours" class="time-input" placeholder="Hrs" min="0">
@@ -157,11 +230,12 @@ background:#e74c3c;
     <button class="btn" onclick="startCustomTime()">Set Time</button>
 </div>
 
-<br>
-<button class="btn pause-btn" id="pauseBtn" onclick="pauseTimer()">Pause</button>
-<button class="btn stop-btn" onclick="stopTimer()">Stop</button>
+<div class="controls">
+    <button class="btn pause-btn" id="pauseBtn" onclick="pauseTimer()">Pause</button>
+    <button class="btn stop-btn" onclick="stopTimer()">Stop</button>
+</div>
 
-<br><br>
+<br>
 
 <button class="btn" onclick="window.location.href='index.html'">
 ⬅ Back
@@ -170,12 +244,10 @@ background:#e74c3c;
 
 <script>
 
-// --- ORIGINAL JS VARIABLES ---
 let timerInterval;
-let time=0;
-let isPaused=false;
+let time = 0;
+let isPaused = false;
 
-// --- NEW FUNCTION FOR CUSTOM TIMER ---
 function startCustomTime() {
     let hrs = parseInt(document.getElementById("customHours").value) || 0;
     let mins = parseInt(document.getElementById("customMinutes").value) || 0;
@@ -185,7 +257,7 @@ function startCustomTime() {
 
     if (totalSeconds > 0) {
         startTimer(totalSeconds);
-        // Clear inputs nicely after starting
+        // Clear inputs after starting
         document.getElementById("customHours").value = "";
         document.getElementById("customMinutes").value = "";
     } else {
@@ -193,73 +265,66 @@ function startCustomTime() {
     }
 }
 
-// --- ORIGINAL JS FUNCTIONS (UNTOUCHED) ---
 function startTimer(duration){
+    clearInterval(timerInterval);
 
-clearInterval(timerInterval);
+    if(duration){
+        time = duration;
+        isPaused = false;
+        document.getElementById("pauseBtn").innerText = "Pause";
+    }
 
-if(duration){
-time=duration;
-isPaused=false;
-document.getElementById("pauseBtn").innerText="Pause";
-}
+    displayTime(time);
 
-displayTime(time);
+    timerInterval = setInterval(() => {
+        // Logic fix: Stop accurately at 0
+        if(time <= 0){
+            clearInterval(timerInterval);
+            alert("Session Complete! Great job. 🚀");
+            return; 
+        }
+        
+        time--;
+        displayTime(time);
 
-timerInterval=setInterval(()=>{
-
-time--;
-displayTime(time);
-
-if(time<0){
-clearInterval(timerInterval);
-alert("Session Complete!");
-}
-
-},1000);
-
+    }, 1000);
 }
 
 function pauseTimer(){
+    let btn = document.getElementById("pauseBtn");
+    
+    // Prevent pausing if time is zero
+    if(time === 0) return; 
 
-let btn=document.getElementById("pauseBtn");
-
-if(!isPaused){
-
-clearInterval(timerInterval);
-btn.innerText="Resume";
-isPaused=true;
-
-}else{
-
-startTimer();
-btn.innerText="Pause";
-isPaused=false;
-
-}
-
+    if(!isPaused){
+        clearInterval(timerInterval);
+        btn.innerText = "Resume";
+        isPaused = true;
+    } else {
+        startTimer(); // Resumes properly 
+        btn.innerText = "Pause";
+        isPaused = false;
+    }
 }
 
 function stopTimer(){
+    clearInterval(timerInterval);
+    time = 0;
+    isPaused = false;
 
-clearInterval(timerInterval);
-time=0;
-isPaused=false;
-
-document.getElementById("pauseBtn").innerText="Pause";
-document.getElementById("timer").innerHTML="00:00:00";
-
+    document.getElementById("pauseBtn").innerText = "Pause";
+    document.getElementById("timer").innerHTML = "00:00:00";
 }
 
 function displayTime(time){
+    let h = Math.floor(time / 3600);
+    let m = Math.floor((time % 3600) / 60);
+    let s = time % 60;
 
-let h=Math.floor(time/3600);
-let m=Math.floor((time%3600)/60);
-let s=time%60;
-
-document.getElementById("timer").innerHTML=
-(h<10?"0":"")+h+":"+(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
-
+    document.getElementById("timer").innerHTML =
+    (h < 10 ? "0" : "") + h + ":" + 
+    (m < 10 ? "0" : "") + m + ":" + 
+    (s < 10 ? "0" : "") + s;
 }
 
 </script>
