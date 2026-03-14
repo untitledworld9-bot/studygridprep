@@ -815,9 +815,13 @@ videos=[];
         try {
             let u = new URL(url);
             
-            // Playlist ID check
+                        // Playlist ID check
             if (u.searchParams.get("list")) {
-                return "playlist:" + u.searchParams.get("list");
+                let listId = u.searchParams.get("list");
+                let vidId = u.searchParams.get("v");
+                // Agar playlist link ke andar video bhi hai, toh dono save karo
+                if (vidId) return "playlist:" + listId + ":" + vidId;
+                return "playlist:" + listId;
             }
             // Regular Video ID check
             if (u.searchParams.get("v")) {
@@ -923,7 +927,7 @@ watching.sort((a,b)=> a.id===lastVideo ? -1 : 1);
 
 watching.forEach(video=>{
 
-let thumb = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+let thumb = video.id.startsWith("playlist:") ? (video.id.split(":")[2] ? `https://i.ytimg.com/vi/${video.id.split(":")[2]}/hqdefault.jpg` : `https://img.youtube.com/vi/00000000000/hqdefault.jpg`) : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
 
 let card=document.createElement("div");
 
@@ -974,9 +978,7 @@ let row = section.querySelector(".horizontal-row");
 
 list.forEach((video,index)=>{
 
-let embedURL = video.id.startsWith('playlist:')
-? `https://www.youtube.com/embed/videoseries?list=${video.id.replace('playlist:','')}`
-: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+let embedURL = video.id.startsWith("playlist:") ? (video.id.split(":")[2] ? `https://i.ytimg.com/vi/${video.id.split(":")[2]}/hqdefault.jpg` : `https://img.youtube.com/vi/00000000000/hqdefault.jpg`) : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
 
 let card=document.createElement("div");
 
@@ -1020,7 +1022,7 @@ const musicList = videos.filter(v=>v.subject==="Music");
 
 musicList.forEach(video=>{
 
-let thumb = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+let thumb = video.id.startsWith("playlist:") ? (video.id.split(":")[2] ? `https://i.ytimg.com/vi/${video.id.split(":")[2]}/hqdefault.jpg` : `https://img.youtube.com/vi/00000000000/hqdefault.jpg`) : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
 
 let card=document.createElement("div");
 
@@ -1161,13 +1163,23 @@ renderLevel();
 updateBadge();
 }
 
-    function playVideo(id,el){
+        function playVideo(id,el){
 
 let saved = localStorage.getItem("time_"+id) || 0;
+let embed = "";
 
-let embed = id.startsWith("playlist:")
-? `https://www.youtube.com/embed/videoseries?list=${id.replace('playlist:','')}&autoplay=1&enablejsapi=1&start=${saved}`
-: `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1&start=${saved}`;
+if (id.startsWith("playlist:")) {
+    let parts = id.split(":");
+    let listId = parts[1];
+    let vidId = parts[2];
+    if(vidId) {
+        embed = `https://www.youtube.com/embed/${vidId}?list=${listId}&autoplay=1&enablejsapi=1&start=${saved}`;
+    } else {
+        embed = `https://www.youtube.com/embed/videoseries?list=${listId}&autoplay=1&enablejsapi=1&start=${saved}`;
+    }
+} else {
+    embed = `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1&start=${saved}`;
+}
 
 el.innerHTML = `
 <iframe id="ytPlayer" src="${embed}&playsinline=1" allow="autoplay" allowfullscreen></iframe>
