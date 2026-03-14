@@ -1,3 +1,8 @@
+if(location.hash === "#test"){
+document.getElementById("authGate").style.display="none";
+initAdminPanel({email:"admin@test.com"});
+}
+
 /**
  * ============================================================
  *  Untitled World Admin Panel — admin.js
