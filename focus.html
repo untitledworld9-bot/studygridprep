@@ -23,7 +23,39 @@ align-items: center;
 overflow-x: hidden;
 }
 
-/* --- CUSTOM TOAST POPUP (Replaces Browser Alert) --- */
+/* --- FIXED HEADER --- */
+.fixed-timer-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(15, 32, 39, 0.98);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 9999;
+    padding: 15px 20px; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.25);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    margin: 0;
+}
+
+.header-title i {
+    color: #00f2fe;
+}
+
+/* --- CUSTOM TOAST POPUP --- */
 .custom-toast {
     position: fixed;
     top: -100px;
@@ -37,7 +69,7 @@ overflow-x: hidden;
     font-weight: 600;
     font-size: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 9999;
+    z-index: 10000;
     transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     display: flex;
     align-items: center;
@@ -45,75 +77,64 @@ overflow-x: hidden;
 }
 
 .custom-toast.show {
-    top: 30px;
+    top: 80px; /* Header ke niche dikhega */
 }
 
-/* --- STUDY WITH FRIENDS BUTTON (Centered at top like screenshot) --- */
+/* --- STUDY WITH FRIENDS (Right aligned half button) --- */
+.friends-btn-wrapper {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: flex-end; /* Right side shift */
+    padding-right: 20px;
+    margin-top: 85px; /* Fixed header ke niche gap */
+    margin-bottom: 15px;
+}
+
 .study-friends-btn {
-    width: 90%;
-    max-width: 400px;
-    margin-top: 20px;
     background: linear-gradient(45deg, #ff9a9e, #fecfef);
     color: #333;
-    padding: 12px 20px;
-    border-radius: 30px;
+    padding: 8px 16px;
+    border-radius: 20px;
     text-decoration: none;
     font-weight: 700;
-    font-size: 15px;
-    text-align: center;
-    box-shadow: 0 0 15px rgba(255, 154, 158, 0.6);
+    font-size: 13px;
+    box-shadow: 0 0 15px rgba(255, 154, 158, 0.5);
     animation: glowPulse 2s infinite alternate;
     transition: 0.3s;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 @keyframes glowPulse {
     0% { box-shadow: 0 0 10px rgba(255, 154, 158, 0.4); }
-    100% { box-shadow: 0 0 25px rgba(255, 154, 158, 0.9); }
+    100% { box-shadow: 0 0 20px rgba(255, 154, 158, 0.8); }
 }
 
-.timer-section{
-text-align:center;
-padding: 20px 5%; /* Gaps reduced drastically */
-display: flex;
-flex-direction: column;
-align-items: center;
-width: 100%;
-}
-
-.header-title {
-    font-size: 28px;
-    font-weight: 600;
-    margin-top: 10px;
-    margin-bottom: 20px;
+.timer-section {
+    text-align:center;
+    padding: 0 5% 40px 5%;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    color: #fff;
+    width: 100%;
 }
 
-.header-title i {
-    color: #00f2fe;
-}
-
-/* --- PREMIUM EDTECH CIRCLE TIMER --- */
+/* --- PREMIUM BIG CIRCLE TIMER --- */
 .timer-container {
     background: rgba(255, 255, 255, 0.03);
     border: 3px solid rgba(0, 242, 254, 0.2);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 242, 254, 0.05);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-radius: 50%; /* Made it a perfect circle */
-    width: 280px;
-    height: 280px;
+    border-radius: 50%; 
+    width: 320px; /* Badha diya */
+    height: 320px; /* Badha diya */
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px; /* Niche ke items se proper gap */
     transition: all 0.3s ease;
 }
 
@@ -123,14 +144,14 @@ width: 100%;
     box-shadow: 0 0 35px rgba(0, 255, 136, 0.6), inset 0 0 25px rgba(0, 255, 136, 0.2);
 }
 
-.timer{
-font-size: 55px; /* Perfect fit for circle */
-font-weight:700;
-color:#00f2fe;
-line-height: 1;
-letter-spacing: 1px;
-font-variant-numeric: tabular-nums; 
-text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+.timer {
+    font-size: 65px; /* Digits bade kiye circle ke hisab se */
+    font-weight:700;
+    color:#00f2fe;
+    line-height: 1;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums; 
+    text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
 }
 
 .timer-container.running .timer {
@@ -143,18 +164,19 @@ text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 25px;
     background: rgba(255,255,255,0.05);
-    padding: 10px 20px;
+    padding: 12px 25px;
     border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 .time-input {
-    width: 70px;
-    padding: 10px;
+    width: 75px;
+    padding: 12px 10px;
     border: 2px solid rgba(0, 242, 254, 0.3);
-    border-radius: 10px;
+    border-radius: 12px;
     background: transparent;
     color: white;
     font-size: 16px;
@@ -175,53 +197,52 @@ text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
 }
 
 .colon {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
     color: #00f2fe;
 }
 
 /* --- BUTTONS --- */
-.btn{
-margin: 5px;
-padding: 12px 25px;
-border:none;
-border-radius:30px;
-background:linear-gradient(45deg,#00f2fe,#4facfe);
-cursor:pointer;
-font-weight:600;
-color:#fff;
-font-size: 15px;
-box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+.btn {
+    margin: 5px;
+    padding: 14px 28px;
+    border:none;
+    border-radius:30px;
+    background:linear-gradient(45deg,#00f2fe,#4facfe);
+    cursor:pointer;
+    font-weight:600;
+    color:#fff;
+    font-size: 15px;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
 }
 
-.btn:hover{
-transform:scale(1.05);
-transition:.3s;
+.btn:hover {
+    transform:scale(1.05);
+    transition:.3s;
 }
 
-.pause-btn{
-background: linear-gradient(45deg, #f39c12, #e67e22);
-box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+.pause-btn {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
 }
 
-.stop-btn{
-background: linear-gradient(45deg, #e74c3c, #c0392b);
-box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+.reset-btn { /* Changed from stop to reset class name */
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
 .controls {
-    margin-bottom: 15px;
+    margin-bottom: 25px;
 }
 
 /* Responsive tweaks */
-@media (max-width: 480px) {
-    .timer-container {
-        width: 250px;
-        height: 250px;
-    }
-    .timer {
-        font-size: 48px;
-    }
+@media (max-width: 400px) {
+    .timer-container { width: 280px; height: 280px; margin-bottom: 30px;}
+    .timer { font-size: 55px; }
+}
+@media (min-width: 768px) {
+    .timer-container { width: 400px; height: 400px; margin-bottom: 50px;}
+    .timer { font-size: 80px; }
 }
 
 </style>
@@ -232,12 +253,17 @@ box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
     <i class="fa-solid fa-bell"></i> <span id="toastMessage">Message</span>
 </div>
 
-<a href="timer.html" class="study-friends-btn">
-   👩‍💻 Study with friends ✨
-</a>
+<div class="fixed-timer-header">
+    <h2 class="header-title"><i class="fa-solid fa-stopwatch"></i> Timer</h2>
+</div>
+
+<div class="friends-btn-wrapper">
+    <a href="timer.html" class="study-friends-btn">
+       👩‍💻 Study with friends ✨
+    </a>
+</div>
 
 <section class="timer-section">
-<h2 class="header-title"><i class="fa-solid fa-stopwatch"></i> Timer</h2>
 
 <div class="timer-container" id="timerBox" onclick="toggleTimer()">
     <div class="timer" id="timer">00:00:00</div>
@@ -252,12 +278,13 @@ box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 
 <div class="controls">
     <button class="btn pause-btn" id="pauseBtn" onclick="pauseTimer()">Pause</button>
-    <button class="btn stop-btn" onclick="stopTimer()">Stop</button>
+    <button class="btn reset-btn" onclick="resetTimer()">Reset</button>
 </div>
 
-<button class="btn" onclick="window.location.href='index.html'">
+<button class="btn" style="margin-top: 10px;" onclick="window.location.href='index.html'">
 ⬅ Back
 </button>
+
 </section>
 
 <script>
@@ -265,19 +292,63 @@ box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 let timerInterval;
 let time = 0;
 let isPaused = false;
+let targetEndTime = 0; // Refresh persistence ke liye naya variable
 const timerBox = document.getElementById("timerBox");
+
+// --- INITIAL LOAD (Refresh Handle Logic) ---
+window.onload = () => {
+    loadSavedTimer();
+};
+
+function saveTimerState() {
+    localStorage.setItem("uw_timerState", JSON.stringify({
+        time: time,
+        isPaused: isPaused,
+        targetEndTime: targetEndTime
+    }));
+}
+
+function clearTimerState() {
+    localStorage.removeItem("uw_timerState");
+}
+
+function loadSavedTimer() {
+    const saved = JSON.parse(localStorage.getItem("uw_timerState"));
+    if (saved) {
+        isPaused = saved.isPaused;
+        
+        if (isPaused) {
+            // Agar pause pe chhoda tha
+            time = saved.time;
+            if (time > 0) {
+                displayTime(time);
+                document.getElementById("pauseBtn").innerText = "Resume";
+            }
+        } else {
+            // Agar chalte hue chhoda tha
+            if (saved.targetEndTime > Date.now()) {
+                time = Math.floor((saved.targetEndTime - Date.now()) / 1000);
+                startTimer(time, true); // true = resuming so don't rewrite targetEndTime logic incorrectly
+            } else if (saved.targetEndTime > 0 && saved.targetEndTime <= Date.now()) {
+                // Background me timer khatam ho gaya
+                clearTimerState();
+                displayTime(0);
+                showToast("Session Completed while you were away! 🚀", true);
+            }
+        }
+    }
+}
 
 // --- Custom Popup Logic ---
 function showToast(msg, isSuccess = false) {
     const toast = document.getElementById("customToast");
     const toastMsg = document.getElementById("toastMessage");
     toastMsg.innerText = msg;
-    
-    // Change color based on type
+
     toast.style.borderLeftColor = isSuccess ? "#00ff88" : "#ff4757";
-    
+
     toast.classList.add("show");
-    
+
     setTimeout(() => {
         toast.classList.remove("show");
     }, 3000);
@@ -294,12 +365,11 @@ function startCustomTime() {
         document.getElementById("customHours").value = "";
         document.getElementById("customMinutes").value = "";
     } else {
-        // Custom popup instead of browser alert
         showToast("Bhai thoda time toh enter karo! 😅");
     }
 }
 
-function startTimer(duration){
+function startTimer(duration, isResumeFromRefresh = false){
     clearInterval(timerInterval);
 
     if(duration){
@@ -308,53 +378,66 @@ function startTimer(duration){
         document.getElementById("pauseBtn").innerText = "Pause";
     }
 
-    displayTime(time);
+    // Refresh handle karne ke liye future ka timestamp set karo
+    if (!isResumeFromRefresh && !isPaused) {
+        targetEndTime = Date.now() + (time * 1000);
+    } else if (isPaused) {
+        targetEndTime = Date.now() + (time * 1000); // resuming from pause button
+    }
     
-    // Add Green Glow
+    saveTimerState();
+    displayTime(time);
     timerBox.classList.add("running");
 
     timerInterval = setInterval(() => {
+        // Delta time logic jisse background me drift na ho
+        time = Math.floor((targetEndTime - Date.now()) / 1000);
+
         if(time <= 0){
             clearInterval(timerInterval);
+            time = 0;
+            displayTime(0);
             timerBox.classList.remove("running");
+            clearTimerState();
             showToast("Session Complete! Great job. 🚀", true);
             return; 
         }
-        
-        time--;
-        displayTime(time);
 
+        displayTime(time);
+        saveTimerState(); // Har second update save karega
     }, 1000);
 }
 
 function pauseTimer(){
     let btn = document.getElementById("pauseBtn");
-    
+
     if(time === 0) return; 
 
     if(!isPaused){
         clearInterval(timerInterval);
         btn.innerText = "Resume";
         isPaused = true;
-        timerBox.classList.remove("running"); // Remove glow on pause
+        timerBox.classList.remove("running");
+        saveTimerState();
     } else {
-        startTimer(); 
+        startTimer(); // startTimer handle karega resume
         btn.innerText = "Pause";
         isPaused = false;
     }
 }
 
-function stopTimer(){
+function resetTimer(){
     clearInterval(timerInterval);
     time = 0;
     isPaused = false;
+    targetEndTime = 0;
 
     document.getElementById("pauseBtn").innerText = "Pause";
     document.getElementById("timer").innerHTML = "00:00:00";
-    timerBox.classList.remove("running"); // Remove glow on stop
+    timerBox.classList.remove("running"); 
+    clearTimerState();
 }
 
-// Optional feature: tap circle to pause/play
 function toggleTimer() {
     if(time > 0) {
         pauseTimer();
