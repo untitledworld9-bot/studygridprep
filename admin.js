@@ -1,7 +1,4 @@
-if(location.hash === "#test"){
-document.getElementById("authGate").style.display="none";
-initAdminPanel({email:"admin@test.com"});
-}
+alert("ADMIN JS LOADED");
 
 /**
  * ============================================================
