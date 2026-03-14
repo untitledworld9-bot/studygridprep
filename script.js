@@ -737,20 +737,27 @@ onSnapshot(collection(db,"messages"), snap=>{
 
 onSnapshot(collection(db,"notifications"), snap=>{
 
-snap.forEach(docSnap=>{
+snap.docChanges().forEach(change=>{
 
-const n = docSnap.data()
+if(change.type === "added"){
 
-if(n.user === currentUser){
+const n = change.doc.data()
 
-new Notification(n.title,{
+if(n.user === currentUser || n.user === "all"){
+
+navigator.serviceWorker.ready.then(reg=>{
+
+reg.showNotification(n.title,{
 body:n.body,
-icon:"/icon-192.png"
+icon:"/icon-192.png",
+badge:"/icon-192.png"
+})
+
 })
 
 }
 
-})
+}
 
 })
 
@@ -769,12 +776,9 @@ Notification.requestPermission().then(async permission => {
   console.log("FCM TOKEN:",token);
 
   await updateDoc(doc(db,"users",currentUser),{
- fcmToken: token
-});
+   fcmToken: token
+  });
 
  }
 
 });
-
-
-  
