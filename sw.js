@@ -1,10 +1,12 @@
-// ─── Untitled World – Service Worker ───────────────────────────────────────
-// Strategy:
-//   • Navigation  → Network-first  → offline.html fallback (never ERR_FAILED)
-//   • Static      → Cache-first    → network fallback
+// ─── Untitled World – Advanced Service Worker ───────────────────────────────
+// Features:
+// • Navigation → Network-first (fast fallback)
+// • Static → Cache-first + background update
+// • Auto update
+// • Zero white screen
 // ────────────────────────────────────────────────────────────────────────────
 
-const CACHE = "uw-cache-v12";          // bump version when assets change
+const CACHE = "uw-cache-v13";
 
 const ASSETS = [
   "/",
@@ -19,7 +21,8 @@ const ASSETS = [
 
 // ── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener("install", event => {
-  self.skipWaiting();                 // activate immediately on first install
+
+  self.skipWaiting();
 
   event.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(ASSETS))
@@ -28,7 +31,7 @@ self.addEventListener("install", event => {
 
 // ── ACTIVATE ─────────────────────────────────────────────────────────────────
 self.addEventListener("activate", event => {
-  // Delete old cache versions so stale files don't linger
+
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
@@ -36,85 +39,117 @@ self.addEventListener("activate", event => {
           .filter(key => key !== CACHE)
           .map(key => caches.delete(key))
       )
-    ).then(() => self.clients.claim())  // take control of all open tabs NOW
+    ).then(() => self.clients.claim())
   );
+
 });
 
-// ── FETCH ─────────────────────────────────────────────────────────────────────
+// ── FETCH ────────────────────────────────────────────────────────────────────
 self.addEventListener("fetch", event => {
 
-  // ── Navigation requests (HTML page loads) ──────────────────────────────────
-    if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request).catch(async () => {
-        const cache = await caches.open(CACHE);
-        
-        // NAYA LOGIC: Pehle check karo ki kya maanga hua page (jaise focus.html) cache me save hai?
-        const cachedPage = await cache.match(event.request, { ignoreSearch: true });
-        if (cachedPage) {
-          return cachedPage; // Agar save hai, toh bina net ke usi ko khol do!
-        }
+  const req = event.request;
 
-        // Agar save nahi hai, tab jaake 'offline.html' dikhao
+  // ── HTML NAVIGATION ────────────────────────────────────────────────────────
+  if (req.mode === "navigate") {
+
+    event.respondWith(
+
+      fetch(req).then(res => {
+
+        const copy = res.clone();
+
+        caches.open(CACHE).then(cache => cache.put(req, copy));
+
+        return res;
+
+      }).catch(async () => {
+
+        const cache = await caches.open(CACHE);
+
+        const cached = await cache.match(req, { ignoreSearch:true });
+
+        if (cached) return cached;
+
         const offline = await cache.match("/offline.html");
-        if (offline) {
-          return new Response(await offline.text(), {
-            headers: { "Content-Type": "text/html" }
-          });
-        }
+
+        if (offline) return offline;
 
         return getOfflinePage();
+
       })
     );
+
     return;
+
   }
 
-  // ── Static assets (cache-first) ────────────────────────────────────────────
+  // ── STATIC FILES (CACHE FIRST + BACKGROUND UPDATE) ─────────────────────────
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Opportunistically cache successful responses for static assets
-        if (response && response.status === 200 && response.type === "basic") {
-          const clone = response.clone();
-          caches.open(CACHE).then(cache => cache.put(event.request, clone));
+
+    caches.match(req).then(cached => {
+
+      const networkFetch = fetch(req).then(res => {
+
+        if (res && res.status === 200 && res.type === "basic") {
+
+          const copy = res.clone();
+
+          caches.open(CACHE).then(cache => cache.put(req, copy));
+
         }
-        return response;
-      });
+
+        return res;
+
+      }).catch(() => cached);
+
+      return cached || networkFetch;
+
     })
+
   );
 
 });
 
-// ── Helper: always return a valid Response for the offline page ───────────────
+// ── MESSAGE (AUTO UPDATE TRIGGER) ────────────────────────────────────────────
+self.addEventListener("message", event => {
+
+  if (event.data === "skipWaiting") {
+    self.skipWaiting();
+  }
+
+});
+
+// ── SAFE OFFLINE PAGE ────────────────────────────────────────────────────────
 async function getOfflinePage() {
+
   const cache  = await caches.open(CACHE);
+
   const cached = await cache.match("/offline.html");
 
   if (cached) return cached;
 
-  // Last-resort inline fallback – guarantees NO ERR_FAILED ever appears
   return new Response(
-    `<!DOCTYPE html>
-<html lang="en">
+`<!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Offline</title>
 <style>
-  body{margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;
-       justify-content:center;font-family:system-ui,sans-serif;background:#f4f6f8;text-align:center;}
-  button{margin-top:24px;padding:12px 28px;border:none;border-radius:12px;
-         background:#ff7a18;color:#fff;font-size:16px;font-weight:600;cursor:pointer;}
+body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+font-family:sans-serif;background:#f5f6fa;text-align:center;}
+button{margin-top:20px;padding:12px 24px;border:none;border-radius:10px;
+background:#ff7a18;color:white;font-size:16px;cursor:pointer;}
 </style>
 </head>
 <body>
-  <h1>📡 You're Offline</h1>
-  <p>Please check your internet connection.</p>
-  <button onclick="location.href='/'">Retry</button>
-  <script>window.addEventListener("online",()=>location.href="/");<\/script>
+<div>
+<h2>📡 Offline</h2>
+<p>Check your internet connection</p>
+<button onclick="location.reload()">Retry</button>
+</div>
 </body>
 </html>`,
-    { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
-  );
+  {headers:{'Content-Type':'text/html'}});
+
 }
