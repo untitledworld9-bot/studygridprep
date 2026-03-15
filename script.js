@@ -124,12 +124,6 @@ if(progressLink){
   });
 }
 
-const savedName = localStorage.getItem("userName");
-
-if(savedName){
- currentUser = savedName;
-}
-
    await setDoc(doc(db,"users",currentUser),{
   name: currentUser,
   email: user.email,   // ✅ YE ADD KARNA HAI
