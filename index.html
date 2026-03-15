@@ -1791,7 +1791,8 @@ if(isPWA()){
 
 // login check
 function logout(){
-  localStorage.clear();
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userEmail");
   window.location.href = "login.html";
 }
 
