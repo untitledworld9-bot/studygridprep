@@ -32,7 +32,7 @@ if(change.type === "added"){
 
 const n = change.doc.data();
 
-if(n.user === currentUser || n.user === "all"){
+if(n.user === "all")
 
 navigator.serviceWorker.ready.then(reg=>{
 
