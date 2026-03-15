@@ -29,6 +29,9 @@ import { getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-fires
 
 import { where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// ✅ FIX 1: Moved import to top level (was inside DOMContentLoaded — caused SyntaxError)
+import { messaging, getToken, onMessage } from "./firebase.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
   authDomain: "untitled-world-2e645.firebaseapp.com",
@@ -388,14 +391,16 @@ if(menuToggle && navMenu){
  });
 }
 
+// ✅ FIX 2: Moved inviteWhatsapp & copyInvite onclick assignments INSIDE the click listener
+//           so inviteMessage, inviteWhatsapp, copyInvite are all in the same scope
 if(inviteBtn){
  inviteBtn.addEventListener("click", () => {
   const inviteWhatsapp = document.getElementById("inviteWhatsapp");
-const copyInvite = document.getElementById("copyInvite");
+  const copyInvite = document.getElementById("copyInvite");
 
-const link = `${location.origin}/timer?room=${roomId}`;
+  const link = `${location.origin}/timer?room=${roomId}`;
 
-const inviteMessage =
+  const inviteMessage =
 `📚 Focus Study Room
 
 Let's stay productive together 🚀
@@ -403,30 +408,29 @@ Let's stay productive together 🚀
 Join here:
 ${link}`;
 
-});
-}
+  // WhatsApp open
+  if(inviteWhatsapp){
+   inviteWhatsapp.onclick = ()=>{
 
-// WhatsApp open
-if(inviteWhatsapp){
- inviteWhatsapp.onclick = ()=>{
+   const url = "https://wa.me/?text=" + encodeURIComponent(inviteMessage);
 
- const url = "https://wa.me/?text=" + encodeURIComponent(inviteMessage);
+   window.open(url,"_blank");
 
- window.open(url,"_blank");
+   };
+  }
 
- };
-}
+  // Copy message
+  if(copyInvite){
+   copyInvite.onclick = async ()=>{
 
+   await navigator.clipboard.writeText(inviteMessage);
 
-// Copy message
-if(copyInvite){
- copyInvite.onclick = async ()=>{
+   alert("Invite message copied ✅");
 
- await navigator.clipboard.writeText(inviteMessage);
+   };
+  }
 
- alert("Invite message copied ✅");
-
- };
+ });
 }
 
 let lastWaveTime = 0;
@@ -775,8 +779,6 @@ badge:"/icon-192.png"
 
 });
 
-import { messaging, getToken, onMessage } from "./firebase.js";
-
 Notification.requestPermission().then(async permission => {
 
  if(permission === "granted"){
@@ -794,3 +796,5 @@ Notification.requestPermission().then(async permission => {
  }
 
 });
+
+}); // ✅ FIX 3: Closing brace for DOMContentLoaded — was missing
