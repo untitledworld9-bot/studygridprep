@@ -862,3 +862,18 @@ header {
   opacity:1;
  }
 }
+
+.invite-btn{
+background:#25D366;
+border:none;
+padding:8px 14px;
+border-radius:8px;
+color:white;
+font-size:14px;
+cursor:pointer;
+margin-right:6px;
+}
+
+.invite-btn i{
+margin-right:6px;
+}
