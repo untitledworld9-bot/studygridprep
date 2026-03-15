@@ -1,6 +1,6 @@
 console.log("INDEX JS RUNNING");
 
-import { initializeApp } from 
+import { initializeApp, getApps } from 
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import { 
@@ -9,12 +9,6 @@ collection,
 onSnapshot
 } from 
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-if ("serviceWorker" in navigator) {
- navigator.serviceWorker.register("/firebase-messaging-sw.js")
- .then(reg => console.log("SW registered"))
- .catch(err => console.log("SW error", err));
-}
 
 
 const firebaseConfig = {
@@ -27,13 +21,24 @@ const firebaseConfig = {
 };
 
 
-import { initializeApp, getApps } from 
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
+// Firebase init (duplicate safe)
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
+
+// Service worker register
+if ("serviceWorker" in navigator) {
+ navigator.serviceWorker.register("/firebase-messaging-sw.js")
+ .then(reg => console.log("SW registered"))
+ .catch(err => console.log("SW error", err));
+}
+
+
+// Current user
 const currentUser = localStorage.getItem("userName");
 
+
+// Notification listener
 onSnapshot(collection(db,"notifications"), snap=>{
 
 snap.docChanges().forEach(change=>{
@@ -42,7 +47,7 @@ if(change.type === "added"){
 
 const n = change.doc.data();
 
-if(n.user === currentUser || n.user === "all")
+if(n.user === currentUser || n.user === "all"){
 
 navigator.serviceWorker.ready.then(reg=>{
 
@@ -50,14 +55,14 @@ reg.showNotification(n.title,{
 body:n.body,
 icon:"/icon-192.png",
 badge:"/icon-192.png"
-})
+});
 
-})
-
-}
+});
 
 }
 
-})
+}
+
+});
 
 });
