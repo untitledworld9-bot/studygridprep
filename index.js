@@ -25,6 +25,9 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+if(Notification.permission !== "granted"){
+ await Notification.requestPermission();
+}
 
 // Service worker
 if ("serviceWorker" in navigator) {
