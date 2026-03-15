@@ -1,7 +1,6 @@
 console.log("INDEX JS RUNNING");
 
-import { initializeApp, getApps } from 
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { db, auth } from "./firebase.js"; 
 
 import { 
 getFirestore,
@@ -11,22 +10,8 @@ onSnapshot
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
-const firebaseConfig = {
- apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
- authDomain: "untitled-world-2e645.firebaseapp.com",
- projectId: "untitled-world-2e645",
- storageBucket: "untitled-world-2e645.firebasestorage.app",
- messagingSenderId: "990115586087",
- appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
-};
-
-
-// Firebase init
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 if(Notification.permission !== "granted"){
- await Notification.requestPermission();
+ Notification.requestPermission();
 }
 
 // Service worker
