@@ -1803,7 +1803,7 @@ if(user){
 let title = document.querySelector(".site-title");
 
 title.innerHTML = `
-<img src="/icon-512.png" class="logo-img">
+<img src="/icon-192.png" class="logo-img">
 👋 Hey, ${user}
 `;
 
@@ -1911,7 +1911,7 @@ if(!isStandalone){
 const { auth, db } = window;
 
 import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js")
-.then(({ collection, onSnapshot }) => {
+.then(({ collection, onSnapshot, doc }) => {
 
 import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js")
 .then(({ onAuthStateChanged }) => {
@@ -1937,24 +1937,19 @@ onAuthStateChanged(auth, user => {
   const xp = me.weeklyXP || 0;
   const rank = users.findIndex(u=>u.name===user.displayName)+1;
 
-  document.getElementById("xpValue").textContent = xp;
-  document.getElementById("rankValue").textContent = rank;
+  const xpEl = document.getElementById("xpValue");
+  const rankEl = document.getElementById("rankValue");
+
+  if(xpEl) xpEl.textContent = xp;
+  if(rankEl) rankEl.textContent = rank;
 
  });
 
-});
-
-});
-
-});
-
-onAuthStateChanged(auth, user => {
-
- if(!user) return;
-
+ // focus time listener (यही पहले बाहर था)
  onSnapshot(doc(db,"users",user.displayName), snap=>{
 
   const data = snap.data();
+  if(!data) return;
 
   const mins = data.focusTime || 0;
 
@@ -1969,9 +1964,14 @@ onAuthStateChanged(auth, user => {
    text = m+"m";
   }
 
-  document.getElementById("todayFocusValue").innerText = text;
+  const el = document.getElementById("todayFocusValue");
+  if(el) el.innerText = text;
 
  });
+
+});
+
+});
 
 });
 
@@ -1991,34 +1991,6 @@ if(!isPWA()){
  if(xp) xp.style.display="none";
 
 }
-
-onAuthStateChanged(auth, user => {
-
- if(!user) return;
-
- onSnapshot(doc(db,"users",user.displayName), snap=>{
-
-  const data = snap.data();
-
-  const mins = data.focusTime || 0;
-
-  const h = Math.floor(mins/60);
-  const m = mins % 60;
-
-  let text = "";
-
-  if(h > 0){
-   text = h + "h " + m + "m";
-  } else {
-   text = m + "m";
-  }
-
-  const el = document.getElementById("todayFocusValue");
-  if(el) el.innerText = text;
-
- });
-
-});
 
 </script>
 
