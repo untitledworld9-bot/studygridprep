@@ -295,16 +295,12 @@ function initPromotions() {
       const id   = change.doc.id;
       const data = change.doc.data();
 
-      if (seen.promotions.has(id)) return;
-      markSeen("promotions", id);
-
-      if (!data.active) return;
-
-      // FIX-M: "body" not "message"
-      if (!data.title && !data.body) return;
-
-      renderPromotionPopup(data);
-    });
+      // NAYA (sahi order):
+if (seen.promotions.has(id)) return;
+if (!data.active) return;
+if (!data.title && !data.body) return;
+renderPromotionPopup(data);
+markSeen("promotions", id);   
 
   }, err => {
     console.warn("[Promotions] Firestore error:", err);
