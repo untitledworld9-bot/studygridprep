@@ -1337,6 +1337,14 @@ body.pwa-mode #pwaHome,
 body.pwa-mode #pwaDashboard {
     padding-top: 80px !important; 
 }
+
+/* --- LANDSCAPE GAP FIX (KEVAL LANDSCAPE KE LIYE) --- */
+@media (orientation: landscape) {
+  .pwa-dashboard {
+    padding-top: 0px !important;
+    margin-top: -110px !important; /* Ye card aur baki sabko upar kheench lega */
+  }
+}
 /* --- CSS END --- */
 </style>
 </head>
