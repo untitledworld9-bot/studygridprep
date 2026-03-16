@@ -493,7 +493,7 @@ function renderUserTable() {
       </td>
       <td>${statusBadge(u.status)}</td>
       <td class="mono">${formatFocusTime(u.focusTime || 0)}</td>
-      <td class="mono" style="color:var(--text-muted);">${formatTimestamp(u.lastActive)}</td>
+      <td class="mono" style="color:var(--text-muted);">${formatTimestamp(u.lastActive || new Date(u.lastActiveDate))}</td>
       <td>
         <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;"
                 onclick="notifyUser('${escHtml(u.id)}','${escHtml(u.name || u.email || u.id)}')">
@@ -519,7 +519,7 @@ function renderDashRecent() {
       </td>
       <td>${statusBadge(u.status)}</td>
       <td class="mono">${formatFocusTime(u.focusTime || 0)}</td>
-      <td class="mono" style="color:var(--text-muted);">${formatTimestamp(u.lastActive)}</td>
+      <td class="mono" style="color:var(--text-muted);">${formatTimestamp(u.lastActive || new Date(u.lastActiveDate))}</td>
     </tr>
   `).join("");
 }
