@@ -1,47 +1,14 @@
 /**
  * index.js — Untitled World (FIXED)
  *
- * Bugs fixed in this file:
- *
- *   FIX-I (announcements query, line 266):
- *     Original: where("active","==",true) + where("createdAt",">=",start) + orderBy("createdAt","desc")
- *     This requires a composite index on [active ASC, createdAt DESC] in the
- *     Firebase Console. Without it: "FirestoreError: The query requires an index."
- *     Fix: use only orderBy("createdAt","desc") — Firestore auto-indexes single
- *          fields. Filter `active` and recency client-side in the callback.
- *
- *   FIX-J (notifications query, line 350):
- *     Same composite index error: where("user","==",x) + where("createdAt",">=",t)
- *     + orderBy("createdAt","desc"). Fixed the same way — single where("user","==",x),
- *     filter createdAt client-side.
- *
- *   FIX-K (bfcache, line 525):
- *     Only DOMContentLoaded was used for boot. When the browser restores a page
- *     from bfcache (user presses Back), DOMContentLoaded does NOT fire. The
- *     pagehide event had cleared the boot flag but the listeners were gone.
- *     Fix: added a pageshow listener that re-runs boot() when event.persisted.
- *
- *   FIX-L (announcements not showing):
- *     createdAt < startTime guard was dropping ALL pre-existing active docs because
- *     onSnapshot fires immediately with the full result set and every stored doc
- *     has createdAt < Timestamp.now(). Removed the recency guard — the seen Set
- *     (sessionStorage-backed) already prevents duplicate rendering within a session.
- *
- *   FIX-M (promotions field name mismatch):
- *     Firestore schema uses field "body" but code was reading data.message (always
- *     undefined). Fixed guard condition and msgEl.textContent to use data.body.
- *
- *   FIX-N (promotions popup invisible):
- *     box.className = "promo-popup" inherited CSS display:none from index.html.
- *     style.cssText never set display, so the CSS rule won and the element was
- *     invisible even after being appended to body.
- *     Fix: renamed class to "uw-promo-toast" + added display:block to style.cssText.
- *
- *   FIX-O (bfcache restore skips init):
- *     pagehide called unsub functions but never nulled the refs. On bfcache
- *     restore, unsubs.x was still truthy, so initX() hit the early-return guard
- *     and no listeners were re-attached.
- *     Fix: null each ref immediately after calling it in pagehide.
+ *   FIX-I  : announcements composite index error — single orderBy, active filter client-side.
+ *   FIX-J  : notifications composite index error — single where(), createdAt filter client-side.
+ *   FIX-K  : bfcache restore — pageshow listener added.
+ *   FIX-L  : announcements createdAt guard removed — was dropping all stored docs.
+ *   FIX-M  : promotions field "body" not "message".
+ *   FIX-N  : promotions popup — reuse existing #promoPopup + setProperty("display","flex","important").
+ *   FIX-O  : pagehide nulls unsub refs so bfcache restore re-attaches listeners.
+ *   FIX-SYN: missing // before section-8 separator was a syntax error that broke boot().
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -145,13 +112,11 @@ function isPWA() {
 function initServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
-  // FCM requires the SW to be named exactly "firebase-messaging-sw.js"
   navigator.serviceWorker
     .register("/firebase-messaging-sw.js")
     .then(reg => console.log("[SW] FCM worker:", reg.scope))
     .catch(err => console.warn("[SW] FCM error:", err));
 
-  // App caching SW
   navigator.serviceWorker
     .register("/sw.js")
     .then(reg => {
@@ -192,28 +157,12 @@ function initServiceWorker() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. ANNOUNCEMENT SYSTEM
-//
-// FIX-I: Original query combined where("active","==",true) with
-//        where("createdAt",">=",startTime) and orderBy("createdAt","desc").
-//        Firestore requires a manually-created composite index for this
-//        combination. Without it the listener immediately errors out:
-//        "FirestoreError: The query requires an index."
-//
-//        Fix: use orderBy("createdAt","desc") only — Firestore auto-creates
-//        single-field indexes. Apply the `active` check client-side inside
-//        the callback. No Firebase Console index needed.
-//
-// FIX-L: Removed createdAt < startTime guard. onSnapshot fires immediately
-//        with ALL matching docs — every stored doc has createdAt < Timestamp.now()
-//        so the guard was silently dropping every announcement.
-//        The seen Set (sessionStorage-backed) already prevents duplicates.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function initAnnouncements() {
 
   if (unsubs.announcements) return;
 
-  // FIX-I: single orderBy — no composite index required
   const q = query(
     collection(db, "announcements"),
     orderBy("createdAt", "desc"),
@@ -229,19 +178,13 @@ function initAnnouncements() {
       const id   = change.doc.id;
       const data = change.doc.data();
 
-      // FIX-I: client-side active filter
       if (!data.active) return;
-
-      // FIX-L: createdAt recency guard REMOVED — it was dropping every stored
-      //        doc because Timestamp.now() is always newer than any saved doc.
-      //        seen Set below already prevents showing the same doc twice.
 
       if (seen.announcements.has(id)) return;
       markSeen("announcements", id);
 
       if (!data.text) return;
 
-      // Respect optional target field ("pwa" | "all")
       if (data.target === "pwa" && !isPWA()) return;
 
       renderAnnouncementBanner(data.text);
@@ -259,8 +202,6 @@ function renderAnnouncementBanner(text) {
   banner.setAttribute("aria-live", "polite");
   banner.textContent = "📢 " + text;
 
-  // Uses #announcement-container if present in HTML; falls back to body.
-  // Add <div id="announcement-container"> to index.html for correct positioning.
   const container = qs("#announcement-container") || document.body;
   safeAppend(container, banner);
   autoRemove(banner, 5000);
@@ -269,10 +210,6 @@ function renderAnnouncementBanner(text) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 6. NOTIFICATION SYSTEM
-//
-// FIX-J: Same composite index issue as announcements.
-//        Original: where("user","==",x) + where("createdAt",">=",t) + orderBy(...)
-//        Fix: single where("user","==",x), filter createdAt client-side.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function initNotifications() {
@@ -285,7 +222,6 @@ function initNotifications() {
 
   const startTime = Timestamp.now();
 
-  // FIX-J: single where() only — no composite index required
   const makeQuery = userValue =>
     query(
       collection(db, "notifications"),
@@ -301,7 +237,6 @@ function initNotifications() {
       const id   = change.doc.id;
       const data = change.doc.data();
 
-      // FIX-J: client-side recency filter
       if (data.createdAt && data.createdAt.toMillis() < startTime.toMillis()) return;
 
       if (seen.notifications.has(id)) return;
@@ -339,17 +274,6 @@ function fireNotification(title, body) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 7. PROMOTION POPUP SYSTEM
-//
-// FIX-M: Firestore schema field is "body" but code was reading data.message
-//        (always undefined). Fixed guard condition and msgEl to use data.body.
-//
-// FIX-N: box.className = "promo-popup" inherited CSS display:none from
-//        index.html (.promo-popup { display:none }). style.cssText never set
-//        display so the popup was invisible even when appended to body.
-//        Fix: renamed class to "uw-promo-toast" + added display:block.
-//
-// (No query fix needed — single where("active","==",true) with no orderBy
-//  uses the auto-created single-field index. No composite index required.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function initPromotions() {
@@ -376,7 +300,7 @@ function initPromotions() {
 
       if (!data.active) return;
 
-      // FIX-M: field is "body", not "message"
+      // FIX-M: "body" not "message"
       if (!data.title && !data.body) return;
 
       renderPromotionPopup(data);
@@ -389,15 +313,15 @@ function initPromotions() {
 
 function renderPromotionPopup(data) {
 
-  // Existing #promoPopup reuse karo — nayi element mat banao
-  // Static wala bhi yahi karta hai, isliye center mein aata hai
-  const popup  = document.getElementById("promoPopup");
+  // FIX-N: Reuse existing #promoPopup element — same element static wala use karta hai
+  // isliye CSS center alignment guarantee hai. setProperty + !important CSS override karta hai.
+  const popup = document.getElementById("promoPopup");
   if (!popup) return;
 
   const box = popup.querySelector(".promo-box");
   if (!box) return;
 
-  // Box ka content clear karo (promo.webp hata do)
+  // promo.webp hata do, Firestore content daalo
   box.innerHTML = "";
 
   // Close button
@@ -420,7 +344,7 @@ function renderPromotionPopup(data) {
   box.appendChild(titleEl);
   box.appendChild(bodyEl);
 
-  // CTA button (optional)
+  // CTA button (optional — agar Firestore mein cta field hai)
   if (data.cta) {
     const btn = document.createElement("button");
     btn.style.cssText = `
@@ -435,7 +359,7 @@ function renderPromotionPopup(data) {
     box.appendChild(btn);
   }
 
-  // !important — yahi static wala bhi use karta hai CSS display:none override ke liye
+  // !important — yahi static wala bhi karta hai, CSS display:none override hoga
   popup.style.setProperty("display", "flex", "important");
 
   // Backdrop tap se band ho
@@ -446,11 +370,14 @@ function renderPromotionPopup(data) {
     }
   });
 
-  // Auto remove — duration seconds mein, default 8s
+  // Auto hide — Firestore ka duration field (seconds), default 8s
   setTimeout(() => {
     popup.style.setProperty("display", "none", "important");
   }, (data.duration || 8) * 1000);
-} ─────────────────────────────────────────────────────────────────────────────
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 8. BOOTSTRAP
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -475,10 +402,7 @@ function boot() {
 // Standard page load
 document.addEventListener("DOMContentLoaded", boot);
 
-// FIX-K: bfcache restore — DOMContentLoaded does NOT fire when the browser
-//        restores a page from the back/forward cache (event.persisted === true).
-//        pagehide cleared the LISTENERS_BOOT flag, but the listeners were gone.
-//        On restore, re-run boot() to re-attach them.
+// FIX-K: bfcache restore
 window.addEventListener("pageshow", event => {
   if (event.persisted) {
     console.log("[UW] bfcache restore — re-attaching listeners.");
@@ -487,10 +411,7 @@ window.addEventListener("pageshow", event => {
   }
 });
 
-// Cleanup on navigate away
-// FIX-O: null each ref after calling it — otherwise bfcache restore sees a
-//        truthy unsubs.x and initX() hits the early-return guard, skipping
-//        listener re-attachment entirely.
+// FIX-O: null refs after unsub so bfcache restore works
 window.addEventListener("pagehide", () => {
   if (typeof unsubs.announcements === "function") { unsubs.announcements(); unsubs.announcements = null; }
   if (typeof unsubs.notifications  === "function") { unsubs.notifications();  unsubs.notifications  = null; }
