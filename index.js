@@ -389,62 +389,68 @@ function initPromotions() {
 
 function renderPromotionPopup(data) {
 
-  // Full-screen overlay — existing .promo-popup CSS use karo
-  const overlay = document.createElement("div");
-  overlay.className = "promo-popup";
-  overlay.style.display = "flex"; // CSS display:none override
+  // Existing #promoPopup reuse karo — nayi element mat banao
+  // Static wala bhi yahi karta hai, isliye center mein aata hai
+  const popup  = document.getElementById("promoPopup");
+  if (!popup) return;
 
-  // Centered card — existing .promo-box CSS
-  const box = document.createElement("div");
-  box.className = "promo-box";
-  box.style.cssText = "padding:24px 20px;text-align:center;";
+  const box = popup.querySelector(".promo-box");
+  if (!box) return;
 
-  // Close button — existing .promo-close CSS
+  // Box ka content clear karo (promo.webp hata do)
+  box.innerHTML = "";
+
+  // Close button
   const closeBtn = document.createElement("span");
   closeBtn.className = "promo-close";
   closeBtn.textContent = "✕";
-  closeBtn.onclick = () => overlay.remove();
+  closeBtn.onclick = () => popup.style.setProperty("display", "none", "important");
 
   // Title
   const titleEl = document.createElement("h3");
-  titleEl.style.cssText = "color:#fff;margin-bottom:10px;font-size:18px;";
+  titleEl.style.cssText = "color:#fff;margin:16px 0 10px;font-size:18px;font-weight:700;padding:0 10px;";
   titleEl.textContent = data.title || "";
 
   // Body
   const bodyEl = document.createElement("p");
-  bodyEl.style.cssText = "color:#a4b0be;font-size:14px;margin-bottom:16px;line-height:1.5;";
+  bodyEl.style.cssText = "color:#a4b0be;font-size:14px;line-height:1.6;margin:0 0 18px;padding:0 10px;";
   bodyEl.textContent = data.body || "";
-
-  // CTA button (optional — agar Firestore mein cta field hai)
-  if (data.cta) {
-    const btn = document.createElement("button");
-    btn.style.cssText = `
-      background:linear-gradient(45deg,#00f2fe,#4facfe);
-      border:none;border-radius:20px;padding:10px 24px;
-      color:#fff;font-weight:600;cursor:pointer;font-size:14px;
-    `;
-    btn.textContent = data.cta;
-    btn.onclick = () => overlay.remove();
-    box.appendChild(btn);
-  }
 
   box.appendChild(closeBtn);
   box.appendChild(titleEl);
   box.appendChild(bodyEl);
-  overlay.appendChild(box);
 
-  // Backdrop click se bhi band ho
-  overlay.addEventListener("click", e => {
-    if (e.target === overlay) overlay.remove();
+  // CTA button (optional)
+  if (data.cta) {
+    const btn = document.createElement("button");
+    btn.style.cssText = `
+      display:block;margin:0 auto 20px;
+      background:linear-gradient(45deg,#00f2fe,#4facfe);
+      border:none;border-radius:20px;
+      padding:10px 28px;color:#fff;
+      font-weight:600;cursor:pointer;font-size:14px;
+    `;
+    btn.textContent = data.cta;
+    btn.onclick = () => popup.style.setProperty("display", "none", "important");
+    box.appendChild(btn);
+  }
+
+  // !important — yahi static wala bhi use karta hai CSS display:none override ke liye
+  popup.style.setProperty("display", "flex", "important");
+
+  // Backdrop tap se band ho
+  popup.addEventListener("click", function handler(e) {
+    if (e.target === popup) {
+      popup.style.setProperty("display", "none", "important");
+      popup.removeEventListener("click", handler);
+    }
   });
 
-  safeAppend(document.body, overlay);
-
-  // Auto remove — duration field use karo (seconds mein), default 8s
-  const ms = ((data.duration || 8) * 1000);
-  autoRemove(overlay, ms);
-}
-// ─────────────────────────────────────────────────────────────────────────────
+  // Auto remove — duration seconds mein, default 8s
+  setTimeout(() => {
+    popup.style.setProperty("display", "none", "important");
+  }, (data.duration || 8) * 1000);
+} ─────────────────────────────────────────────────────────────────────────────
 // 8. BOOTSTRAP
 // ─────────────────────────────────────────────────────────────────────────────
 
