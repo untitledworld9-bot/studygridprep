@@ -16,6 +16,7 @@ import { db } from "./firebase.js";
 import {
   collection,
   doc,
+  updateDoc,
   onSnapshot,
   query,
   orderBy,
@@ -229,6 +230,9 @@ function initNotifications(){
    fireNotification(d.title,d.body);
 
    markSeen("notifications",id);
+ updateDoc(doc(db,"notifications",id),{
+ read:true
+});
 
   });
 
