@@ -1,394 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leaderboard — Untitled World</title>
-<link rel="manifest" href="manifest.json">
+
+<title>Login - Untitled World</title>
+
 <link rel="icon" href="/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-:root {
-  --bg:        #0a0e1a;
-  --surface:   #111827;
-  --border:    rgba(255,255,255,0.07);
-  --cyan:      #00e0ff;
-  --violet:    #7c5cfc;
-  --amber:     #ffb830;
-  --green:     #00e5a0;
-  --red:       #ff4f6a;
-  --text:      #eef0ff;
-  --muted:     #6b7a99;
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body{
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding-bottom: 80px;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+color:white;
+
 }
 
-/* ── STICKY HEADER ────────────────────────────────────────────────────────── */
-.lb-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(10, 14, 26, 0.92);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 224, 255, 0.15);
-  padding: 16px 20px 14px;
-  text-align: center;
+.login-box{
+text-align:center;
+max-width:380px;
+width:85%;
 }
 
-.lb-title {
-  font-size: 20px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--cyan), var(--violet));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.02em;
+.logo{
+width:95px;
+margin-bottom:22px;
+animation: floatLogo 3s ease-in-out infinite;
 }
 
-.lb-sub {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 2px;
+@keyframes floatLogo{
+0%{transform:translateY(0px);}
+50%{transform:translateY(-10px);}
+100%{transform:translateY(0px);}
 }
 
-.xp-rule {
-  display: inline-block;
-  background: rgba(0,224,255,0.08);
-  border: 1px solid rgba(0,224,255,0.2);
-  border-radius: 20px;
-  padding: 4px 14px;
-  font-size: 11px;
-  color: var(--cyan);
-  font-weight: 600;
-  margin-top: 8px;
+h1{
+
+font-size:28px;
+margin-bottom:5px;
+
 }
 
-.reset-timer {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 4px;
+.sub{
+
+opacity:.85;
+font-size:18px;
 }
 
-/* ── SCROLL AREA ──────────────────────────────────────────────────────────── */
-.lb-scroll {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 16px;
+.desc{
+
+opacity:.7;
+margin-top:6px;
+margin-bottom:25px;
+
 }
 
-/* ── LEVEL LEGEND ─────────────────────────────────────────────────────────── */
-.level-strip {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 14px 0 10px;
-  scrollbar-width: none;
-}
-.level-strip::-webkit-scrollbar { display: none; }
+.google-btn{
 
-.lvl-pill {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
-  font-size: 10px;
-  color: var(--muted);
-  min-width: 64px;
-}
-.lvl-pill .lvl-icon { font-size: 16px; }
-.lvl-pill .lvl-name { font-weight: 700; font-size: 10px; color: var(--text); }
+display:flex;
+align-items:center;
+justify-content:center;
 
-/* ── PODIUM ───────────────────────────────────────────────────────────────── */
-.podium-wrap {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 10px;
-  padding: 20px 0 16px;
+width:100%;
+
+gap:12px;
+
+background:white;
+color:black;
+
+border:none;
+
+padding:16px 20px;
+
+border-radius:40px;
+
+font-weight:600;
+font-size:16px;
+
+cursor:pointer;
+
+transition:0.25s;
+
+box-shadow:0 8px 25px rgba(0,0,0,0.25);
 }
 
-.podium-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.google-btn:hover{
+transform:scale(1.03);
 }
 
-.podium-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 20px;
-  position: relative;
+.google-btn img{
+
+width:20px;
+
 }
 
-.podium-avatar.rank-1 {
-  width: 64px;
-  height: 64px;
-  font-size: 24px;
-  background: linear-gradient(135deg, #ffd700, #ffb830);
-  box-shadow: 0 0 24px rgba(255,184,0,0.5);
-}
-.podium-avatar.rank-2 {
-  background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
-  box-shadow: 0 0 16px rgba(192,192,192,0.35);
-}
-.podium-avatar.rank-3 {
-  background: linear-gradient(135deg, #cd7f32, #a0522d);
-  box-shadow: 0 0 16px rgba(205,127,50,0.35);
+.sub{
+opacity:.9;
+font-size:18px;
+animation:fadeIn 2s ease;
 }
 
-.podium-crown { position: absolute; top: -14px; font-size: 18px; }
-
-.podium-name {
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+@keyframes fadeIn{
+from{opacity:0;}
+to{opacity:.9;}
 }
 
-.podium-xp {
-  font-size: 11px;
-  color: var(--amber);
-  font-weight: 600;
-}
-
-.podium-lvl {
-  font-size: 10px;
-  color: var(--muted);
-}
-
-.podium-bar {
-  border-radius: 10px 10px 0 0;
-  width: 72px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 8px;
-  font-size: 22px;
-}
-.podium-bar.rank-1 {
-  height: 80px;
-  background: linear-gradient(180deg, rgba(255,184,48,0.25), rgba(255,184,48,0.05));
-  border: 1px solid rgba(255,184,48,0.35);
-}
-.podium-bar.rank-2 {
-  height: 60px;
-  background: linear-gradient(180deg, rgba(192,192,192,0.18), rgba(192,192,192,0.04));
-  border: 1px solid rgba(192,192,192,0.25);
-}
-.podium-bar.rank-3 {
-  height: 44px;
-  background: linear-gradient(180deg, rgba(205,127,50,0.18), rgba(205,127,50,0.04));
-  border: 1px solid rgba(205,127,50,0.25);
-}
-
-/* ── RANK LIST (4-20) ─────────────────────────────────────────────────────── */
-.rank-list { display: flex; flex-direction: column; gap: 8px; }
-
-.rank-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px 14px;
-  transition: transform 0.15s ease;
-}
-
-.rank-row:active { transform: scale(0.98); }
-
-.rank-num {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted);
-  min-width: 24px;
-  text-align: center;
-}
-
-.rank-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #1a2540, #243050);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 16px;
-  color: var(--cyan);
-  flex-shrink: 0;
-}
-
-.rank-info { flex: 1; min-width: 0; }
-
-.rank-name {
-  font-size: 13px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.rank-detail {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 1px;
-}
-
-.rank-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-
-.rank-xp {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--amber);
-}
-
-.level-badge {
-  font-size: 9px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ── MY RANK FOOTER ───────────────────────────────────────────────────────── */
-.my-rank-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(17, 24, 39, 0.96);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(0, 224, 255, 0.2);
-  padding: 12px 20px;
-  display: none;
-  align-items: center;
-  gap: 12px;
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.my-rank-bar.visible { display: flex; }
-.my-rank-label { font-size: 11px; color: var(--muted); }
-.my-rank-val { font-size: 16px; font-weight: 800; color: var(--cyan); }
-
-/* ── LEVEL UP POPUP ───────────────────────────────────────────────────────── */
-.levelup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn .3s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn  { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
-@keyframes shine { 0%,100%{opacity:.7} 50%{opacity:1} }
-
-.levelup-card {
-  background: linear-gradient(135deg, #111827, #1c2a4a);
-  border: 1px solid rgba(0,224,255,0.35);
-  border-radius: 24px;
-  padding: 36px 28px;
-  text-align: center;
-  max-width: 320px;
-  width: 90%;
-  animation: popIn .4s cubic-bezier(0.34,1.56,0.64,1) both;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(0,224,255,0.1);
-}
-
-.levelup-icon { font-size: 56px; animation: shine 1s ease infinite; margin-bottom: 12px; }
-.levelup-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-.levelup-sub   { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
-.levelup-btn   {
-  background: linear-gradient(135deg, var(--cyan), var(--violet));
-  border: none; border-radius: 12px;
-  padding: 12px 32px; color: #000;
-  font-weight: 700; font-size: 14px;
-  cursor: pointer; width: 100%;
-}
-
-.section-divider {
-  font-size: 11px;
-  color: var(--muted);
-  text-align: center;
-  padding: 12px 0 6px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-#loading {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--muted);
-  font-size: 14px;
-}
 </style>
+
 </head>
+
 <body>
 
-<div class="lb-header">
-  <div class="lb-title">🏆 Weekly Leaderboard</div>
-  <div class="lb-sub">Top 20 studiers this week</div>
-  <div class="xp-rule">⭐ 2 min = 1 XP</div>
-  <div class="reset-timer" id="resetTimer">Resets in —</div>
-</div>
+<div class="login-box">
 
-<div class="lb-scroll">
+<img src="/icon-512.png" class="logo">
 
-  <!-- Level legend strip -->
-  <div class="level-strip" id="levelStrip"></div>
+<h1 id="typing"></h1>
 
-  <!-- Podium (top 3) -->
-  <div id="podiumArea"></div>
+<p class="sub">Smart Study Platform</p>
 
-  <!-- Rank 4–20 list -->
-  <div class="section-divider">Leaderboard</div>
-  <div class="rank-list" id="rankList"></div>
+<p class="desc">Learn Smarter. Stay Focused.</p>
 
-  <!-- Loading state -->
-  <div id="loading">Loading leaderboard…</div>
+<button class="google-btn" onclick="login()">
+
+<img src="https://developers.google.com/identity/images/g-logo.png">
+
+Login with Google
+
+</button>
 
 </div>
 
-<!-- My rank sticky footer -->
-<div class="my-rank-bar" id="myRankBar">
-  <div style="flex:1;">
-    <div class="my-rank-label">Your rank this week</div>
-    <div class="my-rank-val" id="myRankVal">—</div>
-  </div>
-  <div style="text-align:right;">
-    <div class="my-rank-label">Your XP</div>
-    <div style="font-size:14px;font-weight:700;color:var(--amber);" id="myXpVal">—</div>
-  </div>
-</div>
+<script type="module">
 
-<script type="module" src="leaderboard.js"></script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+  authDomain: "untitled-world-2e645.firebaseapp.com",
+  projectId: "untitled-world-2e645",
+  storageBucket: "untitled-world-2e645.firebasestorage.app",
+  messagingSenderId: "990115586087",
+  appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+function getTodayDate(){
+ const d = new Date();
+ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+
+window.login = async function(){
+
+try{
+
+const result = await signInWithPopup(auth, provider);
+const user = result.user;
+
+const name = user.displayName;
+const email = user.email;
+
+localStorage.setItem("userName", name);
+localStorage.setItem("userEmail", email);
+
+await setDoc(doc(db,"users",name),{
+
+ name: name,
+ email: email,
+ focusTime: 0,
+ weeklyXP: 0,
+ status: "Online",
+ room: "global",
+ lastActiveDate: getTodayDate()
+
+},{merge:true});
+
+// welcome screen logic
+
+if(!localStorage.getItem("seenWelcome")){
+
+window.location.href="mainwelcome.html";
+
+}else{
+
+window.location.href="index.html";
+}
+
+}catch(err){
+
+console.log(err);
+alert("Login Failed");
+
+}
+
+}
+
+const text="Welcome to Untitled World";
+let i=0;
+
+function typeText(){
+if(i<text.length){
+document.getElementById("typing").innerHTML += text.charAt(i);
+i++;
+setTimeout(typeText,60);
+}
+}
+
+typeText();
+
+</script>
+
 </body>
 </html>
