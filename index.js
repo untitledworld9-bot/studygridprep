@@ -10,12 +10,16 @@
  * FIX-R   App Updates listener added
  * FIX-S   pagehide NULLS unsubs after calling
  * FIX-T   Announcements: edtech-style banner, priority colour, image, close btn
- * FIX-U   Notifications + Announcements: localStorage dedup so same item never
- *          re-shows across app opens (only resets if user clears storage)
- * FIX-V   Promotions banner type: full-width image banner with close btn + auto-hide
+ * FIX-U   Notifications: localStorage dedup so same notification never repeats
+ * FIX-V   Promotions banner type: CENTERED OVERLAY MODAL (not top banner)
  *          Popup type: centered overlay (existing behaviour)
  * FIX-W   Promotions CTA: if data.url exists → open URL in new tab, then close
  * FIX-X   App Updates: if data.url exists → open URL instead of cache-clear reload
+ * FIX-Y   Promotions: 3-second delay before showing
+ * FIX-Z   Announcements + Promotions: sessionStorage → re-appear each fresh session
+ * FIX-AA  App Updates: localStorage → NEVER repeat across sessions
+ * FIX-AB  Announcement medium priority: darker background
+ * FIX-AC  Notifications: createdAt guard — only NEW notifications fire
  */
 
 import { db } from "./firebase.js";
@@ -38,23 +42,26 @@ import {
 ───────────────────────────── */
 
 const SK = {
-  ANNOUNCEMENTS : "uw_seen_announcements",
-  NOTIFICATIONS : "uw_seen_notifications",
-  PROMOTIONS    : "uw_seen_promotions",
-  UPDATE_SEEN   : "uw_seen_update",
+  ANNOUNCEMENTS : "uw_seen_announcements",   // sessionStorage — re-shows each session
+  NOTIFICATIONS : "uw_seen_notifications",   // localStorage  — never repeats (old notifs stay blocked)
+  PROMOTIONS    : "uw_seen_promotions",      // sessionStorage — re-shows each session
+  UPDATE_SEEN   : "uw_seen_update",          // localStorage  — never repeats
   LISTENERS_BOOT: "uw_listeners_booted"
 };
 
+// FIX-Z:  Announcements & Promotions use sessionStorage (fresh on each app open)
+// FIX-AC: Notifications use localStorage (permanent dedup — no old notifs ever replay)
 const seen = {
-  announcements : new Set(JSON.parse(localStorage.getItem(SK.ANNOUNCEMENTS)    || "[]")),
-  notifications : new Set(JSON.parse(localStorage.getItem(SK.NOTIFICATIONS)    || "[]")),
-  promotions    : new Set(JSON.parse(sessionStorage.getItem(SK.PROMOTIONS)     || "[]"))
+  announcements : new Set(JSON.parse(sessionStorage.getItem(SK.ANNOUNCEMENTS) || "[]")),
+  notifications : new Set(JSON.parse(localStorage.getItem(SK.NOTIFICATIONS)   || "[]")),
+  promotions    : new Set(JSON.parse(sessionStorage.getItem(SK.PROMOTIONS)    || "[]"))
 };
 
 function markSeen(type, id) {
   seen[type].add(id);
   try {
-    const storage = (type === "promotions") ? sessionStorage : localStorage;
+    // notifications → localStorage (permanent); everything else → sessionStorage
+    const storage = (type === "notifications") ? localStorage : sessionStorage;
     storage.setItem(SK[type.toUpperCase()], JSON.stringify([...seen[type]]));
   } catch {}
 }
@@ -103,6 +110,32 @@ function isPWA() {
 
 
 /* ─────────────────────────────
+   KEYFRAME ANIMATIONS (injected once)
+───────────────────────────── */
+
+(function injectAnimations() {
+  if (document.getElementById("uw-animations")) return;
+  const style = document.createElement("style");
+  style.id = "uw-animations";
+  style.textContent = `
+    @keyframes slideDown {
+      from { transform:translateY(-16px); opacity:0; }
+      to   { transform:translateY(0);     opacity:1; }
+    }
+    @keyframes slideUp {
+      from { transform:translateY(28px) scale(0.97); opacity:0; }
+      to   { transform:translateY(0)    scale(1);    opacity:1; }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; }
+      to   { opacity:1; }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+
+/* ─────────────────────────────
    SERVICE WORKER
 ───────────────────────────── */
 
@@ -115,7 +148,8 @@ function initServiceWorker() {
 
 /* ─────────────────────────────
    ANNOUNCEMENTS
-   No URL field — only text, imageUrl, priority, active, createdAt
+   FIX-Z:  sessionStorage → re-appears on every fresh app open
+   FIX-AB: medium priority has darker background (0.22 vs old 0.12)
 ───────────────────────────── */
 
 function initAnnouncements() {
@@ -134,9 +168,9 @@ function initAnnouncements() {
       const id   = change.doc.id;
       const data = change.doc.data();
 
-      if (!data.active)                       return;
-      if (seen.announcements.has(id))         return;
-      if (data.target === "pwa" && !isPWA())  return;
+      if (!data.active)                      return;
+      if (seen.announcements.has(id))        return;
+      if (data.target === "pwa" && !isPWA()) return;
 
       renderAnnouncement(data);
       markSeen("announcements", id);
@@ -145,10 +179,11 @@ function initAnnouncements() {
 }
 
 function renderAnnouncement(data) {
+  // FIX-AB: medium bg darker (0.22 opacity instead of 0.12)
   const colours = {
-    high   : { bg: "rgba(255,59,59,0.15)",  border: "#ff3b3b", dot: "#ff3b3b" },
-    medium : { bg: "rgba(255,184,48,0.12)", border: "#ffb830", dot: "#ffb830" },
-    low    : { bg: "rgba(0,229,160,0.10)",  border: "#00e5a0", dot: "#00e5a0" }
+    high   : { bg: "rgba(255,59,59,0.18)",  border: "#ff3b3b", dot: "#ff3b3b" },
+    medium : { bg: "rgba(255,184,48,0.22)", border: "#ffb830", dot: "#ffb830" },
+    low    : { bg: "rgba(0,229,160,0.14)",  border: "#00e5a0", dot: "#00e5a0" }
   };
   const c = colours[data.priority] || colours.medium;
 
@@ -219,6 +254,8 @@ function renderAnnouncement(data) {
 
 /* ─────────────────────────────
    NOTIFICATIONS
+   FIX-AC: createdAt guard — only notifications created AFTER boot fire
+           localStorage dedup — old notifications never replay, ever
 ───────────────────────────── */
 
 function initNotifications() {
@@ -239,7 +276,9 @@ function initNotifications() {
       const id = change.doc.id;
       const d  = change.doc.data();
 
+      // FIX-AC: only fire if notification was created AFTER this session started
       if (d.createdAt && d.createdAt.toMillis() < start.toMillis()) return;
+      // Permanent localStorage dedup — never shows same notification twice
       if (seen.notifications.has(id)) return;
 
       fireNotification(d.title, d.body, d.url || null);
@@ -256,6 +295,7 @@ function initNotifications() {
   }
   unsubs.notifications = () => { unsubAll(); unsubUser(); };
 }
+
 
 function fireNotification(title, body, url) {
   if (Notification.permission !== "granted") return;
@@ -275,7 +315,11 @@ function fireNotification(title, body, url) {
 
 /* ─────────────────────────────
    PROMOTIONS
-   FIX-W: CTA button — if data.url exists → open in new tab, then close
+   FIX-V:  Banner = CENTERED OVERLAY MODAL (not top-fixed banner)
+           Full image at top, title+body+CTA below, ✕ at top-right corner
+   FIX-W:  CTA → open data.url in new tab if present, then close
+   FIX-Y:  3-second delay before showing
+   FIX-Z:  sessionStorage dedup → re-appears on each new session
 ───────────────────────────── */
 
 function initPromotions() {
@@ -297,93 +341,138 @@ function initPromotions() {
       if (seen.promotions.has(id))   return;
       if (!data.title && !data.body) return;
 
-      if (data.type === "banner") {
-        renderPromotionBanner(data);
-      } else {
-        renderPromotionPopup(data);
-      }
-
+      // Mark seen immediately so duplicate Firestore events don't double-show
       markSeen("promotions", id);
+
+      // FIX-Y: 3-second delay — user sees the page first
+      setTimeout(() => {
+        if (data.type === "banner") {
+          renderPromotionBanner(data);
+        } else {
+          renderPromotionPopup(data);
+        }
+      }, 3000);
     });
   }, err => console.warn("[Promotions]", err));
 }
 
-// ── BANNER — full-width top banner
+// ── BANNER — FIX-V: CENTERED OVERLAY MODAL (like the screenshot edtech style)
 function renderPromotionBanner(data) {
-  const el = document.createElement("div");
-  el.style.cssText = `
-    position:fixed;top:0;left:0;right:0;
-    background:${data.bgColor || "#0d1117"};
-    border-bottom:2px solid rgba(0,242,254,0.35);
-    z-index:99998;animation:slideDown .35s ease;font-family:inherit;
+  // Full-screen dim backdrop
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.82);
+    backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    z-index:99998;
+    animation:fadeIn .3s ease;
+    font-family:inherit;
   `;
 
+  // Centered card
+  const card = document.createElement("div");
+  card.style.cssText = `
+    position:relative;
+    width:90%;max-width:420px;
+    background:${data.bgColor || "#0d1117"};
+    border:1px solid rgba(0,242,254,0.25);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,0.75);
+    animation:slideUp .35s ease;
+  `;
+
+  // ✕ Close — top-right corner of card
+  const close = document.createElement("button");
+  close.textContent = "✕";
+  close.setAttribute("aria-label", "Close");
+  close.style.cssText = `
+    position:absolute;top:12px;right:12px;
+    background:rgba(0,0,0,0.55);
+    border:none;border-radius:50%;
+    color:#fff;font-size:14px;
+    width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;z-index:3;line-height:1;
+  `;
+  close.onclick = () => overlay.remove();
+  card.appendChild(close);
+
+  // Full-width image at top
   if (data.imageUrl) {
     const img = document.createElement("img");
     img.src = data.imageUrl;
     img.alt = data.title || "";
-    img.style.cssText = "width:100%;max-height:220px;object-fit:cover;display:block;";
+    img.style.cssText = `
+      width:100%;max-height:220px;
+      object-fit:cover;display:block;
+    `;
     img.onerror = () => img.remove();
-    el.appendChild(img);
+    card.appendChild(img);
   }
 
-  const row = document.createElement("div");
-  row.style.cssText = `
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 48px 14px 18px;gap:10px;
-  `;
+  // Content block below image
+  const content = document.createElement("div");
+  content.style.cssText = "padding:20px 20px 24px;text-align:center;";
 
-  const textWrap = document.createElement("div");
   if (data.title) {
     const t = document.createElement("div");
-    t.style.cssText = "font-size:15px;font-weight:700;color:#fff;line-height:1.4;";
+    t.style.cssText = `
+      font-size:17px;font-weight:700;
+      color:#fff;line-height:1.4;margin-bottom:8px;
+    `;
     t.textContent = data.title;
-    textWrap.appendChild(t);
+    content.appendChild(t);
   }
+
   if (data.body) {
     const b = document.createElement("div");
-    b.style.cssText = "font-size:13px;color:rgba(255,255,255,0.65);margin-top:2px;";
+    b.style.cssText = `
+      font-size:13px;
+      color:rgba(255,255,255,0.60);
+      line-height:1.6;margin-bottom:18px;
+    `;
     b.textContent = data.body;
-    textWrap.appendChild(b);
+    content.appendChild(b);
   }
-  row.appendChild(textWrap);
 
   if (data.cta) {
     const btn = document.createElement("button");
     btn.textContent = data.cta;
     btn.style.cssText = `
-      flex-shrink:0;
+      display:inline-block;
       background:linear-gradient(45deg,#00f2fe,#4facfe);
-      border:none;border-radius:20px;padding:8px 20px;
-      color:#000;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;
+      border:none;border-radius:24px;
+      padding:12px 36px;
+      color:#000;font-weight:700;
+      cursor:pointer;font-size:14px;
+      white-space:nowrap;
     `;
-    // FIX-W: open URL if present
+    // FIX-W: open URL then close
     btn.onclick = () => {
       if (data.url) window.open(data.url, "_blank");
-      el.remove();
+      overlay.remove();
     };
-    row.appendChild(btn);
+    content.appendChild(btn);
   }
 
-  el.appendChild(row);
+  card.appendChild(content);
+  overlay.appendChild(card);
 
-  const close = document.createElement("button");
-  close.textContent = "✕";
-  close.setAttribute("aria-label", "Close");
-  close.style.cssText = `
-    position:absolute;top:10px;right:12px;
-    background:none;border:none;color:rgba(255,255,255,0.5);
-    font-size:18px;cursor:pointer;line-height:1;padding:4px 6px;
-  `;
-  close.onclick = () => el.remove();
-  el.appendChild(close);
+  // Close on backdrop tap
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) overlay.remove();
+  });
 
-  safeAppend(document.body, el);
+  safeAppend(document.body, overlay);
+
+  // Auto-hide after admin-set duration (default 8s)
   const ms = (data.duration || 8) * 1000;
-  if (ms > 0) autoRemove(el, ms);
+  if (ms > 0) autoRemove(overlay, ms);
 }
 
-// ── POPUP — centered overlay (reuses #promoPopup)
+// ── POPUP — centered overlay (reuses #promoPopup, unchanged)
 function renderPromotionPopup(data) {
   const popup = document.getElementById("promoPopup");
   if (!popup) return;
@@ -443,7 +532,8 @@ function renderPromotionPopup(data) {
 
 /* ─────────────────────────────
    APP UPDATES
-   FIX-X: if data.url → open URL instead of cache-clear reload
+   FIX-AA: localStorage → update popup NEVER repeats across sessions
+   FIX-X:  if data.url → open URL instead of cache-clear reload
 ───────────────────────────── */
 
 let _lastUpdateKey = null;
@@ -461,10 +551,11 @@ function initAppUpdates() {
 
       const key = (data.version || "") + "_" + (data.time || "");
       if (_lastUpdateKey === key) return;
-      if (sessionStorage.getItem(SK.UPDATE_SEEN) === key) return;
+      // FIX-AA: localStorage — same update version never shown again
+      if (localStorage.getItem(SK.UPDATE_SEEN) === key) return;
 
       _lastUpdateKey = key;
-      sessionStorage.setItem(SK.UPDATE_SEEN, key);
+      localStorage.setItem(SK.UPDATE_SEEN, key);
       showUpdatePopup(data);
     },
     err => console.warn("[AppUpdates]", err)
