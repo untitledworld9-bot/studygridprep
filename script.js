@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isRunning      = false;
   let mode           = "stopwatch";
   let initialSeconds = 0;
-  let savedMinutes   = 0;  // FIX: track minutes already incremented during interval
+  let savedMinutes   = 0;   // FIX-XP: tracks minutes already sent to Firestore this session
   let chattingWith = "";
   let lastWaveTime = 0;
   let lastMsgTime  = Date.now();
@@ -276,9 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const userRef     = doc(db, "users", currentUser);
       const snap        = await getDoc(userRef);
 
+      // FIX-XP: Only reset weeklyXP on new week — focusTime reset is handled
+      // in onAuthStateChanged (daily). Removing focusTime:0 here prevents double-reset.
       if (snap.exists() && snap.data().lastActiveWeek !== currentWeek) {
         await updateDoc(userRef, {
-          weeklyXP: 0, focusTime: 0, lastActiveWeek: currentWeek
+          weeklyXP:       0,
+          lastActiveWeek: currentWeek
         });
       }
 
@@ -286,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!isRunning) {
         isRunning    = true;
-        savedMinutes = 0; // reset on each new start
+        savedMinutes = 0;   // FIX-XP: reset counter for this session
         startBtn.style.display = "none";
         if (stopBtn)  stopBtn.style.display  = "block";
         if (ring)     ring.classList.add("active");
@@ -298,12 +301,14 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             seconds++;
             updateDisplay();
+            // Every 60s: save 1 minute to Firestore (track it in savedMinutes)
             if (seconds % 60 === 0 && isRunning) {
-              savedMinutes++; // FIX: track already-saved minutes
+              savedMinutes++;
               await updateDoc(doc(db, "users", currentUser), {
                 status: "Focusing 👋", focusTime: increment(1)
               });
             }
+            // Every 120s: +1 XP (2 min = 1 XP)
             if (seconds % 120 === 0 && isRunning) {
               await updateDoc(doc(db, "users", currentUser), {
                 weeklyXP: increment(1)
@@ -321,8 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
       clearInterval(timerInterval);
       isRunning = false;
 
-      // FIX: only save minutes NOT already saved by the interval
-      const totalMins   = Math.floor(seconds / 60);
+      const totalMins  = Math.floor(seconds / 60);
+      // FIX-XP: interval already saved savedMinutes to Firestore one-by-one.
+      // Only add the REMAINING unsaved minutes so we never double-count.
       const unsavedMins = totalMins - savedMinutes;
       if (unsavedMins > 0) {
         await updateDoc(doc(db, "users", currentUser), {
@@ -331,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         await updateDoc(doc(db, "users", currentUser), { status: "Online" });
       }
-      savedMinutes = 0;
+      savedMinutes = 0;   // reset for next session
 
       if (startBtn) startBtn.style.display = "block";
       stopBtn.style.display = "none";
@@ -350,6 +356,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function finishTimer() {
     clearInterval(timerInterval);
     isRunning = false;
+    // FIX-XP: save any remaining unsaved minutes on countdown finish
+    const totalMins   = Math.floor((initialSeconds - seconds) / 60);
+    const unsavedMins = totalMins - savedMinutes;
+    if (unsavedMins > 0 && currentUser) {
+      updateDoc(doc(db, "users", currentUser), {
+        status: "Online", focusTime: increment(unsavedMins)
+      }).catch(() => {});
+    }
+    savedMinutes = 0;
     if (startBtn) startBtn.style.display = "block";
     if (stopBtn)  stopBtn.style.display  = "none";
     if (ring)     ring.classList.remove("active");
@@ -544,7 +559,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      
       // -- Wave detection --
       snapshot.forEach(docSnap => {
         const u = docSnap.data();
