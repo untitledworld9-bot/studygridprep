@@ -31,7 +31,7 @@ messaging.onBackgroundMessage(function(payload) {
 // • Zero white screen
 // ────────────────────────────────────────────────────────────────────────────
 
-const CACHE = "uw-cache-v18";
+const CACHE = "uw-cache-v19";
 
 const ASSETS = [
   "/",
