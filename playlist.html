@@ -898,12 +898,6 @@ subject:subject
 });
             saveAndRender();
             syncTodoToFirebase(); // 🔥 ADD
-// 🔥 YAHI ADD KAR (IMPORTANT)
-        if ('serviceWorker' in navigator && 'SyncManager' in window) {
-            navigator.serviceWorker.ready.then(reg => {
-                reg.sync.register('sync-playlist');
-            });
-        }
             showSuccess(subject);
             input.value = "";
         } else {
