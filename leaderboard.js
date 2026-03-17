@@ -5,7 +5,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// ── Firebase init (singleton) ────────────────────────────────────────────────
+// ── Firebase init (singleton) ─────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey:     "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
   authDomain: "untitled-world-2e645.firebaseapp.com",
@@ -15,7 +15,7 @@ const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-// ── Level system — 8 levels, 2h (60 XP) gap each ───────────────────────────
+// ── Level system (2 min = 1 XP, 1 hr = 30 XP) ────────────────────────────────
 const LEVELS = [
   { min: 0,   name: "Beginner",  icon: "🌱", color: "#00e5a0", bg: "rgba(0,229,160,0.12)",  border: "rgba(0,229,160,0.3)"  },
   { min: 30,  name: "Explorer",  icon: "🔍", color: "#00e0ff", bg: "rgba(0,224,255,0.12)",  border: "rgba(0,224,255,0.3)"  },
@@ -36,16 +36,7 @@ function getLevel(xp) {
   return lvl;
 }
 
-function getLevelIndex(xp) {
-  let idx = 0;
-  for (let i = 0; i < LEVELS.length; i++) {
-    if ((xp || 0) >= LEVELS[i].min) idx = i;
-    else break;
-  }
-  return idx;
-}
-
-// ── Weekly reset helper ───────────────────────────────────────────────────────
+// ── Weekly helpers ────────────────────────────────────────────────────────────
 function getWeekNumber() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -54,43 +45,45 @@ function getWeekNumber() {
   return `${d.getFullYear()}-W${Math.ceil((((d - yearStart) / 86400000) + 1) / 7)}`;
 }
 
-// Days until next Monday (weekly reset)
 function daysUntilReset() {
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun, 1=Mon, ...
-  const daysLeft = day === 1 ? 7 : (8 - day) % 7;
-  return daysLeft;
+  const day = new Date().getDay();
+  return day === 1 ? 7 : (8 - day) % 7;
 }
 
-// ── DOM refs ──────────────────────────────────────────────────────────────────
-const podiumArea  = document.getElementById("podiumArea");
-const rankList    = document.getElementById("rankList");
-const loading     = document.getElementById("loading");
-const myRankBar   = document.getElementById("myRankBar");
-const myRankVal   = document.getElementById("myRankVal");
-const myXpVal     = document.getElementById("myXpVal");
-const resetTimer  = document.getElementById("resetTimer");
-const levelStrip  = document.getElementById("levelStrip");
+// ── DOM refs — matches new leaderboard.html ───────────────────────────────────
+const podiumArea = document.getElementById("podiumArea");
+const rankList   = document.getElementById("rankList");
+const loading    = document.getElementById("loading");
+const myRankBar  = document.getElementById("myRankBar");
+const myRankVal  = document.getElementById("myRankVal");
+const myXpVal    = document.getElementById("myXpVal");
+const resetTimer = document.getElementById("resetTimer");
+const levelStrip = document.getElementById("levelStrip");
 
 // ── Level strip ───────────────────────────────────────────────────────────────
-levelStrip.innerHTML = LEVELS.map((l, i) => `
-  <div class="lvl-pill">
-    <span class="lvl-icon">${l.icon}</span>
-    <span class="lvl-name">${l.name}</span>
-    <span style="font-size:9px;color:${l.color};">${l.min} XP</span>
-  </div>`).join("");
+if (levelStrip) {
+  levelStrip.innerHTML = LEVELS.map(l => `
+    <div class="lvl-pill">
+      <span class="lvl-icon">${l.icon}</span>
+      <span class="lvl-name" style="color:${l.color};">${l.name}</span>
+      <span style="font-size:9px;color:rgba(255,255,255,0.35);">${l.min} XP</span>
+    </div>`).join("");
+}
 
 // ── Reset countdown ───────────────────────────────────────────────────────────
-resetTimer.textContent = `Resets in ${daysUntilReset()} day${daysUntilReset() === 1 ? "" : "s"}`;
+if (resetTimer) {
+  const d = daysUntilReset();
+  resetTimer.textContent = `Resets in ${d} day${d === 1 ? "" : "s"}`;
+}
 
-// ── Level up popup ────────────────────────────────────────────────────────────
-function showLevelUpPopup(lvl, rank) {
+// ── Top-3 popup ───────────────────────────────────────────────────────────────
+function showTopPopup(lvl, rank) {
   const overlay = document.createElement("div");
   overlay.className = "levelup-overlay";
   overlay.innerHTML = `
     <div class="levelup-card">
       <div class="levelup-icon">${lvl.icon}</div>
-      <div class="levelup-title">You're in Top ${rank}! 🎉</div>
+      <div class="levelup-title">🔥 You are in Top ${rank}!</div>
       <div class="levelup-sub">
         You reached <b style="color:${lvl.color};">${lvl.name}</b> level!<br>
         Keep studying to climb higher 🚀
@@ -102,118 +95,131 @@ function showLevelUpPopup(lvl, rank) {
   document.body.appendChild(overlay);
 }
 
-// ── Track shown popup so it doesn't repeat ────────────────────────────────────
 const POPUP_KEY = "uw_lb_popup_shown";
-let popupShown = sessionStorage.getItem(POPUP_KEY) === "true";
+let popupShown  = sessionStorage.getItem(POPUP_KEY) === "true";
 
-// ── Main render ───────────────────────────────────────────────────────────────
-function renderLeaderboard(users, currentUserName) {
-  loading.style.display = "none";
-
-  // Sort by weeklyXP desc
-  const sorted = [...users]
-    .filter(u => (u.weeklyXP || 0) > 0 || u.name)
-    .sort((a, b) => (b.weeklyXP || 0) - (a.weeklyXP || 0))
-    .slice(0, 20);
-
-  if (!sorted.length) {
-    loading.style.display = "block";
-    loading.textContent = "No data this week yet.";
-    return;
-  }
-
-  // ── My rank ────────────────────────────────────────────────────────────────
-  const myIdx = sorted.findIndex(u => u.name === currentUserName);
-  if (myIdx >= 0) {
-    const me = sorted[myIdx];
-    myRankBar.classList.add("visible");
-    myRankVal.textContent = `#${myIdx + 1} of ${sorted.length}`;
-    myXpVal.textContent   = `⭐ ${me.weeklyXP || 0} XP`;
-
-    // Show level-up popup if in top 3 and not yet shown this session
-    if (myIdx < 3 && !popupShown) {
-      popupShown = true;
-      sessionStorage.setItem(POPUP_KEY, "true");
-      const myLvl = getLevel(me.weeklyXP || 0);
-      setTimeout(() => showLevelUpPopup(myLvl, myIdx + 1), 800);
-    }
-  }
-
-  // ── Podium (top 3) ─────────────────────────────────────────────────────────
-  const u1 = sorted[0], u2 = sorted[1], u3 = sorted[2];
-
-  podiumArea.innerHTML = "";
-  const podium = document.createElement("div");
-  podium.className = "podium-wrap";
-
-  const buildCol = (u, rank) => {
-    if (!u) return document.createElement("div");
-    const lvl = getLevel(u.weeklyXP || 0);
-    const col = document.createElement("div");
-    col.className = "podium-col";
-    col.innerHTML = `
-      <div class="podium-avatar rank-${rank}">
-        ${rank === 1 ? '<span class="podium-crown">👑</span>' : ""}
-        ${(u.name || "?")[0].toUpperCase()}
-      </div>
-      <div class="podium-name">${(u.name || "—")}</div>
-      <div class="podium-xp">⭐ ${u.weeklyXP || 0}</div>
-      <div class="podium-lvl">${lvl.icon} ${lvl.name}</div>
-      <div class="podium-bar rank-${rank}">${rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}</div>`;
-    return col;
-  };
-
-  // Order: 2nd (left), 1st (centre), 3rd (right)
-  if (u2) podium.appendChild(buildCol(u2, 2));
-  if (u1) podium.appendChild(buildCol(u1, 1));
-  if (u3) podium.appendChild(buildCol(u3, 3));
-  podiumArea.appendChild(podium);
-
-  // ── Rank list 4–20 ─────────────────────────────────────────────────────────
-  rankList.innerHTML = "";
-  for (let i = 3; i < sorted.length; i++) {
-    const u    = sorted[i];
-    const rank = i + 1;
-    const lvl  = getLevel(u.weeklyXP || 0);
-    const isMe = u.name === currentUserName;
-
-    const row = document.createElement("div");
-    row.className = "rank-row";
-    if (isMe) {
-      row.style.border = `1px solid ${lvl.color}`;
-      row.style.background = lvl.bg;
-    }
-
-    row.innerHTML = `
-      <div class="rank-num">#${rank}</div>
-      <div class="rank-avatar" style="color:${lvl.color};">
-        ${(u.name || "?")[0].toUpperCase()}
-      </div>
-      <div class="rank-info">
-        <div class="rank-name">${u.name || "—"}${isMe ? " (You)" : ""}</div>
-        <div class="rank-detail">Focus: ${formatTime(u.focusTime || 0)}</div>
-      </div>
-      <div class="rank-right">
-        <div class="rank-xp">⭐ ${u.weeklyXP || 0}</div>
-        <div class="level-badge" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border};">
-          ${lvl.icon} ${lvl.name}
-        </div>
-      </div>`;
-    rankList.appendChild(row);
-  }
-}
-
+// ── Format helpers ────────────────────────────────────────────────────────────
 function formatTime(totalMin) {
   const h = Math.floor((totalMin || 0) / 60);
   const m = (totalMin || 0) % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-// ── Auth + weekly reset + live listener ───────────────────────────────────────
+// ── Main render ───────────────────────────────────────────────────────────────
+function renderLeaderboard(users, currentUserName) {
+
+  if (loading) loading.style.display = "none";
+
+  // Sort by weeklyXP desc, top 20
+  const sorted = [...users]
+    .filter(u => (u.weeklyXP || 0) > 0 || u.name)
+    .sort((a, b) => (b.weeklyXP || 0) - (a.weeklyXP || 0))
+    .slice(0, 20);
+
+  if (!sorted.length) {
+    if (loading) {
+      loading.style.display = "block";
+      loading.innerHTML = `<div style="padding:40px;color:rgba(255,255,255,0.4);font-size:14px;">No data this week yet.</div>`;
+    }
+    return;
+  }
+
+  // ── My rank bar ───────────────────────────────────────────────────────────
+  const myIdx = sorted.findIndex(u => u.name === currentUserName);
+  if (myIdx >= 0 && myRankBar) {
+    const me = sorted[myIdx];
+    myRankBar.classList.add("visible");
+    if (myRankVal) myRankVal.textContent = `#${myIdx + 1} of ${sorted.length}`;
+    if (myXpVal)   myXpVal.textContent   = `⭐ ${me.weeklyXP || 0} XP`;
+
+    // Top-3 popup — once per session
+    if (myIdx < 3 && !popupShown) {
+      popupShown = true;
+      sessionStorage.setItem(POPUP_KEY, "true");
+      setTimeout(() => showTopPopup(getLevel(me.weeklyXP || 0), myIdx + 1), 800);
+    }
+  }
+
+  // ── Podium (top 3) ────────────────────────────────────────────────────────
+  if (podiumArea) {
+    podiumArea.innerHTML = "";
+    const u1 = sorted[0], u2 = sorted[1], u3 = sorted[2];
+
+    const podium = document.createElement("div");
+    podium.className = "podium-wrap";
+
+    const buildCol = (u, rank) => {
+      if (!u) return null;
+      const lvl = getLevel(u.weeklyXP || 0);
+      const col = document.createElement("div");
+      col.className = "podium-col";
+      col.innerHTML = `
+        <div class="podium-avatar rank-${rank}">
+          ${rank === 1 ? '<span class="podium-crown">👑</span>' : ""}
+          ${(u.name || "?")[0].toUpperCase()}
+        </div>
+        <div class="podium-name">${u.name || "—"}</div>
+        <div class="podium-xp">⭐ ${u.weeklyXP || 0} XP</div>
+        <div class="podium-lvl">${lvl.icon} ${lvl.name}</div>
+        <div class="podium-bar rank-${rank}">${rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}</div>`;
+      return col;
+    };
+
+    // Order: 2nd left, 1st centre, 3rd right
+    const c2 = buildCol(u2, 2);
+    const c1 = buildCol(u1, 1);
+    const c3 = buildCol(u3, 3);
+    if (c2) podium.appendChild(c2);
+    if (c1) podium.appendChild(c1);
+    if (c3) podium.appendChild(c3);
+    podiumArea.appendChild(podium);
+  }
+
+  // ── Rank list 4–20 ────────────────────────────────────────────────────────
+  if (rankList) {
+    rankList.innerHTML = "";
+    for (let i = 3; i < sorted.length; i++) {
+      const u    = sorted[i];
+      const rank = i + 1;
+      const lvl  = getLevel(u.weeklyXP || 0);
+      const isMe = u.name === currentUserName;
+
+      const row = document.createElement("div");
+      row.className = "rank-row";
+      if (isMe) {
+        row.style.border     = `1px solid ${lvl.color}`;
+        row.style.background = lvl.bg;
+        row.style.boxShadow  = `0 0 14px ${lvl.color}44`;
+      }
+
+      row.innerHTML = `
+        <div class="rank-num">#${rank}</div>
+        <div class="rank-avatar" style="color:${lvl.color};background:${lvl.bg};">
+          ${(u.name || "?")[0].toUpperCase()}
+        </div>
+        <div class="rank-info">
+          <div class="rank-name">${u.name || "—"}${isMe ? `&nbsp;<span style="color:var(--cyan);font-size:11px;">(You)</span>` : ""}</div>
+          <div class="rank-detail">⏱ ${formatTime(u.focusTime || 0)} focused</div>
+        </div>
+        <div class="rank-right">
+          <div class="rank-xp">⭐ ${u.weeklyXP || 0}</div>
+          <div class="level-badge" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border};">
+            ${lvl.icon} ${lvl.name}
+          </div>
+        </div>`;
+      rankList.appendChild(row);
+    }
+  }
+}
+
+// ── Auth + weekly reset + live listener ──────────────────────────────────────
 onAuthStateChanged(auth, async user => {
 
   if (!user) {
-    loading.textContent = "Please log in to view the leaderboard.";
+    if (loading) {
+      loading.style.display = "block";
+      loading.innerHTML = `<div style="padding:60px 20px;color:rgba(255,255,255,0.4);font-size:14px;">Please log in to view the leaderboard.</div>`;
+    }
     return;
   }
 
@@ -228,19 +234,22 @@ onAuthStateChanged(auth, async user => {
       const data = userSnap.data();
       if (data.lastActiveWeek && data.lastActiveWeek !== currentWeek) {
         await updateDoc(userRef, {
-          weeklyXP: 0,
+          weeklyXP:       0,
           lastActiveWeek: currentWeek
         });
       }
     }
   } catch {}
 
-  // ── Live snapshot ─────────────────────────────────────────────────────────
+  // ── Live onSnapshot — leaderboard updates instantly ───────────────────────
   onSnapshot(collection(db, "users"), snap => {
     const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderLeaderboard(users, currentUserName);
   }, err => {
     console.error("[Leaderboard]", err);
-    loading.textContent = "Could not load leaderboard.";
+    if (loading) {
+      loading.style.display = "block";
+      loading.innerHTML = `<div style="padding:40px;color:rgba(255,79,106,0.7);font-size:14px;">Could not load leaderboard.</div>`;
+    }
   });
 });
