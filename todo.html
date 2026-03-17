@@ -1252,9 +1252,11 @@ async function syncTodoToFirebase() {
       const ref = doc(db, "users", user.displayName);
 
       setDoc(ref, {
-        tasks: tasks,
-        xp: getXP()
-      }, { merge: true });
+  tasks: tasks,
+  xp: getXP(),
+  streak: parseInt(localStorage.getItem("uw_streak") || 0),
+  lastStreak: localStorage.getItem("uw_last_streak") || ""
+}, { merge: true });
 
     });
 
@@ -1290,6 +1292,13 @@ async function loadFromFirebase() {
     if (data.xp) {
       setXP(data.xp);
     }
+if (data.streak !== undefined) {
+  localStorage.setItem("uw_streak", data.streak);
+}
+
+if (data.lastStreak) {
+  localStorage.setItem("uw_last_streak", data.lastStreak);
+}
   }
 }
     /* ============================================================
