@@ -15,7 +15,7 @@
  *          Popup type: centered overlay (existing behaviour)
  * FIX-W   Promotions CTA: if data.url exists → open URL in new tab, then close
  * FIX-X   App Updates: if data.url exists → open URL instead of cache-clear reload
- * FIX-Y   Promotions: 3-second delay before showing
+ * FIX-Y   Promotions: setTimeout removed — show immediately when Firestore fires
  * FIX-Z   Announcements + Promotions: sessionStorage → re-appear each fresh session
  * FIX-AA  App Updates: localStorage → NEVER repeat across sessions
  * FIX-AB  Announcement medium priority: darker background
@@ -296,7 +296,6 @@ function initNotifications() {
   unsubs.notifications = () => { unsubAll(); unsubUser(); };
 }
 
-
 function fireNotification(title, body, url) {
   if (Notification.permission !== "granted") return;
   const opts = {
@@ -344,14 +343,12 @@ function initPromotions() {
       // Mark seen immediately so duplicate Firestore events don't double-show
       markSeen("promotions", id);
 
-      // FIX-Y: 3-second delay — user sees the page first
-      setTimeout(() => {
-        if (data.type === "banner") {
-          renderPromotionBanner(data);
-        } else {
-          renderPromotionPopup(data);
-        }
-      }, 3000);
+      // Show immediately — Firestore connection itself has natural 2-4s delay
+      if (data.type === "banner") {
+        renderPromotionBanner(data);
+      } else {
+        renderPromotionPopup(data);
+      }
     });
   }, err => console.warn("[Promotions]", err));
 }
@@ -642,7 +639,13 @@ function boot() {
   initAppUpdates();
 }
 
-document.addEventListener("DOMContentLoaded", boot);
+// FIX-FAST: call boot() immediately — no waiting for DOMContentLoaded
+// Firestore listeners register instantly; renders happen when data arrives
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot(); // DOM already ready (module scripts run after parse)
+}
 
 window.addEventListener("pageshow", e => {
   if (e.persisted) {
