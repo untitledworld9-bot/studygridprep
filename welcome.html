@@ -6,164 +6,304 @@
 <title>Welcome | Untitled World</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 
+<!--
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  OPTIMIZED welcome.html — Three architectural fixes applied:    │
+  │                                                                 │
+  │  FIX-1 (Blink): Auth guard now uses localStorage first.        │
+  │    Old: onAuthStateChanged fires async → blank flash visible    │
+  │    New: localStorage check is SYNCHRONOUS → page shows at once  │
+  │    Firebase onAuthStateChanged kept as a background safety net  │
+  │                                                                 │
+  │  FIX-2 (Back-nav): All room navigations use location.replace() │
+  │    Old: location.href pushes welcome.html onto history stack    │
+  │    New: location.replace() removes welcome.html from history    │
+  │    Result: Back from timer.html goes to index.html directly     │
+  │                                                                 │
+  │  FIX-3 (FOUC): html hidden until auth passes, then revealed    │
+  │    Inline <script> in <head> hides the document immediately.    │
+  │    After localStorage confirms user, a CSS class fades it in.   │
+  └─────────────────────────────────────────────────────────────────┘
+-->
+
+<!--
+  FIX-3: Hide the entire document BEFORE the browser paints anything.
+  This is the earliest possible injection point — inside <head>, before
+  any stylesheet or layout is parsed.
+  The hidden state is lifted in the inline script below.
+-->
+<script>
+  // FIX-1 + FIX-3: Synchronous guard — runs before a single pixel is painted.
+  // If no user in localStorage, replace() immediately (no history entry).
+  // If user exists, the page will be revealed after CSS is ready.
+  (function () {
+    if (!localStorage.getItem("userName")) {
+      // Use replace() so pressing Back in login.html doesn't loop here
+      window.location.replace("login.html");
+    } else {
+      // Hide document to prevent any possible FOUC from async Firebase check
+      document.documentElement.style.visibility = "hidden";
+    }
+  })();
+</script>
+
 <style>
-/* Base Setup */
+/* ── Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
- margin: 0;
- font-family: 'Outfit', sans-serif;
- background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
- color: #fff;
- display: flex;
- justify-content: center;
- align-items: flex-start; /* Changed from center to push content up */
- min-height: 100vh;
- overflow-x: hidden;
- padding-top: 10vh; /* Keeps heading nicely positioned near the top */
- padding-bottom: 2rem;
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 10vh 0 2rem 0;
 }
 
-/* Container responsive for Mobile, Tablet & Laptop */
+/* ── Reveal animation ─────────────────────────────────────────── */
+/* Applied by JS once the synchronous auth guard passes.
+   Starts invisible so there is zero flash before the class fires. */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.page-ready {
+  animation: fadeIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ── Layout ───────────────────────────────────────────────────── */
 .container {
- width: 92%;
- max-width: 450px; /* Perfect width so it doesn't stretch on large screens */
- text-align: center;
+  width: 92%;
+  max-width: 450px;
+  text-align: center;
 }
 
-/* Heading styling */
 h1 {
- font-size: clamp(22px, 5vw, 28px); /* Responsive text size */
- margin-bottom: 40px;
- font-weight: 700;
- animation: fadeDown 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  font-size: clamp(22px, 5vw, 28px);
+  margin-bottom: 40px;
+  font-weight: 700;
+  animation: fadeDown 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* Options (Buttons) Styling - Matching your Screenshot Vibe */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+/* ── Option cards ─────────────────────────────────────────────── */
 .option {
- border: 2px solid rgba(0, 242, 254, 0.3); /* Hollow neon border like the image */
- padding: 18px 16px;
- border-radius: 16px;
- margin-bottom: 20px;
- cursor: pointer;
- transition: all 0.3s ease;
- backdrop-filter: blur(12px);
- -webkit-backdrop-filter: blur(12px);
- background: rgba(255, 255, 255, 0.03); /* Very slight glass fill */
- opacity: 0; /* For animation */
- animation: slideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
+  border: 2px solid rgba(0, 242, 254, 0.3);
+  padding: 18px 16px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  animation: slideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Staggered animation delays for that premium feel */
-.option:nth-child(2) { animation-delay: 0.1s; }
-.option:nth-child(3) { animation-delay: 0.2s; }
-.option:nth-child(4) { animation-delay: 0.3s; }
-.option:nth-child(5) { animation-delay: 0.4s; }
+/* Staggered entrance delays */
+.option:nth-child(2) { animation-delay: 0.10s; }
+.option:nth-child(3) { animation-delay: 0.20s; }
+.option:nth-child(4) { animation-delay: 0.30s; }
+.option:nth-child(5) { animation-delay: 0.40s; }
 
-/* Hover & Active Effects */
-.option:hover, .option:active {
- transform: translateY(-4px);
- border-color: #00f2fe; /* Bright cyan glow on interaction */
- box-shadow: 0 0 20px rgba(0, 242, 254, 0.3), inset 0 0 10px rgba(0, 242, 254, 0.1);
- background: rgba(0, 242, 254, 0.05);
+.option:hover,
+.option:active {
+  transform: translateY(-4px);
+  border-color: #00f2fe;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.3),
+              inset 0 0 10px rgba(0, 242, 254, 0.1);
+  background: rgba(0, 242, 254, 0.05);
 }
 
 .option h3 {
- margin: 0;
- font-size: 19px;
- font-weight: 600;
- display: flex;
- align-items: center;
- gap: 8px;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .option p {
- margin: 6px 0 0;
- font-size: 13.5px;
- opacity: 0.75;
- font-weight: 400;
-}
-
-/* Animations */
-@keyframes fadeDown {
- from { opacity: 0; transform: translateY(-20px); }
- to { opacity: 1; transform: translateY(0); }
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  opacity: 0.75;
+  font-weight: 400;
 }
 
 @keyframes slideUp {
- from { opacity: 0; transform: translateY(30px); }
- to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Loading state (shown while Firebase double-checks) ───────── */
+/* This is invisible in the normal flow — only appears if localStorage
+   passes but Firebase later rejects the session (token expired, etc.) */
+#authGuard {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  opacity: 0.7;
+  letter-spacing: 0.05em;
 }
 </style>
 </head>
+
 <body>
 
-<div class="container">
-<h1>Welcome to Untitled World Focus Mode 📳</h1>
+<!-- Fallback shown only if Firebase revokes the session -->
+<div id="authGuard" aria-live="polite">Verifying session…</div>
 
-<div class="option" onclick="goGlobal()">
- <h3>🌍 Global Focus Mode</h3>
- <p>Study with all active learners on the platform</p>
+<div class="container" id="pageContent">
+  <h1>Welcome to Untitled World Focus Mode 📳</h1>
+
+  <div class="option" onclick="goGlobal()" role="button" tabindex="0">
+    <h3>🌍 Global Focus Mode</h3>
+    <p>Study with all active learners on the platform</p>
+  </div>
+
+  <div class="option" onclick="goCreate()" role="button" tabindex="0">
+    <h3>👥 Create Room</h3>
+    <p>Study with friends privately</p>
+  </div>
+
+  <div class="option" onclick="goJoin()" role="button" tabindex="0">
+    <h3>🔑 Join Room</h3>
+    <p>Enter room ID to join session</p>
+  </div>
+
+  <div class="option" onclick="goLeaderboard()" role="button" tabindex="0">
+    <h3>🏆 Weekly Leaderboard</h3>
+    <p>Know your rank &amp; ⭐ XP</p>
+  </div>
 </div>
 
-<div class="option" onclick="goCreate()">
- <h3>👥 Create Room</h3>
- <p>Study with friends privately</p>
-</div>
+<!--
+  ════════════════════════════════════════════════════════
+  FIX-1: INSTANT AUTH — no async Firebase blink
+  ════════════════════════════════════════════════════════
+  Step 1 (already done in <head>): localStorage check hides
+  the document synchronously. If no user → replace(login).
 
-<div class="option" onclick="goJoin()">
- <h3>🔑 Join Room</h3>
- <p>Enter room ID to join session</p>
-</div>
+  Step 2 (here): Reveal the document now that CSS is loaded.
+  We add the .page-ready class which triggers the fade-in.
 
-<div class="option" onclick="goLeaderboard()">
- <h3>🏆 Weekly Leaderboard</h3>
- <p>Know your rank & ⭐ XP</p>
-</div>
-
-</div>
-
-<script type="module">
-import { getAuth, onAuthStateChanged } from 
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { initializeApp } from 
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
-  authDomain: "untitled-world-2e645.firebaseapp.com",
-  projectId: "untitled-world-2e645"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-onAuthStateChanged(auth, user=>{
- if(!user){
-   window.location.href = "login.html";
- }
-});
+  Step 3: Firebase onAuthStateChanged runs in the background
+  as a security double-check. If the token is invalid/expired,
+  the #authGuard overlay appears and replace(login) fires.
+  For a valid session this callback resolves immediately from
+  cache — the user never sees a flash.
+-->
+<script>
+  // Reveal the page (Step 2)
+  document.documentElement.style.visibility = "";
+  document.body.classList.add("page-ready");
 </script>
 
+<!--
+  ════════════════════════════════════════════════════════
+  FIX-2: REPLACE NAVIGATION
+  ════════════════════════════════════════════════════════
+  All room choices use location.replace() instead of href.
+
+  Why this fixes back-navigation:
+    Old stack:  index.html → welcome.html → timer.html
+                Back from timer → welcome.html  ← unwanted stop
+                Back again      → index.html
+
+    New stack:  index.html → [replace] timer.html
+                Back from timer → index.html    ← correct!
+
+  location.replace() removes welcome.html from the history
+  stack so the browser never returns to it.
+-->
 <script>
-function goGlobal(){
- window.location.href="timer.html?room=global";
-}
+  function goGlobal() {
+    window.location.replace("timer.html?room=global");
+  }
 
-function goCreate(){
- window.location.href="timer.html";
-}
+  function goCreate() {
+    window.location.replace("timer.html?mode=create");
+  }
 
-function goJoin(){
- window.location.href="timer.html";
-}
+  function goJoin() {
+    window.location.replace("timer.html?mode=join");
+  }
 
-function goLeaderboard(){
- window.location.href="leaderboard.html";
-}
+  function goLeaderboard() {
+    // Leaderboard is a destination, not a timer — href is fine here
+    // (Back from leaderboard should return to welcome.html, which is correct)
+    window.location.href = "leaderboard.html";
+  }
+
+  // Keyboard accessibility — activate card on Enter/Space
+  document.querySelectorAll(".option[tabindex]").forEach(el => {
+    el.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+</script>
+
+<!--
+  FIX-1 Step 3: Firebase background safety check.
+  Runs async — completely invisible to the user on a valid session.
+  Only triggers UI if the token has actually expired.
+-->
+<script type="module">
+  import { initializeApp, getApps } from
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+    authDomain:        "untitled-world-2e645.firebaseapp.com",
+    projectId:         "untitled-world-2e645"
+  };
+
+  // Guard against duplicate initializeApp() if firebase.js is also loaded
+  const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      // Session expired or revoked after localStorage check passed.
+      // Show the overlay briefly so the user isn't confused, then redirect.
+      const guard = document.getElementById("authGuard");
+      if (guard) guard.style.display = "flex";
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.replace("login.html");
+    }
+    // If user is valid, do nothing — page is already visible and ready.
+  });
 </script>
 
 </body>
-</html>
+ </html>
+ 
