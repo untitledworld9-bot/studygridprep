@@ -5,143 +5,217 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profile - Untitled World</title>
 <link rel="icon" href="/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
 :root{
-  --bg-start:#0B1220; --bg-end:#0F172A;
+  --bg:#0B1220; --bg2:#0F172A;
   --primary:#22D3EE; --primary-dark:#06B6D4;
-  --secondary:#34D399; --accent:#F43F5E;
-  --text-primary:#E2E8F0; --text-secondary:#94A3B8;
-  --card-bg:rgba(255,255,255,0.03); --card-border:rgba(255,255,255,0.08);
-  --radius:16px; --shadow:0 4px 20px rgba(0,0,0,0.3); --transition:0.25s ease;
+  --secondary:#34D399;
+  --text:#E2E8F0; --text2:#94A3B8;
+  --card:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);
+  --radius:16px;
+  --shadow:0 4px 20px rgba(0,0,0,0.3);
+  --tr:0.22s ease;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-html{background:var(--bg-start);}
+html{background:var(--bg);}
 body{
-  background:linear-gradient(160deg,var(--bg-start) 0%,var(--bg-end) 100%);
-  min-height:100vh; color:var(--text-primary);
+  background:linear-gradient(160deg,var(--bg) 0%,var(--bg2) 100%);
+  min-height:100vh;
+  color:var(--text);
+  padding-top:70px;
   padding-bottom:90px;
-  padding-top:76px;
-  animation:pageIn 0.3s ease forwards;
+  animation:fadeIn .3s ease forwards;
 }
-/* ⚠️ ONLY opacity — NO transform on body.
-   transform:translateY on body breaks ALL position:fixed children (known CSS bug) */
-@keyframes pageIn{from{opacity:0;}to{opacity:1;}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
-/* ===== FIXED TOP HEADER (APP STYLE) ===== */
+/* ── FIXED HEADER ── */
 .top-bar{
-  position:fixed;
-  top:0; left:0; width:100%;
+  position:fixed;top:0;left:0;width:100%;
   display:flex;align-items:center;gap:12px;
   padding:12px 20px;
-  background:rgba(11,18,32,0.92);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--card-border);
+  background:rgba(11,18,32,0.94);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
   z-index:1000;
   box-sizing:border-box;
 }
-.avatar{
-  width:40px;height:40px;border-radius:50%;
+.hd-avatar{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
   display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:18px;color:#0B1220;
-  box-shadow:0 0 0 3px rgba(34,211,238,0.2);flex-shrink:0;
+  font-weight:700;font-size:17px;color:#0B1220;
 }
-.user-info{display:flex;flex-direction:column;flex:1;min-width:0;}
-#userName{font-weight:600;font-size:15px;color:var(--text-primary);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.user-email{font-size:11px;color:var(--text-secondary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.goal-badge{
-  background:rgba(34,211,238,0.1);color:var(--primary);
-  border:1px solid rgba(34,211,238,0.25);
+.hd-info{flex:1;min-width:0;}
+.hd-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hd-email{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hd-badge{
+  background:rgba(34,211,238,.1);color:var(--primary);
+  border:1px solid rgba(34,211,238,.25);
   padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;flex-shrink:0;
 }
 
-.profile-container{
-  max-width:440px;margin:auto;
-  padding:8px 20px 24px;
-  display:flex;flex-direction:column;gap:16px;
-}
-.profile-card{
-  background:var(--card-bg);border:1px solid var(--card-border);
-  border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);
-  transition:var(--transition);
-}
-.profile-card:hover{border-color:rgba(34,211,238,0.2);}
-.section-title{
-  font-size:14px;font-weight:600;color:var(--primary);
-  display:flex;align-items:center;gap:8px;margin-bottom:16px;
-  text-transform:uppercase;letter-spacing:0.5px;
-}
-.input-label{
-  display:block;font-size:12px;color:var(--text-secondary);
-  font-weight:500;margin-bottom:6px;letter-spacing:0.3px;
-}
-.edtech-input,.edtech-select{
-  width:100%;padding:12px 16px;border-radius:12px;
-  border:1px solid rgba(255,255,255,0.08);
-  background:rgba(0,0,0,0.25);color:var(--text-primary);
-  font-size:14px;outline:none;margin-bottom:16px;
-  font-family:'Poppins',sans-serif;box-sizing:border-box;
-  transition:var(--transition);-webkit-appearance:none;appearance:none;
-}
-.edtech-input:focus,.edtech-select:focus{
-  border-color:rgba(34,211,238,0.5);
-  box-shadow:0 0 0 3px rgba(34,211,238,0.08);
-}
-.edtech-input::placeholder{color:var(--text-secondary);}
-.edtech-select option{background:#162030;color:var(--text-primary);}
+/* ── CONTAINER ── */
+.wrap{max-width:440px;margin:0 auto;padding:12px 16px 24px;}
 
-/* ===== NAME DISPLAY ROW ===== */
-.name-display-row{
-  display:flex;align-items:center;gap:12px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;
-  padding:12px 14px;
-  margin-bottom:16px;
+/* ── CARD ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:var(--shadow);
+  margin-bottom:14px;
 }
-.name-avatar-sm{
+
+/* ── SECTION TITLE ── */
+.sec-title{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.sec-title-left{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:700;color:var(--primary);
+  text-transform:uppercase;letter-spacing:.6px;
+}
+.edit-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(34,211,238,.08);
+  border:1px solid rgba(34,211,238,.2);
+  color:var(--primary);
+  font-size:12px;font-weight:600;
+  padding:5px 12px;border-radius:50px;
+  cursor:pointer;transition:var(--tr);
+}
+.edit-btn:hover{background:rgba(34,211,238,.15);}
+.edit-btn:active{transform:scale(.97);}
+
+/* ── VIEW MODE ── */
+#viewMode{display:block;}
+
+.vm-name-row{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  border-radius:12px;padding:12px 14px;
+  margin-bottom:14px;
+}
+.vm-avatar{
   width:38px;height:38px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:16px;color:#0B1220;
 }
-.name-display-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
-.name-display-label{font-size:11px;color:var(--text-secondary);}
-.name-display-value{font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vm-name-info{flex:1;min-width:0;}
+.vm-name-label{font-size:11px;color:var(--text2);}
+.vm-name-val{font-size:15px;font-weight:600;color:var(--text);}
 
-.divider-line{
-  height:1px;background:rgba(255,255,255,0.06);
-  margin:4px 0 16px 0;
+/* NTA card */
+.nta-card{
+  background:rgba(0,48,135,.1);
+  border:1px solid rgba(0,48,135,.35);
+  border-radius:14px;
+  padding:13px 14px;
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.nta-logo{
+  width:46px;height:46px;flex-shrink:0;
+  object-fit:contain;border-radius:8px;
+  background:white;padding:3px;
+}
+.nta-fallback{
+  width:46px;height:46px;flex-shrink:0;border-radius:50%;
+  background:#003087;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:white;letter-spacing:.5px;
+}
+.nta-info{flex:1;}
+.nta-exam-name{font-size:14px;font-weight:700;color:var(--text);}
+.nta-badges{display:flex;gap:6px;margin-top:4px;}
+.badge-nta{
+  font-size:10px;font-weight:700;
+  background:rgba(0,48,135,.5);border:1px solid rgba(100,149,237,.4);
+  color:#93C5FD;padding:2px 8px;border-radius:50px;
+}
+.badge-year{
+  font-size:10px;font-weight:700;
+  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);
+  color:#FBBF24;padding:2px 8px;border-radius:50px;
 }
 
-/* ===== FIXED DATE CHIP ===== */
-.fixed-date-chip{
-  width:100%;padding:12px 16px;
-  border-radius:12px;
-  border:1px solid rgba(34,211,238,0.3);
-  background:rgba(34,211,238,0.05);
-  color:var(--primary);
-  font-size:14px;font-weight:600;
-  margin-bottom:16px;
+/* Days left chip */
+.days-chip{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(251,191,36,.07);
+  border:1px solid rgba(251,191,36,.22);
+  border-radius:12px;padding:12px 16px;
+  margin-bottom:14px;
+}
+.days-big{
+  font-size:34px;font-weight:800;
+  background:linear-gradient(135deg,#22D3EE,#06B6D4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;
+}
+.days-right{display:flex;flex-direction:column;gap:2px;}
+.days-label{font-size:11px;color:var(--text2);font-weight:500;}
+.days-exam{font-size:13px;font-weight:600;color:var(--text);}
+.days-date{font-size:11px;color:var(--text2);}
+
+/* Notif row in view mode */
+.notif-allow-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:rgba(251,191,36,.06);
+  border:1px solid rgba(251,191,36,.18);
+  border-radius:12px;padding:11px 14px;
+  margin-bottom:4px;
+}
+.notif-row-text{
   display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--text2);font-weight:500;
 }
+.notif-toggle-btn{
+  background:linear-gradient(135deg,#FBBF24,#F59E0B);
+  color:#0B1220;border:none;
+  border-radius:50px;padding:6px 16px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  white-space:nowrap;transition:var(--tr);
+}
+.notif-toggle-btn:active{transform:scale(.97);}
 
-/* ===== COUNTDOWN CHIP ===== */
-.countdown-chip{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  background:rgba(251,191,36,0.08);
-  border:1px solid rgba(251,191,36,0.25);
-  border-radius:10px;
-  padding:9px 14px;
-  color:#FBBF24;
-  font-size:13px;font-weight:600;
-  margin-bottom:16px;
+/* ── EDIT MODE ── */
+#editMode{display:none;}
+
+.input-label{
+  display:block;font-size:12px;color:var(--text2);
+  font-weight:500;margin-bottom:6px;letter-spacing:.3px;
+}
+.edtech-input,.edtech-select{
+  width:100%;padding:12px 16px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.25);color:var(--text);
+  font-size:14px;outline:none;margin-bottom:14px;
+  font-family:'Poppins',sans-serif;box-sizing:border-box;
+  transition:var(--tr);-webkit-appearance:none;appearance:none;
+}
+.edtech-input:focus,.edtech-select:focus{
+  border-color:rgba(34,211,238,.5);
+  box-shadow:0 0 0 3px rgba(34,211,238,.08);
+}
+.edtech-input::placeholder{color:var(--text2);}
+.edtech-select option{background:#162030;color:var(--text);}
+
+.fixed-date-chip{
+  width:100%;padding:12px 16px;border-radius:12px;
+  border:1px solid rgba(34,211,238,.3);
+  background:rgba(34,211,238,.05);
+  color:var(--primary);font-size:14px;font-weight:600;
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
 }
 
 .save-btn{
@@ -149,276 +223,230 @@ body{
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
   color:#0B1220;font-weight:700;font-size:15px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:8px;
-  box-shadow:0 4px 16px rgba(34,211,238,0.25);transition:var(--transition);
+  box-shadow:0 4px 16px rgba(34,211,238,.25);transition:var(--tr);
+  margin-top:4px;
 }
-.save-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(34,211,238,0.35);}
-.save-btn:active{transform:scale(0.97);}
+.save-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(34,211,238,.35);}
+.save-btn:active{transform:scale(.97);}
 
-#msg{
-  display:none;margin-top:12px;padding:10px 16px;
-  background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);
-  border-radius:10px;color:var(--secondary);font-size:13px;
-  font-weight:600;text-align:center;
+/* Success toast */
+.toast{
+  display:none;
+  margin-top:12px;padding:10px 16px;
+  background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);
+  border-radius:10px;color:var(--secondary);
+  font-size:13px;font-weight:600;text-align:center;
 }
 
-.sub-promo-card{
-  background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);
+/* ── ACTION CARDS ── */
+.sub-card{
+  background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);
   color:#FBBF24 !important;padding:14px 20px;border-radius:var(--radius);
   display:flex;align-items:center;justify-content:center;gap:10px;
-  text-decoration:none;font-weight:600;font-size:14px;transition:var(--transition);cursor:pointer;
+  text-decoration:none;font-weight:600;font-size:14px;transition:var(--tr);
+  margin-bottom:14px;
 }
-.sub-promo-card:hover{background:rgba(251,191,36,0.1);}
-.sub-promo-card:active{transform:scale(0.97);}
+.sub-card:hover{background:rgba(251,191,36,.1);}
+.sub-card:active{transform:scale(.97);}
 
 .logout-btn{
-  background:rgba(244,63,94,0.06);border:1px solid rgba(244,63,94,0.25);
+  background:rgba(244,63,94,.06);border:1px solid rgba(244,63,94,.25);
   color:#F87171;width:100%;padding:14px;border-radius:var(--radius);
   font-weight:600;font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:10px;transition:var(--transition);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:var(--tr);margin-bottom:14px;
 }
-.logout-btn:hover{background:rgba(244,63,94,0.1);}
-.logout-btn:active{transform:scale(0.97);}
+.logout-btn:hover{background:rgba(244,63,94,.1);}
+.logout-btn:active{transform:scale(.97);}
 
-.follow-section{text-align:center;padding:4px 0;}
+/* ── FOLLOW ── */
+.follow-section{text-align:center;padding:4px 0 0;}
 .follow-section p{
-  margin-bottom:12px;font-size:13px;font-weight:600;
-  color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;
+  margin-bottom:12px;font-size:12px;font-weight:600;
+  color:var(--text2);text-transform:uppercase;letter-spacing:.5px;
 }
 .social-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;}
-
-.yt-promo-card{
-  background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);
+.yt-card{
+  background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.3);
   border-radius:50px;padding:9px 18px;display:inline-flex;align-items:center;
-  justify-content:center;gap:8px;color:#ff4757 !important;text-decoration:none;
-  font-weight:600;font-size:13px;transition:var(--transition);
+  gap:8px;color:#ff4757 !important;text-decoration:none;
+  font-weight:600;font-size:13px;transition:var(--tr);
 }
-.yt-promo-card:hover{background:rgba(255,71,87,0.14);}
-.yt-promo-card:active{transform:scale(0.97);}
-
-.contact-promo-card{
-  background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.3);
+.yt-card:active{transform:scale(.97);}
+.contact-card{
+  background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);
   border-radius:50px;padding:9px 18px;display:inline-flex;align-items:center;
-  justify-content:center;gap:8px;color:var(--primary) !important;text-decoration:none;
-  font-weight:600;font-size:13px;transition:var(--transition);
+  gap:8px;color:var(--primary) !important;text-decoration:none;
+  font-weight:600;font-size:13px;transition:var(--tr);
 }
-.contact-promo-card:hover{background:rgba(34,211,238,0.14);}
-.contact-promo-card:active{transform:scale(0.97);}
+.contact-card:active{transform:scale(.97);}
 
 .made-line{
-  font-family:'Playfair Display',serif;font-size:14px;
-  font-style:italic;text-align:center;color:var(--text-secondary);padding:8px 0;
+  font-family:'Playfair Display',serif;font-size:13px;
+  font-style:italic;text-align:center;color:var(--text2);padding:14px 0 4px;
 }
 
-/* ===== NTA CARD ===== */
-.nta-card{
-  background:rgba(0,48,135,0.12);
-  border:1px solid rgba(0,48,135,0.35);
-  border-radius:14px;
-  padding:12px 14px;
-  margin-bottom:14px;
-}
-.nta-logo-box{
-  display:flex;align-items:center;gap:12px;
-}
-.nta-logo-wrap{
-  flex-shrink:0;
-  width:48px;height:48px;
-  display:flex;align-items:center;justify-content:center;
-}
-.nta-real-logo{
-  width:48px;height:48px;
-  object-fit:contain;
-  border-radius:8px;
-  background:white;
-  padding:3px;
-}
-.nta-info{display:flex;flex-direction:column;gap:5px;flex:1;}
-.nta-exam-name{font-size:15px;font-weight:700;color:#E2E8F0;}
-.nta-exam-badges{display:flex;gap:6px;align-items:center;}
-.nta-badge-nta{
-  font-size:10px;font-weight:700;
-  background:rgba(0,48,135,0.5);
-  border:1px solid rgba(100,149,237,0.4);
-  color:#93C5FD;padding:2px 8px;border-radius:50px;
-}
-.nta-badge-year{
-  font-size:10px;font-weight:700;
-  background:rgba(251,191,36,0.12);
-  border:1px solid rgba(251,191,36,0.3);
-  color:#FBBF24;padding:2px 8px;border-radius:50px;
-}
-.exam-side-logo{
-  width:40px;height:40px;
-  object-fit:contain;
-  flex-shrink:0;
-  border-radius:8px;
-}
-
-/* ===== NOTIFICATION ROW ===== */
-.notif-row{
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(251,191,36,0.06);
-  border:1px solid rgba(251,191,36,0.2);
-  border-radius:12px;
-  padding:11px 14px;
-  margin-bottom:14px;
-  gap:10px;
-}
-.notif-row-text{
-  display:flex;align-items:center;gap:8px;
-  font-size:13px;color:var(--text-secondary);font-weight:500;
-}
-.notif-toggle{
-  background:linear-gradient(135deg,#FBBF24,#F59E0B);
-  color:#0B1220;border:none;
-  border-radius:50px;padding:5px 14px;
-  font-size:12px;font-weight:700;cursor:pointer;
-  white-space:nowrap;transition:var(--transition);flex-shrink:0;
-}
-.notif-toggle.enabled{
-  background:rgba(52,211,153,0.15);
-  border:1px solid rgba(52,211,153,0.3);
-  color:var(--secondary);
-}
-
-/* ===== BOTTOM NAV ===== */
+/* ── BOTTOM NAV ── */
 .pwa-bottom-nav{
   position:fixed;bottom:0;left:0;width:100%;height:64px;
-  background:rgba(11,18,32,0.95);backdrop-filter:blur(16px);
+  background:rgba(11,18,32,.95);backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   display:flex;justify-content:space-around;align-items:center;
-  z-index:2000;border-top:1px solid var(--card-border);
+  z-index:2000;border-top:1px solid var(--border);
 }
 .pwa-bottom-nav a{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-decoration:none;color:var(--text-secondary);font-size:11px;
-  gap:4px;padding:8px 12px;border-radius:12px;transition:var(--transition);min-width:52px;
+  text-decoration:none;color:var(--text2);font-size:11px;
+  gap:4px;padding:6px 12px;border-radius:12px;transition:var(--tr);min-width:52px;
 }
 .pwa-bottom-nav a i{font-size:18px;}
 .pwa-bottom-nav a.active{color:var(--primary);}
-.pwa-bottom-nav a:not(.active):hover{color:var(--text-primary);}
-.pwa-bottom-nav a .fa-youtube{color:#ff4757 !important;}
+.pwa-bottom-nav a .fa-youtube{color:#ff4757!important;}
+
+/* ── LOADING STATE ── */
+#loadingState{
+  text-align:center;padding:40px 20px;color:var(--text2);font-size:14px;
+}
+.spinner{
+  width:32px;height:32px;border-radius:50%;
+  border:3px solid rgba(34,211,238,.2);
+  border-top-color:var(--primary);
+  animation:spin .7s linear infinite;
+  margin:0 auto 12px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 
+<!-- FIXED TOP HEADER -->
 <div class="top-bar">
-  <div class="avatar" id="avatar">A</div>
-  <div class="user-info">
-    <div id="userName">User</div>
-    <div class="user-email" id="userEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="473234223507202a262e2b6924282a">[email&#160;protected]</a></div>
+  <div class="hd-avatar" id="hdAvatar">A</div>
+  <div class="hd-info">
+    <div class="hd-name" id="hdName">Loading...</div>
+    <div class="hd-email" id="hdEmail"></div>
   </div>
-  <div id="goalBadge" class="goal-badge">JEE</div>
+  <div class="hd-badge" id="hdBadge">--</div>
 </div>
 
-<div class="profile-container">
+<!-- MAIN WRAP -->
+<div class="wrap">
 
-  <div class="profile-card">
-    <h3 class="section-title"><i class="fa-solid fa-sliders"></i> My Preferences</h3>
-
-    <!-- Name display only — from Google, not editable -->
-    <div class="name-display-row">
-      <div class="name-avatar-sm" id="avatarSm">A</div>
-      <div class="name-display-info">
-        <div class="name-display-label">Signed in as</div>
-        <div class="name-display-value" id="nameDisplay">User</div>
-      </div>
-      <i class="fa-brands fa-google" style="color:#4285F4;font-size:18px;flex-shrink:0;"></i>
-    </div>
-
-    <div class="divider-line"></div>
-
-    <!-- Goal Select -->
-    <label class="input-label">🎯 Select Your Goal</label>
-    <select id="goalSelect" class="edtech-select" onchange="onGoalChange()">
-      <option value="JEE">JEE Main 2026</option>
-      <option value="NEET">NEET 2026</option>
-      <option value="CUET">CUET 2026</option>
-      <option value="Boards">Boards</option>
-    </select>
-
-    <!-- NTA logo card — shown for JEE / NEET / CUET -->
-    <div class="nta-card" id="ntaCard" style="display:none;">
-      <div class="nta-logo-box">
-        <!-- Real NTA logo from official site -->
-        <div class="nta-logo-wrap">
-          <img 
-            id="ntaLogoImg"
-            src="https://nta.ac.in/img/ntalogo.png"
-            alt="NTA"
-            class="nta-real-logo"
-            onerror="this.style.display='none'; document.getElementById('ntaFallback').style.display='flex';"
-          >
-          <!-- Fallback if logo doesn't load -->
-          <div id="ntaFallback" style="display:none;width:48px;height:48px;border-radius:50%;background:#003087;align-items:center;justify-content:center;flex-direction:column;gap:1px;">
-            <span style="color:white;font-size:11px;font-weight:800;letter-spacing:1px;">NTA</span>
-          </div>
-        </div>
-        <div class="nta-info">
-          <div class="nta-exam-name" id="ntaExamName">JEE Main 2026</div>
-          <div class="nta-exam-badges">
-            <span class="nta-badge-nta">NTA Exam</span>
-            <span class="nta-badge-year">2026</span>
-          </div>
-        </div>
-        <!-- Per-exam logo on right -->
-        <img id="examLogoImg" class="exam-side-logo" src="" alt="" style="display:none;"
-          onerror="this.style.display='none';">
-      </div>
-    </div>
-
-    <!-- Exam Date label -->
-    <label class="input-label" id="dateLabel" style="display:none;">📅 Exam Date</label>
-
-    <!-- JEE date picker (April 2026 range) -->
-    <input type="date" id="jeeDatePicker" class="edtech-input"
-      min="2026-04-02" max="2026-04-20"
-      style="display:none;">
-
-    <!-- Boards date picker (any date) -->
-    <input type="date" id="boardsDatePicker" class="edtech-input"
-      min="2026-01-01" max="2027-12-31"
-      style="display:none;">
-
-    <!-- Fixed date chip for NEET / CUET -->
-    <div class="fixed-date-chip" id="fixedDateChip" style="display:none;"></div>
-
-    <!-- Countdown chip -->
-    <div class="countdown-chip" id="countdownChip" style="display:none;">
-      <i class="fa-solid fa-fire" style="color:#fb923c;"></i>
-      <span id="countdownText">--</span>
-    </div>
-
-    <!-- Notification enable row -->
-    <div class="notif-row" id="notifRow" style="display:none;">
-      <div class="notif-row-text">
-        <i class="fa-solid fa-bell" style="color:#FBBF24;"></i>
-        <span>Daily exam reminder</span>
-      </div>
-      <button class="notif-toggle" id="notifToggle" onclick="toggleNotif()">Enable</button>
-    </div>
-
-    <button class="save-btn" onclick="saveProfile()" style="margin-top:4px;">
-      <i class="fa-solid fa-floppy-disk"></i> Save
-    </button>
-    <div id="msg"></div>
+  <!-- Loading spinner -->
+  <div id="loadingState">
+    <div class="spinner"></div>
+    Loading your profile...
   </div>
 
-  <a href="subscription.html" class="sub-promo-card">
+  <!-- PROFILE CARD (hidden until loaded) -->
+  <div class="card" id="profileCard" style="display:none;">
+
+    <!-- Card header with Edit button -->
+    <div class="sec-title">
+      <div class="sec-title-left">
+        <i class="fa-solid fa-sliders"></i> My Profile
+      </div>
+      <button class="edit-btn" id="editBtn" onclick="openEdit()">
+        <i class="fa-solid fa-pen"></i> Edit
+      </button>
+    </div>
+
+    <!-- ══ VIEW MODE ══ -->
+    <div id="viewMode">
+
+      <!-- Name row -->
+      <div class="vm-name-row">
+        <div class="vm-avatar" id="vmAvatar">A</div>
+        <div class="vm-name-info">
+          <div class="vm-name-label">Signed in as</div>
+          <div class="vm-name-val" id="vmName">User</div>
+        </div>
+        <i class="fa-brands fa-google" style="color:#4285F4;font-size:17px;flex-shrink:0;"></i>
+      </div>
+
+      <!-- NTA card -->
+      <div class="nta-card" id="vmNtaCard">
+        <img class="nta-logo" id="ntaLogoImg" src="https://nta.ac.in/img/ntalogo.png" alt="NTA"
+          onerror="this.style.display='none';document.getElementById('ntaFb').style.display='flex';">
+        <div class="nta-fallback" id="ntaFb" style="display:none;">NTA</div>
+        <div class="nta-info">
+          <div class="nta-exam-name" id="vmExamName">JEE Main 2026</div>
+          <div class="nta-badges">
+            <span class="badge-nta">NTA Exam</span>
+            <span class="badge-year">2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Days left chip -->
+      <div class="days-chip" id="vmDaysChip" style="display:none;">
+        <div class="days-big" id="vmDaysBig">--</div>
+        <div class="days-right">
+          <div class="days-label">Days Left</div>
+          <div class="days-exam" id="vmDaysExam">JEE Main 2026</div>
+          <div class="days-date" id="vmDaysDate"></div>
+        </div>
+      </div>
+
+      <!-- Notification allow row — hidden if already granted -->
+      <div class="notif-allow-row" id="notifAllowRow">
+        <div class="notif-row-text">
+          <i class="fa-solid fa-bell" style="color:#FBBF24;"></i>
+          <span>Daily exam reminder</span>
+        </div>
+        <button class="notif-toggle-btn" onclick="enableNotif()">Enable</button>
+      </div>
+
+    </div><!-- /viewMode -->
+
+    <!-- ══ EDIT MODE ══ -->
+    <div id="editMode">
+
+      <label class="input-label">Your Name</label>
+      <input type="text" id="editName" class="edtech-input" placeholder="Enter your name">
+
+      <label class="input-label">🎯 Select Goal</label>
+      <select id="editGoal" class="edtech-select" onchange="onGoalChange()">
+        <option value="JEE">JEE Main 2026</option>
+        <option value="NEET">NEET 2026</option>
+        <option value="CUET">CUET 2026</option>
+        <option value="Boards">Boards</option>
+      </select>
+
+      <label class="input-label" id="editDateLabel" style="display:none;">📅 Exam Date</label>
+      <input type="date" id="jeePicker" class="edtech-input"
+        min="2026-04-02" max="2026-04-20" style="display:none;">
+      <input type="date" id="boardsPicker" class="edtech-input"
+        min="2026-01-01" max="2027-12-31" style="display:none;">
+      <div class="fixed-date-chip" id="fixedDateChip" style="display:none;"></div>
+
+      <button class="save-btn" onclick="saveProfile()">
+        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+      </button>
+      <div class="toast" id="toast"></div>
+
+    </div><!-- /editMode -->
+
+  </div><!-- /profileCard -->
+
+  <!-- Subscription -->
+  <a class="sub-card" onclick="window.location.href='subscription.html';">
     <i class="fa-solid fa-crown"></i> My Subscription
   </a>
 
-  <button class="logout-btn" onclick="logout()">
+  <!-- Logout -->
+  <button class="logout-btn" onclick="doLogout()">
     <i class="fa-solid fa-right-from-bracket"></i> Logout
   </button>
 
+  <!-- Follow -->
   <div class="follow-section">
     <p>Follow us on</p>
     <div class="social-row">
-      <a href="https://www.youtube.com/@untitledworld01" target="_blank" class="yt-promo-card">
+      <a href="https://www.youtube.com/@untitledworld01" target="_blank" class="yt-card">
         <i class="fa-brands fa-youtube"></i> YouTube
       </a>
-      <a href="contact.html" class="contact-promo-card">
+      <a href="contact.html" class="contact-card">
         <i class="fa-solid fa-headset"></i> Contact Us
       </a>
     </div>
@@ -426,251 +454,279 @@ body{
 
   <p class="made-line">Crafted with ❤️ for Focused Learners</p>
 
+</div><!-- /wrap -->
+
+<!-- BOTTOM NAV -->
+<div class="pwa-bottom-nav">
+  <a href="index.html"><i class="fa-solid fa-house"></i><span>Home</span></a>
+  <a href="mocktest.html"><i class="fa-solid fa-file-pen"></i><span>Mock Test</span></a>
+  <a href="timer.html"><i class="fa-solid fa-stopwatch"></i><span>Focus</span></a>
+  <a href="playlist.html"><i class="fa-brands fa-youtube"></i><span>Playlist</span></a>
+  <a href="profile.html" class="active"><i class="fa-solid fa-user"></i><span>Profile</span></a>
 </div>
 
-<div id="pwaBottomNav" class="pwa-bottom-nav">
-  <a href="index.html">
-    <i class="fa-solid fa-house"></i>
-    <span>Home</span>
-  </a>
-  <a href="mocktest.html">
-    <i class="fa-solid fa-file-pen"></i>
-    <span>Mock Test</span>
-  </a>
-  <a href="timer.html">
-    <i class="fa-solid fa-stopwatch"></i>
-    <span>Focus</span>
-  </a>
-  <a href="playlist.html">
-    <i class="fa-brands fa-youtube"></i>
-    <span>Playlist</span>
-  </a>
-  <a href="profile.html" class="active">
-    <i class="fa-solid fa-user"></i>
-    <span>Profile</span>
-  </a>
-</div>
-
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
-  authDomain: "untitled-world-2e645.firebaseapp.com",
-  projectId: "untitled-world-2e645",
-  storageBucket: "untitled-world-2e645.firebasestorage.app",
-  messagingSenderId: "990115586087",
-  appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
+const cfg = {
+  apiKey:"AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+  authDomain:"untitled-world-2e645.firebaseapp.com",
+  projectId:"untitled-world-2e645",
+  storageBucket:"untitled-world-2e645.firebasestorage.app",
+  messagingSenderId:"990115586087",
+  appId:"1:990115586087:web:963f68bd59dec5ef0c6e02"
 };
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app  = initializeApp(cfg);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-// ===== EXAM DATA (2026) =====
-const EXAM_INFO = {
-  JEE:    { 
-    date: "2026-04-02", label: "2 Apr 2026",  name: "JEE Main 2026",   nta: true,
-    logo: "https://jeemain.nta.ac.in/webinfo2024/File/GetFile?FilePathKey=LogoBgWhite"
-  },
-  NEET:   { 
-    date: "2026-05-04", label: "4 May 2026",  name: "NEET UG 2026",    nta: true,
-    logo: "https://neet.nta.nic.in/webinfo2024/File/GetFile?FilePathKey=LogoBgWhite"
-  },
-  CUET:   { 
-    date: "2026-05-14", label: "14 May 2026", name: "CUET UG 2026",    nta: true,
-    logo: "https://cuet.samarth.ac.in/images/cuet-logo.png"
-  },
-  Boards: { date: null, label: null, name: "Board Exams", nta: false, logo: null }
+// ── EXAM CONFIG ──
+const EXAMS = {
+  JEE:    { date:"2026-04-02", label:"2 Apr 2026",  name:"JEE Main 2026",  nta:true  },
+  NEET:   { date:"2026-05-04", label:"4 May 2026",  name:"NEET UG 2026",   nta:true  },
+  CUET:   { date:"2026-05-14", label:"14 May 2026", name:"CUET UG 2026",   nta:true  },
+  Boards: { date:null,         label:null,           name:"Board Exams",    nta:false }
 };
 
-// ===== LOAD =====
-const name          = localStorage.getItem("customUserName") || localStorage.getItem("userName") || "User";
-const email         = localStorage.getItem("userEmail") || "";
-const savedGoal     = localStorage.getItem("goal")     || "JEE";
-const savedExamDate = localStorage.getItem("examDate") || "";
+let currentUser = null;
+let profileData = {};
 
-document.getElementById("userName").innerText    = name;
-document.getElementById("userEmail").innerText   = email;
-document.getElementById("avatar").innerText      = name.charAt(0).toUpperCase();
-document.getElementById("goalBadge").innerText   = savedGoal;
-document.getElementById("nameDisplay").innerText = name;
-document.getElementById("avatarSm").innerText    = name.charAt(0).toUpperCase();
-document.getElementById("goalSelect").value      = savedGoal;
 
-// Update notif button state on load
-updateNotifBtn();
-onGoalChange(savedExamDate);
 
-// ===== GOAL CHANGE =====
-function onGoalChange(prefillDate) {
-  const goal        = document.getElementById("goalSelect").value;
-  const jeePicker   = document.getElementById("jeeDatePicker");
-  const boardsPicker= document.getElementById("boardsDatePicker");
-  const fixedChip   = document.getElementById("fixedDateChip");
-  const countdownEl = document.getElementById("countdownChip");
-  const ntaCard     = document.getElementById("ntaCard");
-  const dateLabel   = document.getElementById("dateLabel");
-  const notifRow    = document.getElementById("notifRow");
-
-  // Reset all
-  jeePicker.style.display    = "none";
-  boardsPicker.style.display = "none";
-  fixedChip.style.display    = "none";
-  ntaCard.style.display      = "none";
-  dateLabel.style.display    = "none";
-  countdownEl.style.display  = "none";
-  notifRow.style.display     = "none";
-
-  const info = EXAM_INFO[goal];
-
-  // Show NTA card for JEE/NEET/CUET
-  if(info.nta) {
-    ntaCard.style.display = "block";
-    document.getElementById("ntaExamName").innerText = info.name;
-    // Set per-exam logo on right side
-    const examLogoEl = document.getElementById("examLogoImg");
-    if(info.logo) {
-      examLogoEl.src = info.logo;
-      examLogoEl.alt = info.name;
-      examLogoEl.style.display = "block";
-    } else {
-      examLogoEl.style.display = "none";
-    }
-  }
-
-  dateLabel.style.display = "block";
-
-  if(goal === "JEE") {
-    jeePicker.style.display = "block";
-    const prefill = (prefillDate && prefillDate.startsWith("2026-04")) ? prefillDate : info.date;
-    jeePicker.value = prefill;
-    showCountdown(jeePicker.value);
-    jeePicker.oninput = () => showCountdown(jeePicker.value);
-
-  } else if(goal === "Boards") {
-    boardsPicker.style.display = "block";
-    if(prefillDate) boardsPicker.value = prefillDate;
-    if(boardsPicker.value) showCountdown(boardsPicker.value);
-    boardsPicker.oninput = () => showCountdown(boardsPicker.value);
-
-  } else {
-    // NEET / CUET — fixed date
-    fixedChip.style.display = "flex";
-    fixedChip.innerHTML = `<i class="fa-solid fa-calendar-check"></i> ${info.label}`;
-    showCountdown(info.date);
-  }
-
-  // Show notif row whenever there's a countdown
-  notifRow.style.display = "flex";
-}
-
-function showCountdown(dateStr) {
-  if(!dateStr) return;
-  const countdownEl = document.getElementById("countdownChip");
-  const examTs  = new Date(dateStr); examTs.setHours(0,0,0,0);
-  const todayTs = new Date();        todayTs.setHours(0,0,0,0);
-  const diff    = Math.ceil((examTs - todayTs) / 86400000);
-
-  countdownEl.style.display = "flex";
-  const txt = document.getElementById("countdownText");
-  if(diff > 0)      txt.innerText = `${diff} days left — You got this! 💪`;
-  else if(diff===0) txt.innerText = "Exam is TODAY! All the best 🙏";
-  else              txt.innerText = "Exam date has passed.";
-}
-
-// ===== NOTIFICATION =====
-function updateNotifBtn() {
-  const btn = document.getElementById("notifToggle");
-  if(!btn) return;
-  const granted = Notification.permission === "granted";
-  const enabled = localStorage.getItem("examNotifEnabled") === "true";
-  if(granted && enabled) {
-    btn.textContent = "✓ Enabled";
-    btn.className   = "notif-toggle enabled";
-  } else {
-    btn.textContent = "Enable";
-    btn.className   = "notif-toggle";
-  }
-}
-
-async function toggleNotif() {
-  if(Notification.permission === "granted" && localStorage.getItem("examNotifEnabled")==="true") {
-    localStorage.removeItem("examNotifEnabled");
-    updateNotifBtn();
+// ── WAIT FOR AUTH → THEN LOAD FROM FIRESTORE ──
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    window.location.replace("login.html");
     return;
   }
+  currentUser = user;
+
+  // Try loading from Firestore first (survives reinstall)
   try {
-    const perm = await Notification.requestPermission();
-    if(perm === "granted") {
-      localStorage.setItem("examNotifEnabled", "true");
-      updateNotifBtn();
-      // Show test notification
-      const goal = localStorage.getItem("goal") || "JEE";
-      const days = getDaysLeft();
-      new Notification("📚 Untitled World", {
-        body: `${EXAM_INFO[goal]?.name || goal} — ${days > 0 ? days+" days left!" : "Exam today!"} 🔥`,
-        icon: "/icon-192.png",
-        badge: "/icon-192.png"
-      });
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if(snap.exists()){
+      profileData = snap.data();
     }
-  } catch(e) { console.log(e); }
-}
+  } catch(e){ console.log("Firestore load:", e); }
 
-function getDaysLeft() {
-  const date = localStorage.getItem("examDate");
-  if(!date) return 0;
-  const d = new Date(date); d.setHours(0,0,0,0);
-  const t = new Date();     t.setHours(0,0,0,0);
-  return Math.ceil((d - t) / 86400000);
-}
+  // Fallback to displayName from Google if no stored name
+  const name     = profileData.displayName || user.displayName || "User";
+  const email    = profileData.email       || user.email       || "";
+  const goal     = profileData.goal        || localStorage.getItem("goal") || "JEE";
+  const examDate = profileData.examDate    || localStorage.getItem("examDate") || (EXAMS[goal]?.date || "");
 
-// ===== SAVE =====
-async function saveProfile() {
-  const selectedGoal = document.getElementById("goalSelect").value;
-  let examDate = "";
+  // Cache locally for speed
+  localStorage.setItem("userName",  name);
+  localStorage.setItem("userEmail", email);
+  localStorage.setItem("goal",      goal);
+  if(examDate) localStorage.setItem("examDate", examDate);
 
-  if(selectedGoal === "JEE") {
-    examDate = document.getElementById("jeeDatePicker").value || EXAM_INFO.JEE.date;
-  } else if(selectedGoal === "Boards") {
-    examDate = document.getElementById("boardsDatePicker").value || "";
+  profileData = { ...profileData, displayName:name, email, goal, examDate };
+
+  renderProfile(name, email, goal, examDate);
+});
+
+// ── RENDER PROFILE (VIEW MODE) ──
+function renderProfile(name, email, goal, examDate){
+  // Header
+  document.getElementById("hdAvatar").innerText = name.charAt(0).toUpperCase();
+  document.getElementById("hdName").innerText   = name;
+  document.getElementById("hdEmail").innerText  = email;
+  document.getElementById("hdBadge").innerText  = goal;
+
+  // View mode fields
+  document.getElementById("vmAvatar").innerText = name.charAt(0).toUpperCase();
+  document.getElementById("vmName").innerText   = name;
+
+  // NTA card
+  const info = EXAMS[goal];
+  const ntaCard = document.getElementById("vmNtaCard");
+  if(info.nta){
+    ntaCard.style.display = "flex";
+    document.getElementById("vmExamName").innerText = info.name;
   } else {
-    examDate = EXAM_INFO[selectedGoal]?.date || "";
+    ntaCard.style.display = "none";
   }
 
-  localStorage.setItem("goal",     selectedGoal);
-  localStorage.setItem("examDate", examDate);
-  document.getElementById("goalBadge").innerText = selectedGoal;
+  // Days chip
+  renderDaysChip(goal, examDate);
 
-  try {
-    const docKey = localStorage.getItem("userName") || name;
-    await setDoc(doc(db,"users",docKey), { goal: selectedGoal, examDate: examDate }, { merge: true });
-  } catch(e) { console.log("Firestore:", e); }
+  // Notification row — hide if already granted
+  checkNotifRow();
 
-  window.dispatchEvent(new StorageEvent('storage', { key: 'goal', newValue: selectedGoal }));
-
-  const msgBox = document.getElementById("msg");
-  msgBox.innerHTML = '<i class="fa-solid fa-circle-check"></i> Saved!';
-  msgBox.style.display = "block";
-  setTimeout(() => { msgBox.style.display = "none"; }, 2500);
+  // Show card, hide loader
+  document.getElementById("loadingState").style.display = "none";
+  document.getElementById("profileCard").style.display  = "block";
 }
 
-// ===== LOGOUT =====
-function logout() {
+function renderDaysChip(goal, examDate){
+  const chip = document.getElementById("vmDaysChip");
+  const date = examDate || EXAMS[goal]?.date;
+  if(!date){ chip.style.display="none"; return; }
+
+  const examTs  = new Date(date); examTs.setHours(0,0,0,0);
+  const todayTs = new Date();     todayTs.setHours(0,0,0,0);
+  const diff    = Math.ceil((examTs - todayTs) / 86400000);
+
+  if(diff <= 0){ chip.style.display="none"; return; }
+
+  chip.style.display = "flex";
+  document.getElementById("vmDaysBig").innerText   = diff;
+  document.getElementById("vmDaysExam").innerText  = EXAMS[goal]?.name || goal;
+  document.getElementById("vmDaysDate").innerText  = EXAMS[goal]?.label || date;
+}
+
+function checkNotifRow(){
+  const row = document.getElementById("notifAllowRow");
+  // Hide if already granted OR if not PWA
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(!isPWA || Notification.permission === "granted"){
+    row.style.display = "none";
+  } else {
+    row.style.display = "flex";
+  }
+}
+
+// ── OPEN EDIT MODE ──
+window.openEdit = function(){
+  const name  = profileData.displayName || "";
+  const goal  = profileData.goal        || "JEE";
+  const eDate = profileData.examDate    || "";
+
+  document.getElementById("editName").value  = name;
+  document.getElementById("editGoal").value  = goal;
+
+  document.getElementById("viewMode").style.display = "none";
+  document.getElementById("editMode").style.display = "block";
+  document.getElementById("editBtn").innerHTML      = '<i class="fa-solid fa-xmark"></i> Cancel';
+  document.getElementById("editBtn").onclick        = cancelEdit;
+
+  onGoalChange(eDate);
+};
+
+window.cancelEdit = function(){
+  document.getElementById("editMode").style.display = "none";
+  document.getElementById("viewMode").style.display = "block";
+  document.getElementById("editBtn").innerHTML      = '<i class="fa-solid fa-pen"></i> Edit';
+  document.getElementById("editBtn").onclick        = openEdit;
+};
+
+// ── GOAL CHANGE IN EDIT MODE ──
+window.onGoalChange = function(prefillDate){
+  const goal       = document.getElementById("editGoal").value;
+  const jeePicker  = document.getElementById("jeePicker");
+  const brdPicker  = document.getElementById("boardsPicker");
+  const fixedChip  = document.getElementById("fixedDateChip");
+  const dateLabel  = document.getElementById("editDateLabel");
+
+  jeePicker.style.display = "none";
+  brdPicker.style.display = "none";
+  fixedChip.style.display = "none";
+  dateLabel.style.display = "none";
+
+  const saved = prefillDate || profileData.examDate || "";
+
+  if(goal === "JEE"){
+    dateLabel.style.display = "block";
+    jeePicker.style.display = "block";
+    jeePicker.value = (saved && saved.startsWith("2026-04")) ? saved : "2026-04-02";
+  } else if(goal === "Boards"){
+    dateLabel.style.display = "block";
+    brdPicker.style.display = "block";
+    if(saved) brdPicker.value = saved;
+  } else {
+    const info = EXAMS[goal];
+    if(info.label){
+      dateLabel.style.display = "block";
+      fixedChip.style.display = "flex";
+      fixedChip.innerHTML = `<i class="fa-solid fa-calendar-check"></i> ${info.label}`;
+    }
+  }
+};
+
+// ── SAVE ──
+window.saveProfile = async function(){
+  const newName = document.getElementById("editName").value.trim();
+  const goal    = document.getElementById("editGoal").value;
+  if(!newName) {
+    document.getElementById("editName").style.borderColor = "rgba(244,63,94,.6)";
+    setTimeout(()=>{ document.getElementById("editName").style.borderColor = ""; }, 1500);
+    return;
+  }
+
+  let examDate = "";
+  if(goal === "JEE")    examDate = document.getElementById("jeePicker").value  || EXAMS.JEE.date;
+  else if(goal==="Boards") examDate = document.getElementById("boardsPicker").value || "";
+  else                  examDate = EXAMS[goal]?.date || "";
+
+  // Update local state
+  profileData.displayName = newName;
+  profileData.goal        = goal;
+  profileData.examDate    = examDate;
+
+  // localStorage cache
+  localStorage.setItem("userName",  newName);
+  localStorage.setItem("goal",      goal);
+  if(examDate) localStorage.setItem("examDate", examDate);
+
+  // ── SAVE TO FIRESTORE (uid as key — survives reinstall) ──
+  try {
+    await setDoc(doc(db, "users", currentUser.uid), {
+      displayName: newName,
+      email:       currentUser.email,
+      goal:        goal,
+      examDate:    examDate,
+    }, { merge: true });
+  } catch(e){ console.log("Firestore save:", e); }
+
+  // Show success toast
+  const toast = document.getElementById("toast");
+  toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Saved successfully!';
+  toast.style.display = "block";
+
+  // After 1.5s → hide edit, show view with updated data
+  setTimeout(()=>{
+    toast.style.display = "none";
+    cancelEdit();
+    renderProfile(newName, currentUser.email, goal, examDate);
+    // Sync header on index.html when navigating back
+    window.dispatchEvent(new StorageEvent('storage', { key:'goal', newValue:goal }));
+  }, 1500);
+};
+
+// ── NOTIFICATION ──
+window.enableNotif = async function(){
+  try {
+    const perm = await Notification.requestPermission();
+    if(perm === "granted"){
+      localStorage.setItem("examNotifEnabled", "true");
+      // Hide the row immediately
+      document.getElementById("notifAllowRow").style.display = "none";
+      // Fire a test notification
+      const goal  = profileData.goal || "JEE";
+      const date  = profileData.examDate || EXAMS[goal]?.date;
+      const diff  = date ? Math.ceil((new Date(date) - new Date()) / 86400000) : 0;
+      new Notification("📚 Untitled World", {
+        body: `${EXAMS[goal]?.name || goal} — ${diff > 0 ? diff+" days left! Study hard 🔥" : "Exam time!"}`,
+        icon: "/icon-192.png",
+        badge:"/icon-192.png"
+      });
+    }
+  } catch(e){ console.log(e); }
+};
+
+// ── LOGOUT ──
+window.doLogout = function(){
   document.body.style.opacity = "0";
-  document.body.style.transition = "opacity 0.2s ease";
-  setTimeout(() => {
+  document.body.style.transition = "opacity .2s ease";
+  setTimeout(()=>{
     ["userName","customUserName","userEmail","goal","examDate","seenWelcome","examNotifEnabled"]
       .forEach(k => localStorage.removeItem(k));
     window.location.href = "login.html";
   }, 200);
-}
-
-window.saveProfile  = saveProfile;
-window.logout       = logout;
-window.onGoalChange = onGoalChange;
-window.toggleNotif  = toggleNotif;
+};
 </script>
 </body>
 </html>
