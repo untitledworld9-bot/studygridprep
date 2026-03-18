@@ -24,14 +24,7 @@ messaging.onBackgroundMessage(function(payload) {
 });
 
 // ─── Untitled World – Advanced Service Worker ───────────────────────────────
-// Features:
-// • Navigation → Network-first (fast fallback)
-// • Static → Cache-first + background update
-// • Auto update
-// • Zero white screen
-// ────────────────────────────────────────────────────────────────────────────
-
-const CACHE = "uw-cache-v19";
+const CACHE = "uw-cache-v20";
 
 const ASSETS = [
   "/",
@@ -39,6 +32,8 @@ const ASSETS = [
   "/offline.html",
   "/focus.html",
   "/todo.html",
+  "/profile.html",
+  "/subscription.html",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
@@ -148,18 +143,15 @@ self.addEventListener("message", event => {
 self.addEventListener("notificationclick", event => {
   event.notification.close();
 
-  // Check if URL is passed in the notification data
   const targetUrl = event.notification.data ? event.notification.data.url : "/";
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then(clientList => {
-      // 1. Agar tab already open hai, toh usko focus karo
       for (const client of clientList) {
         if (client.url.includes(targetUrl) && "focus" in client) {
           return client.focus();
         }
       }
-      // 2. Agar tab open nahi hai, toh naya tab/window open karo
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }
