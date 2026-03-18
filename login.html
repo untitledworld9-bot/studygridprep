@@ -1,155 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Login - Untitled World</title>
-
 <link rel="icon" href="/icon-192.png">
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+<!-- INSTANT LOGIN CHECK — NO BLINK -->
+<script>
+(function(){
+  if(localStorage.getItem("userName")){
+    // Already logged in — skip login page instantly
+    if(!localStorage.getItem("seenWelcome") &&
+       (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone)){
+      window.location.replace("mainwelcome.html");
+    } else {
+      window.location.replace("index.html");
+    }
+  }
+})();
+</script>
+
 <style>
+/* ===== GLOBAL DESIGN SYSTEM ===== */
+:root{
+  --bg-start: #0B1220;
+  --bg-end: #0F172A;
+  --primary: #22D3EE;
+  --primary-dark: #06B6D4;
+  --secondary: #34D399;
+  --accent: #F43F5E;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --card-bg: rgba(255,255,255,0.03);
+  --card-border: rgba(255,255,255,0.08);
+  --radius: 16px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.3);
+  --transition: 0.25s ease;
+}
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
+  margin:0; padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
 }
+
+html{ background: var(--bg-start); }
 
 body{
-
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-height:100vh;
-
-display:flex;
-justify-content:center;
-align-items:center;
-
-color:white;
-
+  background: linear-gradient(160deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-primary);
+  /* Fade-in on arrival — no white flash */
+  animation: pageIn 0.35s ease forwards;
 }
 
+@keyframes pageIn{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+/* ===== LOGIN BOX ===== */
 .login-box{
-text-align:center;
-max-width:380px;
-width:85%;
+  text-align: center;
+  max-width: 360px;
+  width: 90%;
+  padding: 16px;
 }
 
 .logo{
-width:95px;
-margin-bottom:22px;
-animation: floatLogo 3s ease-in-out infinite;
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  animation: floatLogo 3.5s ease-in-out infinite;
 }
 
 @keyframes floatLogo{
-0%{transform:translateY(0px);}
-50%{transform:translateY(-10px);}
-100%{transform:translateY(0px);}
+  0%,100%{ transform:translateY(0px); }
+  50%{ transform:translateY(-10px); }
 }
 
 h1{
-
-font-size:28px;
-margin-bottom:5px;
-
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  min-height: 34px;
 }
 
 .sub{
-
-opacity:.85;
-font-size:18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
 }
 
 .desc{
-
-opacity:.7;
-margin-top:6px;
-margin-bottom:25px;
-
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.5;
 }
 
+/* ===== CARD WRAPPER ===== */
+.login-card{
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+/* ===== GOOGLE BUTTON ===== */
 .google-btn{
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-width:100%;
-
-gap:12px;
-
-background:white;
-color:black;
-
-border:none;
-
-padding:16px 20px;
-
-border-radius:40px;
-
-font-weight:600;
-font-size:16px;
-
-cursor:pointer;
-
-transition:0.25s;
-
-box-shadow:0 8px 25px rgba(0,0,0,0.25);
-}
-
-.google-btn:hover{
-transform:scale(1.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #22D3EE, #06B6D4);
+  color: #0B1220;
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 16px rgba(34,211,238,0.3);
+  letter-spacing: 0.3px;
 }
 
 .google-btn img{
-
-width:20px;
-
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
 }
 
-.sub{
-opacity:.9;
-font-size:18px;
-animation:fadeIn 2s ease;
+.google-btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34,211,238,0.4);
 }
 
-@keyframes fadeIn{
-from{opacity:0;}
-to{opacity:.9;}
+.google-btn:active{
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(34,211,238,0.2);
 }
 
+/* ===== LOADING STATE ===== */
+.google-btn.loading{
+  opacity: 0.7;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ===== FEATURES PILLS ===== */
+.features-row{
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.pill{
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 50px;
+  padding: 5px 12px;
+}
+
+/* ===== FOOTER ===== */
+.login-footer{
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.login-footer a{
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* ===== TYPING CURSOR ===== */
+.cursor{
+  display: inline-block;
+  color: var(--primary);
+  animation: blink 0.75s step-end infinite;
+}
+@keyframes blink{ 50%{ opacity:0; } }
+
+/* ===== ERROR TOAST ===== */
+.error-toast{
+  display: none;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(244,63,94,0.12);
+  border: 1px solid rgba(244,63,94,0.3);
+  border-radius: 12px;
+  color: #FDA4AF;
+  font-size: 13px;
+  text-align: center;
+}
 </style>
-
 </head>
-
 <body>
 
 <div class="login-box">
 
-<img src="/icon-512.png" class="logo">
+  <img src="/icon-512.png" class="logo" alt="Untitled World">
 
-<h1 id="typing"></h1>
+  <h1><span id="typing"></span><span class="cursor">|</span></h1>
 
-<p class="sub">Smart Study Platform</p>
+  <p class="sub">Smart Study Platform</p>
+  <p class="desc">Learn Smarter. Stay Focused. Track Progress.</p>
 
-<p class="desc">Learn Smarter. Stay Focused.</p>
+  <div class="login-card">
+    <button class="google-btn" id="loginBtn" onclick="login()">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+      Continue with Google
+    </button>
 
-<button class="google-btn" onclick="login()">
+    <div class="error-toast" id="errorToast">
+      Login failed. Please try again.
+    </div>
+  </div>
 
-<img src="https://developers.google.com/identity/images/g-logo.png">
+  <div class="features-row">
+    <span class="pill">📚 Mock Tests</span>
+    <span class="pill">⏱ Focus Timer</span>
+    <span class="pill">📊 Progress</span>
+    <span class="pill">🏆 Leaderboard</span>
+  </div>
 
-Login with Google
-
-</button>
+  <p class="login-footer" style="margin-top:20px;">
+    By continuing you agree to our
+    <a href="terms.html">Terms</a> &amp;
+    <a href="privacy.html">Privacy Policy</a>
+  </p>
 
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -169,68 +273,69 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 function getTodayDate(){
- const d = new Date();
- return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+  const d = new Date();
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
 window.login = async function(){
+  const btn = document.getElementById("loginBtn");
+  const toast = document.getElementById("errorToast");
 
-try{
+  btn.classList.add("loading");
+  btn.innerText = "Signing in…";
+  toast.style.display = "none";
 
-const result = await signInWithPopup(auth, provider);
-const user = result.user;
+  try{
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const name = user.displayName;
+    const email = user.email;
 
-const name = user.displayName;
-const email = user.email;
+    localStorage.setItem("userName", name);
+    localStorage.setItem("userEmail", email);
 
-localStorage.setItem("userName", name);
-localStorage.setItem("userEmail", email);
+    await setDoc(doc(db,"users",name),{
+      name: name,
+      email: email,
+      focusTime: 0,
+      weeklyXP: 0,
+      status: "Online",
+      room: "global",
+      lastActiveDate: getTodayDate()
+    },{merge:true});
 
-await setDoc(doc(db,"users",name),{
+    // Smooth fade-out before redirect
+    document.body.style.opacity = "0";
+    document.body.style.transition = "opacity 0.2s ease";
 
- name: name,
- email: email,
- focusTime: 0,
- weeklyXP: 0,
- status: "Online",
- room: "global",
- lastActiveDate: getTodayDate()
+    setTimeout(() => {
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if(!localStorage.getItem("seenWelcome") && isPWA){
+        window.location.href = "mainwelcome.html";
+      } else {
+        window.location.href = "index.html";
+      }
+    }, 200);
 
-},{merge:true});
+  } catch(err){
+    console.log(err);
+    btn.classList.remove("loading");
+    btn.innerHTML = '<img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" style="width:20px;height:20px;background:white;border-radius:50%;padding:2px;"> Continue with Google';
+    toast.style.display = "block";
+  }
+};
 
-// welcome screen logic
-
-if(!localStorage.getItem("seenWelcome")){
-
-window.location.href="mainwelcome.html";
-
-}else{
-
-window.location.href="index.html";
-}
-
-}catch(err){
-
-console.log(err);
-alert("Login Failed");
-
-}
-
-}
-
-const text="Welcome to Untitled World";
-let i=0;
-
+// Typing animation
+const text = "Welcome to Untitled World";
+let i = 0;
 function typeText(){
-if(i<text.length){
-document.getElementById("typing").innerHTML += text.charAt(i);
-i++;
-setTimeout(typeText,60);
+  if(i < text.length){
+    document.getElementById("typing").textContent += text.charAt(i);
+    i++;
+    setTimeout(typeText, 65);
+  }
 }
-}
-
 typeText();
-
 </script>
 
 </body>
