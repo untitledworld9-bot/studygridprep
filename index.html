@@ -488,7 +488,7 @@ font-weight:400;
 /* PWA DASHBOARD UI */
 .pwa-dashboard{
 display:none;
-padding:12px 16px 100px 16px;
+padding:12px 16px 50px 16px;
 text-align:center;
 max-width:480px;
 margin:0 auto;
@@ -615,7 +615,7 @@ color:var(--text-secondary);
 .app-box.todo-box {
   border-color: rgba(0,230,200,0.35);
   background: rgba(0,230,200,0.06);
-  margin: 0 auto 10px auto;
+  margin: 0 auto 28px auto;  /* 10→28 */
   width:100%;
   max-width:440px;
   display: flex;
@@ -643,13 +643,13 @@ color:var(--text-secondary);
    FOLLOW / MADE LINE (PWA)
    ============================== */
 .follow-section{
-margin-top:32px;
+margin-top:20px;
 text-align:center;
 }
 
 .made-line{
 margin-top:16px;
-margin-bottom:28px;
+margin-bottom:12px;
 color:var(--text-secondary);
 }
 
@@ -936,7 +936,7 @@ margin-left:4px;
 }
 
 #todayFocusCard{
-margin:20px auto 35px auto;
+margin:20px auto 20px auto;  /* 35→20 */
 }
 
 /* PWA landscape fix */
@@ -1932,9 +1932,9 @@ pointer-events:none;">
 </h1>
 <div class="menu-toggle" id="webMenuToggle" onclick="toggleMenu()">☰</div>
 <div class="header-right-actions" id="headerRightActions">
-  <div id="headerStreakBadge" class="header-streak-badge" onclick="location.href='mainleaderboard.html'" style="display:none;" title="Your study streak">
-    <span class="streak-fire-anim">🔥</span><span id="headerStreakNum">0</span>
-  </div>
+<div id="headerStreakBadge" class="header-streak-badge" onclick="location.href='mainleaderboard.html'" title="Your study streak">
+  <span class="streak-fire-anim">🔥</span><span id="headerStreakNum">0</span>
+</div>
   <div class="notif-dot-btn" onclick="openNotifPanel()" id="notifDotBtn" title="Notifications">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <circle cx="12" cy="5" r="2"/>
@@ -2542,6 +2542,18 @@ window.addEventListener("load",()=>{
 const isStandalone =
 window.matchMedia('(display-mode: standalone)').matches
 || window.navigator.standalone;
+// Streak badge — instantly from localStorage
+const cachedStreak = parseInt(localStorage.getItem("uw_streak") || "0");
+const badge = document.getElementById("headerStreakBadge");
+const num   = document.getElementById("headerStreakNum");
+if (badge && num) {
+  if (cachedStreak > 0) {
+    num.textContent  = cachedStreak;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+  }
 
 if(!isStandalone){
  const box = document.getElementById("xpRankBox");
@@ -2837,13 +2849,13 @@ onAuthStateChanged(auth, async user => {
   // Also watch UID-based doc (uw-core.js + playlist.html saves dailyXP here)
   if (user.uid && user.uid !== userId) {
     onSnapshot(doc(db, "users", user.uid), (snap3) => {
-      const d3 = snap3.data();
-      if (!d3) return;
-      const dp = d3.dailyXP || 0;
-      const ds = d3.streak  || 0;
-      if (dp > 0) updateDailyGoalBar(dp);
-      if (ds > 0) updateHeaderStreak(ds);
-    });
+    const d3 = snap3.data();
+    if (!d3) return;
+    const dp = d3.dailyXP || 0;
+    const ds = d3.streak  || 0;
+    if (dp > 0) updateDailyGoalBar(dp);
+    if (ds > 0) updateHeaderStreak(ds);
+  });
   }
 });
 
@@ -2913,6 +2925,15 @@ if(isPWA()){
 
 })();
 
+window.addEventListener("pageshow", function() {
+  if (!isPWA()) return;
+  const today = new Date().toDateString();
+  if (localStorage.getItem("dailyXPDate") === today) {
+    const xp = parseInt(localStorage.getItem("dailyXP") || "0", 10);
+    if (xp > 0) updateDailyGoalBar(xp);
+  }
+});
+  
 // --- DAILY STREAK PROGRESS LOGIC (index.html) ---
 window.addEventListener("load", function() {
   if(isPWA()) {
@@ -2927,6 +2948,12 @@ window.addEventListener("load", function() {
         localStorage.setItem("dailyXP", 0);
         localStorage.setItem("dailyXPDate", today);
     }
+
+    // Firebase se sync — agar UW Core loaded hai
+    if(window.UW && window.UW.getXP) {
+      const firebaseXP = window.UW.getXP();
+      if(firebaseXP > dailyXP) dailyXP = firebaseXP;
+  }
 
     let displayXP = dailyXP > 10 ? 10 : dailyXP; // Max 10 dikhayega
     document.getElementById("dailyXpDisplay").innerText = displayXP;
