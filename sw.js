@@ -24,7 +24,7 @@ messaging.onBackgroundMessage(function(payload) {
 });
 
 // ─── Untitled World – Advanced Service Worker ───────────────────────────────
-const CACHE = "uw-cache-v22";
+const CACHE = "uw-cache-v23";
 
 const ASSETS = [
   "/",
