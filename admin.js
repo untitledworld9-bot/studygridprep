@@ -1082,6 +1082,7 @@ window.sendNotification = async () => {
   const title  = ($("notifyTitle")?.value  || "").trim();
   const body   = ($("notifyText")?.value   || "").trim();
   const icon   = ($("notifyIcon")?.value   || "🔔").trim();
+  const url    = ($("notifyUrl")?.value    || "/").trim();   // ← NEW: destination URL
   const btn    = $("notifyBtn");
 
   if (!title || !body)                { toast("Please fill in title and message.", "warning"); return; }
@@ -1091,16 +1092,38 @@ window.sendNotification = async () => {
   btn.innerHTML = `<span class="spinner"></span> Sending…`;
 
   try {
+    // ── 1. Firestore queue (unchanged — drives in-app foreground notifications)
     await addDoc(collection(db, COLL.NOTIFICATIONS), {
       target: target === "all" ? "all" : user,
       user:   target === "user" ? user : null,
       title,
       body,
       icon,
+      url,                          // ← NEW: stored so foreground handler can route too
       read:      false,
       time:      Date.now(),
       sentAt:    serverTimestamp()
     });
+
+    // ── 2. Background push via Replit backend (drives system popup when app is closed)
+    try {
+      const pushRes = await fetch("https://unequaled-mediumorchid-markuplanguage--infosphere569.replit.app/send-background-push", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          title,
+          body,
+          target: target === "all" ? "all" : user,
+          url
+        })
+      });
+      if (!pushRes.ok) {
+        console.warn("[Push] Backend responded with", pushRes.status);
+      }
+    } catch (pushErr) {
+      // Non-fatal: Firestore notification still went through
+      console.warn("[Push] Background push failed:", pushErr.message);
+    }
 
     toast(target === "all"
       ? `Broadcast notification sent! 📣`
@@ -1111,6 +1134,7 @@ window.sendNotification = async () => {
     $("notifyText").value  = "";
     $("notifyIcon").value  = "";
     $("notifyUser").value  = "";
+    if ($("notifyUrl")) $("notifyUrl").value = "";
   } catch (err) {
     console.error("Notification send error:", err);
     toast("Failed to send notification: " + err.message, "error");
