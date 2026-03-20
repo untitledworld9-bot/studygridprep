@@ -352,31 +352,43 @@ function initPromotions() {
   );
 
   unsubs.promotions = onSnapshot(q, snap => {
+    // Collect ALL new unseen promos this snapshot fires
+    const newPromos = [];
+
     snap.docChanges().forEach(change => {
-      if (change.type !== "added") return;
+      // ✅ FIX: also handle "modified" in case admin re-sends same doc
+      if (change.type !== "added" && change.type !== "modified") return;
 
       const id   = change.doc.id;
       const data = change.doc.data();
 
+      if (!data.active)              return;
       if (seen.promotions.has(id))   return;
       if (!data.title && !data.body) return;
-      // Platform targeting
       if (data.platform === "pwa" && !isPWA()) return;
       if (data.platform === "web" && isPWA())  return;
-      // Page targeting: only show if page matches or is "all"
       const curPage = getCurrentPage();
       if (data.page && data.page !== "all" && data.page !== curPage) return;
 
-      // Mark seen immediately so duplicate Firestore events don't double-show
-      markSeen("promotions", id);
-
-      // Show immediately — Firestore connection itself has natural 2-4s delay
-      if (data.type === "banner") {
-        renderPromotionBanner(data);
-      } else {
-        renderPromotionPopup(data);
-      }
+      newPromos.push({ id, data, time: data.time || 0 });
     });
+
+    if (!newPromos.length) return;
+
+    // ✅ FIX: Sort by newest first — always show the latest promotion
+    newPromos.sort((a, b) => b.time - a.time);
+    const newest = newPromos[0];
+
+    markSeen("promotions", newest.id);
+
+    // ✅ FIX: Route all three types properly
+    if (newest.data.type === "banner") {
+      renderPromotionBanner(newest.data);
+    } else if (newest.data.type === "modal") {
+      renderPromotionModal(newest.data);   // new function below
+    } else {
+      renderPromotionPopup(newest.data);
+    }
   }, err => console.warn("[Promotions]", err));
 }
 
@@ -553,6 +565,109 @@ function renderPromotionPopup(data) {
   if (ms > 0) setTimeout(() => popup.style.setProperty("display", "none", "important"), ms);
 }
 
+// ── MODAL — full centered overlay, distinct violet style
+function renderPromotionModal(data) {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.88);
+    backdrop-filter:blur(10px);
+    display:flex;align-items:center;justify-content:center;
+    z-index:99999;
+    animation:fadeIn .3s ease;
+    font-family:inherit;
+  `;
+
+  const card = document.createElement("div");
+  card.style.cssText = `
+    position:relative;
+    width:90%;max-width:460px;
+    background:${data.bgColor || "#0d1117"};
+    border:1px solid rgba(124,92,252,0.4);
+    border-radius:20px;
+    padding:36px 28px 28px;
+    text-align:center;
+    box-shadow:0 24px 80px rgba(0,0,0,0.8),0 0 40px rgba(124,92,252,0.15);
+    animation:slideUp .4s ease;
+    color:#eef0ff;
+  `;
+
+  // Close ✕ button
+  const close = document.createElement("button");
+  close.textContent = "✕";
+  close.style.cssText = `
+    position:absolute;top:14px;right:14px;
+    background:rgba(255,255,255,0.08);border:none;
+    border-radius:50%;color:rgba(255,255,255,0.5);
+    font-size:14px;width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;line-height:1;
+  `;
+  close.onclick = () => overlay.remove();
+  card.appendChild(close);
+
+  // Icon badge at top
+  const icon = document.createElement("div");
+  icon.style.cssText = `
+    font-size:36px;margin-bottom:16px;
+  `;
+  icon.textContent = "📋";
+  card.appendChild(icon);
+
+  if (data.title) {
+    const t = document.createElement("h2");
+    t.style.cssText = `
+      font-size:20px;font-weight:800;
+      margin:0 0 10px;color:#fff;line-height:1.3;
+    `;
+    t.textContent = data.title;
+    card.appendChild(t);
+  }
+
+  if (data.body) {
+    const b = document.createElement("p");
+    b.style.cssText = `
+      font-size:14px;color:rgba(255,255,255,0.60);
+      line-height:1.7;margin:0 0 24px;
+    `;
+    b.textContent = data.body;
+    card.appendChild(b);
+  }
+
+  if (data.cta) {
+    const btn = document.createElement("button");
+    btn.textContent = data.cta;
+    btn.style.cssText = `
+      display:block;width:100%;
+      background:linear-gradient(135deg,#7c5cfc,#a78bfa);
+      border:none;border-radius:12px;padding:14px;
+      color:#fff;font-weight:700;font-size:15px;
+      cursor:pointer;margin-bottom:10px;
+    `;
+    btn.onclick = () => {
+      if (data.url) window.open(data.url, "_blank");
+      overlay.remove();
+    };
+    card.appendChild(btn);
+  }
+
+  const dismiss = document.createElement("button");
+  dismiss.textContent = "Maybe later";
+  dismiss.style.cssText = `
+    background:none;border:none;
+    color:rgba(255,255,255,0.3);font-size:12px;
+    cursor:pointer;padding:6px;
+  `;
+  dismiss.onclick = () => overlay.remove();
+  card.appendChild(dismiss);
+
+  overlay.appendChild(card);
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  safeAppend(document.body, overlay);
+
+  const ms = (data.duration || 0) * 1000;
+  if (ms > 0) autoRemove(overlay, ms);
+}
 
 /* ─────────────────────────────
    VIDEO PROMOTIONS
