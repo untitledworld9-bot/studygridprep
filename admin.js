@@ -522,10 +522,6 @@ function updateUserStats() {
   animateStat($("liveVisitors"),  online);
 }
 
-  // Live visitors = online + focusing
-  animateStat($("liveVisitors"),  online);
-}
-
 /**
  * Build the full users table with current search filter applied.
  */
