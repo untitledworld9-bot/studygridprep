@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Study Playlist | Untitled World</title>
     <link rel="icon" href="/icon-192.png">
     <!-- UW Core: shared XP, Streak, Firebase sync -->
@@ -13,11 +13,21 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
         body {
-            background: linear-gradient(160deg, #0B1220 0%, #0F172A 100%);
-            color: white;
-            min-height: 100vh;
-            padding-bottom: 50px;
-        }
+    background: linear-gradient(160deg, #0B1220 0%, #0F172A 100%);
+    color: white;
+    min-height: 100vh;
+    padding-bottom: 50px;
+    user-select: none; 
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent; 
+    overscroll-behavior-y: none; 
+}
+
+/* Taki input aur notes likhte waqt dikat na ho */
+input, textarea {
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+}
 
         .study-section {
             text-align: center;
@@ -840,6 +850,7 @@ box-shadow:0 0 12px rgba(0,200,255,0.35);
 </div>
 
 <select id="subjectSelect" class="subject-select">
+<option value="" disabled selected>Select Subject</option>
 <option value="Physics">Physics</option>
 <option value="Chemistry">Chemistry</option>
 <option value="Maths">Maths</option>
@@ -1039,11 +1050,17 @@ videos=[];
         }
     }
 
-    function addVideo() {
+        function addVideo() {
         let input = document.getElementById("ytLink");
         let url = input.value.trim();
         let videoID = extractVideoID(url);
         let subject = document.getElementById("subjectSelect").value;
+
+        // 🔥 NAYA LOGIC: Agar subject select nahi kiya hai toh error dikhao
+        if (!subject) {
+            showError("Please select a subject first! 📚");
+            return; // Yahin rok do
+        }
 
         if (videoID) {
             // Check for duplicates
@@ -1052,17 +1069,20 @@ videos=[];
                 return;
             }
             videos.push({
-id: videoID,
-completed:false,
-subject:subject
-});
+                id: videoID,
+                completed:false,
+                subject:subject
+            });
             saveAndRender();
             syncTodoToFirebase(); // 🔥 ADD
             showSuccess(subject);
+            
+            // Video add hone ke baad link aur subject reset kar do
             input.value = "";
+            document.getElementById("subjectSelect").value = ""; 
         } else {
-showError("Please enter a valid YouTube link");
-}
+            showError("Please enter a valid YouTube link");
+        }
     }
 
     let deleteIndex=null;
@@ -1369,42 +1389,43 @@ function showXP(){
         window.open("https://www.youtube.com", "_blank");
     }
 
-    window.onload = ()=>{
+    window.addEventListener("load", () => {
+    // 1. Sabse pehle normal load karke UI aur data dikhao
+    saveAndRender();
+    renderStreak();
+    renderXP();
+    loadFromFirebase();
 
-// 🔥 SHARE TARGET HANDLER (IMPORTANT)
-const params = new URLSearchParams(window.location.search);
+    // 2. Uske baad Share Target Handler check karo
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get("title");
+    const text = params.get("text");
+    const url = params.get("url");
 
-const title = params.get("title");
-const text = params.get("text");
-const url = params.get("url");
+    let sharedLink = url || text;
 
-// final link detect
-let sharedLink = url || text;
+    if(sharedLink){
+      sharedLink = sharedLink.split("&")[0];
+    }
 
-// 🔥 YAHI MISSING THA (ADD KAR)
-if(sharedLink){
-  sharedLink = sharedLink.split("&")[0];
-}
+    // YouTube link check
+    if(sharedLink && (sharedLink.includes("youtube.com") || sharedLink.includes("youtu.be"))){
+      let input = document.getElementById("ytLink");
+      if(input){
+        input.value = sharedLink; // Link box me automatically aa jayega
+      }
+      
+      // AUTO-ADD HATA DIYA HAI 🚫
+      // Ab link paste ho jayega, par video automatically add nahi hoga.
+      // Tu aaram se "Physics", "Chemistry", "Maths" select kar, aur khud "+ Add to List" daba.
+    }
+});
 
-// YouTube link check
-if(sharedLink && (sharedLink.includes("youtube.com") || sharedLink.includes("youtu.be"))){
-
-  let input = document.getElementById("ytLink");
-  if(input){
-    input.value = sharedLink;
-  }
-
-  setTimeout(()=>{
-    addVideo();
-  },500);
-}
-
-// normal load
-saveAndRender();
-renderStreak();
-renderXP();
-loadFromFirebase();
-}
+// 3. Agar user waapis is tab me aaye (pageshow), toh live XP wapas sync karo
+window.addEventListener("pageshow", () => {
+    renderStreak();
+    renderXP();
+});
 
                 function playVideo(id,el){
 
