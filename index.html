@@ -13,7 +13,7 @@
 <meta name="robots" content="index, follow">
 
 <!-- Mobile friendly -->
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <!-- Social sharing -->
 <meta property="og:title" content="Untitled World - Smart Study Platform">
@@ -62,6 +62,10 @@ body{
   color: var(--text-primary);
   min-height:100vh;
   animation: pageIn 0.3s ease forwards;
+user-select: none; /* Text selection disable */
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent; /* Click tap box disable */
+  overscroll-behavior-y: none; /* Page refresh pull/white line disable */
 }
 @keyframes pageIn{
   from{ opacity:0; }
@@ -488,7 +492,7 @@ font-weight:400;
 /* PWA DASHBOARD UI */
 .pwa-dashboard{
 display:none;
-padding:12px 16px 50px 16px;
+padding:12px 16px 20px 25px;
 text-align:center;
 max-width:480px;
 margin:0 auto;
@@ -615,7 +619,7 @@ color:var(--text-secondary);
 .app-box.todo-box {
   border-color: rgba(0,230,200,0.35);
   background: rgba(0,230,200,0.06);
-  margin: 0 auto 32px auto;  /* 10→28 */
+  margin: 0 auto 40px auto;
   width:100%;
   max-width:440px;
   display: flex;
@@ -643,13 +647,13 @@ color:var(--text-secondary);
    FOLLOW / MADE LINE (PWA)
    ============================== */
 .follow-section{
-margin-top:14px;
+margin-top:15px;
 text-align:center;
 }
 
 .made-line{
-margin-top:16px;
-margin-bottom:10px;
+margin-top:14px;
+margin-bottom:14px;
 color:var(--text-secondary);
 }
 
@@ -936,7 +940,7 @@ margin-left:4px;
 }
 
 #todayFocusCard{
-margin:20px auto 18px auto;  /* 35→20 */
+margin: 10px auto 4px auto !important; /* 20px se 10px aur niche ka 18px se 4px kiya */
 }
 
 /* PWA landscape fix */
@@ -2547,12 +2551,9 @@ const cachedStreak = parseInt(localStorage.getItem("uw_streak") || "0");
 const badge = document.getElementById("headerStreakBadge");
 const num   = document.getElementById("headerStreakNum");
 if (badge && num) {
-  if (cachedStreak > 0) {
-    num.textContent  = cachedStreak;
-    badge.style.display = 'flex';
-  } else {
-    badge.style.display = 'none';
-  }
+  num.textContent = cachedStreak;
+  badge.style.display = 'flex'; // Hamesha dikhega
+}
   }
 
 if(!isStandalone){
@@ -2731,6 +2732,12 @@ onAuthStateChanged(auth, async user => {
   if (!snap.exists()) snap = await getDoc(uidRef);
   const data = snap.exists() ? snap.data() : {};
 
+  // Agar database mein already rate kar chuka hai, toh device mein dobara save kar do local storage
+  if (data.appRating) {
+      localStorage.setItem("appRated", "true");
+      if (typeof updateRateUI === "function") updateRateUI();
+  }
+
   // Sync streak to localStorage from Firebase (Firebase is source of truth)
   const fbStreak = data.streak || 0;
   localStorage.setItem("uw_streak", fbStreak);
@@ -2740,13 +2747,9 @@ onAuthStateChanged(auth, async user => {
     const badge = document.getElementById("headerStreakBadge");
     const num = document.getElementById("headerStreakNum");
     if (!badge || !num) return;
-    if (streak > 0) {
-      num.textContent = streak;
-      badge.style.display = 'flex';
-    } else {
-      badge.style.display = 'none';
-    }
-  }
+    num.textContent = streak || 0;
+    badge.style.display = 'flex';
+}
   updateHeaderStreak(fbStreak);
 
   // Sync dailyXP from Firebase
@@ -2870,10 +2873,14 @@ function updateDailyGoalBar(xp) {
   const step10 = document.getElementById("step10");
 
   if (!fillBar) return;
+  
   if (displayXP >= 10) {
     fillBar.style.width = "100%";
     if (step5) step5.classList.add("completed");
-    if (step10) { step10.classList.add("completed"); step10.classList.remove("target"); }
+    if (step10) { 
+      step10.classList.add("completed"); 
+      step10.classList.remove("target"); 
+    }
   } else if (displayXP >= 5) {
     fillBar.style.width = "50%";
     if (step5) step5.classList.add("completed");
@@ -2953,7 +2960,7 @@ window.addEventListener("load", function() {
     if(window.UW && window.UW.getXP) {
       const firebaseXP = window.UW.getXP();
       if(firebaseXP > dailyXP) dailyXP = firebaseXP;
-  }
+    }
 
     let displayXP = dailyXP > 10 ? 10 : dailyXP; // Max 10 dikhayega
     document.getElementById("dailyXpDisplay").innerText = displayXP;
@@ -2962,17 +2969,23 @@ window.addEventListener("load", function() {
     let step5 = document.getElementById("step5");
     let step10 = document.getElementById("step10");
 
-    if (displayXP >= 10) {
-      fillBar.style.width = "100%";
-      step5.classList.add("completed");
-      step10.classList.add("completed");
-      step10.classList.remove("target");
-    } else if (displayXP >= 5) {
-      fillBar.style.width = "50%";
-      step5.classList.add("completed");
-    } else {
-      fillBar.style.width = "0%";
-    }
+    // Pehle 0 par set karo taaki bar animate hone ke liye taiyaar ho
+    if (fillBar) fillBar.style.width = "0%";
+
+    // Ab 300ms delay dekar actual target par bhejo taaki animation hit kare 🎯
+    setTimeout(() => {
+        if (displayXP >= 10) {
+          fillBar.style.width = "100%";
+          if (step5) step5.classList.add("completed");
+          if (step10) {
+            step10.classList.add("completed");
+            step10.classList.remove("target");
+          }
+        } else if (displayXP >= 5) {
+          fillBar.style.width = "50%";
+          if (step5) step5.classList.add("completed");
+        }
+    }, 300);
   }
 });
 
