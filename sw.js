@@ -12,15 +12,12 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-
  const title = payload.notification.title;
  const options = {
   body: payload.notification.body,
   icon: "/icon-192.png"
  };
-
  self.registration.showNotification(title, options);
-
 });
 
 // ─── Untitled World – Advanced Service Worker ───────────────────────────────
@@ -42,9 +39,7 @@ const ASSETS = [
 
 // ── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener("install", event => {
-
   self.skipWaiting();
-
   event.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(ASSETS))
   );
@@ -52,7 +47,6 @@ self.addEventListener("install", event => {
 
 // ── ACTIVATE ─────────────────────────────────────────────────────────────────
 self.addEventListener("activate", event => {
-
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
@@ -62,24 +56,18 @@ self.addEventListener("activate", event => {
       )
     ).then(() => self.clients.claim())
   );
-
 });
 
 // ── FETCH ────────────────────────────────────────────────────────────────────
 self.addEventListener("fetch", event => {
-
   const req = event.request;
-
-  // Only handle same-origin requests
   if (!req.url.startsWith(self.location.origin)) return;
 
-  // ── HTML NAVIGATION — network first, NO caching of HTML ───────────────────
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
-        .then(res => res) // always return fresh from network
+        .then(res => res)
         .catch(async () => {
-          // Only on real offline → show offline page
           const cache = await caches.open(CACHE);
           const offline = await cache.match("/offline.html");
           return offline || getOfflinePage();
@@ -88,7 +76,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // ── STATIC ASSETS (JS, CSS, images, fonts) — cache first ──────────────────
   event.respondWith(
     caches.match(req).then(cached => {
       const networkFetch = fetch(req).then(res => {
@@ -100,21 +87,77 @@ self.addEventListener("fetch", event => {
       return cached || networkFetch;
     })
   );
-
 });
 
-// ── MESSAGE (AUTO UPDATE TRIGGER) ────────────────────────────────────────────
-self.addEventListener("message", event => {
+// ── ✅ BACKGROUND NOTIFICATION SCHEDULING ────────────────────────────────────
+// Map of id -> { timeout, resolve } so multiple timers/todos can be scheduled
+const scheduledNotifications = new Map();
 
-  if (event.data === "skipWaiting") {
+// ── MESSAGE ──────────────────────────────────────────────────────────────────
+self.addEventListener("message", event => {
+  const data = event.data;
+  if (!data) return;
+
+  // ── skipWaiting (auto update trigger) ──────────────────────────────────────
+  if (data === "skipWaiting" || data.type === "skipWaiting") {
     self.skipWaiting();
+    return;
   }
 
+  // ── SCHEDULE_NOTIFICATION ─────────────────────────────────────────────────
+  // Focus timer / todo reminders call this when a timer starts
+  // Works even if the app tab is closed — SW keeps it alive
+  if (data.type === "SCHEDULE_NOTIFICATION") {
+    const { id = "default", endTime, title, body, url } = data;
+    const delay = endTime - Date.now();
+
+    // Cancel any existing scheduled notification with same id
+    if (scheduledNotifications.has(id)) {
+      const existing = scheduledNotifications.get(id);
+      clearTimeout(existing.timeout);
+      existing.resolve(); // release old waitUntil
+      scheduledNotifications.delete(id);
+    }
+
+    if (delay <= 0) return; // already past the time
+
+    // event.waitUntil keeps the SW alive until the Promise resolves
+    event.waitUntil(new Promise(resolve => {
+      const timeout = setTimeout(async () => {
+        await self.registration.showNotification(title || "Untitled World", {
+          body: body || "",
+          icon: "/icon-192.png",
+          badge: "/icon-192.png",
+          vibrate: [200, 100, 200],
+          requireInteraction: true,
+          data: { url: url || "/" }
+        });
+        scheduledNotifications.delete(id);
+        resolve(); // let SW sleep again
+      }, delay);
+
+      scheduledNotifications.set(id, { timeout, resolve });
+    }));
+    return;
+  }
+
+  // ── CANCEL_NOTIFICATION ───────────────────────────────────────────────────
+  // Called when timer is reset/paused, or page handles completion itself
+  if (data.type === "CANCEL_NOTIFICATION") {
+    const { id = "default" } = data;
+    if (scheduledNotifications.has(id)) {
+      const existing = scheduledNotifications.get(id);
+      clearTimeout(existing.timeout);
+      existing.resolve();
+      scheduledNotifications.delete(id);
+    }
+    return;
+  }
 });
 
+// ── NOTIFICATION CLICK ────────────────────────────────────────────────────────
 self.addEventListener("notificationclick", event => {
   event.notification.close();
-
   const targetUrl = event.notification.data ? event.notification.data.url : "/";
 
   event.waitUntil(
@@ -133,11 +176,8 @@ self.addEventListener("notificationclick", event => {
 
 // ── SAFE OFFLINE PAGE ────────────────────────────────────────────────────────
 async function getOfflinePage() {
-
   const cache  = await caches.open(CACHE);
-
   const cached = await cache.match("/offline.html");
-
   if (cached) return cached;
 
   return new Response(
@@ -162,6 +202,5 @@ background:#ff7a18;color:white;font-size:16px;cursor:pointer;}
 </div>
 </body>
 </html>`,
-  {headers:{'Content-Type':'text/html'}});
-
+  { headers: { 'Content-Type': 'text/html' } });
 }
