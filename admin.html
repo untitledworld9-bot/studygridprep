@@ -1285,6 +1285,17 @@
                   placeholder="Write the notification message…"></textarea>
       </div>
 
+      <div class="form-group">                                    <!-- ← ADD START -->
+        <label class="form-label">🖼️ Poster Image URL
+          <span style="font-size:11px;font-weight:400;
+                       color:var(--text-muted);margin-left:6px;">
+            (optional — big image shown below notification text)
+          </span>
+        </label>
+        <input class="form-input" id="notifyImage"
+               placeholder="https://your-site.com/sale-poster.jpg" />
+      </div>                                                      <!-- ← ADD END -->
+
       <button class="btn btn-primary" onclick="sendNotification()" id="notifyBtn">
         🔔 Send Notification
       </button>
