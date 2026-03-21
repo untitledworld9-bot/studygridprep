@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Timer | Untitled World</title>
 <link rel="icon" href="/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -10,32 +14,57 @@
 <style>
 
 /* --- BASE CSS --- */
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    /* ✅ No text selection on tap */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
 
-body{
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-min-height:100vh;
-position: relative;
-display: flex;
-flex-direction: column;
-align-items: center;
-overflow-x: hidden;
+/* Allow typing in inputs */
+input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* ✅ Dark html background — removes white flash / white loading line */
+html {
+    background: #0d1117;
+    overscroll-behavior: none;
+}
+
+body {
+    /* ✅ Matched index.html dark background from screenshot */
+    background: #0d1117;
+    color: white;
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    overscroll-behavior: none;
 }
 
 /* --- FIXED HEADER --- */
+/* ✅ Header color matched to index.html dark header */
 .fixed-timer-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(15, 32, 39, 0.98);
+    background: rgba(13, 17, 23, 0.98);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     z-index: 9999;
-    padding: 15px 20px; 
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-    border-bottom: 1px solid rgba(0, 242, 254, 0.25);
+    padding: 15px 20px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -61,7 +90,7 @@ overflow-x: hidden;
     top: -100px;
     left: 50%;
     transform: translateX(-50%);
-    background: #1e293b;
+    background: #161b22;
     color: #fff;
     padding: 15px 30px;
     border-radius: 12px;
@@ -74,20 +103,21 @@ overflow-x: hidden;
     display: flex;
     align-items: center;
     gap: 10px;
+    white-space: nowrap;
 }
 
 .custom-toast.show {
-    top: 80px; /* Header ke niche dikhega */
+    top: 80px;
 }
 
-/* --- STUDY WITH FRIENDS (Right aligned half button) --- */
+/* --- STUDY WITH FRIENDS --- */
 .friends-btn-wrapper {
     width: 100%;
     max-width: 500px;
     display: flex;
-    justify-content: flex-end; /* Right side shift */
+    justify-content: flex-end;
     padding-right: 20px;
-    margin-top: 85px; /* Fixed header ke niche gap */
+    margin-top: 85px;
     margin-bottom: 15px;
 }
 
@@ -113,7 +143,7 @@ overflow-x: hidden;
 }
 
 .timer-section {
-    text-align:center;
+    text-align: center;
     padding: 0 5% 40px 5%;
     display: flex;
     flex-direction: column;
@@ -121,65 +151,79 @@ overflow-x: hidden;
     width: 100%;
 }
 
-/* --- PREMIUM BIG CIRCLE TIMER --- */
+/* --- ✅ BIG CIRCLE TIMER --- */
 .timer-container {
     background: rgba(255, 255, 255, 0.03);
     border: 3px solid rgba(0, 242, 254, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 242, 254, 0.05);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 0 30px rgba(0, 242, 254, 0.04);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-radius: 50%; 
-    width: 320px; /* Badha diya */
-    height: 320px; /* Badha diya */
+    border-radius: 50%;
+    width: 320px;
+    height: 320px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: 40px; /* Niche ke items se proper gap */
+    margin-bottom: 32px;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-/* Green Glow Action when timer is running */
 .timer-container.running {
     border-color: #00ff88;
-    box-shadow: 0 0 35px rgba(0, 255, 136, 0.6), inset 0 0 25px rgba(0, 255, 136, 0.2);
+    box-shadow: 0 0 45px rgba(0, 255, 136, 0.45), inset 0 0 30px rgba(0, 255, 136, 0.08);
 }
 
+/* ✅ Fits inside circle properly */
 .timer {
-    font-size: 65px; /* Digits bade kiye circle ke hisab se */
-    font-weight:700;
-    color:#00f2fe;
+    font-size: 62px;       /* ← 52 se 62 */
+    font-weight: 700;
+    color: #00f2fe;
     line-height: 1;
-    letter-spacing: 2px;
-    font-variant-numeric: tabular-nums; 
-    text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    letter-spacing: 0px;   /* ← 2px tha, ye extra space kha raha tha */
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 22px rgba(0, 242, 254, 0.45);
 }
 
 .timer-container.running .timer {
     color: #00ff88;
-    text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+    text-shadow: 0 0 22px rgba(0, 255, 136, 0.5);
 }
 
-/* --- CUSTOM INPUT STYLING --- */
+.timer-tap-hint {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    display: none;
+}
+
+.timer-container.running .timer-tap-hint {
+    color: rgba(0, 255, 136, 0.4);
+}
+
+/* --- ✅ SMALLER TIME INPUT SECTION --- */
 .custom-time-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 25px;
-    background: rgba(255,255,255,0.05);
-    padding: 12px 25px;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+    gap: 8px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 8px 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .time-input {
-    width: 75px;
-    padding: 12px 10px;
-    border: 2px solid rgba(0, 242, 254, 0.3);
-    border-radius: 12px;
+    width: 60px;
+    padding: 9px 6px;
+    border: 1.5px solid rgba(0, 242, 254, 0.25);
+    border-radius: 10px;
     background: transparent;
     color: white;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     text-align: center;
     outline: none;
@@ -187,17 +231,18 @@ overflow-x: hidden;
 }
 
 .time-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255,255,255,0.3);
     font-weight: 400;
+    font-size: 13px;
 }
 
 .time-input:focus {
     border-color: #00f2fe;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255,255,255,0.07);
 }
 
 .colon {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: bold;
     color: #00f2fe;
 }
@@ -205,44 +250,43 @@ overflow-x: hidden;
 /* --- BUTTONS --- */
 .btn {
     margin: 5px;
-    padding: 14px 28px;
-    border:none;
-    border-radius:30px;
-    background:linear-gradient(45deg,#00f2fe,#4facfe);
-    cursor:pointer;
-    font-weight:600;
-    color:#fff;
-    font-size: 15px;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(45deg, #00f2fe, #4facfe);
+    cursor: pointer;
+    font-weight: 600;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.25);
+    transition: transform 0.2s;
 }
 
-.btn:hover {
-    transform:scale(1.05);
-    transition:.3s;
-}
+.btn:active { transform: scale(0.97); }
+
+.set-btn { padding: 9px 18px; font-size: 13px; }
 
 .pause-btn {
     background: linear-gradient(45deg, #f39c12, #e67e22);
     box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
 }
 
-.reset-btn { /* Changed from stop to reset class name */
+.reset-btn {
     background: linear-gradient(45deg, #e74c3c, #c0392b);
     box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
-.controls {
-    margin-bottom: 25px;
+.controls { margin-bottom: 20px; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 380px) {
+    .timer-container { width: 270px; height: 270px; }
+    .timer { font-size: 68px; }
 }
 
-/* Responsive tweaks */
-@media (max-width: 400px) {
-    .timer-container { width: 280px; height: 280px; margin-bottom: 30px;}
-    .timer { font-size: 55px; }
-}
 @media (min-width: 768px) {
-    .timer-container { width: 400px; height: 400px; margin-bottom: 50px;}
-    .timer { font-size: 80px; }
+    .timer-container { width: 400px; height: 400px; }
+    .timer { font-size: 100px; }
 }
 
 </style>
@@ -267,13 +311,14 @@ overflow-x: hidden;
 
 <div class="timer-container" id="timerBox" onclick="toggleTimer()">
     <div class="timer" id="timer">00:00:00</div>
+    <div class="timer-tap-hint" id="tapHint">tap to pause</div>
 </div>
 
 <div class="custom-time-container">
     <input type="number" id="customHours" class="time-input" placeholder="Hrs" min="0">
     <span class="colon">:</span>
     <input type="number" id="customMinutes" class="time-input" placeholder="Min" min="0">
-    <button class="btn" onclick="startCustomTime()">Set Time</button>
+    <button class="btn set-btn" onclick="startCustomTime()">Set</button>
 </div>
 
 <div class="controls">
@@ -288,26 +333,49 @@ overflow-x: hidden;
 </section>
 
 <script>
-// Notification permission request on app start
 document.addEventListener("DOMContentLoaded", () => {
-
-if ("Notification" in window) {
-
-if (Notification.permission === "default") {
-Notification.requestPermission();
-}
-
-}
-
+    if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
 });
 
 let timerInterval;
 let time = 0;
 let isPaused = false;
-let targetEndTime = 0; // Refresh persistence ke liye naya variable
+let targetEndTime = 0;
 const timerBox = document.getElementById("timerBox");
 
-// --- INITIAL LOAD (Refresh Handle Logic) ---
+// ✅ Tell SW to schedule a background notification for when timer ends
+function scheduleSwNotification() {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'SCHEDULE_NOTIFICATION',
+            id: 'focus_timer',
+            endTime: targetEndTime,
+            title: 'Study Timer',
+            body: 'Session Completed \uD83D\uDE80 Great Job!',
+            url: '/focus.html'
+        });
+    }
+}
+
+// ✅ Cancel SW background notification (when page is open and handles it itself)
+function cancelSwNotification() {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'CANCEL_NOTIFICATION',
+            id: 'focus_timer'
+        });
+    }
+}
+
+function updateTapHint() {
+    const hint = document.getElementById("tapHint");
+    if (!hint) return;
+    hint.style.display = (time > 0) ? "block" : "none";
+}
+
+// --- INITIAL LOAD (Refresh Handle) ---
 window.onload = () => {
     loadSavedTimer();
 };
@@ -328,72 +396,56 @@ function loadSavedTimer() {
     const saved = JSON.parse(localStorage.getItem("uw_timerState"));
     if (saved) {
         isPaused = saved.isPaused;
-        targetEndTime = saved.targetEndTime; // Global memory restore
+        targetEndTime = saved.targetEndTime;
 
         if (isPaused) {
-            // Agar pause pe chhoda tha
             time = saved.time;
             if (time > 0) {
                 displayTime(time);
                 document.getElementById("pauseBtn").innerText = "Resume";
+                updateTapHint();
             }
         } else {
-            // Agar chalte hue chhoda tha
             if (targetEndTime > Date.now()) {
                 time = Math.floor((targetEndTime - Date.now()) / 1000);
-                startTimer(time, true); // Resume kar rahe hain
+                startTimer(time, true);
             } else if (targetEndTime > 0 && targetEndTime <= Date.now()) {
-
- clearTimerState();
- displayTime(0);
-
- showToast("Session Completed while you were away! 🚀", true);
-
- sendNotification(
-   "Study Timer",
-   "Session Completed while you were away 🚀"
- );
-
-}
+                clearTimerState();
+                displayTime(0);
+                showToast("Session Completed while you were away! \uD83D\uDE80", true);
+                sendNotification("Study Timer", "Session Completed while you were away \uD83D\uDE80");
+            }
         }
     }
 }
 
-// --- Custom Popup Logic ---
 function showToast(msg, isSuccess = false) {
     const toast = document.getElementById("customToast");
     const toastMsg = document.getElementById("toastMessage");
     toastMsg.innerText = msg;
-
     toast.style.borderLeftColor = isSuccess ? "#00ff88" : "#ff4757";
-
     toast.classList.add("show");
-
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 3000);
+    setTimeout(() => toast.classList.remove("show"), 3000);
 }
 
-function sendNotification(title, message){
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.ready.then(reg => {
-      reg.showNotification(title, {
-        body: message,
-        icon: "/icon-192.png",
-        badge: "/icon-192.png",
-        vibrate: [200,100,200],
-        requireInteraction: true,
-        // NAYA LINE: Is notification ko bata rahe hain ki focus.html kholna hai
-        data: { url: "/focus.html" } 
-      });
-    });
-  }
+function sendNotification(title, message) {
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, {
+                body: message,
+                icon: "/icon-192.png",
+                badge: "/icon-192.png",
+                vibrate: [200, 100, 200],
+                requireInteraction: true,
+                data: { url: "/focus.html" }
+            });
+        });
+    }
 }
 
 function startCustomTime() {
     let hrs = parseInt(document.getElementById("customHours").value) || 0;
     let mins = parseInt(document.getElementById("customMinutes").value) || 0;
-
     let totalSeconds = (hrs * 3600) + (mins * 60);
 
     if (totalSeconds > 0) {
@@ -401,65 +453,74 @@ function startCustomTime() {
         document.getElementById("customHours").value = "";
         document.getElementById("customMinutes").value = "";
     } else {
-        showToast("Bhai thoda time toh enter karo! 😅");
+        showToast("Bhai thoda time toh enter karo! \uD83D\uDE05");
     }
 }
 
-function startTimer(duration, isResumeFromRefresh = false){
+function startTimer(duration, isResumeFromRefresh = false) {
     clearInterval(timerInterval);
 
-    if(duration){
+    if (duration) {
         time = duration;
         isPaused = false;
         document.getElementById("pauseBtn").innerText = "Pause";
     }
 
-    // Refresh handle karne ke liye future ka timestamp set karo
     if (!isResumeFromRefresh) {
-    targetEndTime = Date.now() + (time * 1000);
-}
-    
-    saveTimerState();
+        targetEndTime = Date.now() + (time * 1000);
+    }
+
+    // ✅ Show correct full time FIRST before any interval fires
     displayTime(time);
     timerBox.classList.add("running");
+    updateTapHint();
+    saveTimerState();
 
+    // ✅ Schedule SW notification so it fires even if app is closed
+    scheduleSwNotification();
+
+    // ✅ 200ms interval — delta-time based, so always accurate
+    // Fixes the "feels like 58" bug — display updates every 200ms not 1000ms
     timerInterval = setInterval(() => {
-        // Delta time logic jisse background me drift na ho
-        time = Math.floor((targetEndTime - Date.now()) / 1000);
+        const remaining = Math.floor((targetEndTime - Date.now()) / 1000);
 
-        if(time <= 0){
+        if (remaining <= 0) {
             clearInterval(timerInterval);
             time = 0;
             displayTime(0);
             timerBox.classList.remove("running");
+            updateTapHint();
             clearTimerState();
-            showToast("Session Complete! Great job. 🚀", true);
-sendNotification("Study Timer","Session Completed 🚀 Great Job!");
-            return; 
+            // ✅ Cancel SW notification (page is open, we handle it here)
+            cancelSwNotification();
+            showToast("Session Complete! Great job. \uD83D\uDE80", true);
+            sendNotification("Study Timer", "Session Completed \uD83D\uDE80 Great Job!");
+            return;
         }
 
-        displayTime(time);
-        saveTimerState(); // Har second update save karega
-    }, 1000);
+        // Only re-render when second actually changes
+        if (remaining !== time) {
+            time = remaining;
+            displayTime(time);
+            saveTimerState();
+        }
+    }, 200);
 }
 
-function pauseTimer(){
+function pauseTimer() {
     let btn = document.getElementById("pauseBtn");
+    if (time === 0) return;
 
-    if(time === 0) return; 
-
-    if(!isPaused){
+    if (!isPaused) {
         clearInterval(timerInterval);
         btn.innerText = "Resume";
         isPaused = true;
         timerBox.classList.remove("running");
-
-        // remaining time save karo
         time = Math.floor((targetEndTime - Date.now()) / 1000);
+        // ✅ Cancel SW notification while paused
+        cancelSwNotification();
         saveTimerState();
-
     } else {
-        // resume
         targetEndTime = Date.now() + (time * 1000);
         isPaused = false;
         startTimer(time, true);
@@ -467,35 +528,35 @@ function pauseTimer(){
     }
 }
 
-function resetTimer(){
+function resetTimer() {
     clearInterval(timerInterval);
+    // ✅ Cancel any pending SW background notification
+    cancelSwNotification();
     time = 0;
     isPaused = false;
     targetEndTime = 0;
-
     document.getElementById("pauseBtn").innerText = "Pause";
     document.getElementById("timer").innerHTML = "00:00:00";
-    timerBox.classList.remove("running"); 
+    timerBox.classList.remove("running");
+    updateTapHint();
     clearTimerState();
 }
 
 function toggleTimer() {
-    if(time > 0) {
+    if (time > 0) {
         pauseTimer();
     }
 }
 
-function displayTime(time){
-    let h = Math.floor(time / 3600);
-    let m = Math.floor((time % 3600) / 60);
-    let s = time % 60;
-
+function displayTime(t) {
+    let h = Math.floor(t / 3600);
+    let m = Math.floor((t % 3600) / 60);
+    let s = t % 60;
     document.getElementById("timer").innerHTML =
-    (h < 10 ? "0" : "") + h + ":" + 
-    (m < 10 ? "0" : "") + m + ":" + 
-    (s < 10 ? "0" : "") + s;
+        (h < 10 ? "0" : "") + h + ":" +
+        (m < 10 ? "0" : "") + m + ":" +
+        (s < 10 ? "0" : "") + s;
 }
-
 </script>
 </body>
 </html>
