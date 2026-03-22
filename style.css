@@ -2121,14 +2121,3 @@ header {
 }
 .rc-confirm-btn:hover { transform: scale(1.04); }
 
-/* ═══ RAIN OVERLAY ══════════════════════════════════════════════════════════ */
-#rainCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-#rainCanvas.active { opacity: 1; }
-.timer-ring { cursor: pointer; }
