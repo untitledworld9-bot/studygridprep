@@ -436,7 +436,7 @@ header{
       <button class="preset-btn" id="btnCustom" onclick="openCustomModal()">⚙ Custom</button>
     </div>
 
-    <div class="timer-ring" id="ring" onclick="toggleRain()">
+    <div class="timer-ring" id="ring">
       <div class="mode-label" id="modeLabel">STOPWATCH MODE</div>
       <div class="time-display" id="display">00:00</div>
     </div>
@@ -625,6 +625,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   const wp=document.getElementById('welcomePopup');
   if(wn)wn.textContent=name;
   if(wp){wp.classList.add('show');setTimeout(()=>{wp.style.transition='opacity .5s';wp.style.opacity='0';setTimeout(()=>wp.remove(),500);},4000);}
+/* Rain toggle on ring tap */
+  document.getElementById('ring').addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleRain();
+  });
+
 });
 
 /* ═══ RAIN EFFECT — Direct style.display (proven working) ══════════════════ */
