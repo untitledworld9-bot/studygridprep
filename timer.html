@@ -679,7 +679,7 @@ header{
       <button class="preset-btn" id="btnCustom" onclick="openCustomModal()">⚙ Custom</button>
     </div>
 
-    <div class="timer-ring" id="ring">
+    <div class="timer-ring" id="ring" onclick="toggleRain()">
       <div class="mode-label" id="modeLabel">STOPWATCH MODE</div>
       <div class="time-display" id="display">00:00</div>
     </div>
@@ -708,6 +708,9 @@ header{
   </div>
 
 </div><!-- .page -->
+  
+<!-- RAIN OVERLAY -->
+<canvas id="rainCanvas"></canvas>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
