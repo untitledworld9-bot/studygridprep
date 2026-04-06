@@ -14,18 +14,15 @@
 function toggleTheme(){
   let current = document.documentElement.getAttribute("data-theme");
 
-  if(current === "dark"){
-    document.documentElement.setAttribute("data-theme","light");
-    localStorage.setItem("theme","light");
-  } else {
-    document.documentElement.setAttribute("data-theme","dark");
-    localStorage.setItem("theme","dark");
-  }
+  let newTheme = current === "dark" ? "light" : "dark";
+
+  document.documentElement.setAttribute("data-theme", newTheme);
+  localStorage.setItem("theme", newTheme);
 
   updateThemeIcon();
 }
 
-// Icon update
+// Icon
 function updateThemeIcon(){
   const icon = document.getElementById("themeToggleIcon");
   if(!icon) return;
