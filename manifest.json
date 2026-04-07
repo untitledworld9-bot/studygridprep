@@ -1,7 +1,7 @@
 {
-  "name": "Untitled World - Smart Study Platform",
-  "short_name": "Untitled World",
-  "id": "untitled-world-app",
+  "name": "Study Grid Prep - Study Platform",
+  "short_name": "Study Grid Prep",
+  "id": "Study-Grid-Prep-app",
 
   "description": "Distraction free study platform for JEE, NEET, CUET & BOARDS with Focus Timer, YouTube study playlist and Mock Tests.",
 
@@ -9,10 +9,11 @@
   "scope": "/",
 
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
 
-  "background_color": "#0f2027",
-  "theme_color": "#0f2027",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
 
   "lang": "en",
   "dir": "auto",
@@ -22,17 +23,23 @@
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
 
-  "categories": ["education", "productivity","study"],
+  "categories": ["education", "productivity", "study"],
 
   "shortcuts": [
     {
