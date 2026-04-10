@@ -2173,23 +2173,25 @@ window.updateVideoTitle = function(id, newTitle) {
     var sel = document.getElementById("subjectSelect");
     if(!sel) return;
 
-    // Keep current selection if it still exists in new list
-    var currentVal = sel.value;
+            // Keep current selection if it still exists in new list
+        var currentVal = sel.value;
 
-    // Rebuild options
-    sel.innerHTML = '<option value="" disabled>Select Subject</option>';
-    subjects.forEach(function(sub){
-      var opt = document.createElement("option");
-      opt.value = sub;
-      opt.textContent = sub;
-      if(sub === currentVal) opt.selected = true;
-      sel.appendChild(opt);
-    });
+        // Rebuild options (Added 'selected hidden' so it defaults properly)
+        sel.innerHTML = '<option value="" disabled selected hidden>Select Subject</option>';
+        subjects.forEach(function(sub){
+          var opt = document.createElement("option");
+          opt.value = sub;
+          opt.textContent = sub;
+          if(sub === currentVal) opt.selected = true;
+          sel.appendChild(opt);
+        });
 
-    // If current subject no longer valid, reset
-    if(currentVal && subjects.indexOf(currentVal) === -1){
-      sel.value = "";
-    }
+        // If current subject no longer valid, or if it was empty, reset it explicitly
+        if(currentVal && subjects.indexOf(currentVal) === -1){
+          sel.value = "";
+        } else if (!currentVal) {
+          sel.value = ""; // Ye browser ko force karega "Select Subject" dikhane ke liye
+        }
   }
 
   // Run on load
