@@ -1,19 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ✅ ZOOM BLOCK -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Login - Untitled World</title>
 <link rel="icon" href="/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<!-- INSTANT LOGIN CHECK — NO BLINK -->
+<!-- ✅ INSTANT LOGIN CHECK — NO BLINK -->
 <script>
 (function(){
   if(localStorage.getItem("userName")){
     // Already logged in — skip login page instantly
-    if(!localStorage.getItem("seenWelcome") &&
-       (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone)){
+    var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if(isPWA){
       window.location.replace("mainwelcome.html");
     } else {
       window.location.replace("index.html");
@@ -22,22 +24,59 @@
 })();
 </script>
 
+<!-- ✅ THEME DETECTION — matches index.html logic exactly -->
+<script>
+(function(){
+  var saved = localStorage.getItem("theme");
+  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+
+<!-- ✅ FLASH PREVENTION — same as index.html -->
+<style>
+html{ visibility: hidden; }
+html[data-theme]{ visibility: visible; }
+</style>
+
 <style>
 /* ===== GLOBAL DESIGN SYSTEM ===== */
+
+/* LIGHT MODE (default) */
 :root{
-  --bg-start: #0B1220;
-  --bg-end: #0F172A;
+  --bg-start: #ffffff;
+  --bg-end: #f0f4f8;
   --primary: #22D3EE;
   --primary-dark: #06B6D4;
   --secondary: #34D399;
   --accent: #F43F5E;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --card-bg: rgba(0,0,0,0.03);
+  --card-border: rgba(0,0,0,0.08);
+  --radius: 16px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.10);
+  --transition: 0.25s ease;
+  --pill-bg: rgba(0,0,0,0.05);
+  --pill-border: rgba(0,0,0,0.08);
+  --logo-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  --footer-link: #0891B2;
+}
+
+/* DARK MODE */
+[data-theme="dark"]{
+  --bg-start: #0B1220;
+  --bg-end: #0F172A;
   --text-primary: #E2E8F0;
   --text-secondary: #94A3B8;
   --card-bg: rgba(255,255,255,0.03);
   --card-border: rgba(255,255,255,0.08);
-  --radius: 16px;
   --shadow: 0 4px 20px rgba(0,0,0,0.3);
-  --transition: 0.25s ease;
+  --pill-bg: rgba(255,255,255,0.04);
+  --pill-border: rgba(255,255,255,0.08);
+  --logo-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  --footer-link: #22D3EE;
 }
 
 *{
@@ -55,7 +94,20 @@ body{
   justify-content: center;
   align-items: center;
   color: var(--text-primary);
-  /* Fade-in on arrival — no white flash */
+
+  /* ✅ TEXT SELECT BLOCK */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  /* ✅ TOUCH HIGHLIGHT REMOVE */
+  -webkit-tap-highlight-color: transparent;
+
+  /* ✅ PULL-TO-REFRESH BLOCK */
+  overscroll-behavior-y: none;
+
+  /* Fade-in on arrival */
   animation: pageIn 0.35s ease forwards;
 }
 
@@ -77,7 +129,7 @@ body{
   height: 88px;
   border-radius: 24px;
   margin-bottom: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--logo-shadow);
   animation: floatLogo 3.5s ease-in-out infinite;
 }
 
@@ -176,8 +228,8 @@ h1{
 .pill{
   font-size: 12px;
   color: var(--text-secondary);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
   border-radius: 50px;
   padding: 5px 12px;
 }
@@ -190,7 +242,7 @@ h1{
 }
 
 .login-footer a{
-  color: var(--primary);
+  color: var(--footer-link);
   text-decoration: none;
 }
 
@@ -210,7 +262,7 @@ h1{
   background: rgba(244,63,94,0.12);
   border: 1px solid rgba(244,63,94,0.3);
   border-radius: 12px;
-  color: #FDA4AF;
+  color: #F43F5E;
   font-size: 13px;
   text-align: center;
 }
@@ -311,7 +363,9 @@ window.login = async function(){
 
     setTimeout(() => {
       const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      if(!localStorage.getItem("seenWelcome") && isPWA){
+      if(isPWA){
+        // ✅ ALWAYS go to mainwelcome.html on PWA
+        // mainwelcome.html itself handles New Member vs Welcome Back
         window.location.href = "mainwelcome.html";
       } else {
         window.location.href = "index.html";
