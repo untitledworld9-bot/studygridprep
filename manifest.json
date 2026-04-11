@@ -23,13 +23,13 @@
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512-maskable.png",
@@ -57,8 +57,20 @@
     {
       "name": "Mock Tests",
       "url": "/mock.html"
-    }
-  ],
+     },
+  {
+    "name": "Target Exam",
+    "short_name": "Exam",
+    "description": "Open Profile",
+    "url": "/profile.html",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192"
+      }
+    ]
+  }
+],
 
   "share_target": {
     "action": "/playlist.html",
