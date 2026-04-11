@@ -3,37 +3,43 @@
   "short_name": "Study Grid Prep",
   "id": "Study-Grid-Prep-app",
   "description": "Distraction free study platform for JEE, NEET, CUET & BOARDS with Focus Timer, YouTube study playlist and Mock Tests.",
-  "start_url": "/",
+  "start_url": "/index.html?mode=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#0B1220",
-  "theme_color": "#0B1220",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "lang": "en",
   "dir": "auto",
   "prefer_related_applications": false,
 
   "icons": [
-  {
-    "src": "/icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png",
-    "purpose": "any"
-  },
-  {
-    "src": "/icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "any"
-  },
-  {
-    "src": "/icon-512-maskable.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "maskable"
-  }
-],
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
 
   "screenshots": [
     {
@@ -42,6 +48,13 @@
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Study Grid Prep Home Screen"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Study Grid Prep Desktop View"
     }
   ],
 
