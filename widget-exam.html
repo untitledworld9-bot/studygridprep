@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Widget</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Poppins', system-ui, sans-serif;
+  background: #0B1220;
+  color: #E2E8F0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.widget {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 20px;
+  padding: 18px 20px;
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── NTA row (JEE/NEET/CUET) ── */
+.nta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nta-logo-wrap {
+  width: 42px; height: 42px;
+  background: white;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.nta-logo-wrap img {
+  width: 36px; height: 36px;
+  object-fit: contain;
+}
+/* Fallback if NTA logo doesn't load */
+.nta-fallback {
+  width: 42px; height: 42px;
+  background: #003087;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  color: white; letter-spacing: .5px;
+  flex-shrink: 0;
+}
+.nta-text {}
+.nta-exam { font-size: 15px; font-weight: 700; color: #E2E8F0; }
+.nta-badge {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 10px; font-weight: 700;
+  background: rgba(0,48,135,.5);
+  border: 1px solid rgba(100,149,237,.4);
+  color: #93C5FD;
+  padding: 1px 8px; border-radius: 50px;
+}
+
+/* ── Days chip ── */
+.days-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(251,191,36,.07);
+  border: 1px solid rgba(251,191,36,.22);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.days-big {
+  font-size: 38px; font-weight: 800;
+  background: linear-gradient(135deg, #22D3EE, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.days-right { display: flex; flex-direction: column; gap: 2px; }
+.days-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
+.days-exam  { font-size: 13px; font-weight: 600; color: #E2E8F0; }
+.days-date  { font-size: 11px; color: #94A3B8; }
+
+/* ── Boards only (no NTA) ── */
+.board-header {
+  display: flex; align-items: center; gap: 8px;
+}
+.board-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #22D3EE, #06B6D4);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.board-title { font-size: 14px; font-weight: 700; color: #E2E8F0; }
+.board-sub   { font-size: 11px; color: #94A3B8; }
+
+/* ── No data state ── */
+.no-data {
+  text-align: center;
+  padding: 10px;
+  color: #94A3B8;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="widget" id="widget">
+  <div class="no-data">Loading...</div>
+</div>
+
+<script>
+// ── Exam data (same as profile.html) ──
+const EXAMS = {
+  JEE:   { name:"JEE Mains",    label:"Apr 2026",    date:"2026-04-02", nta:true  },
+  NEET:  { name:"NEET-UG",      label:"May 4, 2026", date:"2026-05-04", nta:true  },
+  CUET:  { name:"CUET-UG",      label:"May 2026",    date:"2026-05-15", nta:true  },
+  Boards:{ name:"Board Exams",  label:"Feb–Mar 2026",date:"2026-02-15", nta:false }
+};
+
+function daysLeft(dateStr) {
+  if (!dateStr) return null;
+  const exam  = new Date(dateStr); exam.setHours(0,0,0,0);
+  const today = new Date();        today.setHours(0,0,0,0);
+  const diff  = Math.ceil((exam - today) / 86400000);
+  return diff > 0 ? diff : null;
+}
+
+function render() {
+  const goal     = localStorage.getItem("goal")     || "JEE";
+  const examDate = localStorage.getItem("examDate") || EXAMS[goal]?.date || "";
+  const info     = EXAMS[goal] || EXAMS.JEE;
+  const days     = daysLeft(examDate);
+  const w        = document.getElementById("widget");
+
+  if (!days) {
+    w.innerHTML = `<div class="no-data">📚 Set your target exam in Profile</div>`;
+    return;
+  }
+
+  let html = "";
+
+  // ── NTA exams ──
+  if (info.nta) {
+    html += `
+      <div class="nta-row">
+        <div class="nta-logo-wrap">
+          <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/50/NTA_logo.svg/200px-NTA_logo.svg.png"
+               alt="NTA"
+               onerror="this.parentElement.outerHTML='<div class=nta-fallback>NTA</div>'">
+        </div>
+        <div class="nta-text">
+          <div class="nta-exam">${info.name}</div>
+          <span class="nta-badge">NTA</span>
+        </div>
+      </div>`;
+  } else {
+    // ── Boards ──
+    html += `
+      <div class="board-header">
+        <div class="board-icon">📋</div>
+        <div>
+          <div class="board-title">Board Exams</div>
+          <div class="board-sub">${info.label}</div>
+        </div>
+      </div>`;
+  }
+
+  // ── Days chip (same for all) ──
+  html += `
+    <div class="days-chip">
+      <div class="days-big">${days}</div>
+      <div class="days-right">
+        <span class="days-label">Days Left</span>
+        <span class="days-exam">${info.name}</span>
+        <span class="days-date">${info.label}</span>
+      </div>
+    </div>`;
+
+  w.innerHTML = html;
+}
+
+render();
+</script>
+
+</body>
+</html>
