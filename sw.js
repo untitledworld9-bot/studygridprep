@@ -25,12 +25,16 @@ const CACHE = "sgp-cache-v1";
 const ASSETS = [
   "/index.html",
   "/offline.html",
+  "/focus.html",
   "/timer.html",
-  "/playlist.html",
   "/todo.html",
+  "/playlist.html",
   "/profile.html",
   "/mock.html",
   "/manifest.json",
+  "/style.css",
+  "/script.js",
+  "/theme.js",
   "/icon-192.png",
   "/icon-512.png"
 ];
