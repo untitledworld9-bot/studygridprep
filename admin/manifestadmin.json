@@ -1,9 +1,10 @@
 {
   "name": "Study Grid Admin Panel",
-  "short_name": "SG Admin",
+  "short_name": "SGP Admin",
+  "id": "study-grid-admin-panel",
   "description": "Study Grid Prep Admin Control Panel",
-  "start_url": "/studygridadmin.html",
-  "scope": "/",
+  "start_url": "/admin/studygridadmin.html",
+  "scope": "/admin/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#07080d",
