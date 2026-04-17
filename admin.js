@@ -38,7 +38,7 @@ import {
   where,
   serverTimestamp,
   Timestamp
-} from "./firebase.js";
+} from "../firebase.js";
 
 // ============================================================
 //  CONSTANTS
