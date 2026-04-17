@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Media SaaS System - Admin</title>
-  <link rel="manifest" href="/admin/manifestadmin.json">
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -192,6 +191,8 @@
     <div class="sidebar-logo">Media SaaS</div>
     <button class="nav-btn active" onclick="showSection('dashboard')" id="nav-dashboard">📊 Dashboard</button>
     <button class="nav-btn" onclick="showSection('media')" id="nav-media">🖼 Media Manager</button>
+    <button class="nav-btn" onclick="goBackAdmin()" style="margin-top:20px; border:1px solid rgba(0,224,255,0.2);">
+  ⬅ Back to Admin Panel</button>
   </nav>
 
   <main class="main">
@@ -456,6 +457,10 @@ window.deleteImg = async (id) => {
     window.onload = () => {
       loadStats();
     };
+
+    window.goBackAdmin = () => {
+  window.open("/admin/studygridadmin.html", "_self");
+};
 
   </script>
 
