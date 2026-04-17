@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Media SaaS System - Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Matching Admin Panel
+    ============================================================ */
+    :root {
+      --bg-void:       #07080d;
+      --bg-panel:      #0d0f18;
+      --bg-card:       #111420;
+      --bg-card-hover: #161b2e;
+      --bg-input:      #0f1220;
+      --border:        rgba(255,255,255,.06);
+      --border-glow:   rgba(0,224,255,.18);
+
+      --accent-cyan:   #00e0ff;
+      --accent-violet: #7c5cfc;
+      --accent-green:  #00e5a0;
+      --accent-amber:  #ffb830;
+      --accent-red:    #ff4f6a;
+
+      --text-primary:  #eef0ff;
+      --text-secondary:#8890b0;
+      --text-muted:    #4a5070;
+
+      --radius-lg:     16px;
+      --radius-md:     10px;
+      --radius-sm:     6px;
+
+      --font-display:  'Syne', sans-serif;
+      --font-body:     'Manrope', sans-serif;
+      --font-mono:     'DM Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ============================================================  SIDEBAR  */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-logo {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 30px;
+      padding: 0 12px;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: var(--radius-md);
+      background: transparent; border: none; color: var(--text-secondary);
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; width: 100%; text-align: left;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,.03); color: var(--text-primary); }
+    .nav-btn.active {
+      background: rgba(0,224,255,.08);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0,224,255,.12);
+    }
+
+    /* ============================================================  MAIN  */
+    .main {
+      flex: 1; padding: 32px; overflow-y: auto;
+    }
+    .section { display: none; animation: fadeSlideUp 0.3s ease; }
+    .section.active { display: block; }
+    
+    .section-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .section-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
+
+    /* ============================================================  STATS  */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at top right, rgba(0,224,255,.08), transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card.violet::before { background: radial-gradient(ellipse at top right, rgba(124,92,252,.08), transparent 60%); }
+    .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
+    .stat-value { font-family: var(--font-display); font-size: 36px; font-weight: 800; color: var(--accent-cyan); margin-top: 8px; }
+    .stat-card.violet .stat-value { color: var(--accent-violet); }
+
+    /* ============================================================  UPLOAD BAR  */
+    .toolbar {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+      background: var(--bg-card); padding: 16px; border-radius: var(--radius-lg);
+      border: 1px solid var(--border); align-items: center;
+    }
+    .form-select, .form-input {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 10px 14px;
+      color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none;
+    }
+    .form-select:focus, .form-input:focus { border-color: var(--accent-cyan); }
+    .btn {
+      padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;
+      border: none; font-family: var(--font-body); font-size: 14px; transition: opacity 0.2s;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet)); color: #000; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-danger { background: rgba(255,79,106,.15); color: var(--accent-red); border: 1px solid rgba(255,79,106,.3); }
+    .btn-danger:hover { background: rgba(255,79,106,.25); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-outline:hover { border-color: var(--text-muted); }
+    
+    .progress-wrapper { flex: 1; min-width: 150px; height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden; display: none; }
+    .progress-bar { height: 100%; width: 0%; background: var(--accent-green); transition: width 0.2s ease; }
+
+    /* ============================================================  GALLERY  */
+    .search-bar { width: 100%; margin-bottom: 24px; }
+    .search-bar input { width: 100%; max-width: 400px; padding: 12px 16px; }
+
+    .gallery-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;
+    }
+    .media-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .media-card:hover { transform: translateY(-4px); border-color: var(--border-glow); }
+    .img-container { height: 140px; background: #000; position: relative; }
+    .img-container img { width: 100%; height: 100%; object-fit: contain; }
+    
+    .badge-folder {
+      position: absolute; top: 8px; left: 8px;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary);
+    }
+
+    .media-info { padding: 16px; }
+    .media-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-tags { font-size: 11px; color: var(--accent-cyan); margin-bottom: 12px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-stats { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+    
+    .media-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .media-actions .btn { padding: 8px; font-size: 12px; text-align: center; }
+
+    /* ============================================================  TOAST  */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--bg-card);
+      border: 1px solid var(--border-glow); padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600;
+      transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">Media SaaS</div>
+    <button class="nav-btn active" onclick="showSection('dashboard')" id="nav-dashboard">📊 Dashboard</button>
+    <button class="nav-btn" onclick="showSection('media')" id="nav-media">🖼 Media Manager</button>
+  </nav>
+
+  <main class="main">
+    
+    <section id="dashboard" class="section active">
+      <div class="section-title">Overview</div>
+      <div class="section-subtitle">Real-time statistics for all media assets</div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Media Files</div>
+          <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card violet">
+          <div class="stat-label">Total System Usages</div>
+          <div class="stat-value" id="stat-used">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="media" class="section">
+      <div class="section-title">Media Manager</div>
+      <div class="section-subtitle">Upload, tag, and manage remote assets</div>
+
+      <div class="toolbar">
+        <select id="folder" class="form-select">
+          <option value="banner">📁 Banner</option>
+          <option value="ads">📁 Ads</option>
+          <option value="thumbnails">📁 Thumbnails</option>
+        </select>
+
+        <input type="file" id="file" class="form-input" accept="image/*" style="width: 250px;">
+        
+        <button class="btn btn-primary" onclick="upload()">⬆ Upload</button>
+
+        <div class="progress-wrapper" id="progress-wrapper">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="search" class="form-input" placeholder="🔍 Search by filename or AI tags..." oninput="loadMedia()">
+      </div>
+
+      <div class="gallery-grid" id="gallery">
+        </div>
+    </section>
+
+  </main>
+
+  <div id="toast">✅ Action Successful</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+      authDomain: "untitled-world-2e645.firebaseapp.com",
+      projectId: "untitled-world-2e645",
+      storageBucket: "untitled-world-2e645.appspot.com",
+      messagingSenderId: "990115586087",
+      appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+    const db = getFirestore(app);
+
+    // Navigation
+    window.showSection = (id) => {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.getElementById('nav-' + id).classList.add('active');
+      
+      if(id === 'media') loadMedia();
+      if(id === 'dashboard') loadStats();
+    };
+
+    // UI Toast Notification
+    window.showToast = (msg, isError = false) => {
+      const t = document.getElementById('toast');
+      t.innerHTML = isError ? `❌ ${msg}` : `✅ ${msg}`;
+      t.style.borderColor = isError ? 'var(--accent-red)' : 'var(--accent-green)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    };
+
+    // AI Tagging (Basic Extract)
+    function generateTags(filename) {
+      // Remove extension and split by non-alphanumeric
+      const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+      return nameWithoutExt.toLowerCase().split(/[^a-z0-9]/g).filter(Boolean);
+    }
+
+    // Upload Logic
+    window.upload = () => {
+      const fileInput = document.getElementById('file');
+      const file = fileInput.files[0];
+      const folder = document.getElementById('folder').value;
+
+      if (!file) return showToast("Please select a file to upload.", true);
+
+      const path = `media/${folder}/${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, path);
+      const task = uploadBytesResumable(storageRef, file);
+
+      const wrapper = document.getElementById('progress-wrapper');
+      const bar = document.getElementById('progress-bar');
+      wrapper.style.display = 'block';
+
+      task.on('state_changed', snap => {
+        const p = (snap.bytesTransferred / snap.totalBytes) * 100;
+        bar.style.width = p + "%";
+      }, err => {
+        showToast("Upload failed: " + err.message, true);
+        wrapper.style.display = 'none';
+      }, async () => {
+        const url = await getDownloadURL(task.snapshot.ref);
+        const tags = generateTags(file.name);
+
+        await addDoc(collection(db, 'media'), {
+          url,
+          folder,
+          path,
+          name: file.name,
+          tags,
+          used: 0,
+          time: Date.now()
+        });
+
+        wrapper.style.display = 'none';
+        bar.style.width = "0%";
+        fileInput.value = ""; // clear input
+        
+        showToast("Image Uploaded & Processed!");
+        loadMedia();
+        loadStats();
+      });
+    };
+
+    // Load & Render Gallery
+    window.loadMedia = async () => {
+      const snap = await getDocs(collection(db, 'media'));
+      const search = document.getElementById("search").value.toLowerCase();
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      if (snap.empty) {
+        gallery.innerHTML = `<div style="color:var(--text-muted); grid-column: 1/-1;">No media assets found.</div>`;
+        return;
+      }
+
+      snap.forEach(d => {
+        const data = d.data();
+        
+        // Smart Search (Name + Tags)
+        if (search && !data.name.toLowerCase().includes(search) && !(data.tags||[]).some(t => t.includes(search))) {
+          return;
+        }
+
+        const tagsDisplay = (data.tags && data.tags.length > 0) ? `#${data.tags.join(' #')}` : 'No tags';
+
+        gallery.innerHTML += `
+          <div class="media-card">
+            <div class="img-container">
+              <span class="badge-folder">${data.folder}</span>
+              <img src="${data.url}" alt="${data.name}" loading="lazy">
+            </div>
+            <div class="media-info">
+              <div class="media-name" title="${data.name}">${data.name}</div>
+              <div class="media-tags" title="${tagsDisplay}">${tagsDisplay}</div>
+              <div class="media-stats">🔥 Used ${data.used || 0} times</div>
+              
+              <div class="media-actions">
+                <button class="btn btn-outline" onclick="useImg('${data.url}', '${d.id}')">🎯 Use</button>
+                <button class="btn btn-outline" onclick="copyUrl('${data.url}')">📋 Copy</button>
+                <button class="btn btn-outline" onclick="replaceImg('${data.path}')">🔄 Replace</button>
+                <button class="btn btn-danger" onclick="deleteImg('${d.id}', '${data.path}')">🗑 Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    };
+
+    // Actions
+    window.copyUrl = (url) => {
+      navigator.clipboard.writeText(url);
+      showToast("URL Copied to Clipboard");
+    };
+
+    window.useImg = async (url, id) => {
+      // Integration point for main admin panel
+      localStorage.setItem("bannerImage", url);
+      
+      // Increment Analytics
+      await updateDoc(doc(db, "media", id), {
+        used: increment(1)
+      });
+
+      showToast("Image Set to LocalStorage & Analytics Updated");
+      loadMedia(); // refresh stats on card
+      loadStats();
+    };
+
+    window.replaceImg = (path) => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+
+      input.onchange = async () => {
+        const file = input.files[0];
+        if(!file) return;
+        
+        showToast("Replacing image in background...");
+        const storageRef = ref(storage, path);
+        await uploadBytesResumable(storageRef, file);
+        
+        showToast("Image Replaced Successfully");
+        setTimeout(loadMedia, 1000); // Wait for cdn invalidation (rough)
+      };
+
+      input.click();
+    };
+
+    window.deleteImg = async (id, path) => {
+      if (!confirm("Are you sure you want to permanently delete this media asset?")) return;
+
+      try {
+        await deleteDoc(doc(db, "media", id));
+        await deleteObject(ref(storage, path));
+        showToast("Asset Deleted");
+        loadMedia();
+        loadStats();
+      } catch (e) {
+        showToast("Error deleting: " + e.message, true);
+      }
+    };
+
+    // Dashboard Stats
+    window.loadStats = async () => {
+      const snap = await getDocs(collection(db, 'media'));
+      let total = 0;
+      let used = 0;
+
+      snap.forEach(d => {
+        total++;
+        used += (d.data().used || 0);
+      });
+
+      document.getElementById("stat-total").innerText = total;
+      document.getElementById("stat-used").innerText = used;
+    };
+
+    // Initial Load
+    window.onload = () => {
+      loadStats();
+    };
+
+  </script>
+</body>
+</html>
