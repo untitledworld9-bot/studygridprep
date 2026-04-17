@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Media SaaS System - Admin</title>
+  <link rel="manifest" href="/admin/manifestadmin.json">
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   
@@ -272,6 +274,13 @@ async function uploadToCloudinary(file){
   );
 
   const data = await res.json();
+
+  console.log("Cloudinary response:", data); // 👈 ADD THIS
+
+  if (!data.secure_url) {
+    throw new Error("Upload failed - no URL returned");
+  }
+
   return data.secure_url;
 }
 
@@ -449,5 +458,9 @@ window.deleteImg = async (id) => {
     };
 
   </script>
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 </body>
 </html>
