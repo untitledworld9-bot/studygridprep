@@ -249,7 +249,7 @@ function renderAnnouncement(data) {
 
   const meta = document.createElement("div");
   meta.style.cssText = "font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;";
-  meta.textContent = "📢 Untitled World";
+  meta.textContent = "📢 Study Grid Prep";
 
   wrap.appendChild(msg);
   wrap.appendChild(meta);
