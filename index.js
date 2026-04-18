@@ -89,7 +89,7 @@ function getCurrentPage() {
   if (path.includes("playlist"))   return "playlist";
   if (path.includes("todo"))       return "todo";
   if (path.includes("profile"))    return "profile";
-  if (path.includes("mock"))       return "mock";
+  if (path.includes("mock-home"))  return "mock-home";
   if (path.includes("progress"))   return "progress";
   if (path.includes("leaderboard"))return "leaderboard";
   return "home";
