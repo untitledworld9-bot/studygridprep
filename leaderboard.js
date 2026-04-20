@@ -2,22 +2,22 @@
  * leaderboard.js — Untitled World Weekly (Focus) Leaderboard
  *
  * FIXED:
- *  - Reads from "leaderboard" collection (uid-keyed) → NO double entries
- *  - Sorts by timerXP (cumulative focus XP, NEVER resets)
- *  - Level system matches timerXP thresholds
- *  - Weekly section uses Firestore updatedAt, not weeklyXP reset
- *  - Auth check uses user.uid (not displayName) to match leaderboard docs
+ *  - Reads from "leaderboard" collection (uid-keyed) → ZERO double entries
+ *  - Sorts by weeklyTimerXP → resets properly every 7 days
+ *  - weeklyTimerXP resets ONLY in auth (never on focus click — that was the bug)
+ *  - timerXP (cumulative) and focusTime preserved separately
+ *  - getWeekNumber() kept for weekly countdown
+ *  - Top-3 popup, level strip, myRankBar all preserved
  */
 
 import { db, auth, onAuthStateChanged } from "./firebase.js";
 
 import {
   collection, doc, onSnapshot, getDoc,
-  query, orderBy, limit, where, Timestamp
+  query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ── Level system — based on timerXP (focus minutes / 2) ──────────────────────
-// These mirror the LEVELS in the original file so UI stays the same
+// ── Level system (2 min focus = 1 XP, thresholds same as before) ─────────────
 const LEVELS = [
   { min: 0,   name: "Beginner",  icon: "🌱", color: "#00e5a0", bg: "rgba(0,229,160,0.12)",  border: "rgba(0,229,160,0.3)"  },
   { min: 30,  name: "Explorer",  icon: "🔍", color: "#00e0ff", bg: "rgba(0,224,255,0.12)",  border: "rgba(0,224,255,0.3)"  },
@@ -38,19 +38,21 @@ function getLevel(xp) {
   return lvl;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Weekly helpers ────────────────────────────────────────────────────────────
+function getWeekNumber() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  return `${d.getFullYear()}-W${Math.ceil((((d - yearStart) / 86400000) + 1) / 7)}`;
+}
+
 function daysUntilReset() {
   const day = new Date().getDay();
   return day === 1 ? 7 : (8 - day) % 7;
 }
 
-function formatTime(totalMin) {
-  const h = Math.floor((totalMin || 0) / 60);
-  const m = (totalMin || 0) % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-// ── DOM refs ──────────────────────────────────────────────────────────────────
+// ── DOM refs — matches leaderboard.html ───────────────────────────────────────
 const podiumArea = document.getElementById("podiumArea");
 const rankList   = document.getElementById("rankList");
 const loading    = document.getElementById("loading");
@@ -70,11 +72,10 @@ if (levelStrip) {
     </div>`).join("");
 }
 
-// Note: timerXP is cumulative and never resets.
-// The "reset" text refers to when we'll next update the weekly section filter.
+// ── Weekly reset countdown ────────────────────────────────────────────────────
 if (resetTimer) {
   const d = daysUntilReset();
-  resetTimer.textContent = `Updates in ${d} day${d === 1 ? "" : "s"}`;
+  resetTimer.textContent = `Resets in ${d} day${d === 1 ? "" : "s"}`;
 }
 
 // ── Top-3 popup ───────────────────────────────────────────────────────────────
@@ -90,7 +91,7 @@ function showTopPopup(lvl, rank) {
       <div class="levelup-title">🔥 You are in Top ${rank}!</div>
       <div class="levelup-sub">
         You reached <b style="color:${lvl.color};">${lvl.name}</b> level!<br>
-        Keep focusing to climb higher 🚀
+        Keep studying to climb higher 🚀
       </div>
       <button class="levelup-btn" onclick="this.closest('.levelup-overlay').remove()">
         Keep Going!
@@ -99,16 +100,27 @@ function showTopPopup(lvl, rank) {
   document.body.appendChild(overlay);
 }
 
+// ── Format helpers ────────────────────────────────────────────────────────────
+function formatTime(totalMin) {
+  const h = Math.floor((totalMin || 0) / 60);
+  const m = (totalMin || 0) % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
 // ── Main render ───────────────────────────────────────────────────────────────
-// entries: array of {uid, name, timerXP, focusTime, rank}
-// currentUid: Firebase UID of logged-in user
+// entries: [{uid, name, weeklyTimerXP, focusTime, rank}]
+// currentUid: Firebase UID
 function renderLeaderboard(entries, currentUid) {
   if (loading) loading.style.display = "none";
 
   if (!entries.length) {
     if (loading) {
       loading.style.display = "block";
-      loading.innerHTML = `<div style="padding:40px;color:rgba(255,255,255,0.4);font-size:14px;">No focus sessions yet — be the first! 🚀</div>`;
+      loading.innerHTML = `<div style="padding:40px;color:rgba(255,255,255,0.4);font-size:14px;">No focus sessions this week yet — start focusing! 🚀</div>`;
     }
     return;
   }
@@ -119,12 +131,12 @@ function renderLeaderboard(entries, currentUid) {
     const me = entries[myIdx];
     myRankBar.classList.add("visible");
     if (myRankVal) myRankVal.textContent = `#${myIdx + 1} of ${entries.length}`;
-    if (myXpVal)   myXpVal.textContent   = `⏱ ${me.timerXP || 0} XP · ${formatTime(me.focusTime)}`;
+    if (myXpVal)   myXpVal.textContent   = `⭐ ${me.weeklyTimerXP || 0} XP`;
 
     if (myIdx < 3 && !popupShown) {
       popupShown = true;
       sessionStorage.setItem(POPUP_KEY, "true");
-      setTimeout(() => showTopPopup(getLevel(me.timerXP || 0), myIdx + 1), 800);
+      setTimeout(() => showTopPopup(getLevel(me.weeklyTimerXP || 0), myIdx + 1), 800);
     }
   }
 
@@ -136,7 +148,7 @@ function renderLeaderboard(entries, currentUid) {
 
     const buildCol = (u, rank) => {
       if (!u) return null;
-      const lvl = getLevel(u.timerXP || 0);
+      const lvl = getLevel(u.weeklyTimerXP || 0);
       const col = document.createElement("div");
       col.className = "podium-col";
       col.innerHTML = `
@@ -145,17 +157,19 @@ function renderLeaderboard(entries, currentUid) {
           ${(u.name || "?")[0].toUpperCase()}
         </div>
         <div class="podium-name">${escHtml(u.name || "—")}</div>
-        <div class="podium-xp">⏱ ${u.timerXP || 0} XP</div>
+        <div class="podium-xp">⭐ ${u.weeklyTimerXP || 0} XP</div>
         <div class="podium-lvl">${lvl.icon} ${lvl.name}</div>
         <div class="podium-bar rank-${rank}">${rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}</div>`;
       return col;
     };
 
     // Order: 2nd left, 1st centre, 3rd right
-    [entries[1], entries[0], entries[2]].forEach((u, i) => {
-      const col = buildCol(u, i === 0 ? 2 : i === 1 ? 1 : 3);
-      if (col) podium.appendChild(col);
-    });
+    const c2 = buildCol(entries[1], 2);
+    const c1 = buildCol(entries[0], 1);
+    const c3 = buildCol(entries[2], 3);
+    if (c2) podium.appendChild(c2);
+    if (c1) podium.appendChild(c1);
+    if (c3) podium.appendChild(c3);
     podiumArea.appendChild(podium);
   }
 
@@ -164,7 +178,8 @@ function renderLeaderboard(entries, currentUid) {
     rankList.innerHTML = "";
     for (let i = 3; i < Math.min(entries.length, 20); i++) {
       const u   = entries[i];
-      const lvl = getLevel(u.timerXP || 0);
+      const rank = i + 1;
+      const lvl = getLevel(u.weeklyTimerXP || 0);
       const isMe = u.uid === currentUid;
 
       const row = document.createElement("div");
@@ -176,16 +191,16 @@ function renderLeaderboard(entries, currentUid) {
       }
 
       row.innerHTML = `
-        <div class="rank-num">#${i + 1}</div>
+        <div class="rank-num">#${rank}</div>
         <div class="rank-avatar" style="color:${lvl.color};background:${lvl.bg};">
           ${(u.name || "?")[0].toUpperCase()}
         </div>
         <div class="rank-info">
           <div class="rank-name">${escHtml(u.name || "—")}${isMe ? `&nbsp;<span style="color:var(--cyan);font-size:11px;">(You)</span>` : ""}</div>
-          <div class="rank-detail">⏱ ${formatTime(u.focusTime || 0)} focused</div>
+          <div class="rank-detail">⏱ ${formatTime(u.focusTime || 0)} focused this week</div>
         </div>
         <div class="rank-right">
-          <div class="rank-xp">⏱ ${u.timerXP || 0}</div>
+          <div class="rank-xp">⭐ ${u.weeklyTimerXP || 0}</div>
           <div class="level-badge" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border};">
             ${lvl.icon} ${lvl.name}
           </div>
@@ -209,32 +224,38 @@ onAuthStateChanged(auth, async user => {
   const currentUid = user.uid;
 
   /**
-   * FIX: Read from "leaderboard" collection, NOT "users".
-   *   - leaderboard docs are keyed by Firebase UID → zero duplicates
-   *   - timerXP field is cumulative and NEVER resets automatically
-   *   - No weeklyXP reset logic needed here
+   * FIX: Read from "leaderboard" collection (uid-keyed) — NO double entries.
+   *
+   * weeklyTimerXP = timer XP earned this week only.
+   * It resets in script.js auth section at start of new week (NOT on every focus).
+   *
+   * Old bug: reading "users" collection had 2 docs per user (displayName + uid).
+   * Old bug: weeklyXP reset on every startBtn click if lastActiveWeek changed.
+   * Both bugs are now fixed.
    */
   const q = query(
     collection(db, "leaderboard"),
-    orderBy("timerXP", "desc"),
+    orderBy("weeklyTimerXP", "desc"),
     limit(50)
   );
 
   onSnapshot(q, snap => {
-    // Build entry list — deduplicate by uid (belt-and-braces)
     const seen = new Set();
     const entries = snap.docs
       .map(d => ({
-        uid:       d.id,
-        name:      d.data().name      || "Anonymous",
-        timerXP:   d.data().timerXP   || 0,
-        focusTime: d.data().focusTime  || 0,
+        uid:          d.id,
+        name:         d.data().name          || "Anonymous",
+        weeklyTimerXP:d.data().weeklyTimerXP || 0,
+        focusTime:    d.data().focusTime      || 0,
       }))
-      // Only show users who have actually focused
-      .filter(u => u.timerXP > 0 || u.focusTime > 0)
-      // Deduplicate by uid
-      .filter(u => { if (seen.has(u.uid)) return false; seen.add(u.uid); return true; })
-      // Already sorted by timerXP from Firestore
+      // Only show users with focus XP this week
+      .filter(u => u.weeklyTimerXP > 0)
+      // Deduplicate by uid (belt-and-braces)
+      .filter(u => {
+        if (seen.has(u.uid)) return false;
+        seen.add(u.uid);
+        return true;
+      })
       .map((u, i) => ({ ...u, rank: i + 1 }));
 
     renderLeaderboard(entries, currentUid);
@@ -246,11 +267,3 @@ onAuthStateChanged(auth, async user => {
     }
   });
 });
-
-// ── Escape helper ─────────────────────────────────────────────────────────────
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
-}
