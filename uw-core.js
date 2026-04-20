@@ -1,11 +1,14 @@
 /**
- * uw-core.js — Untitled World Shared Core
+ * uw-core.js — Study Grid Prep
  *
  * Single source of truth for XP, Streak, Firebase sync.
  * Both todo.html and playlist.html import this.
  *
  * Exposes window.UW so non-module inline scripts can call everything.
  * Sets window.db and window.auth so legacy checks still work.
+ *
+ * UPDATED: _syncLeaderboard now reads timerXP from existing leaderboard
+ *          doc so level is computed from combined (playlist+todo+timer) XP.
  */
 
 import {
@@ -23,7 +26,7 @@ import {
 ───────────────────────────── */
 const XP_KEY          = "uw_xp";
 const STREAK_KEY      = "uw_streak";
-const STREAK_DATE_KEY = "uw_last_streak";   // stores toDateString()
+const STREAK_DATE_KEY = "uw_last_streak";
 const BONUS_KEY       = "uw_todo_daily_bonus";
 
 /* ─────────────────────────────
@@ -34,12 +37,10 @@ let _ready           = false;
 let _readyCallbacks  = [];
 
 /* ─────────────────────────────
-   AUTH STATE — sets up window globals so legacy code works
+   AUTH STATE
 ───────────────────────────── */
 onAuthStateChanged(auth, async (user) => {
   _authUser = user;
-
-  // Expose to window so legacy inline scripts using window.auth / window.db work
   window.db   = db;
   window.auth = auth;
 
@@ -55,7 +56,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* ─────────────────────────────
-   onReady — call cb once auth is resolved
+   onReady
 ───────────────────────────── */
 function onReady(cb) {
   if (_ready) { try { cb(_authUser); } catch(e) {} }
@@ -63,13 +64,12 @@ function onReady(cb) {
 }
 
 /* ─────────────────────────────
-   XP — localStorage as cache, Firebase as source of truth
+   XP
 ───────────────────────────── */
 function getXP() {
   return Math.max(0, parseInt(localStorage.getItem(XP_KEY) || "0", 10));
 }
 
-/** Set XP to absolute value v, update UI event, sync to Firebase */
 async function setXPAbsolute(v) {
   v = Math.max(0, v);
   localStorage.setItem(XP_KEY, String(v));
@@ -79,13 +79,12 @@ async function setXPAbsolute(v) {
   return v;
 }
 
-/** Add/subtract delta XP */
 async function updateXP(amount) {
   return setXPAbsolute(getXP() + amount);
 }
 
 /* ─────────────────────────────
-   STREAK — fixed: counts indefinitely, resets only if a day is missed
+   STREAK
 ───────────────────────────── */
 function getStreak() {
   return Math.max(0, parseInt(localStorage.getItem(STREAK_KEY) || "0", 10));
@@ -95,7 +94,7 @@ async function updateStreak() {
   const today     = new Date().toDateString();
   const last      = localStorage.getItem(STREAK_DATE_KEY) || "";
 
-  if (last === today) return getStreak(); // already updated today
+  if (last === today) return getStreak();
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -103,9 +102,9 @@ async function updateStreak() {
 
   let count = getStreak();
   if (last === yesterdayStr) {
-    count++;                  // consecutive day → keep going
+    count++;
   } else {
-    count = 1;                // gap in days → reset to 1
+    count = 1;
   }
 
   localStorage.setItem(STREAK_KEY, String(count));
@@ -118,8 +117,7 @@ async function updateStreak() {
 }
 
 /* ─────────────────────────────
-   LEVEL SYSTEM (used by leaderboard only)
-   XP thresholds as specified
+   LEVEL SYSTEM
 ───────────────────────────── */
 const LEVEL_THRESHOLDS = [0, 100, 250, 500, 800, 1200, 1700, 2300];
 
@@ -153,7 +151,7 @@ function getBadge(xp) {
 }
 
 /* ─────────────────────────────
-   LOAD USER DATA — Firebase → localStorage
+   LOAD USER DATA
 ───────────────────────────── */
 async function loadUserData() {
   if (!_authUser) return null;
@@ -161,7 +159,6 @@ async function loadUserData() {
     const snap = await getDoc(doc(db, "users", _authUser.uid));
     if (snap.exists()) {
       const d = snap.data();
-      // Firebase is source of truth — write into localStorage cache
       if (d.xp !== undefined) {
         localStorage.setItem(XP_KEY, String(Math.max(0, d.xp)));
         window.dispatchEvent(new CustomEvent("uw_xp_changed", { detail: { xp: d.xp } }));
@@ -190,16 +187,33 @@ async function _saveUser(partial) {
 
 /* ─────────────────────────────
    LEADERBOARD SYNC
+   Reads existing timerXP from leaderboard so level reflects
+   combined (playlist/todo + timer) XP.
+   Uses merge:true so script.js writes to timerXP/focusTime are preserved.
 ───────────────────────────── */
 async function _syncLeaderboard() {
   if (!_authUser) return;
-  const xp     = getXP();
-  const streak = getStreak();
-  const level  = getLevel(xp);
-  const name   = _authUser.displayName || _authUser.email || "Anonymous";
+  const playlistXP = getXP();
+  const streak     = getStreak();
+  const name       = _authUser.displayName || _authUser.email || "Anonymous";
+
   try {
+    // Read existing timerXP to compute combined level
+    let timerXP = 0;
+    try {
+      const lbSnap = await getDoc(doc(db, "leaderboard", _authUser.uid));
+      if (lbSnap.exists()) timerXP = lbSnap.data().timerXP || 0;
+    } catch(e) {}
+
+    const totalXP = playlistXP + timerXP;
+    const level   = getLevel(totalXP);
+
+    // Write playlist/todo XP; merge:true preserves timerXP + focusTime written by script.js
     await setDoc(doc(db, "leaderboard", _authUser.uid), {
-      name, xp, streak, level,
+      name,
+      xp:        playlistXP,   // playlist + todo XP only
+      streak,
+      level,                   // level from combined total
       updatedAt: serverTimestamp()
     }, { merge: true });
   } catch(e) { console.warn("[UW Core] leaderboard sync failed:", e); }
@@ -211,7 +225,6 @@ async function updateLeaderboard() {
 
 /* ─────────────────────────────
    SAVE TASKS + PLAYLIST to Firebase
-   Both pages call this; it merges only what's passed
 ───────────────────────────── */
 async function syncData(payload) {
   if (!_authUser) return;
@@ -232,7 +245,6 @@ async function syncData(payload) {
 
 /* ─────────────────────────────
    EXPOSE TO WINDOW
-   All inline scripts on any page can call window.UW.*
 ───────────────────────────── */
 window.UW = {
   onReady,
