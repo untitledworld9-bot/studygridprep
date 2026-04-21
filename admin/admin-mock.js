@@ -37,7 +37,7 @@ import {
   limit,
   serverTimestamp,
   writeBatch
-} from './firebase.js';
+} from '../firebase.js';
 
 // ============================================================
 //  CONSTANTS
