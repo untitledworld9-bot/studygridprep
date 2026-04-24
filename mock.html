@@ -737,13 +737,6 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 .rotate-btn:active { opacity: .8; }
-/* When CSS-rotated (virtual gyro fallback) */
-body.css-rotated {
-  transform-origin: top left;
-  transform: rotate(90deg) translateY(-100%);
-  width: 100vh; height: 100vw;
-  overflow: hidden;
-}
 
 /* CSS-rotated: force palette to behave like desktop side panel */
 body.css-rotated #paletteDrw {
@@ -767,12 +760,6 @@ body.css-rotated #controlsBar {
   display: flex !important;
 }
 body.css-rotated .btn-submit { display: flex !important; }
-/* FIX: question panel must scroll in css-rotated landscape */
-body.css-rotated #questionPanel {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  padding-bottom: 90px !important;
-}
 #toastWrap {
   position:fixed; bottom:120px; left:50%;
   transform:translateX(-50%);
@@ -790,6 +777,12 @@ body.css-rotated #questionPanel {
 }
 @keyframes toastIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateY(-6px)} }
+/* Keval Tablets ke liye Portrait overlay dikhega (Phones par hide) */
+@media (max-width: 767px) {
+  #portraitOverlay {
+    display: none !important; 
+  }
+}
 
 /* =====================================================
    PALETTE SUMMARY FOOTER (inside palette)
@@ -1616,32 +1609,42 @@ window.navigate = function(url) {
 
 </script>
 <script>
-let _rotateDismissed  = false;
-let _cssRotated       = false;
+let _rotateDismissed = false;
 
-function isPortrait() {
-  return window.innerHeight > window.innerWidth;
+// Screen check karne ka function (sirf tab trigger hoga jab tablet portrait mode me ho)
+function isTabletPortrait() {
+  const isTablet = window.innerWidth >= 768; // Tablet ki width
+  const isPortrait = window.innerHeight > window.innerWidth;
+  return isTablet && isPortrait;
 }
 
 async function virtualRotate() {
+  const element = document.documentElement;
+
   try {
-    await screen.orientation.lock('landscape-primary');
-    document.getElementById('portraitOverlay').classList.remove('show');
-    window._startTimerIfPending?.();
-    return;
-  } catch(_) {}
+    // 1. Pehle Fullscreen force karo (Browser native rotation ke liye yeh mangta hai)
+    if (element.requestFullscreen) {
+      await element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) { /* Safari */
+      await element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) { /* IE11 */
+      await element.msRequestFullscreen();
+    }
 
-  document.body.classList.add('css-rotated');
-  _cssRotated = true;
-  document.getElementById('portraitOverlay').classList.remove('show');
-  window._startTimerIfPending?.();
-
-  setTimeout(() => {
-    const vw = document.documentElement.clientWidth;
-    const vh = document.documentElement.clientHeight;
-    document.body.style.width  = vh + 'px';
-    document.body.style.height = vw + 'px';
-  }, 50);
+    // 2. Ab Native OS ka orientation lock trigger karo
+    if (screen.orientation && screen.orientation.lock) {
+      await screen.orientation.lock('landscape');
+      
+      // Rotate successful, overlay hide karo aur timer chalu karo
+      document.getElementById('portraitOverlay').classList.remove('show');
+      window._startTimerIfPending?.();
+    } else {
+      alert("Aapka device auto-rotate force karna support nahi karta. Kripya apna auto-rotate ON karke screen ghumayein.");
+    }
+  } catch(err) {
+    console.error("Rotate fail:", err);
+    alert("Screen rotate nahi ho payi. Pata karein ki aapka auto-rotate on hai ya nahi.");
+  }
 }
 
 function dismissRotate() {
@@ -1651,10 +1654,11 @@ function dismissRotate() {
 }
 
 function checkOrientation() {
-  if (_rotateDismissed || _cssRotated) return;
+  if (_rotateDismissed) return;
   const overlay = document.getElementById('portraitOverlay');
   if (!overlay) return;
-  if (isPortrait()) {
+  
+  if (isTabletPortrait()) {
     overlay.classList.add('show');
   } else {
     overlay.classList.remove('show');
@@ -1663,6 +1667,7 @@ function checkOrientation() {
   }
 }
 
+// Event listeners
 window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 200));
 window.addEventListener('resize',            () => setTimeout(checkOrientation, 200));
 window.addEventListener('load',              () => setTimeout(checkOrientation, 1200));
