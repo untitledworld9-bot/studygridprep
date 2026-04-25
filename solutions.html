@@ -608,7 +608,7 @@ const SOL_STATE = {
     }
   } catch(e) {}
   if (!result) {
-    try { result = JSON.parse(localStorage.getItem('lastTestResult') || 'null'); } catch(e){}
+    try { const s=sessionStorage.getItem('solutionsData'); result = JSON.parse(s && s!='null' && s!='' ? s : localStorage.getItem('lastTestResult') || 'null'); } catch(e){}
   }
 
   if (!result) {
