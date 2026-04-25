@@ -19,7 +19,7 @@ messaging.onBackgroundMessage(function(payload) {
 });
 
 // ─────────────────────────────────────────────────────────────
-const CACHE = "sgp-cache-v5";
+const CACHE = "sgp-cache-v6";
 
 // ✅ Sirf wahi files jo 100% exist karti hain
 const ASSETS = [
