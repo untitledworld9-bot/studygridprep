@@ -402,7 +402,6 @@ function initCharts() {
   loadDailyStats();
 }
 
-
 /**
  * Load per-day analytics from Firestore "analytics" collection.
  * Falls back to counting users by createdAt date if analytics docs absent.
