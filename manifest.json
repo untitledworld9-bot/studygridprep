@@ -3,7 +3,7 @@
   "short_name": "Study Grid Prep",
   "id": "Study-Grid-Prep-app",
   "description": "Distraction free study platform for JEE, NEET, CUET & BOARDS with Focus Timer, YouTube study playlist and Mock Tests.",
-  "start_url": "/index.html?mode=pwa",
+  "start_url": "/dashboard-home.html",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
