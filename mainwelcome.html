@@ -398,15 +398,6 @@ h1{
 </div>
 
 <script>
-// ===== PWA GUARD =====
-function isPWA(){
-  return window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone;
-}
-if(!isPWA()){
-  window.location.replace("index.html");
-}
-
 // ===== NEW MEMBER vs WELCOME BACK LOGIC =====
 // "returningUser" key persists independently of login/logout
 // It is set ONLY after first successful goHome() completion
@@ -448,7 +439,7 @@ function goHome(){
   // Smooth fade-out
   document.body.style.opacity = "0";
   document.body.style.transition = "opacity 0.2s ease";
-  setTimeout(() => { window.location.href = "index.html"; }, 200);
+  setTimeout(() => { window.location.href = "dashboard-home.html"; }, 200);
 }
 
 function closeAgree(){
