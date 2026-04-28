@@ -1263,6 +1263,7 @@ function loadExamConfig() {
     const uid = STATE.user?.uid;
     if (uid) {
       const testId = localStorage.getItem("selectedTestId") || "";
+      status: "started",
       setDoc(doc(db, "activeTests", uid), {
         uid,
         userName:  STATE.user?.displayName || localStorage.getItem("userName") || "User",
@@ -1850,11 +1851,23 @@ window.submitTest = async function() {
 
   } catch(e) { console.warn('Firestore save error:', e); }
 
-  // Remove from activeTests on submit
-  try {
-    const uid = STATE.user?.uid;
-    if (uid) deleteDoc(doc(db, "activeTests", uid)).catch(() => {});
-  } catch(_) {}
+// Update activeTests status to completed on submit
+try {
+  const uid = STATE.user?.uid;
+  if (uid) {
+    await updateDoc(doc(db, "activeTests", uid), {
+      status: "completed",
+      score,
+      correct,
+      incorrect,
+      unattempted,
+      total: stats.total,
+      submittedAt: serverTimestamp()
+    }).catch(() => {
+      deleteDoc(doc(db, "activeTests", uid)).catch(() => {});
+    });
+  }
+} catch(_) {}
 
   // Navigate to result
   navigate('result-summary.html');
