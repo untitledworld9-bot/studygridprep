@@ -11,7 +11,7 @@
   "theme_color": "#ffffff",
   "lang": "en",
   "dir": "auto",
-  "orientation": "any"
+  "orientation": "any",
   "prefer_related_applications": false,
 
   "icons": [
