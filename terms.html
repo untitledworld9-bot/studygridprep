@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms & Conditions - Study Grid Prep</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --primary-hover: #4338CA;
+  --accent: #06B6D4;
+  --teal: #0D9488;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --bg: #FFFFFF;
+  --bg-soft: #F8FAFC;
+  --bg-muted: #F1F5F9;
+  --border: #E2E8F0;
+  --border-soft: #F1F5F9;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-md: 0 10px 24px -4px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04);
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  --font: 'Outfit', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+html { background: var(--bg); scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0 5%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.nav-logo {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  object-fit: cover;
+}
+.nav-name {
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+}
+
+/* ===== PAGE CONTENT ===== */
+main {
+  flex: 1;
+  padding: 60px 5% 72px;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-eyebrow {
+  display: inline-block;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-family: var(--font);
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+  margin-bottom: 28px;
+  line-height: 1.1;
+}
+
+.content-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 24px;
+}
+
+p {
+  line-height: 1.75;
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+  font-weight: 400;
+}
+p:last-child { margin-bottom: 0; }
+
+p strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+ul {
+  list-style: none;
+  margin: 6px 0 18px 0;
+}
+ul li {
+  margin-bottom: 12px;
+  padding-left: 24px;
+  position: relative;
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.7;
+}
+
+.email-link-wrap {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--primary-light);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.email-link-wrap a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.email-link-wrap a:hover { text-decoration: underline; }
+
+/* ===== FOLLOW US ON + FOOTER (merged dark block) ===== */
+.dark-footer-block {
+  background: #0F172A;
+}
+
+.follow-section {
+  padding: 72px 5% 56px;
+  text-align: center;
+}
+.follow-title {
+  font-family: var(--font);
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.8px;
+  margin-bottom: 10px;
+}
+.follow-sub {
+  font-size: 15px;
+  color: #94A3B8;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+.social-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: #1E293B;
+  border: 1px solid #334155;
+  text-decoration: none;
+  transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  overflow: hidden;
+}
+.social-btn:hover {
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+}
+.social-btn:active { transform: scale(0.92); }
+.social-btn img, .social-btn svg {
+  width: 32px; height: 32px;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+}
+.social-btn:hover img, .social-btn:hover svg { transform: scale(1.12); }
+.social-btn.yt { border-color: rgba(255,0,0,0.3); }
+.social-btn.yt:hover { background: #FF0000; border-color: #FF0000; box-shadow: 0 12px 28px rgba(255,0,0,0.3); }
+.social-btn.ig:hover { background: linear-gradient(135deg, #F58529, #DD2A7B, #8134AF, #515BD4); border-color: transparent; box-shadow: 0 12px 28px rgba(221,42,123,0.3); }
+.social-btn.tg:hover { background: #2AABEE; border-color: #2AABEE; box-shadow: 0 12px 28px rgba(42,171,238,0.3); }
+.social-btn.tw:hover { background: #111; border-color: #333; box-shadow: 0 12px 28px rgba(0,0,0,0.5); }
+
+.social-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.social-name {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Footer inside dark block */
+footer {
+  background: var(--bg-soft);
+  border-top: 1px solid var(--border);
+  padding: 32px 5%;
+  text-align: center;
+}
+.footer-logo {
+  font-family: var(--font);
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 18px;
+}
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+.footer-links a {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.footer-links a:hover { color: var(--primary); }
+.footer-copy { font-size: 12px; color: var(--text-muted); }
+
+/* ===== SCROLL REVEAL ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  main { padding: 40px 5% 56px; }
+  .content-card { padding: 28px 20px; }
+  h1 { font-size: 26px; }
+  p { font-size: 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <img class="nav-logo" src="/icon-192.png" alt="Study Grid Prep">
+    <span class="nav-name">Study Grid Prep</span>
+  </a>
+</nav>
+
+<!-- PAGE CONTENT -->
+<main>
+  <span class="page-eyebrow">Legal</span>
+  <h1>Terms & Conditions</h1>
+
+  <div class="content-card">
+    <p>Welcome to <strong>Study Grid Prep</strong>. By using this website, you agree to the following terms:</p>
+
+    <ul>
+      <li>This platform is for educational purposes only.</li>
+      <li>Content may change anytime without notice.</li>
+      <li>Do not misuse or copy content without permission.</li>
+      <li>We are not responsible for external links or videos.</li>
+    </ul>
+
+    <div class="email-link-wrap">
+      <span>For queries:</span>
+      <a href="mailto:support@untitledworld.us.cc">support@untitledworld.us.cc</a>
+    </div>
+  </div>
+</main>
+
+<!-- FOLLOW US ON + FOOTER (one dark block) -->
+<div class="dark-footer-block">
+
+  <div class="follow-section">
+    <div class="follow-title reveal">Follow Us On</div>
+    <p class="follow-sub reveal">Stay updated with the latest announcements, features, and platform news</p>
+    <div class="social-grid reveal">
+
+      <div class="social-label">
+        <a href="www.youtube.com/@studygridprep" target="_blank" rel="noopener" class="social-btn yt" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="color:#FF0000; width:32px; height:32px;">
+            <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </a>
+        <span class="social-name">YouTube</span>
+      </div>
+
+      <div class="social-label">
+        <a href="https://instagram.com" target="_blank" rel="noopener" class="social-btn ig" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px;">
+            <defs>
+              <radialGradient id="ig1" cx="30%" cy="107%" r="150%">
+                <stop offset="0%" stop-color="#fdf497"/>
+                <stop offset="5%" stop-color="#fdf497"/>
+                <stop offset="45%" stop-color="#fd5949"/>
+                <stop offset="60%" stop-color="#d6249f"/>
+                <stop offset="90%" stop-color="#285AEB"/>
+              </radialGradient>
+            </defs>
+            <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#ig1)"/>
+            <circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.7" fill="none"/>
+            <circle cx="17.2" cy="6.8" r="1.2" fill="white"/>
+          </svg>
+        </a>
+        <span class="social-name">Instagram</span>
+      </div>
+
+      <div class="social-label">
+        <a href="https://t.me" target="_blank" rel="noopener" class="social-btn tg" aria-label="Telegram">
+          <svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px;">
+            <circle cx="12" cy="12" r="12" fill="#2AABEE"/>
+            <path d="M17.5 7L9.8 13.2 7 11.5 4.5 10.8 17.5 7Z" fill="white" opacity="0.5"/>
+            <path d="M9.8 13.2L10.6 17L12 14.5L17.5 7L9.8 13.2Z" fill="white"/>
+            <path d="M9.8 13.2L7 11.5L17.5 7L9.8 13.2Z" fill="white" opacity="0.7"/>
+          </svg>
+        </a>
+        <span class="social-name">Telegram</span>
+      </div>
+
+      <div class="social-label">
+        <a href="https://x.com" target="_blank" rel="noopener" class="social-btn tw" aria-label="X (Twitter)">
+          <svg viewBox="0 0 24 24" fill="white" style="width:26px;height:26px;">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.632L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/>
+          </svg>
+        </a>
+        <span class="social-name">X (Twitter)</span>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Study Grid Prep</div>
+    <div class="footer-links">
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact Us</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footer-copy">© 2026 Study Grid Prep · Built for students, by students</div>
+  </footer>
+
+</div>
+
+<script>
+// ===== SCROLL REVEAL =====
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+revealEls.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
