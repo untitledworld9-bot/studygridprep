@@ -905,5 +905,11 @@ const COPT={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:f
 function buildChart(id,type,dataObj,bg,border){if(STATE.charts[id])STATE.charts[id].destroy();const c=$(id)?.getContext("2d");if(!c)return;STATE.charts[id]=new Chart(c,{type,data:{labels:Object.keys(dataObj),datasets:[{label:"",data:Object.values(dataObj),backgroundColor:bg,borderColor:border,borderWidth:2,borderRadius:5}]},options:COPT});}
 function buildRankChart(p){const r={Beginner:0,Focused:0,Scholar:0,Elite:0,Master:0,Legend:0};p.forEach(pl=>{if(r[pl.rank]!==undefined)r[pl.rank]++;else r.Beginner++;});if(STATE.charts.rankChart)STATE.charts.rankChart.destroy();const c=$("rankChart")?.getContext("2d");if(!c)return;STATE.charts.rankChart=new Chart(c,{type:"doughnut",data:{labels:Object.keys(r),datasets:[{data:Object.values(r),backgroundColor:["rgba(148,163,184,.5)","rgba(34,211,238,.5)","rgba(167,139,250,.5)","rgba(251,146,60,.5)","rgba(244,114,182,.5)","rgba(255,215,0,.5)"],borderColor:["#94a3b8","#22d3ee","#a78bfa","#fb923c","#f472b6","#ffd700"],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"bottom",labels:{color:"#8890b0",font:{size:9},boxWidth:9}},tooltip:{backgroundColor:"#111420",titleColor:"#eef0ff",bodyColor:"#8890b0"}}}});}
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>
+  eruda.init();
+</script>
+
 </body>
 </html>
