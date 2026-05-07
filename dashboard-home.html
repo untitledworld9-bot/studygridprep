@@ -1225,6 +1225,16 @@ body { padding-bottom: 60px; }
     <div class="todo-rect-arrow"><i class="fa-solid fa-chevron-right"></i></div>
   </div>
 
+<div class="tool-card" onclick="window.location.href='game.html'"
+  style="background:linear-gradient(135deg,#00001888,#0a003a88);
+  border:1px solid rgba(0,245,255,0.3);cursor:pointer;position:relative;">
+  <div style="font-size:28px">⚡</div>
+  <div class="tool-title">Focus Runner</div>
+  <div class="tool-desc">Dodge distractions · Collect knowledge · Earn XP</div>
+  <div style="position:absolute;top:8px;right:10px;font-size:9px;
+    letter-spacing:1px;color:rgba(0,245,255,0.5);font-family:monospace">GAME</div>
+</div>
+
   <!-- Follow section -->
   <div class="follow-section">
     <div class="follow-label">Follow Us On</div>
@@ -2424,6 +2434,16 @@ window.addEventListener('load', function() {
     });
   }, 3000);
 });
+
+function openFocusRunner() {
+  // Fade out dashboard
+  document.body.style.transition = 'opacity 0.25s ease';
+  document.body.style.opacity = '0';
+  setTimeout(() => {
+    window.location.href = 'game.html';
+  }, 250);
+}
+
 </script>
 
 </body>
