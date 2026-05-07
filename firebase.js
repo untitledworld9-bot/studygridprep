@@ -35,7 +35,8 @@ import {
   where,
   serverTimestamp,
   Timestamp,
-  writeBatch
+  writeBatch,
+  arrayUnion
 } from
   "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -108,5 +109,6 @@ export {
   where,
   serverTimestamp,
   Timestamp,
-  writeBatch
+  writeBatch,
+  arrayUnion
 };
