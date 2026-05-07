@@ -627,6 +627,43 @@ header{
   display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;
 }
 
+/* ─── GAME CARD (Focus Runner) ─── */
+.game-card {
+  background: var(--surface);
+  border: 1.5px solid rgba(0, 245, 255, 0.3);
+  border-radius: 18px; padding: 16px 16px; margin-top: 10px;
+  cursor: pointer; position: relative;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow-sm); transition: all 0.22s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+[data-theme="light"] .game-card { 
+  background: #fff; 
+  border: 1.5px solid rgba(14, 165, 233, 0.28); 
+}
+[data-theme="dark"] .game-card { 
+  background: linear-gradient(135deg, #00001888, #0a003a88); 
+  border: 1.5px solid rgba(0, 245, 255, 0.3); 
+}
+.game-card:active { transform: scale(0.98); }
+
+.game-card-icon {
+  width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0;
+  background: rgba(0, 245, 255, 0.1);
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+[data-theme="light"] .game-card-icon { 
+  background: rgba(14, 165, 233, 0.12); 
+}
+
+.game-card-badge {
+  position: absolute; top: 8px; right: 10px; font-size: 9px;
+  letter-spacing: 1px; color: rgba(0, 245, 255, 0.5); font-family: monospace;
+}
+[data-theme="light"] .game-card-badge { 
+  color: rgba(14, 165, 233, 0.8); 
+}
+
 /* ─── FOLLOW US ON SECTION — screenshot 3 style ─── */
 .follow-section{
   margin:28px -14px 0 -14px; /* extend to edges */
@@ -1225,25 +1262,16 @@ body { padding-bottom: 60px; }
     <div class="todo-rect-arrow"><i class="fa-solid fa-chevron-right"></i></div>
   </div>
 
-<div onclick="openFocusRunner()"
-  style="background:linear-gradient(135deg,#00001888,#0a003a88);
-  border:1.5px solid rgba(0,245,255,0.3);cursor:pointer;position:relative;
-  border-radius:18px;padding:16px 16px;margin-top:10px;
-  display:flex;align-items:center;gap:14px;
-  box-shadow:var(--shadow-sm);transition:all 0.22s ease;
-  -webkit-tap-highlight-color:transparent;">
-  <div style="width:50px;height:50px;border-radius:14px;flex-shrink:0;
-    background:rgba(0,245,255,0.1);
-    display:flex;align-items:center;justify-content:center;font-size:22px;">⚡</div>
+<div onclick="openFocusRunner()" class="game-card">
+  <div class="game-card-icon">⚡</div>
   <div style="flex:1;">
     <div style="font-size:15px;font-weight:700;color:var(--text);">Focus Runner</div>
     <div style="font-size:11px;color:var(--text2);margin-top:2px;font-weight:500;">
       Dodge distractions · Collect knowledge · Earn XP</div>
   </div>
-  <div style="position:absolute;top:8px;right:10px;font-size:9px;
-    letter-spacing:1px;color:rgba(0,245,255,0.5);font-family:monospace;">GAME</div>
+  <div class="game-card-badge">GAME</div>
 </div>
-
+  
   <!-- Follow section -->
   <div class="follow-section">
     <div class="follow-label">Follow Us On</div>
