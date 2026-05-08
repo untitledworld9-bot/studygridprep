@@ -27,7 +27,7 @@ messaging.onBackgroundMessage(function(payload) {
 });
 
 // ─────────────────────────────────────────────────────────────
-const CACHE = "sgp-cache-v11";
+const CACHE = "sgp-cache-v12";
 
 // ✅ Sirf wahi files jo 100% exist karti hain
 const ASSETS = [
@@ -45,10 +45,11 @@ const ASSETS = [
   "/theme.js",
   "/icon-192.png",
   "/icon-512.png",
-  "/game.html",
-  "/game.css", 
-  "/game.js",
-  "/game-patch.js",
+  "/game/game.html",
+  "/game/game.css", 
+  "/game/game.js",
+  "/game/game-patch.js",
+  "/game/gameleaderboard.html",
   "/admin/studygridadmin.html",
   "/admin/manifestadmin.json"
 ];
