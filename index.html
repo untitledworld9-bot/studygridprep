@@ -21,13 +21,22 @@
 
 <script>
 (function(){
-  if(localStorage.getItem("userName")){
-    window.location.replace("dashboard-home.html");
-  }
+
+  var isLoggedIn = localStorage.getItem("userName");
   var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if(isPWA && !localStorage.getItem("userName")){
-    window.location.replace("login.html");
+
+  // ✅ PWA behavior (app jaisa)
+  if(isPWA){
+    if(isLoggedIn){
+      window.location.replace("dashboard-home.html");
+    } else {
+      window.location.replace("login.html");
+    }
   }
+
+  // ❌ WEBSITE pe auto redirect hata diya (important)
+  // Landing always show hogi
+
 })();
 </script>
 
@@ -1908,7 +1917,7 @@ footer {
     A distraction-free study platform with mock tests, focus timer, progress tracking and personalised playlists — everything in one place.
   </p>
   <div class="hero-actions">
-    <a href="login.html" class="btn-hero">Start Learning →</a>
+    <a id="ctaBtn" class="btn-hero">Start Learning →</a>
     <a href="#features" class="btn-hero-outline">See Features</a>
   </div>
   <!-- Install App button — appears only when app is installable and not yet installed -->
@@ -3000,5 +3009,22 @@ const observer = new IntersectionObserver((entries) => {
 
 revealEls.forEach(el => observer.observe(el));
 </script>
+
+<script>
+const btn = document.getElementById("ctaBtn");
+
+if(localStorage.getItem("userName")){
+  btn.innerText = "Go to Dashboard →";
+}
+
+btn.addEventListener("click", () => {
+  if(localStorage.getItem("userName")){
+    window.location.href = "dashboard-home.html";
+  } else {
+    window.location.href = "login.html";
+  }
+});
+</script>
+
 </body>
 </html>
