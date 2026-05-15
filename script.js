@@ -1,5 +1,5 @@
 /**
- * script.js — Untitled World Focus Timer (FIXED v4)
+ * script.js — Study Grid Prep Focus Timer (FIXED v4)
  *
  * KEY FIXES in v4:
  *   FIX-DUP : users doc is now keyed by UID (not displayName) to eliminate
