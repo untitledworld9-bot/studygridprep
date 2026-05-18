@@ -1,3 +1,4 @@
-User-agent: * Allow: /
+User-agent: *
+Allow: /
 
-Sitemap: https://untitledworld.us.cc/sitemap.xml
+Sitemap: https://studygridprep.online/sitemap.xml
