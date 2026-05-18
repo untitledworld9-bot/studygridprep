@@ -12,6 +12,7 @@
 <script>  
 (function(){  
   if(localStorage.getItem("userName")){  
+    // Already logged in — skip login page instantly  
     var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;  
     if(isPWA){  
       window.location.replace("mainwelcome.html");  
@@ -22,7 +23,7 @@
 })();  
 </script>  
   
-<!-- ✅ THEME DETECTION -->  
+<!-- ✅ THEME DETECTION — matches index.html logic exactly -->  
 <script>  
 (function(){  
   var saved = localStorage.getItem("theme");  
@@ -32,7 +33,7 @@
 })();  
 </script>  
   
-<!-- ✅ FLASH PREVENTION -->  
+<!-- ✅ FLASH PREVENTION — same as index.html -->  
 <style>  
 html{ visibility: hidden; }  
 html[data-theme]{ visibility: visible; }  
@@ -59,10 +60,7 @@ html[data-theme]{ visibility: visible; }
   --pill-bg: rgba(0,0,0,0.05);  
   --pill-border: rgba(0,0,0,0.08);  
   --logo-shadow: 0 4px 20px rgba(0,0,0,0.12);  
-  --footer-link: #0891B2;
-  --glow-primary: rgba(34,211,238,0.15);
-  --modal-bg: rgba(255,255,255,0.12);
-  --modal-border: rgba(255,255,255,0.25);
+  --footer-link: #0891B2;  
 }  
   
 /* DARK MODE */  
@@ -77,10 +75,7 @@ html[data-theme]{ visibility: visible; }
   --pill-bg: rgba(255,255,255,0.04);  
   --pill-border: rgba(255,255,255,0.08);  
   --logo-shadow: 0 4px 20px rgba(0,0,0,0.3);  
-  --footer-link: #22D3EE;
-  --glow-primary: rgba(34,211,238,0.08);
-  --modal-bg: rgba(15,23,42,0.75);
-  --modal-border: rgba(255,255,255,0.12);
+  --footer-link: #22D3EE;  
 }  
   
 *{  
@@ -98,49 +93,22 @@ body{
   justify-content: center;  
   align-items: center;  
   color: var(--text-primary);  
+  
+  /* ✅ TEXT SELECT BLOCK */  
   user-select: none;  
   -webkit-user-select: none;  
   -moz-user-select: none;  
   -ms-user-select: none;  
+  
+  /* ✅ TOUCH HIGHLIGHT REMOVE */  
   -webkit-tap-highlight-color: transparent;  
+  
+  /* ✅ PULL-TO-REFRESH BLOCK */  
   overscroll-behavior-y: none;  
-  animation: pageIn 0.35s ease forwards;
-  position: relative;
-  overflow: hidden;
-}
-
-/* ===== SUBTLE BG GLOW (ADDED) ===== */
-body::before {
-  content: '';
-  position: fixed;
-  top: -30%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
-  height: 400px;
-  background: radial-gradient(ellipse, var(--glow-primary) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  animation: glowPulse 4s ease-in-out infinite;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 400px;
-  height: 300px;
-  background: radial-gradient(ellipse, rgba(52,211,153,0.06) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-  50% { opacity: 1; transform: translateX(-50%) scale(1.08); }
-}
+  
+  /* Fade-in on arrival */  
+  animation: pageIn 0.35s ease forwards;  
+}  
   
 @keyframes pageIn{  
   from{ opacity:0; transform:translateY(8px); }  
@@ -152,9 +120,7 @@ body::after {
   text-align: center;  
   max-width: 360px;  
   width: 90%;  
-  padding: 16px;
-  position: relative;
-  z-index: 1;
+  padding: 16px;  
 }  
   
 .logo{  
@@ -163,13 +129,8 @@ body::after {
   border-radius: 24px;  
   margin-bottom: 24px;  
   box-shadow: var(--logo-shadow);  
-  animation: floatLogo 3.5s ease-in-out infinite;
-  transition: filter 0.3s ease;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 12px var(--primary));
-}
+  animation: floatLogo 3.5s ease-in-out infinite;  
+}  
   
 @keyframes floatLogo{  
   0%,100%{ transform:translateY(0px); }  
@@ -206,19 +167,10 @@ h1{
   border-radius: var(--radius);  
   padding: 24px 20px;  
   box-shadow: var(--shadow);  
-  margin-bottom: 20px;
-  /* ADDED: glass shimmer */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-
-.login-card:hover {
-  box-shadow: 0 8px 32px rgba(34,211,238,0.12), var(--shadow);
-  transform: translateY(-1px);
-}
+  margin-bottom: 20px;  
+}  
   
-/* ===== GOOGLE BUTTON — NOW WHITE (REPLACED) ===== */  
+/* ===== GOOGLE BUTTON ===== */  
 .google-btn{  
   display: flex;  
   align-items: center;  
@@ -226,30 +178,17 @@ h1{
   gap: 12px;  
   width: 100%;  
   padding: 14px 20px;  
-  /* CHANGED: white button */
-  background: #ffffff;
-  color: #1a1a1a;
-  border: 1px solid rgba(0,0,0,0.08);  
+  background: linear-gradient(135deg, #22D3EE, #06B6D4);  
+  color: #0B1220;  
+  border: none;  
   border-radius: 50px;  
   font-weight: 700;  
   font-size: 15px;  
   cursor: pointer;  
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10), 0 0 0 0 rgba(34,211,238,0);
+  transition: var(--transition);  
+  box-shadow: 0 4px 16px rgba(34,211,238,0.3);  
   letter-spacing: 0.3px;  
-  position: relative;
-  overflow: hidden;
-}
-
-/* Shimmer sweep on hover */
-.google-btn::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(34,211,238,0.08), transparent);
-  transition: left 0.4s ease;
-}
+}  
   
 .google-btn img{  
   width: 20px;  
@@ -261,22 +200,17 @@ h1{
   
 .google-btn:hover{  
   transform: translateY(-2px);  
-  box-shadow: 0 6px 24px rgba(0,0,0,0.12), 0 0 16px rgba(34,211,238,0.20);
-  border-color: rgba(34,211,238,0.3);
-}
-
-.google-btn:hover::after {
-  left: 100%;
-}
+  box-shadow: 0 8px 24px rgba(34,211,238,0.4);  
+}  
   
 .google-btn:active{  
   transform: scale(0.97);  
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 2px 8px rgba(34,211,238,0.2);  
 }  
   
 /* ===== LOADING STATE ===== */  
 .google-btn.loading{  
-  opacity: 0.75;  
+  opacity: 0.7;  
   pointer-events: none;  
   cursor: not-allowed;  
 }  
@@ -296,19 +230,8 @@ h1{
   background: var(--pill-bg);  
   border: 1px solid var(--pill-border);  
   border-radius: 50px;  
-  padding: 5px 12px;
-  /* ADDED micro-interaction */
-  transition: all 0.2s ease;
-  cursor: default;
-}
-
-.pill:hover {
-  background: rgba(34,211,238,0.08);
-  border-color: rgba(34,211,238,0.25);
-  color: var(--primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(34,211,238,0.08);
-}
+  padding: 5px 12px;  
+}  
   
 /* ===== FOOTER ===== */  
 .login-footer{  
@@ -341,220 +264,11 @@ h1{
   color: #F43F5E;  
   font-size: 13px;  
   text-align: center;  
-}
-
-
-/* ============================================
-   ✅ ADDED: CLAUDE-STYLE MODAL SYSTEM
-   ============================================ */
-
-/* Blur overlay */
-.sg-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.sg-overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* Modal card */
-.sg-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.88);
-  z-index: 1001;
-  width: 88%;
-  max-width: 320px;
-  background: var(--modal-bg);
-  border: 1px solid var(--modal-border);
-  border-radius: 24px;
-  padding: 36px 28px;
-  text-align: center;
-  /* glassmorphism */
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.08),
-    0 8px 40px rgba(0,0,0,0.35),
-    0 0 60px rgba(34,211,238,0.06);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.sg-modal.active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-  pointer-events: all;
-}
-
-/* Spinner */
-.sg-spinner {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 20px;
-  position: relative;
-}
-
-.sg-spinner::before,
-.sg-spinner::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-}
-
-.sg-spinner::before {
-  inset: 0;
-  border: 3px solid rgba(34,211,238,0.12);
-}
-
-.sg-spinner::after {
-  inset: 0;
-  border: 3px solid transparent;
-  border-top-color: #22D3EE;
-  border-right-color: rgba(34,211,238,0.4);
-  animation: sgSpin 0.75s linear infinite;
-}
-
-@keyframes sgSpin {
-  to { transform: rotate(360deg); }
-}
-
-/* Modal logo ring */
-.sg-modal-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  margin: 0 auto 16px;
-  box-shadow: 0 0 0 1px rgba(34,211,238,0.2), 0 4px 16px rgba(0,0,0,0.2);
-  display: none;
-}
-
-.sg-modal-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-  letter-spacing: 0.2px;
-}
-
-.sg-modal-sub {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* Success state */
-.sg-success-ring {
-  display: none;
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
-  background: rgba(52,211,153,0.12);
-  border: 2px solid #34D399;
-  align-items: center;
-  justify-content: center;
-  animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.sg-success-ring svg {
-  width: 24px;
-  height: 24px;
-  stroke: #34D399;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
-
-.sg-checkmark {
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation: drawCheck 0.4s ease 0.1s forwards;
-}
-
-@keyframes successPop {
-  from { transform: scale(0.6); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes drawCheck {
-  to { stroke-dashoffset: 0; }
-}
-
-/* Modal error text */
-.sg-modal-error {
-  display: none;
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: rgba(244,63,94,0.10);
-  border: 1px solid rgba(244,63,94,0.25);
-  border-radius: 10px;
-  color: #F43F5E;
-  font-size: 12px;
-  animation: shakeError 0.35s ease;
-}
-
-@keyframes shakeError {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-}
-
-/* Dot loading dots under text */
-.sg-dots span {
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--primary);
-  margin: 0 2px;
-  animation: dotBounce 1.2s ease-in-out infinite;
-}
-.sg-dots span:nth-child(2) { animation-delay: 0.2s; }
-.sg-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes dotBounce {
-  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-  40% { transform: translateY(-5px); opacity: 1; }
-}
-
+}  
 </style>  
 </head>  
 <body>  
-
-<!-- ✅ ADDED: Blur overlay -->
-<div class="sg-overlay" id="sgOverlay"></div>
-
-<!-- ✅ ADDED: Glassmorphism loading modal -->
-<div class="sg-modal" id="sgModal">
-  <!-- Spinner (shown during loading) -->
-  <div class="sg-spinner" id="sgSpinner"></div>
-  <!-- Success ring (shown on success) -->
-  <div class="sg-success-ring" id="sgSuccessRing">
-    <svg viewBox="0 0 24 24">
-      <polyline class="sg-checkmark" points="4,12 9,17 20,6"></polyline>
-    </svg>
-  </div>
-  <p class="sg-modal-text" id="sgModalText">Signing you in...</p>
-  <p class="sg-modal-sub" id="sgModalSub">
-    <span class="sg-dots"><span></span><span></span><span></span></span>
-  </p>
-  <div class="sg-modal-error" id="sgModalError">Login failed. Please try again.</div>
-</div>
-
-<!-- ===== ORIGINAL HTML — UNCHANGED ===== -->
+  
 <div class="login-box">  
   
   <img src="/icon-512.png" class="logo" alt="Study Grid Prep">  
@@ -565,7 +279,7 @@ h1{
   <p class="desc">Study Smarter. Score Better</p>  
   
   <div class="login-card">  
-    <button class="google-btn" id="loginBtn" onclick="handleLogin()">  
+    <button class="google-btn" id="loginBtn" onclick="login()">  
       <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">  
       Continue with Google  
     </button>  
@@ -580,9 +294,7 @@ h1{
     <span class="pill">⏱ FOCUS TIMER</span>  
     <span class="pill">▶️ YT STUDY PLAYLIST</span>  
     <span class="pill">TODO LIST</span>  
-    <span class="pill">🏆 LEADERBOARD</span>
-    <!-- ✅ ADDED: AI ANALYSIS chip -->
-    <span class="pill">🤖 AI ANALYSIS</span>
+    <span class="pill">🏆 LEADERBOARD</span>  
   </div>  
   
   <p class="login-footer" style="margin-top:20px;">  
@@ -615,130 +327,59 @@ const provider = new GoogleAuthProvider();
 function getTodayDate(){  
   const d = new Date();  
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();  
-}
-
-/* ===================================================
-   ✅ ADDED: Modal helper functions
-   =================================================== */
-
-function showModal() {
-  const overlay = document.getElementById("sgOverlay");
-  const modal   = document.getElementById("sgModal");
-  // Reset to loading state
-  document.getElementById("sgSpinner").style.display = "block";
-  document.getElementById("sgSuccessRing").style.display = "none";
-  document.getElementById("sgModalText").textContent = "Signing you in...";
-  document.getElementById("sgModalSub").innerHTML = '<span class="sg-dots"><span></span><span></span><span></span></span>';
-  document.getElementById("sgModalError").style.display = "none";
-  overlay.classList.add("active");
-  modal.classList.add("active");
-}
-
-function showSuccess() {
-  document.getElementById("sgSpinner").style.display = "none";
-  const ring = document.getElementById("sgSuccessRing");
-  ring.style.display = "flex";
-  document.getElementById("sgModalText").textContent = "Welcome back! 🎉";
-  document.getElementById("sgModalSub").textContent = "Taking you to dashboard...";
-}
-
-function hideModal() {
-  const overlay = document.getElementById("sgOverlay");
-  const modal   = document.getElementById("sgModal");
-  overlay.classList.remove("active");
-  modal.classList.remove("active");
-}
-
-function showModalError(msg) {
-  document.getElementById("sgSpinner").style.display = "none";
-  document.getElementById("sgSuccessRing").style.display = "none";
-  document.getElementById("sgModalText").textContent = "Something went wrong";
-  document.getElementById("sgModalSub").textContent = "";
-  const err = document.getElementById("sgModalError");
-  err.textContent = msg || "Login failed. Please try again.";
-  err.style.display = "block";
-  // Auto hide modal after 2.5s on error
-  setTimeout(() => {
-    hideModal();
-  }, 2500);
-}
-
-/* ===================================================
-   ✅ REPLACED: handleLogin (was window.login)
-   =================================================== */
-
-window.handleLogin = async function() {
-  const btn   = document.getElementById("loginBtn");
-  const toast = document.getElementById("errorToast");
-
-  // Guard: prevent double-click
-  if (btn.classList.contains("loading")) return;
-
-  // 1. Show button loading state
-  btn.classList.add("loading");
-  btn.innerHTML = `
-    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" style="width:20px;height:20px;background:white;border-radius:50%;padding:2px;">
-    Connecting...
-  `;
-  toast.style.display = "none";
-
-  // 2. Show Claude-style modal overlay
-  showModal();
-
-  try {
-    // 3. Firebase signInWithPopup (popup appears on top of modal)
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const name = user.displayName;
-    const email = user.email;
-
-    localStorage.setItem("userName", name);
-    localStorage.setItem("userEmail", email);
-
-    await setDoc(doc(db, "users", name), {
-      name: name,
-      email: email,
-      focusTime: 0,
-      weeklyXP: 0,
-      status: "Online",
-      room: "global",
-      lastActiveDate: getTodayDate()
-    }, { merge: true });
-
-    // 4. Show success state in modal
-    showSuccess();
-
-    // 5. Smooth fade-out + navigate
-    setTimeout(() => {
-      hideModal();
-      document.body.style.opacity = "0";
-      document.body.style.transition = "opacity 0.25s ease";
-      setTimeout(() => {
-        const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-        window.location.href = isPWA ? "mainwelcome.html" : "dashboard-home.html";
-      }, 250);
-    }, 1200);
-
-  } catch (err) {
-    console.log(err);
-    // 6. Show error in modal, re-enable button
-    const errMsg = err.code === "auth/popup-closed-by-user"
-      ? "Popup closed. Please try again."
-      : err.code === "auth/network-request-failed"
-      ? "Network error. Check your connection."
-      : "Login failed. Please try again.";
-
-    showModalError(errMsg);
-
-    btn.classList.remove("loading");
-    btn.innerHTML = `
-      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" style="width:20px;height:20px;background:white;border-radius:50%;padding:2px;">
-      Continue with Google
-    `;
-  }
-};
-
-/* ===== ORIGINAL: Typing animation — UNCHANGED ===== */
+}  
+  
+window.login = async function(){  
+  const btn = document.getElementById("loginBtn");  
+  const toast = document.getElementById("errorToast");  
+  
+  btn.classList.add("loading");  
+  btn.innerText = "Signing in…";  
+  toast.style.display = "none";  
+  
+  try{  
+    const result = await signInWithPopup(auth, provider);  
+    const user = result.user;  
+    const name = user.displayName;  
+    const email = user.email;  
+  
+    localStorage.setItem("userName", name);  
+    localStorage.setItem("userEmail", email);  
+  
+    await setDoc(doc(db,"users",name),{  
+      name: name,  
+      email: email,  
+      focusTime: 0,  
+      weeklyXP: 0,  
+      status: "Online",  
+      room: "global",  
+      lastActiveDate: getTodayDate()  
+    },{merge:true});  
+  
+    // Smooth fade-out before redirect  
+    document.body.style.opacity = "0";  
+    document.body.style.transition = "opacity 0.2s ease";  
+  
+    setTimeout(() => {  
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;  
+      if(isPWA){  
+        // ✅ ALWAYS go to mainwelcome.html on PWA  
+        // mainwelcome.html itself handles New Member vs Welcome Back  
+        window.location.href = "mainwelcome.html";  
+      } else {  
+        window.location.href = "dashboard-home.html";  
+      }  
+    }, 200);  
+  
+  } catch(err){  
+    console.log(err);  
+    btn.classList.remove("loading");  
+    btn.innerHTML = '<img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" style="width:20px;height:20px;background:white;border-radius:50%;padding:2px;"> Continue with Google';  
+    toast.style.display = "block";  
+  }  
+};  
+  
+// Typing animation  
 const text = "Welcome to Study Grid Prep";  
 let i = 0;  
 function typeText(){  
@@ -752,4 +393,4 @@ typeText();
 </script>  
   
 </body>  
-</html>
+</html>  
