@@ -9,38 +9,62 @@
   </url>
 
   <url>
-    <loc>https://studygridprep.online/mock-home.html</loc>
+    <loc>https://studygridprep.online/login.html</loc>
     <lastmod>2026-05-18</lastmod>
-    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://studygridprep.online/cuet-preparation-guide.html</loc>
+    <loc>https://studygridprep.online/mock-home.html</loc>
     <lastmod>2026-05-18</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://studygridprep.online/jee-preparation-2027.html</loc>
     <lastmod>2026-05-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://studygridprep.online/neet-preparation-guide.html</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://studygridprep.online/cuet-preparation-guide.html</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://studygridprep.online/about.html</loc>
     <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://studygridprep.online/contact.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://studygridprep.online/privacy.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 
   <url>
     <loc>https://studygridprep.online/terms.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 
 </urlset>
