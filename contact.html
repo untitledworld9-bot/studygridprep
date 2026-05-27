@@ -185,6 +185,11 @@ button[type="submit"]:hover {
   box-shadow: 0 6px 20px rgba(79,70,229,0.38);
 }
 button[type="submit"]:active { transform: scale(0.98); }
+button[type="submit"]:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .direct-email {
   margin-top: 20px;
@@ -399,15 +404,16 @@ footer {
   <p class="subtitle">Have questions or feedback? We'd love to hear from you.</p>
 
   <div class="content-card">
-    <form action="https://formsubmit.co/untitledworld9@gmail.com" method="POST" id="contactForm">
+    <!-- ✅ action/method HATA DIYA — fetch handle karega -->
+    <form id="contactForm">
 
       <!-- Hidden Settings -->
-<input type="hidden" name="_captcha" value="true">
-<input type="hidden" name="_subject" value="New Contact Message - Study Grid Prep">
-<input type="hidden" name="_template" value="table">
-<input type="hidden" name="_next" value="https://studygridprep.online/contact.html?success=true">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_subject" value="New Contact Message - Study Grid Prep">
+      <input type="hidden" name="_template" value="table">
+      <!-- ✅ _next HATA DIYA — redirect nahi chahiye ab -->
 
-<input type="text" name="_honey" style="display:none">
+      <input type="text" name="_honey" style="display:none">
 
       <!-- User Fields -->
       <input type="text" name="name" placeholder="Your Name" required>
@@ -509,14 +515,36 @@ footer {
 </div>
 
 <script>
-// ===== SUCCESS MODAL =====
-const modal = document.getElementById("successModal");
-if(window.location.search.includes("success=true")){
-  modal.classList.add("active");
-}
-function closeModal(){
-  modal.classList.remove("active");
-  window.history.replaceState({}, document.title, "contact.html");
+// ===== FORM SUBMIT (fetch — no redirect) =====
+document.getElementById('contactForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  const originalText = btn.textContent;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  const data = new FormData(this);
+
+  try {
+    await fetch('https://formsubmit.co/untitledworld9@gmail.com', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+    // Show success modal
+    document.getElementById('successModal').classList.add('active');
+    this.reset();
+  } catch(err) {
+    alert('Something went wrong. Please try again.');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+});
+
+// ===== SUCCESS MODAL CLOSE =====
+function closeModal() {
+  document.getElementById('successModal').classList.remove('active');
 }
 
 // ===== SCROLL REVEAL =====
