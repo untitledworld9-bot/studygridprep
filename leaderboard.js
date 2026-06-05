@@ -1,32 +1,23 @@
 /**
  * leaderboard.js — Study Grid Prep Weekly (Focus) Leaderboard
- *
- * FIXED:
- *  - Reads from "leaderboard" collection (uid-keyed) → ZERO double entries
- *  - Sorts by weeklyTimerXP → resets properly every 7 days
- *  - weeklyTimerXP resets ONLY in auth (never on focus click — that was the bug)
- *  - timerXP (cumulative) and focusTime preserved separately
- *  - getWeekNumber() kept for weekly countdown
- *  - Top-3 popup, level strip, myRankBar all preserved
+ * UI: matched to dashboard-home.html design system
  */
 
 import { db, auth, onAuthStateChanged } from "./firebase.js";
-
 import {
-  collection, doc, onSnapshot, getDoc,
-  query, orderBy, limit
+  collection, query, orderBy, limit, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ── Level system (2 min focus = 1 XP, thresholds same as before) ─────────────
+// ── Level system ─────────────────────────────────────────────────────────────
 const LEVELS = [
-  { min: 0,   name: "Beginner",  icon: "🌱", color: "#00e5a0", bg: "rgba(0,229,160,0.12)",  border: "rgba(0,229,160,0.3)"  },
-  { min: 30,  name: "Explorer",  icon: "🔍", color: "#00e0ff", bg: "rgba(0,224,255,0.12)",  border: "rgba(0,224,255,0.3)"  },
-  { min: 90,  name: "Scholar",   icon: "📚", color: "#4facfe", bg: "rgba(79,172,254,0.12)", border: "rgba(79,172,254,0.3)" },
-  { min: 150, name: "Focused",   icon: "🎯", color: "#7c5cfc", bg: "rgba(124,92,252,0.12)", border: "rgba(124,92,252,0.3)" },
-  { min: 210, name: "Achiever",  icon: "⚡", color: "#ffb830", bg: "rgba(255,184,48,0.12)", border: "rgba(255,184,48,0.3)" },
-  { min: 270, name: "Expert",    icon: "🔥", color: "#ff7a18", bg: "rgba(255,122,24,0.12)", border: "rgba(255,122,24,0.3)" },
-  { min: 330, name: "Master",    icon: "💎", color: "#ff4f6a", bg: "rgba(255,79,106,0.12)", border: "rgba(255,79,106,0.3)" },
-  { min: 390, name: "Legend",    icon: "👑", color: "#ffd700", bg: "rgba(255,215,0,0.12)",  border: "rgba(255,215,0,0.35)" }
+  { min: 0,   name: "Beginner",  icon: "fa-seedling",     color: "#10B981", bg: "rgba(16,185,129,0.10)",  border: "rgba(16,185,129,0.25)"  },
+  { min: 30,  name: "Explorer",  icon: "fa-compass",      color: "#0EA5E9", bg: "rgba(14,165,233,0.10)",  border: "rgba(14,165,233,0.25)"  },
+  { min: 90,  name: "Scholar",   icon: "fa-book-open",    color: "#5B5BF6", bg: "rgba(91,91,246,0.10)",   border: "rgba(91,91,246,0.25)"   },
+  { min: 150, name: "Focused",   icon: "fa-bullseye",     color: "#7C3AED", bg: "rgba(124,58,237,0.10)",  border: "rgba(124,58,237,0.25)"  },
+  { min: 210, name: "Achiever",  icon: "fa-bolt",         color: "#F59E0B", bg: "rgba(245,158,11,0.10)",  border: "rgba(245,158,11,0.25)"  },
+  { min: 270, name: "Expert",    icon: "fa-fire",         color: "#F97316", bg: "rgba(249,115,22,0.10)",  border: "rgba(249,115,22,0.25)"  },
+  { min: 330, name: "Master",    icon: "fa-gem",          color: "#EC4899", bg: "rgba(236,72,153,0.10)",  border: "rgba(236,72,153,0.25)"  },
+  { min: 390, name: "Legend",    icon: "fa-crown",        color: "#FBBF24", bg: "rgba(251,191,36,0.10)",  border: "rgba(251,191,36,0.30)"  }
 ];
 
 function getLevel(xp) {
@@ -39,68 +30,69 @@ function getLevel(xp) {
 }
 
 // ── Weekly helpers ────────────────────────────────────────────────────────────
-function getWeekNumber() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-  const yearStart = new Date(d.getFullYear(), 0, 1);
-  return `${d.getFullYear()}-W${Math.ceil((((d - yearStart) / 86400000) + 1) / 7)}`;
-}
-
 function daysUntilReset() {
   const day = new Date().getDay();
   return day === 1 ? 7 : (8 - day) % 7;
 }
 
-// ── DOM refs — matches leaderboard.html ───────────────────────────────────────
-const podiumArea = document.getElementById("podiumArea");
-const rankList   = document.getElementById("rankList");
-const loading    = document.getElementById("loading");
-const myRankBar  = document.getElementById("myRankBar");
-const myRankVal  = document.getElementById("myRankVal");
-const myXpVal    = document.getElementById("myXpVal");
-const resetTimer = document.getElementById("resetTimer");
-const levelStrip = document.getElementById("levelStrip");
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const podiumArea  = document.getElementById("podiumArea");
+const rankList    = document.getElementById("rankList");
+const loading     = document.getElementById("loading");
+const myRankBar   = document.getElementById("myRankBar");
+const myRankVal   = document.getElementById("myRankVal");
+const myXpVal     = document.getElementById("myXpVal");
+const resetTimer  = document.getElementById("resetTimer");
+const levelStrip  = document.getElementById("levelStrip");
+const refreshBtn  = document.getElementById("refreshBtn");
 
 // ── Level strip ───────────────────────────────────────────────────────────────
 if (levelStrip) {
   levelStrip.innerHTML = LEVELS.map(l => `
     <div class="lvl-pill">
-      <span class="lvl-icon">${l.icon}</span>
+      <i class="fa-solid ${l.icon} lvl-icon" style="color:${l.color}; font-size:14px;"></i>
       <span class="lvl-name" style="color:${l.color};">${l.name}</span>
-      <span style="font-size:9px;color:rgba(255,255,255,0.35);">${l.min} XP</span>
+      <span class="lvl-min">${l.min} XP</span>
     </div>`).join("");
 }
 
-// ── Weekly reset countdown ────────────────────────────────────────────────────
+// ── Reset countdown ───────────────────────────────────────────────────────────
 if (resetTimer) {
   const d = daysUntilReset();
-  resetTimer.textContent = `Resets in ${d} day${d === 1 ? "" : "s"}`;
+  resetTimer.innerHTML = `<i class="fa-solid fa-clock-rotate-left" style="font-size:9px; margin-right:3px;"></i>Resets in ${d}d`;
+}
+
+// ── Refresh btn spinner ───────────────────────────────────────────────────────
+if (refreshBtn) {
+  refreshBtn.onclick = () => {
+    refreshBtn.classList.add("spinning");
+    setTimeout(() => refreshBtn.classList.remove("spinning"), 1200);
+  };
 }
 
 // ── Top-3 popup ───────────────────────────────────────────────────────────────
 const POPUP_KEY = "uw_lb_popup_shown";
-let   popupShown = sessionStorage.getItem(POPUP_KEY) === "true";
+let popupShown = sessionStorage.getItem(POPUP_KEY) === "true";
 
 function showTopPopup(lvl, rank) {
   const overlay = document.createElement("div");
   overlay.className = "levelup-overlay";
   overlay.innerHTML = `
     <div class="levelup-card">
-      <div class="levelup-icon">${lvl.icon}</div>
-      <div class="levelup-title">🔥 You are in Top ${rank}!</div>
+      <i class="fa-solid ${lvl.icon} levelup-icon" style="color:${lvl.color};"></i>
+      <div class="levelup-title">You're in Top ${rank}!</div>
       <div class="levelup-sub">
-        You reached <b style="color:${lvl.color};">${lvl.name}</b> level!<br>
-        Keep studying to climb higher 🚀
+        You reached <b style="color:${lvl.color};">${lvl.name}</b> level.<br>
+        Keep studying to climb higher.
       </div>
       <button class="levelup-btn" onclick="this.closest('.levelup-overlay').remove()">
-        Keep Going!
+        <i class="fa-solid fa-arrow-up" style="font-size:11px;margin-right:6px;"></i>Keep Going
       </button>
     </div>`;
   document.body.appendChild(overlay);
 }
 
-// ── Format helpers ────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function formatTime(totalMin) {
   const h = Math.floor((totalMin || 0) / 60);
   const m = (totalMin || 0) % 60;
@@ -112,16 +104,16 @@ function escHtml(s) {
 }
 
 // ── Main render ───────────────────────────────────────────────────────────────
-// entries: [{uid, name, weeklyTimerXP, focusTime, rank}]
-// currentUid: Firebase UID
 function renderLeaderboard(entries, currentUid) {
   if (loading) loading.style.display = "none";
 
   if (!entries.length) {
-    if (loading) {
-      loading.style.display = "block";
-      loading.innerHTML = `<div style="padding:40px;color:rgba(255,255,255,0.4);font-size:14px;">No focus sessions this week yet — start focusing! 🚀</div>`;
-    }
+    if (podiumArea) podiumArea.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon-wrap"><i class="fa-solid fa-trophy"></i></div>
+        <div class="empty-title">No sessions this week yet</div>
+        <div class="empty-sub">Start a focus session to appear on the board.</div>
+      </div>`;
     return;
   }
 
@@ -131,7 +123,7 @@ function renderLeaderboard(entries, currentUid) {
     const me = entries[myIdx];
     myRankBar.classList.add("visible");
     if (myRankVal) myRankVal.textContent = `#${myIdx + 1} of ${entries.length}`;
-    if (myXpVal)   myXpVal.textContent   = `⭐ ${me.weeklyTimerXP || 0} XP`;
+    if (myXpVal)   myXpVal.innerHTML = `<i class="fa-solid fa-star" style="font-size:11px;"></i> ${me.weeklyTimerXP || 0} XP`;
 
     if (myIdx < 3 && !popupShown) {
       popupShown = true;
@@ -142,97 +134,100 @@ function renderLeaderboard(entries, currentUid) {
 
   // ── Podium (top 3) ────────────────────────────────────────────────────────
   if (podiumArea) {
-    podiumArea.innerHTML = "";
-    const podium = document.createElement("div");
-    podium.className = "podium-wrap";
+    const medals = ["🥇","🥈","🥉"];
+    const rankClasses = ["rank-1","rank-2","rank-3"];
+    const pedestalClasses = ["p1","p2","p3"];
 
     const buildCol = (u, rank) => {
-      if (!u) return null;
+      if (!u) return "";
       const lvl = getLevel(u.weeklyTimerXP || 0);
-      const col = document.createElement("div");
-      col.className = "podium-col";
-      col.innerHTML = `
-        <div class="podium-avatar rank-${rank}">
-          ${rank === 1 ? '<span class="podium-crown">👑</span>' : ""}
-          ${(u.name || "?")[0].toUpperCase()}
-        </div>
-        <div class="podium-name">${escHtml(u.name || "—")}</div>
-        <div class="podium-xp">⭐ ${u.weeklyTimerXP || 0} XP</div>
-        <div class="podium-lvl">${lvl.icon} ${lvl.name}</div>
-        <div class="podium-bar rank-${rank}">${rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}</div>`;
-      return col;
+      const ri  = rank - 1;
+      return `
+        <div class="podium-col">
+          <div class="podium-avatar ${rankClasses[ri]}">
+            ${rank === 1 ? `<span class="podium-crown"><i class="fa-solid fa-crown" style="color:#FBBF24; font-size:15px;"></i></span>` : ""}
+            ${(u.name || "?")[0].toUpperCase()}
+          </div>
+          <div class="podium-name">${escHtml(u.name || "—")}</div>
+          <div class="podium-xp">
+            <i class="fa-solid fa-star" style="font-size:9px;"></i> ${u.weeklyTimerXP || 0} XP
+          </div>
+          <div class="podium-lvl">
+            <i class="fa-solid ${lvl.icon}" style="color:${lvl.color}; font-size:9px;"></i> ${lvl.name}
+          </div>
+          <div class="podium-pedestal ${pedestalClasses[ri]}">${medals[ri]}</div>
+        </div>`;
     };
 
     // Order: 2nd left, 1st centre, 3rd right
-    const c2 = buildCol(entries[1], 2);
-    const c1 = buildCol(entries[0], 1);
-    const c3 = buildCol(entries[2], 3);
-    if (c2) podium.appendChild(c2);
-    if (c1) podium.appendChild(c1);
-    if (c3) podium.appendChild(c3);
-    podiumArea.appendChild(podium);
+    podiumArea.innerHTML = `
+      <div class="podium-card">
+        <div class="podium-wrap">
+          ${buildCol(entries[1], 2)}
+          ${buildCol(entries[0], 1)}
+          ${buildCol(entries[2], 3)}
+        </div>
+      </div>`;
   }
 
   // ── Rank list 4–20 ────────────────────────────────────────────────────────
   if (rankList) {
-    rankList.innerHTML = "";
+    let html = "";
     for (let i = 3; i < Math.min(entries.length, 20); i++) {
-      const u   = entries[i];
+      const u    = entries[i];
       const rank = i + 1;
-      const lvl = getLevel(u.weeklyTimerXP || 0);
+      const lvl  = getLevel(u.weeklyTimerXP || 0);
       const isMe = u.uid === currentUid;
 
-      const row = document.createElement("div");
-      row.className = "rank-row";
-      if (isMe) {
-        row.style.border     = `1px solid ${lvl.color}`;
-        row.style.background = lvl.bg;
-        row.style.boxShadow  = `0 0 14px ${lvl.color}44`;
-      }
+      let rankNumClass = "";
+      if (rank === 1) rankNumClass = "top1";
+      else if (rank === 2) rankNumClass = "top2";
+      else if (rank === 3) rankNumClass = "top3";
 
-      row.innerHTML = `
-        <div class="rank-num">#${rank}</div>
-        <div class="rank-avatar" style="color:${lvl.color};background:${lvl.bg};">
-          ${(u.name || "?")[0].toUpperCase()}
-        </div>
-        <div class="rank-info">
-          <div class="rank-name">${escHtml(u.name || "—")}${isMe ? `&nbsp;<span style="color:var(--cyan);font-size:11px;">(You)</span>` : ""}</div>
-          <div class="rank-detail">⏱ ${formatTime(u.weeklyFocusTime || u.focusTime || 0)} this week</div>
-        </div>
-        <div class="rank-right">
-          <div class="rank-xp">⭐ ${u.weeklyTimerXP || 0}</div>
-          <div class="level-badge" style="background:${lvl.bg};color:${lvl.color};border:1px solid ${lvl.border};">
-            ${lvl.icon} ${lvl.name}
+      html += `
+        <div class="rank-row${isMe ? " is-me" : ""}">
+          <div class="rank-num ${rankNumClass}">#${rank}</div>
+          <div class="rank-avatar" style="color:${lvl.color}; background:${lvl.bg};">
+            ${(u.name || "?")[0].toUpperCase()}
+          </div>
+          <div class="rank-info">
+            <div class="rank-name">
+              ${escHtml(u.name || "—")}
+              ${isMe ? `<span class="rank-you-tag">You</span>` : ""}
+            </div>
+            <div class="rank-detail">
+              <i class="fa-solid fa-clock" style="font-size:9px; margin-right:3px;"></i>${formatTime(u.weeklyFocusTime || u.focusTime || 0)} this week
+            </div>
+          </div>
+          <div class="rank-right">
+            <div class="rank-xp">
+              <i class="fa-solid fa-star" style="font-size:10px; margin-right:3px;"></i>${u.weeklyTimerXP || 0}
+            </div>
+            <div class="rank-badge" style="background:${lvl.bg}; color:${lvl.color}; border:1px solid ${lvl.border};">
+              <i class="fa-solid ${lvl.icon}" style="font-size:8px; margin-right:3px;"></i>${lvl.name}
+            </div>
           </div>
         </div>`;
-      rankList.appendChild(row);
     }
+    rankList.innerHTML = html;
   }
 }
 
 // ── Auth + live listener ──────────────────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
-
   if (!user) {
     if (loading) {
-      loading.style.display = "block";
-      loading.innerHTML = `<div style="padding:60px 20px;color:rgba(255,255,255,0.4);font-size:14px;">Please log in to view the leaderboard.</div>`;
+      loading.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon-wrap"><i class="fa-solid fa-lock"></i></div>
+          <div class="empty-title">Login required</div>
+          <div class="empty-sub">Please log in to view the leaderboard.</div>
+        </div>`;
     }
     return;
   }
 
   const currentUid = user.uid;
-
-  /**
-   * FIX: Read from "leaderboard" collection (uid-keyed) — NO double entries.
-   *
-   * weeklyTimerXP = timer XP earned this week only.
-   * It resets in script.js auth section at start of new week (NOT on every focus).
-   *
-   * Old bug: reading "users" collection had 2 docs per user (displayName + uid).
-   * Old bug: weeklyXP reset on every startBtn click if lastActiveWeek changed.
-   * Both bugs are now fixed.
-   */
   const q = query(
     collection(db, "leaderboard"),
     orderBy("weeklyTimerXP", "desc"),
@@ -240,7 +235,7 @@ onAuthStateChanged(auth, async user => {
   );
 
   onSnapshot(q, snap => {
-    const seen = new Set();
+    const seen    = new Set();
     const entries = snap.docs
       .map(d => ({
         uid:             d.id,
@@ -249,22 +244,21 @@ onAuthStateChanged(auth, async user => {
         focusTime:       d.data().focusTime        || 0,
         weeklyFocusTime: d.data().weeklyFocusTime  || 0,
       }))
-      // Only show users with focus XP this week
       .filter(u => u.weeklyTimerXP > 0)
-      // Deduplicate by uid (belt-and-braces)
-      .filter(u => {
-        if (seen.has(u.uid)) return false;
-        seen.add(u.uid);
-        return true;
-      })
+      .filter(u => { if (seen.has(u.uid)) return false; seen.add(u.uid); return true; })
       .map((u, i) => ({ ...u, rank: i + 1 }));
 
     renderLeaderboard(entries, currentUid);
   }, err => {
     console.error("[Leaderboard]", err);
     if (loading) {
-      loading.style.display = "block";
-      loading.innerHTML = `<div style="padding:40px;color:rgba(255,79,106,0.7);font-size:14px;">Could not load leaderboard.</div>`;
+      loading.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon-wrap"><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange);"></i></div>
+          <div class="empty-title">Could not load</div>
+          <div class="empty-sub">Check your connection and try again.</div>
+        </div>`;
     }
   });
 });
+               
