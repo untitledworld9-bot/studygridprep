@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0D1120">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Timer | Study Grid Prep</title>
+<link rel="icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- THEME DETECTION -->
+<script>
+(function(){
+  var saved = localStorage.getItem("theme");
+  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
+
+<style>
+/* ── DESIGN TOKENS — exact match dashboard-home ── */
+:root {
+  --bg:        #F0F2F8;
+  --surface:   #FFFFFF;
+  --surface2:  #F4F6FB;
+  --border:    #E2E8F2;
+  --text:      #0F172A;
+  --text2:     #5A6785;
+  --text3:     #94A3B8;
+  --accent:    #5B5BF6;
+  --accent2:   #7C3AED;
+  --green:     #10B981;
+  --orange:    #F97316;
+  --red:       #EF4444;
+  --header-bg: rgba(240,242,248,0.97);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.07);
+  --shadow:    0 4px 16px rgba(0,0,0,0.09);
+  --shadow-md: 0 8px 28px rgba(0,0,0,0.12);
+  --t: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg:        #0D1120;
+  --surface:   #151E32;
+  --surface2:  #1A2440;
+  --border:    rgba(255,255,255,0.08);
+  --text:      #E8F0FE;
+  --text2:     #8B9EC8;
+  --text3:     #3D5080;
+  --header-bg: rgba(13,17,32,0.97);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.35);
+  --shadow:    0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.55);
+}
+
+/* ── RESET ── */
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+html { background: var(--bg); overscroll-behavior: none; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    animation: pageIn 0.25s ease;
+}
+@keyframes pageIn { from { opacity:0; } to { opacity:1; } }
+
+/* ── HEADER ── */
+.fixed-timer-header {
+    position: sticky;
+    top: 0; left: 0; width: 100%;
+    background: var(--header-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 9999;
+    padding: 14px 18px;
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    margin: 0;
+    letter-spacing: -0.1px;
+}
+.header-title i { color: var(--green); font-size: 15px; }
+
+/* ── TOAST ── */
+.custom-toast {
+    position: fixed;
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--green);
+    color: var(--text);
+    padding: 13px 22px;
+    border-radius: 14px;
+    font-weight: 600; font-size: 13.5px;
+    box-shadow: var(--shadow-md);
+    z-index: 10000;
+    transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: flex; align-items: center; gap: 10px;
+    white-space: nowrap;
+}
+[data-theme="dark"] .custom-toast { background: var(--surface2); }
+.custom-toast.show { top: 80px; }
+
+/* ── FRIENDS BUTTON WRAPPER ── */
+.friends-btn-wrapper {
+    width: 100%; max-width: 500px;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.study-friends-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 12px; font-weight: 600;
+    text-decoration: none; transition: var(--t);
+    box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .study-friends-btn { background: #fff; }
+.study-friends-btn i { color: var(--green); }
+.study-friends-btn:active { transform: scale(0.94); }
+
+/* ── TIMER SECTION ── */
+.timer-section {
+    text-align: center;
+    padding: 0 5% 40px 5%;
+    display: flex; flex-direction: column;
+    align-items: center; width: 100%;
+}
+
+/* ── RING WRAPPER ── */
+.timer-ring-wrapper {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px;
+    width: 380px; height: 380px;
+}
+
+.timer-ring-svg {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: visible;
+}
+
+/* idle ring — dashboard indigo/purple */
+.ring-track {
+    fill: none;
+    stroke: rgba(91,91,246,0.10);
+    stroke-width: 3;
+}
+.ring-deco {
+    fill: none;
+    stroke: rgba(91,91,246,0.18);
+    stroke-width: 1.5;
+    stroke-dasharray: 12 8;
+    animation: rotateDeco 18s linear infinite;
+    transform-origin: 190px 190px;
+}
+.ring-outer-glow {
+    fill: none;
+    stroke: rgba(91,91,246,0.05);
+    stroke-width: 12;
+}
+@keyframes rotateDeco {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* running ring — green */
+.running-ring .ring-track { stroke: rgba(16,185,129,0.12); }
+.running-ring .ring-deco  { stroke: rgba(16,185,129,0.22); animation-duration: 10s; }
+
+/* ── TIMER CIRCLE ── */
+.timer-container {
+    position: relative; z-index: 1;
+    background: var(--surface);
+    border: 2.5px solid rgba(91,91,246,0.25);
+    box-shadow: var(--shadow-md), inset 0 2px 0 rgba(255,255,255,0.06);
+    border-radius: 50%;
+    width: 320px; height: 320px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+[data-theme="dark"] .timer-container {
+    background: rgba(21,30,50,0.95);
+    border-color: rgba(91,91,246,0.28);
+}
+[data-theme="light"] .timer-container {
+    background: #fff;
+    border-color: rgba(91,91,246,0.22);
+}
+
+/* running state */
+.timer-container.running {
+    border-color: rgba(16,185,129,0.45);
+    box-shadow:
+        0 0 0 1px rgba(16,185,129,0.08),
+        0 0 32px rgba(16,185,129,0.12),
+        var(--shadow-md),
+        inset 0 2px 0 rgba(255,255,255,0.05);
+}
+
+/* ── TIMER TEXT ── */
+.timer {
+    font-size: 54px; font-weight: 800;
+    color: var(--accent);
+    line-height: 1; letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+    width: 100%; text-align: center;
+    transition: color 0.4s ease;
+}
+[data-theme="light"] .timer { color: var(--accent); }
+[data-theme="dark"]  .timer { color: #A5B4FC; }
+
+.timer-container.running .timer { color: var(--green); }
+
+.timer-tap-hint {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 8px; letter-spacing: 0.3px;
+    display: none;
+}
+.timer-container.running .timer-tap-hint { color: rgba(16,185,129,0.5); }
+
+/* ── TIME INPUT SECTION ── */
+.custom-time-container {
+    display: flex; justify-content: center; align-items: center;
+    gap: 8px; margin-bottom: 16px;
+    background: var(--surface);
+    padding: 10px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    width: 100%; max-width: 340px;
+}
+[data-theme="light"] .custom-time-container { background: #fff; }
+
+.time-input {
+    width: 64px; padding: 9px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 15px; font-weight: 700;
+    text-align: center; outline: none;
+    transition: var(--t);
+}
+[data-theme="light"] .time-input { background: #F4F6FB; }
+.time-input::placeholder { color: var(--text3); font-weight: 500; font-size: 12px; }
+.time-input:focus { border-color: var(--accent); background: var(--surface); }
+
+.colon { font-size: 20px; font-weight: 800; color: var(--text3); }
+
+/* ── BUTTONS ── */
+.btn {
+    margin: 5px; padding: 12px 28px;
+    border: none; border-radius: 12px;
+    cursor: pointer; font-weight: 700;
+    color: #fff; font-size: 14px;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+    box-shadow: 0 4px 14px rgba(91,91,246,0.3);
+}
+.btn:active { transform: scale(0.97); }
+
+.set-btn {
+    padding: 9px 18px; font-size: 13px;
+    background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+    box-shadow: 0 3px 10px rgba(91,91,246,0.28);
+}
+
+.pause-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--orange);
+    box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .pause-btn { background: #fff; }
+.pause-btn:active { background: var(--surface2); transform: scale(0.97); }
+
+.reset-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--red);
+    box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .reset-btn { background: #fff; }
+.reset-btn:active { background: var(--surface2); transform: scale(0.97); }
+
+.controls {
+    margin-bottom: 16px;
+    display: flex; gap: 2px;
+}
+
+/* Back button */
+.btn[onclick*="index"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600; font-size: 13px;
+    padding: 10px 22px;
+}
+[data-theme="light"] .btn[onclick*="index"] { background: #fff; }
+.btn[onclick*="index"]:active { transform: scale(0.97); opacity: 0.8; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 380px) {
+    .timer-ring-wrapper { width: 310px; height: 310px; }
+    .timer-ring-svg     { width: 310px; height: 310px; }
+    .timer-container    { width: 260px; height: 260px; }
+    .timer              { font-size: 46px; }
+}
+@media (min-width: 768px) {
+    .timer-ring-wrapper { width: 460px; height: 460px; }
+    .timer-ring-svg     { width: 460px; height: 460px; }
+    .timer-container    { width: 390px; height: 390px; }
+    .timer              { font-size: 80px; }
+}
+</style>
+</head>
+<body>
+
+<div id="customToast" class="custom-toast">
+    <i class="fa-solid fa-bell"></i> <span id="toastMessage">Message</span>
+</div>
+
+<div class="fixed-timer-header">
+    <h2 class="header-title"><i class="fa-solid fa-stopwatch"></i> Timer</h2>
+</div>
+
+<div class="friends-btn-wrapper">
+    <a href="timer.html" class="study-friends-btn">
+       <i class="fa-solid fa-users" style="font-size:11px;"></i> Study with Friends
+    </a>
+</div>
+
+<section class="timer-section">
+
+<!-- ✅ Ring wrapper + decorative SVG ring (purely visual) -->
+<div class="timer-ring-wrapper" id="ringWrapper">
+
+    <!-- Decorative rings — behind the timer circle -->
+    <svg class="timer-ring-svg" id="timerRingSvg" viewBox="0 0 380 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer soft glow ring -->
+        <circle class="ring-outer-glow" cx="190" cy="190" r="178"/>
+        <!-- Solid track ring -->
+        <circle class="ring-track" cx="190" cy="190" r="170"/>
+        <!-- Dashed rotating decoration ring -->
+        <circle class="ring-deco" cx="190" cy="190" r="162"/>
+    </svg>
+
+    <!-- Timer circle (existing, logic unchanged) -->
+    <div class="timer-container" id="timerBox" onclick="toggleTimer()">
+        <div class="timer" id="timer">00:00:00</div>
+        <div class="timer-tap-hint" id="tapHint">tap to pause</div>
+    </div>
+
+</div>
+
+<div class="custom-time-container">
+    <input type="number" id="customHours" class="time-input" placeholder="Hrs" min="0">
+    <span class="colon">:</span>
+    <input type="number" id="customMinutes" class="time-input" placeholder="Min" min="0">
+    <button class="btn set-btn" onclick="startCustomTime()">Set</button>
+</div>
+
+<div class="controls">
+    <button class="btn pause-btn" id="pauseBtn" onclick="pauseTimer()">Pause</button>
+    <button class="btn reset-btn" onclick="resetTimer()">Reset</button>
+</div>
+
+<button class="btn" style="margin-top: 10px;" onclick="window.location.href='index.html'">
+<i class="fa-solid fa-chevron-left" style="font-size:12px;"></i> Back
+</button>
+
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+});
+
+let timerInterval;
+let time = 0;
+let isPaused = false;
+let targetEndTime = 0;
+const timerBox = document.getElementById("timerBox");
+
+// ✅ Tell SW to schedule a background notification for when timer ends
+function scheduleSwNotification() {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'SCHEDULE_NOTIFICATION',
+            id: 'focus_timer',
+            endTime: targetEndTime,
+            title: 'Study Timer',
+            body: 'Session Completed \uD83D\uDE80 Great Job!',
+            url: '/focus.html'
+        });
+    }
+}
+
+// ✅ Cancel SW background notification (when page is open and handles it itself)
+function cancelSwNotification() {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'CANCEL_NOTIFICATION',
+            id: 'focus_timer'
+        });
+    }
+}
+
+function updateTapHint() {
+    const hint = document.getElementById("tapHint");
+    if (!hint) return;
+    hint.style.display = (time > 0) ? "block" : "none";
+}
+
+// ── Sync decorative ring color to running state ──
+function syncRingState(running) {
+    const svg = document.getElementById("timerRingSvg");
+    if (!svg) return;
+    if (running) {
+        svg.classList.add("running-ring");
+    } else {
+        svg.classList.remove("running-ring");
+    }
+}
+
+// --- INITIAL LOAD (Refresh Handle) ---
+window.onload = () => {
+    loadSavedTimer();
+};
+
+function saveTimerState() {
+    localStorage.setItem("uw_timerState", JSON.stringify({
+        time: time,
+        isPaused: isPaused,
+        targetEndTime: targetEndTime
+    }));
+}
+
+function clearTimerState() {
+    localStorage.removeItem("uw_timerState");
+}
+
+function loadSavedTimer() {
+    const saved = JSON.parse(localStorage.getItem("uw_timerState"));
+    if (saved) {
+        isPaused = saved.isPaused;
+        targetEndTime = saved.targetEndTime;
+
+        if (isPaused) {
+            time = saved.time;
+            if (time > 0) {
+                displayTime(time);
+                document.getElementById("pauseBtn").innerText = "Resume";
+                updateTapHint();
+            }
+        } else {
+            if (targetEndTime > Date.now()) {
+                time = Math.floor((targetEndTime - Date.now()) / 1000);
+                startTimer(time, true);
+            } else if (targetEndTime > 0 && targetEndTime <= Date.now()) {
+                clearTimerState();
+                displayTime(0);
+                showToast("Session Completed while you were away! \uD83D\uDE80", true);
+                sendNotification("Study Timer", "Session Completed while you were away \uD83D\uDE80");
+            }
+        }
+    }
+}
+
+function showToast(msg, isSuccess = false) {
+    const toast = document.getElementById("customToast");
+    const toastMsg = document.getElementById("toastMessage");
+    toastMsg.innerText = msg;
+    toast.style.borderLeftColor = isSuccess ? "#00ff88" : "#ff4757";
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+function sendNotification(title, message) {
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, {
+                body: message,
+                icon: "/icon-192.png",
+                badge: "/icon-192.png",
+                vibrate: [200, 100, 200],
+                requireInteraction: true,
+                data: { url: "/focus.html" }
+            });
+        });
+    }
+}
+
+function startCustomTime() {
+    let hrs = parseInt(document.getElementById("customHours").value) || 0;
+    let mins = parseInt(document.getElementById("customMinutes").value) || 0;
+    let totalSeconds = (hrs * 3600) + (mins * 60);
+
+    if (totalSeconds > 0) {
+        startTimer(totalSeconds);
+        document.getElementById("customHours").value = "";
+        document.getElementById("customMinutes").value = "";
+    } else {
+        showToast("Bhai thoda time toh enter karo! \uD83D\uDE05");
+    }
+}
+
+function startTimer(duration, isResumeFromRefresh = false) {
+    clearInterval(timerInterval);
+
+    if (duration) {
+        time = duration;
+        isPaused = false;
+        document.getElementById("pauseBtn").innerText = "Pause";
+    }
+
+    if (!isResumeFromRefresh) {
+        targetEndTime = Date.now() + (time * 1000);
+    }
+
+    // ✅ Show correct full time FIRST before any interval fires
+    displayTime(time);
+    timerBox.classList.add("running");
+    syncRingState(true);
+    updateTapHint();
+    saveTimerState();
+
+    // ✅ Schedule SW notification so it fires even if app is closed
+    scheduleSwNotification();
+
+    // ✅ 200ms interval — delta-time based, so always accurate
+    timerInterval = setInterval(() => {
+        const remaining = Math.floor((targetEndTime - Date.now()) / 1000);
+
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            time = 0;
+            displayTime(0);
+            timerBox.classList.remove("running");
+            syncRingState(false);
+            updateTapHint();
+            clearTimerState();
+            // ✅ Cancel SW notification (page is open, we handle it here)
+            cancelSwNotification();
+            showToast("Session Complete! Great job. \uD83D\uDE80", true);
+            sendNotification("Study Timer", "Session Completed \uD83D\uDE80 Great Job!");
+            return;
+        }
+
+        // Only re-render when second actually changes
+        if (remaining !== time) {
+            time = remaining;
+            displayTime(time);
+            saveTimerState();
+        }
+    }, 200);
+}
+
+function pauseTimer() {
+    let btn = document.getElementById("pauseBtn");
+    if (time === 0) return;
+
+    if (!isPaused) {
+        clearInterval(timerInterval);
+        btn.innerText = "Resume";
+        isPaused = true;
+        timerBox.classList.remove("running");
+        syncRingState(false);
+        time = Math.floor((targetEndTime - Date.now()) / 1000);
+        // ✅ Cancel SW notification while paused
+        cancelSwNotification();
+        saveTimerState();
+    } else {
+        targetEndTime = Date.now() + (time * 1000);
+        isPaused = false;
+        startTimer(time, true);
+        btn.innerText = "Pause";
+    }
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    // ✅ Cancel any pending SW background notification
+    cancelSwNotification();
+    time = 0;
+    isPaused = false;
+    targetEndTime = 0;
+    document.getElementById("pauseBtn").innerText = "Pause";
+    document.getElementById("timer").innerHTML = "00:00:00";
+    timerBox.classList.remove("running");
+    syncRingState(false);
+    updateTapHint();
+    clearTimerState();
+}
+
+function toggleTimer() {
+    if (time > 0) {
+        pauseTimer();
+    }
+}
+
+function displayTime(t) {
+    let h = Math.floor(t / 3600);
+    let m = Math.floor((t % 3600) / 60);
+    let s = t % 60;
+    document.getElementById("timer").innerHTML =
+        (h < 10 ? "0" : "") + h + ":" +
+        (m < 10 ? "0" : "") + m + ":" +
+        (s < 10 ? "0" : "") + s;
+}
+</script>
+</body>
+</html>
+
