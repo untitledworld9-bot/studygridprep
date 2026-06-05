@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>My Progress – Study Grid Prep</title>
+<link rel="icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Instant theme — same as dashboard-home.html -->
+<script>
+(function(){
+  var saved = localStorage.getItem("theme");
+  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
+
+<style>
+/* ── DESIGN TOKENS — exact dashboard-home.html ── */
+:root {
+  --bg:         #F0F2F8;
+  --surface:    #FFFFFF;
+  --surface2:   #F4F6FB;
+  --border:     #E2E8F2;
+  --text:       #0F172A;
+  --text2:      #5A6785;
+  --text3:      #94A3B8;
+  --accent:     #5B5BF6;
+  --accent2:    #7C3AED;
+  --green:      #10B981;
+  --orange:     #F97316;
+  --red:        #EF4444;
+  --gold:       #F59E0B;
+  --header-bg:  rgba(240,242,248,0.97);
+  --header-h:   60px;
+  --shadow-sm:  0 1px 6px rgba(0,0,0,0.07);
+  --shadow:     0 4px 16px rgba(0,0,0,0.09);
+  --shadow-md:  0 8px 28px rgba(0,0,0,0.12);
+  --t:          0.2s ease;
+}
+[data-theme="dark"] {
+  --bg:         #0D1120;
+  --surface:    #151E32;
+  --surface2:   #1A2440;
+  --border:     rgba(255,255,255,0.08);
+  --text:       #E8F0FE;
+  --text2:      #8B9EC8;
+  --text3:      #3D5080;
+  --header-bg:  rgba(13,17,32,0.97);
+  --gold:       #FBBF24;
+  --shadow-sm:  0 1px 6px rgba(0,0,0,0.35);
+  --shadow:     0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.55);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box; margin: 0; padding: 0;
+  font-family: 'Poppins', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none;
+}
+html { background: var(--bg); overscroll-behavior: none; }
+body {
+  background: var(--bg); color: var(--text);
+  min-height: 100dvh; overscroll-behavior: none;
+  padding-bottom: 32px;
+  animation: pageIn 0.25s ease;
+}
+@keyframes pageIn { from { opacity:0; } to { opacity:1; } }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── HEADER — same as mainleaderboard.html ── */
+.header {
+  position: sticky; top: 0; left: 0; right: 0;
+  height: var(--header-h); z-index: 9999;
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 18px;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-sm);
+}
+.back-btn {
+  width: 36px; height: 36px; border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: var(--t); text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"]  .back-btn { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); }
+[data-theme="light"] .back-btn { background: #fff; border-color: rgba(0,0,0,0.08); }
+.back-btn:active { transform: scale(0.92); opacity: 0.8; }
+.header-info { flex: 1; min-width: 0; }
+.header-label {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--accent); opacity: 0.7; line-height: 1;
+}
+.header-title {
+  font-size: 17px; font-weight: 800;
+  color: var(--text); letter-spacing: -0.3px; line-height: 1.25;
+}
+.header-refresh {
+  width: 36px; height: 36px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--t); box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"]  .header-refresh { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); }
+[data-theme="light"] .header-refresh { background: #fff; border-color: rgba(0,0,0,0.08); }
+.header-refresh:active { transform: scale(0.9); }
+.header-refresh.spinning i { animation: spin 0.8s linear infinite; }
+
+/* ── SCROLL WRAP ── */
+.scroll-wrap {
+  padding-top: 18px; padding-bottom: 32px;
+  max-width: 480px; margin: 0 auto;
+  padding-left: 14px; padding-right: 14px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── SECTION LABEL — dashboard-home style ── */
+.section-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.9px;
+  display: flex; align-items: center; gap: 5px;
+  padding: 0 2px; margin-bottom: -4px;
+}
+.section-label i { font-size: 9px; }
+
+/* ── STAT SUMMARY CARD — same as my-card in mainleaderboard ── */
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px 18px 16px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.4s ease;
+  position: relative; overflow: hidden;
+}
+[data-theme="light"] .summary-card { background: #fff; border: 1.5px solid rgba(91,91,246,0.18); }
+[data-theme="dark"]  .summary-card {
+  background: linear-gradient(135deg, rgba(91,91,246,0.08), rgba(124,58,237,0.05));
+  border-color: rgba(91,91,246,0.2);
+}
+.summary-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.summary-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.summary-avatar {
+  width: 50px; height: 50px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(91,91,246,0.35);
+}
+.summary-info { flex: 1; min-width: 0; }
+.summary-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.summary-badge { font-size: 11.5px; color: var(--gold); margin-top: 2px; font-weight: 600; }
+
+/* stat chips */
+.stat-chips { display: flex; gap: 8px; }
+.stat-chip {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 9px 8px; text-align: center;
+}
+.stat-chip-val { font-size: 17px; font-weight: 800; color: var(--accent); }
+.stat-chip-val.orange { color: var(--orange); }
+.stat-chip-val.green  { color: var(--green); }
+.stat-chip-lbl { font-size: 9.5px; color: var(--text3); margin-top: 2px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+
+/* XP pills */
+.xp-breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.xp-pill {
+  font-size: 10.5px; font-weight: 600;
+  padding: 4px 10px; border-radius: 50px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.xp-pill.study { background: rgba(91,91,246,0.08); color: var(--accent); border: 1px solid rgba(91,91,246,0.2); }
+.xp-pill.timer { background: rgba(249,115,22,0.08); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+.xp-pill.focus { background: rgba(16,185,129,0.08); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+
+/* Level bar */
+.level-wrap { margin-top: 12px; }
+.level-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.level-label { font-size: 12px; font-weight: 700; color: var(--text); }
+.level-pct   { font-size: 11px; color: var(--text2); font-weight: 600; }
+.level-track { height: 7px; border-radius: 50px; background: var(--border); overflow: hidden; }
+.level-fill  {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 1s cubic-bezier(0.34,1.56,0.64,1); width: 0%;
+}
+
+/* ── CHART CARD ── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px 18px 14px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.45s ease 0.1s both;
+}
+[data-theme="light"] .chart-card { background: #fff; }
+.chart-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.chart-card-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+.chart-card-sub   { font-size: 11px; color: var(--text3); margin-bottom: 14px; font-weight: 500; }
+
+/* Sync badge */
+.sync-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 600; color: var(--text3);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 50px; padding: 3px 10px;
+}
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); transition: background 0.3s; }
+.sync-badge.live  .sync-dot { background: var(--green); }
+.sync-badge.error .sync-dot { background: var(--red); }
+
+/* Tab switcher */
+.chart-tabs {
+  display: flex; gap: 5px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 3px; margin-bottom: 14px;
+}
+.chart-tab {
+  flex: 1; padding: 6px 0;
+  font-size: 11px; font-weight: 700; border-radius: 8px;
+  border: none; background: transparent; cursor: pointer;
+  color: var(--text3); transition: var(--t);
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.chart-tab.active {
+  background: var(--surface); color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .chart-tab.active { background: #fff; }
+.chart-tab:active { transform: scale(0.97); }
+
+.chart-wrap { position: relative; height: 200px; width: 100%; }
+
+/* ── 7-WEEK ANALYSIS ── */
+.week-analysis-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.5s ease 0.15s both;
+}
+[data-theme="light"] .week-analysis-card { background: #fff; }
+.week-analysis-card::before {
+  content: '';
+  display: block; height: 3px;
+  background: linear-gradient(90deg, var(--green), var(--accent));
+}
+
+.week-analysis-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.week-analysis-title-wrap { display: flex; flex-direction: column; }
+.week-analysis-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+.week-analysis-sub   { font-size: 10.5px; color: var(--text3); margin-top: 1px; font-weight: 500; }
+.week-total-badge {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+}
+.week-total-num  { font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; line-height: 1; }
+.week-total-lbl  { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Day rows */
+.week-days-list { display: flex; flex-direction: column; }
+.week-day-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s ease;
+  position: relative;
+}
+.week-day-row:last-child { border-bottom: none; }
+.week-day-row:active { background: var(--surface2); }
+.week-day-row.active-day { background: rgba(91,91,246,0.05); }
+[data-theme="light"] .week-day-row.active-day { background: rgba(91,91,246,0.04); }
+
+/* Left: day label */
+.day-col-label {
+  width: 42px; flex-shrink: 0;
+}
+.day-name { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1; }
+.day-date { font-size: 9.5px; color: var(--text3); font-weight: 500; margin-top: 1px; }
+
+/* Middle: bar */
+.day-bar-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.day-bar-track {
+  height: 6px; border-radius: 50px;
+  background: var(--border); overflow: hidden;
+}
+.day-bar-fill {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  width: 0%;
+}
+.day-bar-fill.streak { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+.day-mini-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+.day-mini-pill {
+  font-size: 9px; font-weight: 700;
+  padding: 2px 7px; border-radius: 50px;
+  display: inline-flex; align-items: center; gap: 3px; line-height: 1.4;
+}
+.day-mini-pill.xp    { background: rgba(91,91,246,0.09); color: var(--accent); }
+.day-mini-pill.timer { background: rgba(249,115,22,0.09); color: var(--orange); }
+.day-mini-pill.streak { background: rgba(245,158,11,0.09); color: var(--gold); }
+
+/* Right: today indicator */
+.day-today-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(91,91,246,0.2);
+  display: none;
+}
+.week-day-row.active-day .day-today-dot { display: block; }
+
+/* Empty state */
+.day-empty { font-size: 10px; color: var(--text3); font-style: italic; font-weight: 500; }
+
+/* ── INFO STRIP ── */
+.info-strip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp 0.5s ease 0.2s both;
+}
+[data-theme="light"] .info-strip { background: #fff; }
+.info-strip-icon {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: rgba(91,91,246,0.10);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.info-strip-icon i { color: var(--accent); font-size: 13px; }
+.info-strip-text { font-size: 12px; color: var(--text2); line-height: 1.55; font-weight: 500; }
+.info-strip-text strong { color: var(--text); font-weight: 700; }
+
+/* ── SKELETON LOADER ── */
+.skeleton {
+  background: var(--border);
+  border-radius: 8px;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.45; }
+  100% { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER — same structure as mainleaderboard.html -->
+<header class="header">
+  <a href="javascript:history.back()" class="back-btn" title="Back">
+    <i class="fa-solid fa-arrow-left" style="font-size:13px;"></i>
+  </a>
+  <div class="header-info">
+    <div class="header-title">My Progress</div>
+  </div>
+  <button class="header-refresh" id="refreshBtn" title="Refresh" onclick="refreshAll()">
+    <i class="fa-solid fa-rotate-right" style="font-size:13px;"></i>
+  </button>
+</header>
+
+<main class="scroll-wrap">
+
+  <!-- ── SECTION: Summary ── -->
+  <div class="section-label">
+    <i class="fa-solid fa-user"></i> Your Stats
+  </div>
+
+  <!-- Summary card (my-card style from mainleaderboard) -->
+  <div class="summary-card">
+    <div class="summary-top">
+      <div class="summary-avatar" id="summaryAvatar">?</div>
+      <div class="summary-info">
+        <div class="summary-name" id="summaryName">Loading...</div>
+        <div class="summary-badge" id="summaryBadge"></div>
+      </div>
+    </div>
+
+    <div class="stat-chips">
+      <div class="stat-chip">
+        <div class="stat-chip-val" id="chipTotalXP">—</div>
+        <div class="stat-chip-lbl">Total XP</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val orange" id="chipStreak">—</div>
+        <div class="stat-chip-lbl"><i class="fa-solid fa-fire" style="font-size:8px;"></i> Streak</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-val green" id="chipFocus">—</div>
+        <div class="stat-chip-lbl">Focus min</div>
+      </div>
+    </div>
+
+    <div class="xp-breakdown">
+      <span class="xp-pill study">
+        <i class="fa-solid fa-book-open" style="font-size:8px;"></i>
+        Study: <b id="pillStudyXP">0</b>
+      </span>
+      <span class="xp-pill timer">
+        <i class="fa-solid fa-stopwatch" style="font-size:8px;"></i>
+        Timer: <b id="pillTimerXP">0</b>
+      </span>
+      <span class="xp-pill focus">
+        <i class="fa-solid fa-bolt" style="font-size:8px;"></i>
+        Videos: <b id="pillVideos">0</b>
+      </span>
+    </div>
+
+    <div class="level-wrap">
+      <div class="level-row">
+        <div class="level-label" id="levelLabel">Level 1</div>
+        <div class="level-pct"   id="levelPct">0%</div>
+      </div>
+      <div class="level-track">
+        <div class="level-fill" id="levelFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION: Charts ── -->
+  <div class="section-label">
+    <i class="fa-solid fa-chart-simple"></i> Weekly Overview
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-header">
+      <div class="chart-card-title">Activity This Week</div>
+      <div class="sync-badge" id="syncBadge">
+        <span class="sync-dot"></span>
+        <span id="syncText">Loading…</span>
+      </div>
+    </div>
+    <div class="chart-card-sub">Daily consistency over the last 7 days</div>
+
+    <!-- Tab switcher -->
+    <div class="chart-tabs">
+      <button class="chart-tab active" id="tab-xp" onclick="switchTab('xp')">
+        <i class="fa-solid fa-star" style="font-size:9px;"></i> XP
+      </button>
+      <button class="chart-tab" id="tab-videos" onclick="switchTab('videos')">
+        <i class="fa-solid fa-play" style="font-size:9px;"></i> Videos
+      </button>
+      <button class="chart-tab" id="tab-focus" onclick="switchTab('focus')">
+        <i class="fa-solid fa-stopwatch" style="font-size:9px;"></i> Focus
+      </button>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="studyChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ── SECTION: 7-Day Analysis ── -->
+  <div class="section-label">
+    <i class="fa-solid fa-calendar-week"></i> 7-Day Breakdown
+  </div>
+
+  <div class="week-analysis-card">
+    <div class="week-analysis-header">
+      <div class="week-analysis-title-wrap">
+        <div class="week-analysis-title">Daily Activity Log</div>
+        <div class="week-analysis-sub">Tap a day to highlight</div>
+      </div>
+      <div class="week-total-badge">
+        <div class="week-total-num" id="weekTotalXP">0</div>
+        <div class="week-total-lbl">Week XP</div>
+      </div>
+    </div>
+
+    <div class="week-days-list" id="weekDaysList">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-strip-icon">
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+    </div>
+    <div class="info-strip-text">
+      <strong>Cloud synced.</strong> Your progress is saved across all your devices automatically.
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+  authDomain: "untitled-world-2e645.firebaseapp.com",
+  projectId: "untitled-world-2e645",
+  storageBucket: "untitled-world-2e645.firebasestorage.app",
+  messagingSenderId: "990115586087",
+  appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── Helpers ─────────────────────────────────────────────────────────
+function isDark() { return document.documentElement.getAttribute("data-theme") === "dark"; }
+
+function nameInitial(name) {
+  if (!name) return "?";
+  return name.trim()[0].toUpperCase();
+}
+
+const XP_THRESHOLDS = [0,50,150,300,500,800,1200,1800,2500,3500];
+function getLevel(xp) {
+  for (let i = XP_THRESHOLDS.length - 1; i >= 0; i--)
+    if (xp >= XP_THRESHOLDS[i]) return i + 1;
+  return 1;
+}
+function getLevelPct(xp) {
+  const lv = getLevel(xp);
+  const from = XP_THRESHOLDS[lv - 1] || 0;
+  const to   = XP_THRESHOLDS[lv]     || XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
+  if (to === from) return 100;
+  return Math.round(((xp - from) / (to - from)) * 100);
+}
+function getBadge(xp) {
+  if (xp >= 800)  return "🏆 Study Grid Champion";
+  if (xp >= 500)  return "⚡ Study Master";
+  if (xp >= 300)  return "🔥 Focused Learner";
+  if (xp >= 150)  return "⭐ Rising Learner";
+  if (xp >= 50)   return "📖 New Scholar";
+  return "🌱 Just Getting Started";
+}
+
+// ── Sync badge ───────────────────────────────────────────────────────
+function setBadge(state, text) {
+  const b = document.getElementById("syncBadge");
+  const t = document.getElementById("syncText");
+  b.className = "sync-badge" + (state ? " " + state : "");
+  t.textContent = text;
+}
+
+// ── Chart ────────────────────────────────────────────────────────────
+let chartInst = null;
+let chartData = { xp: [0,0,0,0,0,0,0], videos: [0,0,0,0,0,0,0], focus: [0,0,0,0,0,0,0] };
+let activeTab = "xp";
+
+const TAB_CONFIG = {
+  xp:     { label: "XP Earned",        color: "#5B5BF6", color2: "#7C3AED" },
+  videos: { label: "Videos Completed", color: "#10B981", color2: "#059669" },
+  focus:  { label: "Focus Minutes",    color: "#F97316", color2: "#EA580C"  }
+};
+
+const DAY_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function renderChart(tab) {
+  const canvas = document.getElementById("studyChart");
+  const ctx    = canvas.getContext("2d");
+  if (chartInst) { chartInst.destroy(); }
+
+  const cfg  = TAB_CONFIG[tab];
+  const data = chartData[tab];
+  const dark = isDark();
+
+  const tick  = dark ? "rgba(255,255,255,0.6)" : "#5A6785";
+  const grid  = dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)";
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 200);
+  grad.addColorStop(0, cfg.color);
+  grad.addColorStop(1, cfg.color + "28");
+
+  // Highlight today's bar
+  const today = new Date().getDay();
+  const bgColors = data.map((_, i) =>
+    i === today ? cfg.color : (dark ? cfg.color + "60" : cfg.color + "80")
+  );
+  const borderColors = data.map((_, i) => cfg.color);
+
+  chartInst = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: DAY_LABELS,
+      datasets: [{
+        label: cfg.label,
+        data,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 1.5,
+        borderRadius: 8,
+        borderSkipped: false,
+        hoverBackgroundColor: cfg.color2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 700, easing: "easeOutQuart" },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks:  { color: tick, font: { size: 11, family: "Poppins" }, maxTicksLimit: 5 },
+          grid:   { color: grid }
+        },
+        x: {
+          ticks: {
+            color: (ctx2) => ctx2.index === today ? cfg.color : tick,
+            font: (ctx2) => ({ size: 11, family: "Poppins", weight: ctx2.index === today ? "700" : "500" })
+          },
+          grid: { display: false }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: dark ? "rgba(21,30,50,0.97)" : "rgba(255,255,255,0.97)",
+          titleColor:      dark ? "#E8F0FE" : "#0F172A",
+          bodyColor:       dark ? "#8B9EC8" : "#5A6785",
+          borderColor:     cfg.color + "44",
+          borderWidth:     1,
+          titleFont: { family: "Poppins", weight: "700", size: 13 },
+          bodyFont:  { family: "Poppins", size: 12 },
+          cornerRadius: 12, padding: 12,
+          callbacks: {
+            title: (items) => DAY_LABELS[items[0].dataIndex],
+            label: (item)  => ` ${item.raw} ${cfg.label.toLowerCase()}`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Tab switch ────────────────────────────────────────────────────────
+window.switchTab = function(tab) {
+  activeTab = tab;
+  ["xp","videos","focus"].forEach(t => {
+    document.getElementById("tab-" + t).classList.toggle("active", t === tab);
+  });
+  renderChart(tab);
+};
+
+// ── 7-Day analysis ───────────────────────────────────────────────────
+function buildWeekDays(xpArr, videosArr, focusArr) {
+  const today = new Date();
+  const weekTotal = xpArr.reduce((a, b) => a + b, 0);
+  document.getElementById("weekTotalXP").textContent = weekTotal;
+
+  const todayIdx = today.getDay();
+  const maxXP = Math.max(...xpArr, 1);
+
+  let html = "";
+  for (let offset = 6; offset >= 0; offset--) {
+    const d      = new Date(today);
+    d.setDate(today.getDate() - offset);
+    const dayIdx = d.getDay();
+    const xp     = xpArr[dayIdx]    || 0;
+    const vids   = videosArr[dayIdx] || 0;
+    const focus  = focusArr[dayIdx]  || 0;
+    const isToday = offset === 0;
+
+    const barPct  = maxXP > 0 ? Math.round((xp / maxXP) * 100) : 0;
+    const dayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dayIdx];
+    const dateStr = d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+
+    const hasActivity = xp > 0 || vids > 0 || focus > 0;
+
+    const pills = hasActivity
+      ? `${xp > 0    ? `<span class="day-mini-pill xp"><i class="fa-solid fa-star" style="font-size:7px;"></i>${xp} XP</span>` : ""}
+         ${vids > 0  ? `<span class="day-mini-pill timer"><i class="fa-solid fa-play" style="font-size:7px;"></i>${vids} video${vids > 1 ? "s" : ""}</span>` : ""}
+         ${focus > 0 ? `<span class="day-mini-pill streak"><i class="fa-solid fa-stopwatch" style="font-size:7px;"></i>${focus}m</span>` : ""}`
+      : `<span class="day-empty">No activity</span>`;
+
+    html += `
+      <div class="week-day-row${isToday ? " active-day" : ""}" onclick="highlightDay(this)" id="day-row-${offset}">
+        <div class="day-col-label">
+          <div class="day-name">${dayName}</div>
+          <div class="day-date">${dateStr}</div>
+        </div>
+        <div class="day-bar-wrap">
+          <div class="day-bar-track">
+            <div class="day-bar-fill" style="width:${barPct}%"></div>
+          </div>
+          <div class="day-mini-pills">${pills}</div>
+        </div>
+        <div class="day-today-dot"></div>
+      </div>`;
+  }
+
+  document.getElementById("weekDaysList").innerHTML = html;
+  // Animate bars in after insert
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".day-bar-fill").forEach(el => {
+      const w = el.style.width; el.style.width = "0%";
+      requestAnimationFrame(() => { el.style.width = w; });
+    });
+  });
+}
+
+// ── Highlight day row ─────────────────────────────────────────────────
+window.highlightDay = function(row) {
+  document.querySelectorAll(".week-day-row").forEach(r => r.classList.remove("active-day"));
+  row.classList.add("active-day");
+};
+
+// ── Summary card ──────────────────────────────────────────────────────
+function renderSummary(name, totalXP, studyXP, timerXP, streak, focusTime, videosTotal) {
+  const initial = nameInitial(name);
+  const level   = getLevel(totalXP);
+  const pct     = getLevelPct(totalXP);
+  const badge   = getBadge(totalXP);
+
+  document.getElementById("summaryAvatar").textContent  = initial;
+  document.getElementById("summaryName").textContent    = name || "Learner";
+  document.getElementById("summaryBadge").textContent   = badge;
+  document.getElementById("chipTotalXP").textContent    = totalXP;
+  document.getElementById("chipStreak").textContent     = streak + "🔥".replace("🔥","d");
+  document.getElementById("chipStreak").textContent     = streak;
+  document.getElementById("chipFocus").textContent      = focusTime;
+  document.getElementById("pillStudyXP").textContent    = studyXP;
+  document.getElementById("pillTimerXP").textContent    = timerXP;
+  document.getElementById("pillVideos").textContent     = videosTotal;
+  document.getElementById("levelLabel").textContent     = "Level " + level;
+  document.getElementById("levelPct").textContent       = pct + "%";
+  setTimeout(() => {
+    document.getElementById("levelFill").style.width = pct + "%";
+  }, 200);
+}
+
+// ── Refresh button ────────────────────────────────────────────────────
+window.refreshAll = function() {
+  const btn = document.getElementById("refreshBtn");
+  btn.classList.add("spinning");
+  loadData().finally(() => {
+    setTimeout(() => btn.classList.remove("spinning"), 600);
+  });
+};
+
+// ── Main data load ────────────────────────────────────────────────────
+async function loadData() {
+  setBadge("", "Loading…");
+
+  // --- Instantly render from localStorage (offline safe) ---
+  const localStudyXP  = parseInt(localStorage.getItem("uw_xp")         || "0", 10);
+  const localStreak   = parseInt(localStorage.getItem("uw_streak")      || "0", 10);
+  const localGraphRaw = localStorage.getItem("studyGraphData");
+  const localGraph    = localGraphRaw ? JSON.parse(localGraphRaw) : [0,0,0,0,0,0,0];
+  const localName     = localStorage.getItem("userName") || localStorage.getItem("displayName") || "Learner";
+
+  renderSummary(localName, localStudyXP, localStudyXP, 0, localStreak, 0, localGraph.reduce((a,b)=>a+b,0));
+  chartData.videos = localGraph;
+  chartData.xp     = localGraph.map(v => v * 5); // estimated
+  buildWeekDays(chartData.xp, chartData.videos, chartData.focus);
+  renderChart(activeTab);
+
+  // --- Firestore fetch ---
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      setBadge("", "Local data");
+      return;
+    }
+
+    // leaderboard doc has timerXP, focusTime, xp, streak
+    const [lbSnap] = await Promise.all([
+      getDoc(doc(db, "leaderboard", user.uid))
+    ]);
+
+    let studyXP  = localStudyXP;
+    let timerXP  = 0;
+    let focusTime = 0;
+    let streak   = localStreak;
+
+    if (lbSnap.exists()) {
+      const d = lbSnap.data();
+      timerXP   = d.timerXP   || 0;
+      focusTime = d.focusTime || 0;
+      studyXP   = d.xp        || localStudyXP;
+      streak    = d.streak    || localStreak;
+    }
+
+    const totalXP     = studyXP + timerXP;
+    const videosGraph = localGraph; // studyGraphData = videos per day
+    const xpGraph     = videosGraph.map(v => v * 10);
+    const focusGraph  = [0,0,0,0,0,0,0]; // placeholder — extend if focusLog stored
+    const videosTotal = videosGraph.reduce((a,b)=>a+b,0);
+
+    chartData.xp     = xpGraph;
+    chartData.videos = videosGraph;
+    chartData.focus  = focusGraph;
+
+    renderSummary(user.displayName || localName, totalXP, studyXP, timerXP, streak, focusTime, videosTotal);
+    buildWeekDays(xpGraph, videosGraph, focusGraph);
+    renderChart(activeTab);
+    setBadge("live", "Synced");
+
+  } catch (err) {
+    console.warn("[Progress] Firestore error:", err);
+    setBadge("error", "Offline — local data");
+  }
+}
+
+// ── Auth gate + load ─────────────────────────────────────────────────
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    // Fallback to localStorage if no auth
+    const name   = localStorage.getItem("userName") || "Learner";
+    const xp     = parseInt(localStorage.getItem("uw_xp") || "0", 10);
+    const streak = parseInt(localStorage.getItem("uw_streak") || "0", 10);
+    const graph  = JSON.parse(localStorage.getItem("studyGraphData") || "[0,0,0,0,0,0,0]");
+
+    renderSummary(name, xp, xp, 0, streak, 0, graph.reduce((a,b)=>a+b,0));
+    chartData.videos = graph;
+    chartData.xp     = graph.map(v => v * 5);
+    buildWeekDays(chartData.xp, chartData.videos, chartData.focus);
+    renderChart(activeTab);
+    setBadge("", "Local data");
+  } else {
+    loadData();
+  }
+});
+
+// ── Re-render chart on theme change ──────────────────────────────────
+window.addEventListener("storage", (e) => {
+  if (e.key === "theme") renderChart(activeTab);
+});
+</script>
+
+</body>
+</html>
