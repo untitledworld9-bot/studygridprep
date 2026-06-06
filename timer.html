@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Smart Focus | Study Grid Prep</title>
+<link rel="icon" href="icon.png">
+<meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<meta property="og:title" content="Study Grid Prep Focus Timer">
+<meta property="og:description" content="Study together online — Focus timer with friends, leaderboard , rooms & Chats.">
+<meta property="og:image" content="https://untitledworld.us.cc/icon-192.png">
+<meta property="og:url" content="https://untitledworld.us.cc/timer">
+<meta property="og:type" content="website">
+<meta name="description" content="Online focus timer with friends, leaderboard and private study rooms.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script>
+(function(){
+  const saved = localStorage.getItem('theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved ? saved : (systemDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
+<style>
+/* ═══ DESIGN TOKENS — matches dashboard-home exactly ═══════════════════════ */
+:root{
+  --bg:#F0F2F8;
+  --surface:#FFFFFF;
+  --surface2:#F4F6FB;
+  --border:#E2E8F2;
+  --text:#0F172A;
+  --text2:#5A6785;
+  --text3:#94A3B8;
+  --accent:#5B5BF6;
+  --accent2:#7C3AED;
+  --green:#10B981;
+  --orange:#F97316;
+  --red:#EF4444;
+  --header-bg:rgba(240,242,248,0.97);
+  --nav-bg:rgba(248,249,253,0.98);
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.07);
+  --shadow:0 4px 16px rgba(0,0,0,0.09);
+  --shadow-md:0 8px 28px rgba(0,0,0,0.12);
+  --r:16px;
+  --t:0.2s ease;
+  /* timer-ring specific */
+  --ring-bg:#FFFFFF;
+  --ring-border:#E2E8F2;
+  --ring-shadow:0 8px 40px rgba(0,0,0,0.1);
+}
+[data-theme="dark"]{
+  --bg:#0D1120;
+  --surface:#151E32;
+  --surface2:#1A2440;
+  --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE;
+  --text2:#8B9EC8;
+  --text3:#3D5080;
+  --header-bg:rgba(13,17,32,0.97);
+  --nav-bg:rgba(13,17,32,0.98);
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.35);
+  --shadow:0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md:0 8px 32px rgba(0,0,0,0.55);
+  --ring-bg:rgba(21,30,50,0.85);
+  --ring-border:rgba(255,255,255,0.14);
+  --ring-shadow:0 8px 40px rgba(0,0,0,0.45);
+}
+
+/* ═══ RESET ══════════════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Poppins',sans-serif;color:var(--text);overflow:hidden;}
+body{
+  background:var(--bg);
+  position:relative;
+  animation:pgIn .3s ease forwards;
+  user-select:none;-webkit-user-select:none;
+  overscroll-behavior-y:none;
+}
+@keyframes pgIn{from{opacity:0;}to{opacity:1;}}
+
+/* ═══ PAGE LAYOUT ════════════════════════════════════════════════════════════ */
+.page{
+  position:fixed;
+  top:60px;
+  bottom:calc(64px + env(safe-area-inset-bottom));
+  left:0;right:0;
+  z-index:3;
+  display:flex;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:none;
+  scrollbar-width:none;
+}
+.page::-webkit-scrollbar{display:none;}
+
+/* ═══ HEADER ═════════════════════════════════════════════════════════════════ */
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 16px;flex-shrink:0;
+  position:fixed;top:0;left:0;right:0;z-index:110;
+  background:var(--header-bg);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  height:60px;
+}
+.back-btn{
+  width:36px;height:36px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);font-size:15px;text-decoration:none;transition:var(--t);flex-shrink:0;
+  box-shadow:var(--shadow-sm);
+}
+.back-btn:active{transform:scale(0.92);opacity:0.7;}
+.brand{
+  font-size:19px;font-weight:700;letter-spacing:-0.3px;
+  color:var(--text);
+}
+.brand span{color:var(--accent);}
+.menu-btn{
+  width:36px;height:36px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;font-size:15px;transition:var(--t);
+  color:var(--text2);box-shadow:var(--shadow-sm);
+}
+.menu-btn:active{transform:scale(0.92);}
+
+/* ═══ DROPDOWN ═══════════════════════════════════════════════════════════════ */
+.dropdown{
+  position:fixed;top:66px;right:16px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;display:none;flex-direction:column;
+  width:186px;z-index:200;overflow:hidden;
+  box-shadow:var(--shadow-md);backdrop-filter:blur(20px);
+  animation:dropIn .18s ease;
+}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.dropdown.active{display:flex;}
+.dropdown a{
+  padding:13px 16px;color:var(--text2);text-decoration:none;
+  border-bottom:1px solid var(--border);font-size:13px;
+  cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s;
+  font-weight:500;
+}
+.dropdown a:last-child{border-bottom:none;}
+.dropdown a:hover{background:var(--surface2);color:var(--text);}
+.dropdown a i{font-size:14px;color:var(--accent);width:16px;text-align:center;}
+
+/* ═══ LEADERBOARD BAR ════════════════════════════════════════════════════════ */
+#statusCard{
+  display:flex;align-items:center;gap:10px;
+  margin:10px 14px 0;padding:11px 14px;
+  border-radius:14px;background:var(--surface);
+  border:1px solid var(--border);cursor:pointer;transition:var(--t);
+  box-shadow:var(--shadow-sm);flex-shrink:0;
+}
+#statusCard:active{transform:scale(0.97);}
+.lb-icon{font-size:16px;color:var(--orange);}
+.lb-text{flex:1;font-size:12px;font-weight:600;color:var(--text2);}
+.lb-arrow{font-size:12px;color:var(--accent);opacity:0.8;}
+
+/* ═══ ROOM SECTION ═══════════════════════════════════════════════════════════ */
+.room-section{margin:10px 14px 0;flex-shrink:0;}
+.room-btn-row{display:flex;gap:8px;}
+.room-action-btn{
+  flex:1;padding:10px 8px;border-radius:50px;
+  border:1.5px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:12px;font-weight:600;cursor:pointer;
+  font-family:'Poppins',sans-serif;transition:var(--t);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  box-shadow:var(--shadow-sm);letter-spacing:.01em;
+}
+.room-action-btn:active{transform:scale(0.97);}
+.room-action-btn i{font-size:12px;color:var(--accent);}
+.room-action-btn.exit-r{border-color:rgba(239,68,68,0.3);color:var(--red);}
+.room-action-btn.exit-r i{color:var(--red);}
+.room-action-btn.exit-r:active{background:rgba(239,68,68,0.07);}
+.room-action-btn.go-global i{color:var(--green);}
+.room-badge{
+  flex:1;padding:10px 14px;border-radius:50px;
+  background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.25);
+  font-size:11px;font-weight:700;color:var(--green);
+  display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  box-shadow:var(--shadow-sm);
+}
+.room-badge i{font-size:12px;}
+
+/* ═══ TIMER WRAPPER ══════════════════════════════════════════════════════════ */
+.timer-wrapper{
+  flex:1 1 auto;
+  min-height:280px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:0 20px;position:relative;
+}
+
+/* Mode buttons */
+.mode-row{
+  display:flex;gap:8px;margin-bottom:16px;justify-content:center;width:100%;max-width:260px;
+}
+.preset-btn{
+  flex:1;
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text2);padding:9px 0;border-radius:50px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:var(--t);
+  font-family:'Poppins',sans-serif;
+  text-align:center;letter-spacing:.01em;
+  box-shadow:var(--shadow-sm);
+}
+.preset-btn.active{
+  background:var(--accent);border-color:var(--accent);color:#fff;
+  box-shadow:0 4px 14px rgba(91,91,246,0.35);
+}
+.preset-btn:active{transform:scale(0.96);}
+
+/* Timer ring — clean app-like design */
+.timer-ring{
+  width:clamp(195px,58vw,255px);
+  height:clamp(195px,58vw,255px);
+  border-radius:50%;
+  border:3px solid var(--ring-border);
+  background:var(--ring-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:var(--ring-shadow);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin-bottom:14px;position:relative;transition:all .4s ease;
+  flex-shrink:0;
+}
+.timer-ring.active{
+  border-color:var(--green);
+  box-shadow:var(--ring-shadow),0 0 0 4px rgba(16,185,129,0.12);
+}
+.mode-label{
+  font-size:10px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.12em;margin-bottom:6px;font-weight:600;
+}
+.time-display{
+  font-size:clamp(40px,13vw,58px);
+  font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  color:var(--text);
+}
+
+/* Action buttons */
+.action-btn{
+  width:min(220px,72vw);padding:14px;border-radius:50px;
+  font-size:14px;font-weight:700;border:none;cursor:pointer;
+  font-family:'Poppins',sans-serif;transition:var(--t);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:.02em;
+}
+.action-btn:active{transform:scale(0.97);}
+.start{
+  background:var(--green);
+  color:#fff;
+  box-shadow:0 6px 22px rgba(16,185,129,0.38);
+}
+.start:active{box-shadow:0 3px 12px rgba(16,185,129,0.25);}
+.stop{
+  background:var(--red);
+  color:#fff;
+  box-shadow:0 6px 22px rgba(239,68,68,0.3);
+}
+.stop:active{box-shadow:0 3px 12px rgba(239,68,68,0.2);}
+
+/* ═══ SESSION BOXES ══════════════════════════════════════════════════════════ */
+.session-box{
+  margin:6px 14px;padding:13px 15px;
+  border-radius:16px;flex-shrink:0;background:var(--surface);
+  border:1.5px solid var(--border);box-shadow:var(--shadow-sm);
+  cursor:pointer;transition:var(--t);
+}
+.session-box:last-child{margin-bottom:14px;}
+.global-box:active,.room-box:active{transform:scale(0.98);}
+.sb-row{display:flex;align-items:center;justify-content:space-between;}
+.sb-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:0;display:flex;align-items:center;gap:8px;}
+.sb-title i{font-size:13px;color:var(--accent);}
+.global-box .sb-title i{color:var(--green);}
+.sb-sub{font-size:11px;color:var(--text2);margin-top:4px;}
+.sb-tap{font-size:11px;color:var(--accent);opacity:0.8;font-weight:600;}
+.g-count{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* ═══ BOTTOM NAV — exact match to dashboard-home ════════════════════════════ */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  height:calc(64px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  z-index:100;
+  background:var(--nav-bg);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);
+  box-shadow:0 -2px 12px rgba(0,0,0,0.06);
+  display:flex;align-items:flex-start;justify-content:space-around;
+}
+[data-theme="light"] .bottom-nav{background:rgba(255,255,255,0.99) !important;box-shadow:0 -2px 12px rgba(0,0,0,0.07);}
+[data-theme="dark"] .bottom-nav{background:rgba(13,17,32,0.99) !important;}
+
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--text3);text-decoration:none;
+  font-size:10.5px;font-weight:500;padding:10px 20px 4px;
+  cursor:pointer;transition:color 0.15s ease,transform 0.12s ease;
+  border-radius:14px;border:none;background:none;min-width:52px;flex:1;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-item:active{transform:scale(0.94);}
+.nav-item.active,.nav-item:hover{color:var(--accent)!important;}
+.nav-icon{font-size:20px;line-height:1;transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1),color 0.15s ease;}
+.nav-item.active .nav-icon{color:var(--accent);transform:scale(1.15);}
+
+/* Music icon state */
+.music-icon-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.music-icon-wrap::after{
+  content:'';position:absolute;top:50%;left:50%;
+  width:24px;height:1.8px;background:var(--text3);border-radius:1px;
+  transform:translate(-50%,-50%) rotate(-45deg);
+  transition:opacity .2s ease,background .2s ease;pointer-events:none;
+}
+#musicNavBtn.music-playing .music-icon-wrap::after{opacity:0;}
+#musicNavBtn.music-playing{color:#10B981!important;}
+#musicNavBtn.music-playing .nav-icon{color:#10B981;}
+
+/* ═══ MUSIC PANEL ════════════════════════════════════════════════════════════ */
+.music-panel{
+  position:fixed;bottom:calc(-100% - 64px);left:0;width:100%;height:72vh;
+  background:var(--surface);border-top:1px solid var(--border);
+  border-radius:24px 24px 0 0;z-index:105;
+  transition:.35s cubic-bezier(.25,.46,.45,.94);
+  display:flex;flex-direction:column;
+  box-shadow:0 -12px 50px rgba(0,0,0,0.15);
+}
+.music-panel.open{bottom:calc(64px + env(safe-area-inset-bottom));}
+.mp-fixed{flex-shrink:0;padding:16px 18px 0;}
+.mp-scroll{overflow-y:auto;flex:1;padding:0 18px 8px;min-height:0;}
+.mp-scroll::-webkit-scrollbar{width:3px;}
+.mp-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.mp-bottom{
+  flex-shrink:0;padding:8px 18px 12px;
+  border-top:1px solid var(--border);background:var(--surface);
+}
+.mp-now{
+  font-size:11px;color:var(--green);
+  display:flex;align-items:center;gap:6px;min-height:20px;margin-top:6px;
+}
+.mp-now.active::before{
+  content:'';width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:pdot 1.2s infinite;flex-shrink:0;
+}
+.music-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.music-header span{font-size:15px;font-weight:700;color:var(--text);}
+.music-close{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);width:30px;height:30px;border-radius:50%;
+  cursor:pointer;font-size:14px;transition:var(--t);display:flex;align-items:center;justify-content:center;
+}
+.music-close:active{transform:scale(0.9);}
+.music-section-label{
+  font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.1em;margin:12px 0 8px;
+}
+.track-item{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;
+  background:var(--surface2);border:1.5px solid var(--border);margin-bottom:7px;cursor:pointer;transition:var(--t);
+}
+.track-item:hover,.track-item.playing{background:rgba(16,185,129,0.07);border-color:rgba(16,185,129,0.28);}
+.track-info{flex:1;min-width:0;}
+.track-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+.track-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.play-btn{
+  background:rgba(16,185,129,0.1);border:1.5px solid rgba(16,185,129,0.28);color:var(--green);
+  width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:12px;
+  transition:var(--t);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.play-btn:hover{background:var(--green);color:#fff;}
+.del-track-btn{
+  background:transparent;border:1.5px solid rgba(239,68,68,0.2);
+  color:rgba(239,68,68,0.6);width:26px;height:26px;border-radius:50%;
+  cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:var(--t);margin-left:4px;
+}
+.del-track-btn:hover{background:rgba(239,68,68,0.1);color:var(--red);border-color:rgba(239,68,68,0.4);}
+.yt-add-section{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:14px;padding:14px;margin-top:10px;
+}
+.yt-add-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.yt-input{
+  width:100%;padding:10px 13px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:13px;
+  font-family:'Poppins',sans-serif;outline:none;margin-bottom:8px;
+}
+.yt-input:focus{border-color:var(--accent);}
+.yt-add-btn{
+  width:100%;background:var(--accent);border:none;color:#fff;
+  padding:10px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Poppins',sans-serif;transition:var(--t);
+  box-shadow:0 4px 14px rgba(91,91,246,0.3);
+}
+.yt-add-btn:active{transform:scale(0.97);}
+.empty-tracks{font-size:12px;color:var(--text3);text-align:center;padding:10px 0;}
+
+/* ═══ BACKDROP ═══════════════════════════════════════════════════════════════ */
+.backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(4px);z-index:100;display:none;
+}
+
+/* ═══ SOCIAL SHEET ═══════════════════════════════════════════════════════════ */
+.social-sheet{
+  position:fixed;bottom:-110%;left:0;width:100%;height:76vh;
+  background:var(--surface);border-top:1px solid var(--border);
+  border-radius:24px 24px 0 0;z-index:105;
+  transition:.35s cubic-bezier(.25,.46,.45,.94);
+  padding:0 18px 18px;display:flex;flex-direction:column;
+  box-shadow:0 -12px 50px rgba(0,0,0,0.15);
+}
+.social-sheet.open{bottom:0;}
+.sheet-handle{
+  width:40px;height:4px;border-radius:2px;background:var(--border);
+  margin:12px auto 14px;flex-shrink:0;
+}
+.sheet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-shrink:0;}
+.sheet-header h3{font-size:15px;font-weight:700;color:var(--text);}
+.share-btn{
+  background:rgba(37,211,102,0.1);border:1.5px solid rgba(37,211,102,0.3);
+  color:#25d366;padding:7px 12px;border-radius:10px;
+  font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:var(--t);
+  display:flex;align-items:center;gap:5px;
+}
+.share-btn:active{transform:scale(0.95);}
+.copy-btn{background:rgba(91,91,246,0.08);border-color:rgba(91,91,246,0.25);color:var(--accent);}
+.user-list-container{flex:1;overflow-y:auto;padding-right:3px;}
+.user-list-container::-webkit-scrollbar{width:3px;}
+.user-list-container::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.member-card{
+  display:flex;align-items:center;gap:10px;background:var(--surface2);
+  padding:11px 13px;border-radius:14px;margin-bottom:7px;
+  border:1.5px solid var(--border);transition:var(--t);
+}
+.member-card:active{transform:scale(0.98);}
+.member-av{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(91,91,246,0.3),rgba(124,58,237,0.2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;flex-shrink:0;color:var(--accent);
+}
+.member-info{flex:1;min-width:0;}
+.member-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+.member-stat{font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px;}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.s-online{background:var(--green);animation:pdot 2s infinite;}
+.s-offline{background:var(--text3);}
+.s-focus{background:var(--orange);animation:pdot 1.2s infinite;}
+.member-acts{display:flex;gap:6px;flex-shrink:0;}
+.mact{
+  background:transparent;border:1.5px solid var(--border);
+  color:var(--text2);padding:5px 10px;border-radius:8px;
+  font-size:14px;cursor:pointer;transition:var(--t);
+}
+.mact:active{transform:scale(1.1);}
+.mact.wave:active{border-color:var(--green);color:var(--green);}
+.mact.chat:active{border-color:var(--accent);color:var(--accent);}
+.sheet-lb-title{
+  font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.07em;margin:10px 0 7px;flex-shrink:0;
+}
+#leaderboard{flex-shrink:0;max-height:145px;overflow-y:auto;}
+#leaderboard div{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;margin-bottom:5px;border-radius:10px;
+  background:var(--surface2);font-size:12px;transition:var(--t);
+  border:1px solid var(--border);color:var(--text);
+}
+#leaderboard div:nth-child(1){color:#F59E0B;font-weight:700;}
+#leaderboard div:nth-child(2){color:var(--text2);}
+#leaderboard div:nth-child(3){color:#B45309;}
+.close-sheet-btn{
+  background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text2);padding:10px;border-radius:14px;
+  cursor:pointer;font-size:13px;margin-top:8px;flex-shrink:0;
+  font-family:'Poppins',sans-serif;transition:var(--t);width:100%;text-align:center;
+  font-weight:500;
+}
+.close-sheet-btn:active{transform:scale(0.97);}
+
+/* ═══ CHAT BOX ═══════════════════════════════════════════════════════════════ */
+#chatBox{
+  position:fixed;bottom:calc(64px + env(safe-area-inset-bottom));left:0;width:100%;
+  background:var(--surface);border-top:2px solid var(--accent);
+  border-radius:20px 20px 0 0;display:none;z-index:9100;
+  flex-direction:column;max-height:65vh;
+  box-shadow:0 -8px 30px rgba(0,0,0,0.15);
+}
+#chatBox.open{display:flex;}
+.chat-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px 10px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+.chat-hname{font-size:14px;font-weight:700;color:var(--accent);}
+.chat-close{background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+.chat-close:active{color:var(--red);}
+#chatMessages{flex:1;overflow-y:auto;padding:12px;min-height:120px;max-height:210px;background:var(--surface2);}
+#chatMessages::-webkit-scrollbar{width:3px;}
+#chatMessages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+#chatMessages div.msg-me,#chatMessages div.msg-other{
+  max-width:75%;padding:9px 13px;margin:5px;border-radius:16px;font-size:13px;line-height:1.4;word-break:break-word;
+}
+.msg-me{background:var(--accent);color:#fff;margin-left:auto!important;display:block;border-radius:16px 16px 3px 16px!important;}
+.msg-other{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 16px 3px!important;color:var(--text);}
+.chat-input-row{display:flex;align-items:center;gap:8px;padding:10px 14px;flex-shrink:0;}
+#chatInput{
+  flex:1;padding:10px 13px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  color:var(--text);font-family:'Poppins',sans-serif;font-size:13px;outline:none;
+}
+#chatInput:focus{border-color:var(--accent);}
+.chat-send-btn{
+  padding:10px 16px;border-radius:12px;background:var(--accent);color:#fff;
+  font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;transition:var(--t);
+  box-shadow:0 4px 12px rgba(91,91,246,0.3);
+}
+.chat-send-btn:active{transform:scale(0.95);}
+
+/* ═══ NOTIFICATIONS & TOASTS ═════════════════════════════════════════════════ */
+#chatNotify{
+  position:fixed;top:38%;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;
+  padding:9px 18px;border-radius:22px;display:none;
+  font-size:13px;font-weight:700;
+  box-shadow:0 4px 18px rgba(91,91,246,0.4);z-index:99999;
+  pointer-events:none;max-width:85vw;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:center;
+}
+.wave-popup{
+  position:fixed;top:38%;left:50%;transform:translateX(-50%);
+  background:rgba(16,185,129,0.1);border:1.5px solid var(--green);
+  padding:11px 20px;border-radius:28px;backdrop-filter:blur(10px);
+  font-weight:600;color:var(--green);z-index:99999;
+  animation:waveFade 3s ease forwards;white-space:nowrap;pointer-events:none;
+}
+@keyframes waveFade{
+  0%{opacity:0;transform:translateX(-50%) translateY(-12px);}
+  20%{opacity:1;transform:translateX(-50%) translateY(0);}
+  80%{opacity:1;}
+  100%{opacity:0;}
+}
+.toast-msg{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1.5px solid var(--border);
+  padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;
+  color:var(--text);z-index:99999;animation:waveFade 2.5s ease forwards;
+  white-space:nowrap;pointer-events:none;box-shadow:var(--shadow);
+}
+.admin-msg{
+  position:fixed;top:72px;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1.5px solid var(--accent);
+  color:var(--text);padding:9px 20px;border-radius:22px;
+  font-weight:600;z-index:9999;font-size:13px;box-shadow:var(--shadow);
+}
+
+/* ═══ WELCOME POPUP ══════════════════════════════════════════════════════════ */
+.welcome-popup{
+  position:fixed;top:72px;left:50%;
+  background:var(--surface);border:1.5px solid var(--border);
+  padding:11px 22px;border-radius:20px;font-size:14px;font-weight:600;color:var(--text);
+  z-index:99998;box-shadow:var(--shadow-md);
+  backdrop-filter:blur(16px);white-space:nowrap;display:none;
+  animation:welcomeIn .5s cubic-bezier(.34,1.56,.64,1) forwards;
+  transform:translateX(-50%);
+}
+.welcome-popup.show{display:block;}
+@keyframes welcomeIn{
+  from{opacity:0;transform:translateX(-50%) translateY(-18px) scale(.9);}
+  to{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+}
+
+/* ═══ ROOM MODALS ════════════════════════════════════════════════════════════ */
+.room-modal{
+  position:fixed;inset:0;display:none;
+  justify-content:center;align-items:center;
+  background:rgba(0,0,0,0.65);backdrop-filter:blur(16px);z-index:300;
+}
+.room-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:26px;padding:28px 22px;width:90%;max-width:310px;
+  text-align:center;animation:modalPop .25s ease;
+  box-shadow:var(--shadow-md);
+}
+.room-card h3{margin-bottom:12px;color:var(--text);font-size:16px;font-weight:700;}
+.room-card input{
+  width:100%;padding:12px 14px;margin:10px 0;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;
+}
+.room-card input:focus{border-color:var(--accent);}
+.room-card .rc-confirm-btn{
+  display:block;width:100%;
+  background:var(--accent);border:none;padding:14px;margin-top:10px;
+  border-radius:50px;font-weight:700;cursor:pointer;
+  font-family:'Poppins',sans-serif;transition:var(--t);font-size:14px;
+  color:#fff;box-shadow:0 6px 20px rgba(91,91,246,0.35);
+  letter-spacing:.02em;
+}
+.room-card .rc-confirm-btn:active{transform:scale(0.97);}
+.closeModal{display:block;margin-top:12px;cursor:pointer;color:var(--text3);font-size:13px;transition:var(--t);}
+.closeModal:hover{color:var(--text);}
+.join-error{
+  background:rgba(239,68,68,0.07);border:1.5px solid rgba(239,68,68,0.25);
+  color:var(--red);padding:7px 12px;border-radius:8px;font-size:12px;margin-bottom:8px;display:none;
+}
+@keyframes modalPop{from{transform:scale(.85);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* Custom timer modal inputs */
+.time-inputs{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 18px;}
+.time-input-group{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.time-input-group input{
+  width:80px;padding:12px;text-align:center;
+  font-size:28px;font-weight:700;
+  border:1.5px solid var(--border);border-radius:12px;
+  background:var(--surface2);color:var(--text);outline:none;
+  font-family:'Poppins',sans-serif;
+  -moz-appearance:textfield;
+}
+.time-input-group input::-webkit-inner-spin-button,
+.time-input-group input::-webkit-outer-spin-button{-webkit-appearance:none;}
+.time-input-group input:focus{border-color:var(--accent);}
+.time-input-group label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.time-sep{font-size:28px;font-weight:700;color:var(--text3);padding-bottom:18px;}
+
+/* ═══ SCROLLBAR ══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ═══ RESPONSIVE — Phone + Tablet ═══════════════════════════════════════════ */
+
+/* Very small phones (≤360px wide) */
+@media(max-width:360px){
+  .timer-ring{width:clamp(175px,56vw,210px);height:clamp(175px,56vw,210px);}
+  .time-display{font-size:clamp(36px,13vw,48px);}
+  .action-btn{width:92vw;font-size:13px;padding:13px;}
+  .brand{font-size:14px;}
+  .nav-item{padding:10px 12px 4px;font-size:10px;}
+  #statusCard{margin:8px 12px 0;}
+  .room-section{margin:8px 12px 0;}
+  .session-box{margin:5px 12px;}
+  .mode-row{max-width:230px;}
+}
+
+/* Short screens / landscape phones */
+@media(max-height:620px){
+  .timer-ring{width:clamp(155px,40vw,195px);height:clamp(155px,40vw,195px);}
+  .time-display{font-size:clamp(32px,11vw,44px);}
+  .mode-row{margin-bottom:8px;}
+  .action-btn{padding:11px;font-size:13px;}
+  .timer-wrapper{min-height:220px;padding:0 16px;}
+  .session-box{margin:4px 14px;padding:10px 13px;}
+  #statusCard{margin:6px 14px 0;}
+  .room-section{margin:6px 14px 0;}
+}
+
+/* Standard phones (361–599px) — base styles apply */
+
+/* Tablet portrait (600px–1024px) */
+@media(min-width:600px) and (max-width:1024px){
+  .page{max-width:560px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
+  header{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+  .bottom-nav{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+  .music-panel{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+
+  .timer-ring{width:clamp(220px,40vw,280px);height:clamp(220px,40vw,280px);}
+  .time-display{font-size:clamp(52px,10vw,68px);}
+  .action-btn{width:300px;padding:17px;font-size:15px;}
+  .mode-row{max-width:310px;}
+  .preset-btn{font-size:13px;padding:11px 0;}
+
+  #statusCard{padding:13px 18px;}
+  .lb-text{font-size:13px;}
+  .room-action-btn{font-size:13px;padding:12px 10px;}
+  .room-badge{font-size:12px;}
+  .session-box{padding:15px 18px;border-radius:18px;}
+  .sb-title{font-size:14px;}
+  .sb-sub{font-size:12px;}
+
+  .nav-item{padding:10px 32px 4px;}
+  .nav-icon{font-size:22px;}
+  .nav-item span{font-size:11px;}
+
+  .brand{font-size:19px;}
+  .back-btn,.menu-btn{width:38px;height:38px;}
+
+  /* Rooms panel centered on tablet */
+  .rooms-panel{max-width:560px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
+  .rooms-panel.open{transform:translateX(-50%) translateY(0);}
+  .rooms-join-bar{max-width:560px;}
+  /* Social sheet centered on tablet */
+  .social-sheet{max-width:560px;left:50%;transform:translateX(-50%);}
+  .action-btn{width:260px;padding:15px;}
+}
+
+/* Tablet landscape / small desktop (>1024px) */
+@media(min-width:1025px){
+  .page{max-width:480px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
+  header{max-width:480px;left:50%;transform:translateX(-50%);right:auto;}
+  .bottom-nav{max-width:480px;left:50%;transform:translateX(-50%);right:auto;}
+  .music-panel{max-width:480px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:480px;left:50%;transform:translateX(-50%);right:auto;}
+
+  .timer-ring{width:260px;height:260px;}
+  .time-display{font-size:62px;}
+  .action-btn{width:280px;padding:16px;font-size:15px;}
+  .mode-row{max-width:300px;}
+
+  .rooms-panel{max-width:480px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
+  .rooms-panel.open{transform:translateX(-50%) translateY(0);}
+  .social-sheet{max-width:480px;left:50%;transform:translateX(-50%);}
+  .action-btn{width:240px;padding:15px;}
+}
+
+/* ═══ PULSE DOT ══════════════════════════════════════════════════════════════ */
+@keyframes pdot{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ═══ RAIN CANVAS ════════════════════════════════════════════════════════════ */
+#rainCanvas{
+  position:fixed;inset:0;pointer-events:none;z-index:2;
+  opacity:0;transition:opacity 1.8s ease;
+}
+#rainCanvas.active{opacity:1;}
+
+/* ═══ ROOMS PANEL ════════════════════════════════════════════════════════════ */
+.rooms-panel{
+  position:fixed;inset:0;z-index:200;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .38s cubic-bezier(.32,1,.28,1);
+  will-change:transform;
+}
+.rooms-panel.open{transform:translateY(0);}
+
+.rooms-panel-header{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;justify-content:center;
+  padding:18px 20px 14px;
+  background:var(--header-bg);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  flex-shrink:0;box-shadow:var(--shadow-sm);
+}
+.rooms-panel-title{font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--text);}
+.rooms-panel-close{
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:var(--t);
+}
+.rooms-panel-close:active{background:rgba(239,68,68,0.1);color:var(--red);}
+
+.rooms-panel-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;padding:0 16px;
+}
+.rooms-section-head{
+  font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--accent);margin:20px 0 12px;
+  display:flex;align-items:center;gap:8px;
+}
+.rooms-section-head::after{content:'';flex:1;height:1px;background:var(--border);}
+.rooms-divider{height:1px;background:var(--border);margin:16px 0;}
+.rooms-list{display:flex;flex-direction:column;gap:8px;}
+
+.room-card-item{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:16px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;cursor:pointer;
+  transition:var(--t);-webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;box-shadow:var(--shadow-sm);
+}
+.room-card-item:active{transform:scale(.98);}
+.room-card-item.selected{
+  background:rgba(91,91,246,0.06);border-color:rgba(91,91,246,0.3);
+  box-shadow:0 0 0 3px rgba(91,91,246,0.1);
+}
+
+.rc-avatar{
+  width:42px;height:42px;border-radius:14px;flex-shrink:0;
+  background:rgba(91,91,246,0.1);border:1.5px solid rgba(91,91,246,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:var(--accent);
+}
+.rc-info{flex:1;min-width:0;}
+.rc-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.rc-meta{display:flex;align-items:center;gap:10px;}
+.rc-online{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--green);}
+.rc-online-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pdot 2s infinite;}
+.rc-total{font-size:11px;color:var(--text3);}
+.rc-right{flex-shrink:0;text-align:right;}
+.rc-count-big{font-size:20px;font-weight:800;color:var(--accent);line-height:1;}
+.rc-count-lbl{font-size:9px;color:var(--text3);margin-top:2px;}
+.rc-rank-badge{position:absolute;top:10px;right:14px;font-size:16px;line-height:1;}
+
+.rooms-loading{
+  display:flex;align-items:center;gap:10px;color:var(--text3);font-size:13px;padding:20px 0;
+}
+.rooms-spinner{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--border);border-top-color:var(--accent);
+  animation:spin .7s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.rooms-empty{color:var(--text3);font-size:13px;padding:16px 0;text-align:center;}
+
+/* Join Bar */
+.rooms-join-bar{
+  position:sticky;bottom:0;background:var(--surface);
+  border-top:1.5px solid var(--border);
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:14px;
+  animation:slideUpJoin .25s ease;flex-shrink:0;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.1);
+}
+@keyframes slideUpJoin{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.rooms-join-info{flex:1;min-width:0;}
+.rooms-join-name{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.rooms-join-sub{font-size:11px;color:var(--text3);}
+.rooms-join-btn{
+  background:var(--accent);border:none;border-radius:14px;
+  padding:12px 20px;color:#fff;font-weight:700;font-size:14px;
+  cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(91,91,246,0.35);
+  transition:var(--t);font-family:'Poppins',sans-serif;
+}
+.rooms-join-btn:active{transform:scale(.96);}
+</style>
+</head>
+<body>
+
+<script>if(!localStorage.getItem("userName"))window.location.replace("login.html");</script>
+
+<!-- Welcome Popup -->
+<div id="welcomePopup" class="welcome-popup">
+  <i class="fa-solid fa-hand" style="color:var(--orange);margin-right:6px;"></i>Hey <span id="welcomeName">there</span>, let's focus today!
+</div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <a href="dashboard-home.html" class="back-btn"><i class="fa-solid fa-arrow-left" style="font-size:14px;"></i></a>
+    <div class="brand">Smart <span>Focus</span></div>
+    <div class="menu-btn" id="menuToggle"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+  </header>
+
+  <!-- Dropdown -->
+  <div class="dropdown" id="navMenu">
+    <a href="leaderboard.html"><i class="fa-solid fa-trophy"></i> Leaderboard</a>
+    <a onclick="exitToGlobal()"><i class="fa-solid fa-globe"></i> Exit Session</a>
+  </div>
+
+  <!-- LEADERBOARD BAR -->
+  <div id="statusCard">
+    <span class="lb-icon"><i class="fa-solid fa-trophy"></i></span>
+    <span class="lb-text">Leaderboard &middot; See your weekly rank &amp; XP</span>
+    <span class="lb-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+  </div>
+
+  <!-- ROOM SECTION -->
+  <div class="room-section">
+    <div id="joinCreateRow" class="room-btn-row">
+      <button class="room-action-btn" id="createRoomBtn"><i class="fa-solid fa-plus"></i> Create Room</button>
+      <button class="room-action-btn" id="joinRoomBtn"><i class="fa-solid fa-arrow-right-to-bracket"></i> Join Room</button>
+    </div>
+    <div id="inRoomRow" class="room-btn-row" style="display:none">
+      <div class="room-badge" id="roomBadge"><i class="fa-solid fa-users-line"></i> <span id="roomBadgeText">Room</span></div>
+      <button class="room-action-btn exit-r" id="exitRoomBtn"><i class="fa-solid fa-xmark"></i> Exit Room</button>
+      <button class="room-action-btn go-global" id="exitSessionBtn"><i class="fa-solid fa-globe"></i> Global</button>
+    </div>
+  </div>
+
+  <!-- TIMER — FIX-5: only 2 mode buttons -->
+  <div class="timer-wrapper">
+
+    <div class="mode-row">
+      <button class="preset-btn active" id="btnStopwatch" onclick="setMode('stopwatch',this)">
+        <i class="fa-regular fa-clock" style="margin-right:5px;font-size:11px;"></i>Stopwatch
+      </button>
+      <button class="preset-btn" id="btnCustom" onclick="openCustomModal()">
+        <i class="fa-solid fa-sliders" style="margin-right:5px;font-size:11px;"></i>Custom
+      </button>
+    </div>
+
+    <div class="timer-ring" id="ring">
+      <div class="mode-label" id="modeLabel">STOPWATCH</div>
+      <div class="time-display" id="display">00:00</div>
+    </div>
+
+    <button class="action-btn start" id="startBtn">
+      <i class="fa-solid fa-play" style="font-size:11px;"></i> Start Focusing
+    </button>
+    <button class="action-btn stop" id="stopBtn" style="display:none">
+      <i class="fa-solid fa-stop" style="font-size:11px;"></i> Stop Session
+    </button>
+
+  </div>
+
+  <!-- SESSION BOXES — FIX-1 & FIX-3 -->
+  <!-- Global Room box (tappable → global panel) -->
+  <div id="globalBox" class="session-box global-box" onclick="openGlobalPanel()">
+    <div class="sb-row">
+      <div class="sb-title"><i class="fa-solid fa-globe"></i> Global Room</div>
+      <span class="sb-tap">View <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></span>
+    </div>
+    <div id="globalUsers" class="g-count">Loading…</div>
+  </div>
+
+  <!-- Group Study Room box (shown when in private room) -->
+  <div id="openPanelBtn" class="session-box room-box" style="display:none" onclick="openRoomPanel()">
+    <div class="sb-row">
+      <div class="sb-title"><i class="fa-solid fa-users"></i> Group Study Room</div>
+      <span class="sb-tap">View <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></span>
+    </div>
+    <div class="sb-sub">See friends focus, wave &amp; chat</div>
+  </div>
+
+</div><!-- .page -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <a href="dashboard-home.html" class="nav-item">
+    <i class="fa-solid fa-house nav-icon"></i>
+    <span>Home</span>
+  </a>
+  <div class="nav-item active">
+    <i class="fa-solid fa-stopwatch nav-icon" style="color:var(--accent);"></i>
+    <span>Focus</span>
+  </div>
+  <div class="nav-item" id="musicNavBtn">
+    <div class="music-icon-wrap">
+      <i class="fa-solid fa-headphones nav-icon"></i>
+    </div>
+    <span>Music</span>
+  </div>
+  <div class="nav-item" id="roomsNavBtn">
+    <i class="fa-solid fa-users nav-icon"></i>
+    <span>Rooms</span>
+  </div>
+</div>
+
+<!-- MUSIC PANEL: header+admin tracks fixed | user tracks scroll | add section fixed bottom -->
+<div id="musicPanel" class="music-panel">
+
+  <!-- FIXED TOP: header only -->
+  <div class="mp-fixed">
+    <div class="music-header">
+      <span><i class="fa-solid fa-music" style="color:var(--accent);margin-right:6px;font-size:13px;"></i>Focus Music</span>
+      <button class="music-close" id="closeMusicBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <!-- SCROLLABLE: admin tracks + user saved tracks -->
+  <div id="musicScrollArea" class="mp-scroll">
+    <div class="music-section-label"><i class="fa-solid fa-headphones" style="margin-right:5px;"></i>Admin Tracks</div>
+    <div id="adminTracks" style="max-height:40vh;overflow-y:auto;">
+      <div class="empty-tracks">Loading tracks...</div>
+    </div>
+    <div class="music-section-label" style="margin-top:10px;"><i class="fa-solid fa-bookmark" style="margin-right:5px;"></i>My Saved Tracks</div>
+    <div id="userTrackList" style="min-height:60px;"></div>
+  </div>
+
+  <!-- FIXED BOTTOM: Add YouTube Track + now playing -->
+  <div class="mp-bottom">
+    <div class="yt-add-section">
+      <div class="yt-add-title"><i class="fa-brands fa-youtube" style="color:#EF4444;"></i> Add YouTube Track</div>
+      <input id="ytUrlInput" class="yt-input" placeholder="Paste YouTube URL or Playlist URL...">
+      <input id="ytTitleInput" class="yt-input" placeholder="Track name (optional)">
+      <button class="yt-add-btn" id="ytAddBtn">Add to My Tracks</button>
+    </div>
+    <div id="nowPlaying" class="mp-now"></div>
+  </div>
+
+  <div id="ytWrap" style="position:fixed;bottom:-2px;left:-2px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;"></div>
+</div>
+
+<!-- BACKDROP -->
+<div class="backdrop" id="backdrop"></div>
+
+<!-- SOCIAL SHEET (shared for global + room panel) — FIX-4 -->
+<div class="social-sheet" id="socialSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <h3 id="panelTitle"><i class="fa-solid fa-users" style="color:var(--accent);margin-right:6px;font-size:13px;"></i>Live Members</h3>
+    <div style="display:flex;gap:6px;">
+      <button id="inviteWhatsapp" class="share-btn" style="display:none">
+        <i class="fa-brands fa-whatsapp"></i> Share
+      </button>
+      <button id="copyInvite" class="share-btn copy-btn" style="display:none">📋 Copy</button>
+    </div>
+  </div>
+  <div id="userList" class="user-list-container"></div>
+  <div class="sheet-lb-title" id="lbTitle"><i class="fa-solid fa-ranking-star" style="margin-right:5px;"></i>Leaderboard</div>
+  <div id="leaderboard"></div>
+  <button class="close-sheet-btn" id="closePanelBtn"><i class="fa-solid fa-chevron-down" style="margin-right:6px;font-size:11px;"></i>Close Panel</button>
+</div>
+
+<!-- CHAT BOX -->
+<div id="chatBox">
+  <div class="chat-header">
+    <span class="chat-hname" id="chatWithLabel"><i class="fa-solid fa-message" style="margin-right:6px;font-size:13px;"></i>Chat</span>
+    <button class="chat-close" onclick="closeChat()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="chatMessages"></div>
+  <div class="chat-input-row">
+    <input id="chatInput" placeholder="Type message…">
+    <button class="chat-send-btn" onclick="sendMsg()">Send</button>
+  </div>
+</div>
+
+<div id="chatNotify"><i class="fa-solid fa-message" style="margin-right:6px;"></i><span id="notifyText"></span></div>
+<div id="wavePopupContainer"></div>
+
+<!-- ════ ROOMS PANEL — Full Page Popup ════ -->
+<div id="roomsPanel" class="rooms-panel">
+  <!-- Header -->
+  <div class="rooms-panel-header">
+    <span class="rooms-panel-title"><i class="fa-solid fa-users" style="color:var(--accent);margin-right:8px;font-size:15px;"></i>Study Rooms</span>
+    <button class="rooms-panel-close" id="closeRoomsPanel" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="rooms-panel-scroll" id="roomsPanelScroll">
+
+    <!-- Top Study Rooms Section -->
+    <div class="rooms-section-head"><i class="fa-solid fa-trophy" style="margin-right:6px;"></i>Top Study Rooms</div>
+    <div id="topRoomsList" class="rooms-list">
+      <div class="rooms-loading"><span class="rooms-spinner"></span> Loading rooms…</div>
+    </div>
+
+    <!-- Divider -->
+    <div class="rooms-divider"></div>
+
+    <!-- Recent Rooms Section -->
+    <div class="rooms-section-head" style="margin-top:0;"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i>Recent Rooms</div>
+    <div id="recentRoomsList" class="rooms-list">
+      <div class="rooms-empty">No rooms joined yet. Create or join one!</div>
+    </div>
+
+    <!-- Bottom padding so last card clears join button -->
+    <div style="height:80px;"></div>
+  </div>
+
+  <!-- Join Room CTA — slides up from bottom on card tap -->
+  <div class="rooms-join-bar" id="roomsJoinBar" style="display:none;">
+    <div class="rooms-join-info">
+      <span class="rooms-join-name" id="roomsJoinName">—</span>
+      <span class="rooms-join-sub" id="roomsJoinSub">Tap Join to enter</span>
+    </div>
+    <button class="rooms-join-btn" id="roomsJoinBtn">Join Room →</button>
+  </div>
+</div>
+
+<!-- CREATE ROOM MODAL -->
+<div id="createModal" class="room-modal">
+  <div class="room-card">
+    <h3><i class="fa-solid fa-plus-circle" style="color:var(--accent);margin-right:8px;"></i>Create Study Room</h3>
+    <input id="roomName" placeholder="Room Name (e.g. Physics Squad)">
+    <input id="roomPassword" placeholder="Password (optional — leave blank for public)" type="password" style="margin-top:8px;">
+    <button class="rc-confirm-btn" id="confirmCreate">Enter Room</button>
+    <span class="closeModal">Cancel</span>
+  </div>
+</div>
+
+<!-- JOIN ROOM MODAL -->
+<div id="joinModal" class="room-modal">
+  <div class="room-card">
+    <h3><i class="fa-solid fa-magnifying-glass" style="color:var(--accent);margin-right:8px;"></i>Join Room</h3>
+    <input id="joinRoomInput" placeholder="Enter Room Code">
+    <div id="joinError" class="join-error">❌ Wrong room code. Try again.</div>
+    <button class="rc-confirm-btn" id="confirmJoin">Join Room</button>
+    <span class="closeModal">Cancel</span>
+  </div>
+</div>
+
+<!-- FIX-5: Custom Time Modal (professional UI) -->
+<div id="customModal" class="room-modal">
+  <div class="room-card">
+    <h3><i class="fa-regular fa-clock" style="color:var(--accent);margin-right:8px;"></i>Set Custom Timer</h3>
+    <div class="time-inputs">
+      <div class="time-input-group">
+        <input type="number" id="customHrs" placeholder="0" min="0" max="23" value="0">
+        <label>Hours</label>
+      </div>
+      <div class="time-sep">:</div>
+      <div class="time-input-group">
+        <input type="number" id="customMins" placeholder="25" min="0" max="59" value="25">
+        <label>Minutes</label>
+      </div>
+    </div>
+    <button class="rc-confirm-btn" id="confirmCustom">✓ Set Timer</button>
+    <span class="closeModal">Cancel</span>
+  </div>
+</div>
+
+<!-- ═══════════════ INLINE SCRIPTS ═══════════════════════════════════════════ -->
+<script>
+/* ── FIX-5: setMode (only stopwatch & custom, no 25/50 presets) ── */
+function setMode(m, btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const lbl = document.getElementById('modeLabel');
+  if (m === 'stopwatch') {
+    if (lbl) lbl.textContent = 'STOPWATCH MODE';
+    if (window._setTimerMode) window._setTimerMode('stopwatch', 0);
+  }
+}
+
+/* FIX-5: open custom time modal instead of browser prompt */
+function openCustomModal() {
+  document.getElementById('customModal').style.display = 'flex';
+}
+
+/* ── YouTube Player — pause toggle + auto-play next + playlist support ── */
+let _ytPlayer = null, _ytReady = false;
+let _currentTrack = null;      // current videoId or playlistId
+let _currentTrackElemId = null;// current DOM element id
+let _isPlaying = false;
+
+/* Sync music nav icon state — slash when off, green when playing */
+function updateMusicNav() {
+  const btn = document.getElementById('musicNavBtn');
+  if (!btn) return;
+  if (_isPlaying) {
+    btn.classList.add('music-playing');
+  } else {
+    btn.classList.remove('music-playing');
+  }
+}
+
+window.onYouTubeIframeAPIReady = () => { _ytReady = true; };
+
+function _loadYTApi() {
+  if (document.getElementById('_ytApiScript')) return;
+  const s = document.createElement('script');
+  s.id = '_ytApiScript';
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+}
+
+function _buildPlayer(id, isPlaylist) {
+  const wrap = document.getElementById('ytWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div id="_ytInn"></div>';
+  const pvars = {autoplay:1, controls:0, rel:0};
+  if (isPlaylist) { pvars.listType='playlist'; pvars.list=id; }
+  const playerConfig = {
+    height:'1', width:'1',
+    playerVars: pvars,
+    events:{
+      onReady: function(e){ e.target.playVideo(); },
+      onStateChange: function(e){
+        if (e.data === 1) {
+          _isPlaying = true;
+          updateMusicNav();
+          if (_currentTrackElemId) {
+            const el = document.getElementById(_currentTrackElemId);
+            if (el) { el.classList.add('playing'); const pb=el.querySelector('.play-btn'); if(pb) pb.innerHTML='<i class="fa-solid fa-pause" style="font-size:11px;"></i>'; }
+          }
+        } else if (e.data === 2) {
+          _isPlaying = false;
+          updateMusicNav();
+          if (_currentTrackElemId) {
+            const el = document.getElementById(_currentTrackElemId);
+            if (el) { el.classList.remove('playing'); const pb=el.querySelector('.play-btn'); if(pb) pb.innerHTML='<i class="fa-solid fa-play" style="font-size:11px;"></i>'; }
+          }
+        } else if (e.data === 0) {
+          _isPlaying = false;
+          updateMusicNav();
+          if (_currentTrackElemId) {
+            const el = document.getElementById(_currentTrackElemId);
+            if (el) { el.classList.remove('playing'); const pb=el.querySelector('.play-btn'); if(pb) pb.innerHTML='<i class="fa-solid fa-play" style="font-size:11px;"></i>'; }
+          }
+          _playNext();
+        }
+      }
+    }
+  };
+  if (!isPlaylist) { playerConfig.videoId = id; }
+  _ytPlayer = new YT.Player('_ytInn', playerConfig);
+}
+
+function _playNext() {
+  const all = Array.from(document.querySelectorAll('#adminTracks .track-item, .mp-scroll .track-item'));
+  if (all.length < 1) return;
+  const curEl = _currentTrackElemId ? document.getElementById(_currentTrackElemId) : null;
+  const idx   = curEl ? all.indexOf(curEl) : -1;
+  const next  = all[(idx+1) % all.length];
+  if (next) { const pb = next.querySelector('.play-btn'); if(pb) pb.click(); }
+}
+
+window.playTrack = function(id, title, trackId, isPlaylist) {
+  // Same track tapped → toggle pause/resume
+  if (_currentTrack === id && _ytPlayer) {
+    if (_isPlaying) {
+      try { _ytPlayer.pauseVideo(); } catch(e) {}
+    } else {
+      try { _ytPlayer.playVideo(); } catch(e) {}
+    }
+    return;
+  }
+  // New track → stop old, start new
+  _loadYTApi();
+  document.querySelectorAll('.track-item').forEach(el => {
+    el.classList.remove('playing');
+    const pb = el.querySelector('.play-btn');
+    if (pb) pb.innerHTML = '<i class="fa-solid fa-play" style="font-size:11px;"></i>';
+  });
+  if (trackId) {
+    const el = document.getElementById(trackId);
+    if (el) { el.classList.add('playing'); const pb=el.querySelector('.play-btn'); if(pb) pb.innerHTML='<i class="fa-solid fa-pause" style="font-size:11px;"></i>'; }
+  }
+  const np = document.getElementById('nowPlaying');
+  if (np) { np.textContent = '🎵 ' + (title||'Playing...'); np.classList.add('active'); }
+  _currentTrack = id;
+  _currentTrackElemId = trackId;
+  _isPlaying = true;
+  updateMusicNav();
+
+  const tryBuild = () => {
+    if (_ytReady && window.YT && YT.Player) {
+      if (_ytPlayer) { try{_ytPlayer.destroy();}catch(e){} }
+      _buildPlayer(id, isPlaylist||false);
+    } else { setTimeout(tryBuild, 300); }
+  };
+  tryBuild();
+};
+
+/* FIX-8: Music localStorage + playlist support */
+function getUserTracks() {
+  try { return JSON.parse(localStorage.getItem('uw_user_tracks')||'[]'); } catch(e){ return []; }
+}
+function saveUserTrack(id, title, isPlaylist) {
+  const tracks = getUserTracks();
+  if (tracks.find(t=>t.id===id)) { showToast('Track already saved!'); return; }
+  tracks.push({ id, title: title||('Track '+(tracks.length+1)), isPlaylist:!!isPlaylist, addedAt: Date.now() });
+  localStorage.setItem('uw_user_tracks', JSON.stringify(tracks));
+  renderUserTracks();
+  showToast('✅ Track added!');
+}
+window.removeUserTrack = function(id) {
+  const tracks = getUserTracks().filter(t=>t.id!==id);
+  localStorage.setItem('uw_user_tracks', JSON.stringify(tracks));
+  renderUserTracks();
+};
+function renderUserTracks() {
+  const container = document.getElementById('userTrackList');
+  if (!container) return;
+  const tracks = getUserTracks();
+  if (!tracks.length) {
+    container.innerHTML = '<div class="empty-tracks">No saved tracks yet. Add a YouTube URL below.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  tracks.forEach(function(t) {
+    const div = document.createElement('div');
+    div.className = 'track-item';
+    div.id = 'ut_' + t.id;
+
+    const info = document.createElement('div');
+    info.className = 'track-info';
+    info.innerHTML = '<div class="track-name">' + '<i class="fa-solid fa-' + (t.isPlaylist ? 'list' : 'music') + '" style="color:var(--accent);font-size:11px;margin-right:5px;"></i>' +
+      t.title.replace(/</g,'&lt;') + '</div>' +
+      '<div class="track-sub">' + (t.isPlaylist ? 'YouTube Playlist' : 'Saved Track') + '</div>';
+
+    const playBtn = document.createElement('button');
+    playBtn.className = 'play-btn';
+    playBtn.textContent = '▶';
+    playBtn.addEventListener('click', function(){ playTrack(t.id, t.title, 'ut_'+t.id, t.isPlaylist||false); });
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-track-btn';
+    delBtn.innerHTML = '<i class="fa-solid fa-xmark" style="font-size:10px;"></i>';
+    delBtn.addEventListener('click', function(){ removeUserTrack(t.id); });
+
+    div.appendChild(info);
+    div.appendChild(playBtn);
+    div.appendChild(delBtn);
+    container.appendChild(div);
+  });
+}
+
+/* Extract YouTube info — supports video + playlist URLs */
+function extractYTInfo(url) {
+  // Single video
+  const vm = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/);
+  if (vm) return { type:'video', id:vm[1] };
+  // Playlist (with or without video= param)
+  const pm = url.match(/[?&]list=([A-Za-z0-9_-]{10,})/);
+  if (pm) return { type:'playlist', id:pm[1] };
+  return null;
+}
+
+function addYouTubeTrack() {
+  const url   = document.getElementById('ytUrlInput')?.value?.trim()||'';
+  const title = document.getElementById('ytTitleInput')?.value?.trim()||'';
+  if (!url) return;
+  const info = extractYTInfo(url);
+  if (!info) { showToast('❌ Invalid YouTube URL'); return; }
+  saveUserTrack(info.id, title||null, info.type==='playlist');
+  const urlIn = document.getElementById('ytUrlInput');
+  const titIn = document.getElementById('ytTitleInput');
+  if (urlIn) urlIn.value='';
+  if (titIn) titIn.value='';
+}
+
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast-msg';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 2600);
+}
+
+function toggleMusicPanel() {
+  document.getElementById('musicPanel')?.classList.toggle('open');
+}
+
+/* Global & Room panel helpers */
+window.openGlobalPanel = function() {
+  if (window._openGlobalSheet) window._openGlobalSheet();
+};
+window.openRoomPanel = function() {
+  if (window._openRoomSheet) window._openRoomSheet();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* Music panel toggles */
+  document.getElementById('musicNavBtn')?.addEventListener('click', toggleMusicPanel);
+  document.getElementById('closeMusicBtn')?.addEventListener('click', toggleMusicPanel);
+  document.getElementById('ytAddBtn')?.addEventListener('click', addYouTubeTrack);
+
+  /* Rooms panel toggle */
+  document.getElementById('roomsNavBtn')?.addEventListener('click', openRoomsPanel);
+  document.getElementById('closeRoomsPanel')?.addEventListener('click', closeRoomsPanel);
+
+  /* FIX-5: Custom modal confirm */
+  document.getElementById('confirmCustom')?.addEventListener('click', () => {
+    const hrs  = parseInt(document.getElementById('customHrs')?.value||'0')||0;
+    const mins = parseInt(document.getElementById('customMins')?.value||'0')||0;
+    const total = hrs*3600 + mins*60;
+    if (total <= 0) { showToast('❌ Enter valid time'); return; }
+    document.getElementById('customModal').style.display = 'none';
+    /* Mark Custom button active */
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('btnCustom')?.classList.add('active');
+    const lbl = document.getElementById('modeLabel');
+    if (lbl) lbl.textContent = (hrs>0 ? hrs+'h ' : '') + mins + 'm COUNTDOWN';
+    if (window._setTimerMode) window._setTimerMode('countdown', total);
+  });
+
+  /* Close modals on backdrop click */
+  document.querySelectorAll('.room-modal').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.style.display='none'; });
+  });
+  document.querySelectorAll('.closeModal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.room-modal').style.display='none';
+    });
+  });
+
+  /* Render saved music tracks */
+  renderUserTracks();
+
+  /* Welcome popup */
+  const name = (localStorage.getItem('userName')||'there').split('@')[0];
+  const wn = document.getElementById('welcomeName');
+  const wp = document.getElementById('welcomePopup');
+  if (wn) wn.textContent = name;
+  if (wp) {
+    wp.classList.add('show');
+    setTimeout(()=>{
+      wp.style.transition='opacity .5s';
+      wp.style.opacity='0';
+      setTimeout(()=>wp.remove(),500);
+    }, 4000);
+  }
+});
+</script>
+
+<script type="module">
+/* ── Load Admin Music Tracks from Firebase ── */
+import { db, collection, onSnapshot, query, orderBy } from './firebase.js';
+
+onSnapshot(
+  query(collection(db, 'musicTracks'), orderBy('time', 'asc')),
+  snap => {
+    const container = document.getElementById('adminTracks');
+    if (!container) return;
+
+    if (snap.empty) {
+      container.innerHTML = '<div class="empty-tracks">No curated tracks added yet.</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    snap.docs.forEach(function(d) {
+      const t  = d.data();
+      const id = 'at_' + d.id;
+
+      const div = document.createElement('div');
+      div.className = 'track-item';
+      div.id = id;
+
+      const info = document.createElement('div');
+      info.className = 'track-info';
+      info.innerHTML = '<div class="track-name"><i class="fa-solid fa-music" style="color:var(--accent);font-size:11px;margin-right:5px;"></i>' +
+        (t.title || 'Untitled').replace(/</g,'&lt;') + '</div>' +
+        '<div class="track-sub">' + (t.subtitle || 'Curated Track').replace(/</g,'&lt;') + '</div>';
+
+      const playBtn = document.createElement('button');
+      playBtn.className = 'play-btn';
+      playBtn.innerHTML = '<i class="fa-solid fa-play" style="font-size:11px;"></i>';
+      (function(videoId, title, elemId){
+        playBtn.addEventListener('click', function(){ window.playTrack(videoId, title, elemId, false); });
+      })(t.videoId, t.title || 'Untitled', id);
+
+      div.appendChild(info);
+      div.appendChild(playBtn);
+      container.appendChild(div);
+    });
+  }
+);
+</script>
+
+<!-- RAIN CANVAS — starts on Focus, stops on session end -->
+<canvas id="rainCanvas"></canvas>
+
+<script>
+/* ═══ RAIN ANIMATION ═══════════════════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('rainCanvas');
+  const ctx    = canvas.getContext('2d');
+  let drops    = [];
+  let raf      = null;
+  let active   = false;
+  let opacity  = 0;
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function initDrops() {
+    drops = [];
+    const count = Math.floor(canvas.width / 9); // density scales with width
+    for (let i = 0; i < count; i++) {
+      drops.push({
+        x:      Math.random() * canvas.width,
+        y:      Math.random() * canvas.height,
+        speed:  3.5 + Math.random() * 4.5,
+        len:    12 + Math.random() * 16,
+        alpha:  0.12 + Math.random() * 0.22,
+        width:  0.6 + Math.random() * 0.8,
+        drift: -0.3 - Math.random() * 0.4   // slight leftward angle
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drops.forEach(d => {
+      const alpha = d.alpha * Math.min(opacity, 1);
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.drift * (d.len / d.speed), d.y + d.len);
+      ctx.strokeStyle = `rgba(160,220,255,${alpha})`;
+      ctx.lineWidth   = d.width;
+      ctx.lineCap     = 'round';
+      ctx.stroke();
+
+      d.y += d.speed;
+      d.x += d.drift;
+
+      if (d.y > canvas.height + d.len) {
+        d.y = -d.len - Math.random() * 60;
+        d.x = Math.random() * canvas.width;
+      }
+      if (d.x < -10) d.x = canvas.width + 5;
+    });
+  }
+
+  function loop() {
+    // Fade in / fade out
+    if (active) {
+      opacity = Math.min(1, opacity + 0.018);
+    } else {
+      opacity = Math.max(0, opacity - 0.012);
+      if (opacity <= 0) { raf = null; return; } // fully gone, stop loop
+    }
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
+
+  window._startRain = function() {
+    if (!drops.length) initDrops();
+    active = true;
+    canvas.classList.add('active');
+    if (!raf) { raf = requestAnimationFrame(loop); }
+  };
+
+  window._stopRain = function() {
+    active = false;
+    canvas.classList.remove('active');
+    // loop continues until opacity reaches 0
+  };
+})();
+</script>
+
+<script type="module" src="script.js"></script>
+<script type="module" src="index.js"></script>
+
+<!-- ════ ROOMS PANEL MODULE ════ -->
+<script type="module">
+import { db, auth } from './firebase.js';
+import {
+  collection, doc, onSnapshot, getDoc, setDoc, query,
+  orderBy, limit, where, getDocs
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+// ── State ────────────────────────────────────────────────────────────────────
+let _selectedRoom    = null;  // { id, name, password }
+let _topRoomsUnsub   = null;
+let _myUid           = null;
+let _myName          = null;
+
+// ── Open / Close ─────────────────────────────────────────────────────────────
+window.openRoomsPanel = function() {
+  const panel = document.getElementById('roomsPanel');
+  if (!panel) return;
+  panel.classList.add('open');
+  initRoomsData();
+};
+
+window.closeRoomsPanel = function() {
+  const panel = document.getElementById('roomsPanel');
+  if (!panel) return;
+  panel.classList.remove('open');
+  hideJoinBar();
+  _selectedRoom = null;
+};
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  if (user) {
+    _myUid  = user.uid;
+    _myName = user.displayName || user.email || 'You';
+    loadRecentRooms();
+  }
+});
+
+// ── Initialise rooms data ─────────────────────────────────────────────────────
+function initRoomsData() {
+  loadTopRooms();
+  loadRecentRooms();
+}
+
+// ── Top Study Rooms — real-time, top 5 by member count ───────────────────────
+function loadTopRooms() {
+  const container = document.getElementById('topRoomsList');
+  if (!container) return;
+
+  if (_topRoomsUnsub) _topRoomsUnsub();
+
+  // Listen to ALL users to count per room (rooms collection doesn't store count)
+  _topRoomsUnsub = onSnapshot(collection(db, 'users'), usersSnap => {
+    // Count total joined + online per roomId
+    const roomMap = {};  // roomId → { totalJoined, onlineCount, name }
+
+    usersSnap.docs.forEach(d => {
+      const u = d.data();
+      const r = u.room;
+      if (!r || r === 'default') return;
+
+      if (!roomMap[r]) roomMap[r] = { totalJoined: 0, onlineCount: 0, name: r };
+      roomMap[r].totalJoined++;
+
+      const s = (u.status || '').toLowerCase();
+      const activeRecently = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
+      if (activeRecently && (s === 'online' || s.includes('focus'))) {
+        roomMap[r].onlineCount++;
+      }
+    });
+
+    // Fetch room names from rooms collection, then render
+    const roomIds = Object.keys(roomMap);
+    if (!roomIds.length) {
+      container.innerHTML = '<div class="rooms-empty">No active rooms right now. Create one! 🚀</div>';
+      return;
+    }
+
+    // Parallel fetch room docs for names
+    Promise.all(
+      roomIds.map(id => getDoc(doc(db, 'rooms', id))
+        .then(snap => ({ id, snap }))
+        .catch(() => ({ id, snap: null }))
+      )
+    ).then(results => {
+      results.forEach(({ id, snap }) => {
+        if (snap && snap.exists()) {
+          roomMap[id].name     = snap.data().name || id;
+          roomMap[id].password = snap.data().password || '';
+          roomMap[id].hasPass  = !!snap.data().password;
+          // Use persisted totalJoined from room doc if higher than current user count
+          const docJoined = snap.data().totalJoined || 0;
+          if (docJoined > roomMap[id].totalJoined) {
+            roomMap[id].totalJoined = docJoined;
+          }
+        }
+      });
+
+      // Sort by totalJoined desc, take top 5
+      const top5 = Object.entries(roomMap)
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => b.totalJoined - a.totalJoined)
+        .slice(0, 5);
+
+      container.innerHTML = '';
+      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+      top5.forEach((room, idx) => {
+        const card = buildRoomCard(room, idx, medals[idx], true);
+        container.appendChild(card);
+      });
+    });
+  });
+}
+
+// ── Recent Rooms — rooms user has joined (stored in localStorage) ─────────────
+function loadRecentRooms() {
+  const container = document.getElementById('recentRoomsList');
+  if (!container) return;
+
+  // Get recent rooms from localStorage
+  let recentIds = [];
+  try {
+    recentIds = JSON.parse(localStorage.getItem('uw_recent_rooms') || '[]');
+  } catch(e) {}
+
+  // Also include current room if any
+  const params = new URLSearchParams(location.search);
+  const curRoom = params.get('room');
+  if (curRoom && curRoom !== 'default' && !recentIds.includes(curRoom)) {
+    recentIds.unshift(curRoom);
+    saveRecentRoom(curRoom);
+  }
+
+  if (!recentIds.length) {
+    container.innerHTML = '<div class="rooms-empty">No recent rooms. Create or join a room to see it here.</div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="rooms-loading"><span class="rooms-spinner"></span> Loading…</div>';
+
+  // Fetch room data + live user counts
+  onSnapshot(collection(db, 'users'), usersSnap => {
+    // Count per room
+    const roomCount = {};
+    const roomOnline = {};
+    usersSnap.docs.forEach(d => {
+      const u = d.data();
+      const r = u.room;
+      if (!r || r === 'default') return;
+      roomCount[r]  = (roomCount[r]  || 0) + 1;
+      const s = (u.status || '').toLowerCase();
+      const activeRecently = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
+      if (activeRecently && (s === 'online' || s.includes('focus'))) {
+        roomOnline[r] = (roomOnline[r] || 0) + 1;
+      }
+    });
+
+    // Fetch room docs for names
+    Promise.all(
+      recentIds.slice(0, 10).map(id => getDoc(doc(db, 'rooms', id))
+        .then(snap => ({ id, snap }))
+        .catch(() => ({ id, snap: null }))
+      )
+    ).then(results => {
+      container.innerHTML = '';
+      let rendered = 0;
+
+      results.forEach(({ id, snap }) => {
+        const docJoined = snap?.exists() ? (snap.data().totalJoined || 0) : 0;
+        const liveCount = roomCount[id] || 0;
+        const roomData = {
+          id,
+          name:       snap?.exists() ? (snap.data().name || id) : id,
+          password:   snap?.exists() ? (snap.data().password || '') : '',
+          hasPass:    snap?.exists() ? !!snap.data().password : false,
+          totalJoined: Math.max(docJoined, liveCount),
+          onlineCount: roomOnline[id] || 0,
+        };
+
+        // Only show if room doc exists (not deleted)
+        if (!snap || !snap.exists()) return;
+
+        const card = buildRoomCard(roomData, rendered, null, false);
+        container.appendChild(card);
+        rendered++;
+      });
+
+      if (!rendered) {
+        container.innerHTML = '<div class="rooms-empty">No recent rooms found.</div>';
+      }
+    });
+  });
+}
+
+// ── Build Room Card ───────────────────────────────────────────────────────────
+function buildRoomCard(room, idx, medal, isTop) {
+  const card = document.createElement('div');
+  card.className = 'room-card-item';
+  card.dataset.roomId = room.id;
+
+  const initial = (room.name || '?')[0].toUpperCase();
+  const onlineStr  = room.onlineCount > 0
+    ? `<span class="rc-online"><span class="rc-online-dot"></span>${room.onlineCount} online</span>`
+    : '<span class="rc-total" style="color:rgba(255,255,255,.25);">0 online</span>';
+
+  card.innerHTML = `
+    <div class="rc-avatar">${initial}</div>
+    <div class="rc-info">
+      <div class="rc-name">${escStr(room.name)}${room.hasPass ? ' <i class="fa-solid fa-lock" style="font-size:11px;color:var(--text3);"></i>' : ''}</div>
+      <div class="rc-meta">
+        ${onlineStr}
+        <span class="rc-total">· ${room.totalJoined} joined</span>
+      </div>
+    </div>
+    ${medal ? `<div class="rc-rank-badge" style="position:absolute;top:10px;right:14px;font-size:16px;">${medal}</div>` : ''}
+  `;
+
+  card.addEventListener('click', () => selectRoom(room, card));
+  return card;
+}
+
+function escStr(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Select a room (show join bar) ─────────────────────────────────────────────
+function selectRoom(room, cardEl) {
+  _selectedRoom = room;
+
+  // Highlight selected
+  document.querySelectorAll('.room-card-item').forEach(c => c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+
+  // Check if user is already in this room
+  const params = new URLSearchParams(location.search);
+  const curRoom = params.get('room');
+  const alreadyInRoom = curRoom && curRoom === room.id;
+
+  // Show join bar
+  const bar      = document.getElementById('roomsJoinBar');
+  const nameEl   = document.getElementById('roomsJoinName');
+  const subEl    = document.getElementById('roomsJoinSub');
+  const joinBtn  = document.getElementById('roomsJoinBtn');
+
+  if (!bar) return;
+  nameEl.textContent = room.name || room.id;
+
+  if (alreadyInRoom) {
+    // Already in this room — show different state
+    subEl.innerHTML = '<i class="fa-solid fa-check-circle" style="color:var(--green);margin-right:4px;font-size:11px;"></i>You are already in this room';
+    joinBtn.textContent = 'View Room';
+    joinBtn.style.background = 'var(--green)';
+    joinBtn.style.boxShadow = '0 4px 16px rgba(16,185,129,0.35)';
+    joinBtn.onclick = () => {
+      window.closeRoomsPanel();
+      // Open room panel instead of navigating
+      if (window._openRoomSheet) window._openRoomSheet();
+    };
+  } else {
+    subEl.innerHTML = room.hasPass
+      ? '<i class="fa-solid fa-lock" style="margin-right:4px;font-size:11px;"></i>Password required'
+      : 'Public room &mdash; tap to enter';
+    joinBtn.textContent = 'Join Room';
+    joinBtn.style.background = '';
+    joinBtn.style.boxShadow = '';
+    joinBtn.onclick = () => joinSelectedRoom();
+  }
+
+  bar.style.display = 'flex';
+}
+
+function hideJoinBar() {
+  const bar = document.getElementById('roomsJoinBar');
+  if (bar) bar.style.display = 'none';
+}
+
+// ── Join Selected Room ────────────────────────────────────────────────────────
+async function joinSelectedRoom() {
+  if (!_selectedRoom) return;
+  const room = _selectedRoom;
+
+  // If room has password, prompt
+  if (room.hasPass && room.password) {
+    const entered = prompt(`🔒 Enter password for "${room.name}":`);
+    if (entered === null) return; // cancelled
+    if (entered !== room.password) {
+      showRoomsToast('❌ Wrong password. Try again.');
+      return;
+    }
+  }
+
+  // Save to recent rooms
+  saveRecentRoom(room.id);
+
+  // Navigate to room
+  window.closeRoomsPanel();
+  location.href = location.pathname + '?room=' + encodeURIComponent(room.id);
+}
+
+// ── Save recent room to localStorage ─────────────────────────────────────────
+function saveRecentRoom(roomId) {
+  try {
+    let recent = JSON.parse(localStorage.getItem('uw_recent_rooms') || '[]');
+    recent = [roomId, ...recent.filter(r => r !== roomId)].slice(0, 10);
+    localStorage.setItem('uw_recent_rooms', JSON.stringify(recent));
+  } catch(e) {}
+}
+
+// ── Rooms toast ───────────────────────────────────────────────────────────────
+function showRoomsToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast-msg';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+</script>
+</body>
+</html>
