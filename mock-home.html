@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Mock Test — Study Grid Prep</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="theme-color" content="#0f2027">
+
+<!-- AUTH GATE — runs before any paint -->
+<script>
+(function(){
+  var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(isPWA && !localStorage.getItem("userName")){
+    document.documentElement.style.display = 'none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+
+<!-- THEME — instant, before paint -->
+<script>
+(function(){
+  var saved = localStorage.getItem("theme");
+  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+
+<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="preload" href="assets/cuet.png" as="image">
+<link rel="preload" href="assets/jee.png" as="image">
+
+<style>
+/* ── DESIGN TOKENS — exact mirror of dashboard-home.html ── */
+:root{
+  --bg:#F0F2F8;
+  --surface:#FFFFFF;
+  --surface2:#F4F6FB;
+  --border:#E2E8F2;
+  --text:#0F172A;
+  --text2:#5A6785;
+  --text3:#94A3B8;
+  --accent:#5B5BF6;
+  --accent2:#7C3AED;
+  --green:#10B981;
+  --orange:#F97316;
+  --purple:#7C3AED;
+  --red:#EF4444;
+  --header-bg:rgba(240,242,248,0.97);
+  --nav-bg:rgba(248,249,253,0.98);
+  --sidebar-bg:#FFFFFF;
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.07);
+  --shadow:0 4px 16px rgba(0,0,0,0.09);
+  --shadow-md:0 8px 28px rgba(0,0,0,0.12);
+  --r:16px;
+  --t:0.2s ease;
+}
+[data-theme="dark"]{
+  --bg:#0D1120;
+  --surface:#151E32;
+  --surface2:#1A2440;
+  --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE;
+  --text2:#8B9EC8;
+  --text3:#3D5080;
+  --header-bg:rgba(13,17,32,0.97);
+  --nav-bg:rgba(13,17,32,0.98);
+  --sidebar-bg:#0E1628;
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.35);
+  --shadow:0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md:0 8px 32px rgba(0,0,0,0.55);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+html{ background:var(--bg); }
+body{
+  background:var(--bg);
+  color:var(--text);
+  display:flex; flex-direction:column;
+  min-height:100vh;
+  padding-bottom:80px;
+  animation:pageIn 0.25s ease;
+  user-select:none; -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+@keyframes pageIn{ from{ opacity:0; } to{ opacity:1; } }
+
+/* ── PAGE TRANSITION OVERLAY ── */
+#pageTransition{
+  position:fixed; inset:0;
+  background:var(--bg);
+  z-index:99999;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.22s ease;
+}
+#pageTransition.leaving{ opacity:1; pointer-events:all; }
+
+/* ── HEADER ── */
+header{
+  display:flex; align-items:center; gap:10px;
+  padding:14px 18px;
+  background:var(--header-bg);
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:9999;
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  box-shadow:var(--shadow-sm);
+  flex-shrink:0;
+}
+.pwa-ham-btn{
+  display:flex; flex-direction:column; gap:5px;
+  cursor:pointer; padding:9px 10px; border-radius:12px;
+  transition:var(--t); flex-shrink:0;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+[data-theme="dark"] .pwa-ham-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.1); }
+[data-theme="light"] .pwa-ham-btn{ background:#fff; border-color:rgba(0,0,0,0.08); }
+.pwa-ham-btn span{ width:20px; height:2px; background:var(--text); border-radius:2px; transition:var(--t); }
+.pwa-ham-btn span:nth-child(2){ width:14px; }
+.pwa-ham-btn:active{ opacity:0.7; transform:scale(0.93); }
+
+.site-title{
+  flex:1; display:flex; flex-direction:column; justify-content:center;
+  min-width:0; overflow:hidden;
+}
+.site-title-main{
+  font-size:16px; font-weight:700; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.site-title-sub{
+  font-size:11px; font-weight:400; color:var(--text2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-top:1px;
+}
+
+/* Profile avatar — matches dashboard-home exactly */
+.header-profile-btn{
+  width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:700; color:#fff;
+  cursor:pointer; flex-shrink:0;
+  box-shadow:0 3px 10px rgba(91,91,246,0.35);
+  transition:transform 0.2s, box-shadow 0.2s;
+  border:none; outline:none; text-decoration:none;
+}
+.header-profile-btn:hover{ transform:scale(1.08); box-shadow:0 5px 18px rgba(91,91,246,0.5); }
+.header-profile-btn:active{ transform:scale(0.94); }
+
+/* ── SIDEBAR — exact dashboard-home design ── */
+.pwa-sidebar{
+  position:fixed; top:0; left:0; width:280px; height:100%;
+  background:var(--sidebar-bg);
+  border-right:1px solid var(--border);
+  padding:0 0 90px 0; overflow-y:auto;
+  transform:translateX(-100%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  z-index:99999;
+  box-shadow:8px 0 40px rgba(0,0,0,0.15);
+}
+.pwa-sidebar.active{ transform:translateX(0); }
+[data-theme="dark"] .pwa-sidebar{ background:#0E1628 !important; border-right-color:rgba(255,255,255,0.07); box-shadow:8px 0 40px rgba(0,0,0,0.5); }
+[data-theme="light"] .pwa-sidebar{ background:#fff !important; box-shadow:8px 0 40px rgba(0,0,0,0.12); }
+
+#pwaOverlay{
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.4); display:none; z-index:9999;
+  backdrop-filter:blur(2px);
+}
+#pwaOverlay.active{ display:block; }
+
+.sidebar-header-bar{
+  padding:28px 18px 18px 18px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:8px;
+  background:linear-gradient(135deg, rgba(91,91,246,0.07), rgba(124,58,237,0.04));
+}
+.pwa-profile{ display:flex; align-items:center; gap:13px; cursor:pointer; }
+.pwa-avatar{
+  width:50px; height:50px; border-radius:16px;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; color:#fff; font-size:20px;
+  box-shadow:0 4px 14px rgba(91,91,246,0.35); flex-shrink:0;
+}
+.pwa-profile-info{ flex:1; min-width:0; }
+.pwa-profile-name{ font-size:15px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pwa-email{ font-size:11px; color:var(--text2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pwa-xp-mini{ font-size:12px; color:var(--text2); margin-top:6px; font-weight:600; display:flex; align-items:center; gap:10px; }
+.pwa-xp-mini .mini-stat{ display:flex; align-items:center; gap:4px; }
+
+.sidebar-nav{ padding:0 12px; }
+.sidebar-section-label{
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.9px; color:var(--text3);
+  padding:14px 8px 6px 8px;
+}
+.theme-selector-wrap{ margin:4px 0 12px 0; }
+.theme-selector-label{
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.8px; color:var(--text3); margin-bottom:8px; padding:0 2px;
+}
+.theme-selector-pills{
+  display:flex; gap:6px; background:var(--surface2);
+  border:1px solid var(--border); border-radius:14px; padding:5px;
+}
+.theme-pill{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+  padding:9px 6px; border-radius:10px; border:none; background:transparent;
+  font-size:12px; font-weight:600; color:var(--text2); cursor:pointer;
+  transition:all 0.2s ease; font-family:'Poppins',sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+.theme-pill:active{ transform:scale(0.94); }
+.theme-pill.active{
+  background:var(--surface); color:var(--accent);
+  box-shadow:0 2px 8px rgba(0,0,0,0.1); border:1px solid var(--border);
+}
+[data-theme="dark"] .theme-pill.active{
+  background:rgba(91,91,246,0.12); color:#818CF8;
+  border-color:rgba(91,91,246,0.25); box-shadow:0 2px 10px rgba(0,0,0,0.3);
+}
+.pwa-links{ display:flex; flex-direction:column; gap:3px; }
+.pwa-links a{
+  display:flex; align-items:center; gap:14px;
+  padding:13px 16px; border-radius:14px;
+  transition:0.18s; font-size:13.5px; font-weight:500;
+  text-decoration:none; color:var(--text);
+}
+.pwa-links a:hover{ background:var(--surface2); }
+.pwa-links a:active{ transform:scale(0.97); background:var(--surface2); }
+.pwa-links a i{ font-size:16px; width:22px; text-align:center; flex-shrink:0; }
+.sidebar-link-badge{
+  margin-left:auto; font-size:9px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.7px; padding:2px 7px; border-radius:50px;
+  background:rgba(91,91,246,0.12); color:#5B5BF6;
+}
+.sidebar-logout-btn{
+  display:flex; align-items:center; gap:10px;
+  background:transparent; border:1px solid rgba(239,68,68,0.25);
+  color:var(--text2); font-size:13px; font-weight:500;
+  padding:12px 16px; border-radius:14px;
+  margin:8px 0 0 0; cursor:pointer; transition:var(--t); width:100%;
+}
+.sidebar-logout-btn i{ color:#EF4444; font-size:15px; width:20px; }
+.sidebar-logout-btn:hover{ background:rgba(239,68,68,0.05); color:#EF4444; }
+.sidebar-logout-btn:active{ background:rgba(239,68,68,0.1); }
+.sidebar-footer{
+  padding:14px 12px 0 12px;
+  border-top:1px solid var(--border);
+  margin-top:12px;
+}
+.sidebar-footer-title{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:var(--text3); margin-bottom:10px; }
+.sidebar-social-links{ display:flex; flex-direction:column; gap:7px; }
+.rate-btn{
+  display:flex; align-items:center; gap:10px;
+  background:transparent; border:1px solid var(--border);
+  border-radius:13px; padding:11px 15px;
+  color:var(--text); text-decoration:none; font-weight:500; font-size:13px;
+  transition:0.2s; cursor:pointer; width:100%;
+}
+.rate-btn i{ font-size:14px; color:var(--orange); }
+.rate-btn:hover{ background:var(--surface2); }
+.contact-btn{
+  display:flex; align-items:center; gap:10px;
+  background:transparent; border:1px solid var(--border);
+  border-radius:13px; padding:11px 15px;
+  color:var(--text); text-decoration:none; font-weight:500; font-size:13px; transition:0.2s;
+}
+.contact-btn i{ font-size:14px; color:#5B5BF6; }
+.contact-btn:hover{ background:var(--surface2); }
+
+/* ── MAIN CONTENT ── */
+main{
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:16px 16px 16px;
+  max-width:480px; margin:0 auto; width:100%;
+}
+@media(min-width:600px){ main{ padding:16px 28px; max-width:100%; } }
+
+/* ── GREETING ── */
+.greeting-section{
+  padding:16px 0 20px;
+  opacity:0; transform:translateY(14px);
+  animation:greetIn 0.5s ease 0.15s forwards;
+}
+@keyframes greetIn{ to{ opacity:1; transform:translateY(0); } }
+.greeting-hi{
+  font-size:clamp(20px,5.5vw,28px);
+  font-weight:800; line-height:1.2;
+  color:var(--text); letter-spacing:-0.3px;
+}
+.greeting-sub{
+  margin-top:5px; font-size:13.5px; color:var(--text2); font-weight:400;
+}
+
+/* ── SECTION LABEL ── */
+.section-label{
+  font-size:11px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.9px; color:var(--text3);
+  margin-bottom:12px; padding-left:2px;
+}
+
+/* ── EXAM CARDS ── */
+.cards-grid{
+  display:flex; flex-direction:column; gap:12px; margin-bottom:8px;
+}
+.exam-card{
+  position:relative;
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:22px;
+  padding:20px 18px;
+  display:flex; align-items:center; gap:16px;
+  cursor:pointer;
+  transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  opacity:0; transform:translateY(20px);
+  -webkit-tap-highlight-color:transparent;
+}
+.exam-card:nth-child(1){ animation:cardIn 0.5s ease 0.25s forwards; }
+.exam-card:nth-child(2){ animation:cardIn 0.5s ease 0.37s forwards; }
+.exam-card:nth-child(3){ animation:cardIn 0.5s ease 0.49s forwards; }
+@keyframes cardIn{ to{ opacity:1; transform:translateY(0); } }
+.exam-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-md); }
+.exam-card:active{ transform:scale(0.97); box-shadow:none; }
+
+/* CUET Card — purple accent (matches dashboard purple) */
+.card-cuet{ border-color:rgba(124,58,237,0.22); }
+[data-theme="light"] .card-cuet{ border-color:rgba(124,58,237,0.18); }
+
+/* JEE Card — amber accent */
+.card-jee{ border-color:rgba(245,158,11,0.22); }
+[data-theme="light"] .card-jee{ border-color:rgba(245,158,11,0.18); }
+
+/* Coming Soon Card */
+.card-more{ border-color:var(--border); filter:opacity(0.55); pointer-events:none; }
+
+/* NTA Logo wrap */
+.card-icon-wrap{
+  width:54px; height:54px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0; transition:transform 0.2s; overflow:hidden;
+}
+.exam-card:hover .card-icon-wrap{ transform:scale(1.06); }
+
+.nta-icon-wrap{
+  padding:6px !important;
+  background:#fff !important;
+  border:1.5px solid rgba(0,0,0,0.08) !important;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+[data-theme="dark"] .nta-icon-wrap{
+  background:#fff !important;
+  border-color:rgba(255,255,255,0.12) !important;
+}
+.nta-logo-img{ width:38px; height:38px; object-fit:contain; display:block; }
+
+.card-cuet .card-icon-wrap-fa{ background:rgba(124,58,237,0.1); }
+.card-jee  .card-icon-wrap-fa{ background:rgba(245,158,11,0.1); }
+.card-more .card-icon-wrap-fa{ background:rgba(148,163,184,0.1); }
+
+/* Card text */
+.card-text{ flex:1; min-width:0; }
+.card-title{
+  font-size:16px; font-weight:700; margin-bottom:3px; line-height:1.3; color:var(--text);
+}
+.card-subtitle{ font-size:12px; color:var(--text2); font-weight:400; line-height:1.4; }
+.card-tag{
+  display:inline-flex; align-items:center; gap:4px;
+  margin-top:6px; font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.5px; padding:2px 8px; border-radius:20px;
+}
+.card-cuet .card-tag{ background:rgba(124,58,237,0.1); color:#7C3AED; border:1px solid rgba(124,58,237,0.2); }
+.card-jee  .card-tag{ background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.2); }
+
+/* Start button */
+.card-btn{
+  padding:10px 20px; border:none; border-radius:50px;
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:transform 0.18s, box-shadow 0.18s;
+  white-space:nowrap; flex-shrink:0;
+}
+.card-cuet .card-btn{
+  background:linear-gradient(135deg,#7C3AED,#5B5BF6);
+  color:#fff; box-shadow:0 4px 14px rgba(124,58,237,0.3);
+}
+.card-cuet .card-btn:hover{ transform:translateY(-2px); box-shadow:0 7px 20px rgba(124,58,237,0.45); }
+.card-jee .card-btn{
+  background:linear-gradient(135deg,#F59E0B,#EF4444);
+  color:#fff; box-shadow:0 4px 14px rgba(245,158,11,0.3);
+}
+.card-jee .card-btn:hover{ transform:translateY(-2px); box-shadow:0 7px 20px rgba(245,158,11,0.45); }
+.coming-badge{
+  padding:8px 14px; border-radius:50px;
+  background:var(--surface2); border:1px solid var(--border);
+  font-size:11px; font-weight:600; color:var(--text3);
+  white-space:nowrap; flex-shrink:0;
+}
+
+/* Card accent strip (left edge) */
+.card-cuet::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg,#7C3AED,#5B5BF6); border-radius:2px 0 0 2px;
+}
+.card-jee::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg,#F59E0B,#EF4444); border-radius:2px 0 0 2px;
+}
+
+/* ── LOGIN MODAL ── */
+.modal-overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.6); backdrop-filter:blur(8px);
+  z-index:99998; display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity 0.25s ease;
+}
+.modal-overlay.open{ opacity:1; pointer-events:all; }
+.login-modal{
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:28px 28px 0 0; padding:28px 24px 40px;
+  width:100%; max-width:480px;
+  transform:translateY(40px);
+  transition:transform 0.3s cubic-bezier(0.34,1.2,0.64,1);
+  text-align:center;
+}
+.modal-overlay.open .login-modal{ transform:translateY(0); }
+.modal-drag{ width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+.modal-title{ font-size:18px; font-weight:700; margin-bottom:8px; color:var(--text); }
+.modal-sub{ font-size:13px; color:var(--text2); margin-bottom:24px; }
+.modal-login-btn{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%; padding:14px;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED); color:#fff;
+  border:none; border-radius:50px; font-weight:700; font-size:15px;
+  cursor:pointer; transition:0.2s; box-shadow:0 4px 16px rgba(91,91,246,0.3);
+  text-decoration:none;
+}
+.modal-login-btn:hover{ transform:translateY(-2px); box-shadow:0 8px 24px rgba(91,91,246,0.45); }
+.modal-login-btn img{ width:20px; height:20px; background:white; border-radius:50%; padding:2px; }
+.modal-cancel{ margin-top:14px; display:block; font-size:13px; color:var(--text2); cursor:pointer; padding:8px; }
+
+/* ── BOTTOM NAV — dashboard-home exact style ── */
+.pwa-bottom-nav{
+  position:fixed; bottom:0; left:0; width:100%; height:64px;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  display:flex; justify-content:space-around; align-items:center;
+  z-index:10000; border-top:1px solid var(--border);
+}
+[data-theme="dark"] .pwa-bottom-nav{ background:rgba(13,17,32,0.98) !important; }
+[data-theme="light"] .pwa-bottom-nav{ background:rgba(248,249,253,0.98) !important; box-shadow:0 -1px 0 rgba(0,0,0,0.06); }
+
+.nav-tab{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-decoration:none; color:var(--text3); font-size:10px; font-weight:500;
+  gap:4px; padding:6px 12px; border-radius:12px;
+  transition:color 0.2s; min-width:52px; flex:1;
+  background:none; border:none; cursor:pointer; font-family:'Poppins',sans-serif;
+  position:relative; overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-tab i{ font-size:20px; line-height:1; display:block; }
+.nav-tab span{ font-size:10px; font-weight:500; line-height:1.2; }
+.nav-tab:hover{ color:var(--text2); }
+.nav-tab.active{ color:var(--accent) !important; }
+.nav-tab.active i{ color:var(--accent) !important; }
+
+/* Ripple on tap */
+.nav-ripple{
+  position:absolute; border-radius:50%;
+  background:rgba(91,91,246,0.18);
+  transform:scale(0); pointer-events:none;
+  animation:rippleOut 0.45s ease forwards;
+}
+@keyframes rippleOut{ to{ transform:scale(4); opacity:0; } }
+
+@supports (padding-bottom: env(safe-area-inset-bottom)){
+  .pwa-bottom-nav{ padding-bottom:env(safe-area-inset-bottom); height:calc(64px + env(safe-area-inset-bottom)); }
+  main{ padding-bottom:calc(16px + env(safe-area-inset-bottom)); }
+}
+
+/* ── LIGHT MODE OVERRIDES ── */
+[data-theme="light"] header{
+  background:rgba(255,255,255,0.97) !important;
+  box-shadow:0 2px 12px rgba(0,0,0,0.07) !important;
+}
+</style>
+</head>
+<body>
+
+<!-- Page transition veil -->
+<div id="pageTransition"></div>
+
+<!-- ── SIDEBAR — dashboard-home exact ── -->
+<div id="sidebar" class="pwa-sidebar">
+  <div class="sidebar-header-bar">
+    <div class="pwa-profile" onclick="navigate('profile.html')">
+      <div class="pwa-avatar" id="sidebarAvatar">S</div>
+      <div class="pwa-profile-info">
+        <div class="pwa-profile-name" id="sidebarName">Student</div>
+        <div class="pwa-email" id="sidebarEmail"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-section-label">Appearance</div>
+    <div class="theme-selector-wrap">
+      <div class="theme-selector-pills">
+        <button class="theme-pill" id="pillLight" onclick="setTheme('light')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Light
+        </button>
+        <button class="theme-pill" id="pillDark" onclick="setTheme('dark')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Dark
+        </button>
+        <button class="theme-pill" id="pillSystem" onclick="setTheme('system')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          System
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">Features</div>
+    <div class="pwa-links">
+      <a href="mock-home.html" style="background:rgba(124,58,237,0.06);">
+        <span style="width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7C3AED,#5B2BF6);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 8px rgba(124,58,237,0.35);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="13" height="18" rx="2.5" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/><line x1="8.5" y1="7.5" x2="15.5" y2="7.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.6" stroke-linecap="round"/><line x1="8.5" y1="11" x2="15.5" y2="11" stroke="rgba(255,255,255,0.9)" stroke-width="1.6" stroke-linecap="round"/><line x1="8.5" y1="14.5" x2="13" y2="14.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.6" stroke-linecap="round"/><path d="M13 16.5l1.3 1.3L17 14" stroke="rgba(255,255,255,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        Mock Tests
+        <span class="sidebar-link-badge">Active</span>
+      </a>
+      <a href="timer.html">
+        <span style="width:28px;height:28px;border-radius:9px;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-stopwatch" style="color:#10B981;font-size:13px;"></i>
+        </span>
+        Focus Timer
+      </a>
+      <a href="playlist.html">
+        <span style="width:28px;height:28px;border-radius:9px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-brands fa-youtube" style="color:#EF4444;font-size:13px;"></i>
+        </span>
+        Study Playlist
+      </a>
+      <a href="mainleaderboard.html">
+        <span style="width:28px;height:28px;border-radius:9px;background:rgba(245,158,11,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-trophy" style="color:#F59E0B;font-size:13px;"></i>
+        </span>
+        Leaderboard
+      </a>
+      <a href="subscription.html">
+        <span style="width:28px;height:28px;border-radius:9px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-crown" style="color:#F59E0B;font-size:13px;"></i>
+        </span>
+        Subscription
+      </a>
+    </div>
+
+    <div class="sidebar-section-label" style="margin-top:4px;">Account</div>
+    <div class="pwa-links">
+      <button class="sidebar-logout-btn" onclick="handleLogout()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-social-links">
+        <a href="contact.html" class="contact-btn">
+          <i class="fa-solid fa-headset"></i> Contact Us
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="pwaOverlay" onclick="closeSidebar()"></div>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="pwa-ham-btn" onclick="toggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="site-title">
+    <div class="site-title-main">Mock Tests</div>
+    <div class="site-title-sub">JEE · CUET · NEET & Boards</div>
+  </div>
+
+  <div class="header-profile-btn" id="headerProfileBtn" onclick="navigate('profile.html')" title="Profile" role="button">S</div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- GREETING -->
+  <section class="greeting-section">
+    <div class="greeting-hi" id="greetingText"></div>
+    <p class="greeting-sub">Ready to practice today? 📝</p>
+  </section>
+
+  <!-- EXAM CARDS -->
+  <p class="section-label">Choose your exam</p>
+
+  <div class="cards-grid">
+
+    <!-- CUET -->
+    <div class="exam-card card-cuet" id="cardCuet" onclick="handleCardClick('cuet')" role="button" tabindex="0">
+      <div class="card-icon-wrap nta-icon-wrap">
+        <img src="assets/cuet.png" alt="CUET" class="nta-logo-img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <i class="fa-solid fa-graduation-cap" style="display:none;color:#7C3AED;font-size:22px;"></i>
+      </div>
+      <div class="card-text">
+        <div class="card-title">CUET Mock Test</div>
+        <div class="card-subtitle">NTA-based real exam pattern</div>
+        <div class="card-tag"><i class="fa-solid fa-shield-halved" style="font-size:8px;"></i> NTA Official</div>
+      </div>
+      <button class="card-btn" onclick="handleCardClick('cuet');event.stopPropagation()">Start</button>
+    </div>
+
+    <!-- JEE -->
+    <div class="exam-card card-jee" id="cardJee" onclick="handleCardClick('jee')" role="button" tabindex="0">
+      <div class="card-icon-wrap nta-icon-wrap">
+        <img src="assets/jee.png" alt="JEE" class="nta-logo-img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <i class="fa-solid fa-flask" style="display:none;color:#F59E0B;font-size:22px;"></i>
+      </div>
+      <div class="card-text">
+        <div class="card-title">JEE Mock Test</div>
+        <div class="card-subtitle">Mains pattern · PCM</div>
+        <div class="card-tag"><i class="fa-solid fa-shield-halved" style="font-size:8px;"></i> NTA Official</div>
+      </div>
+      <button class="card-btn" onclick="handleCardClick('jee');event.stopPropagation()">Start</button>
+    </div>
+
+    <!-- More Exams — Coming Soon -->
+    <div class="exam-card card-more" aria-disabled="true">
+      <div class="card-icon-wrap card-icon-wrap-fa" style="background:rgba(148,163,184,0.1);">
+        <i class="fa-solid fa-layer-group" style="color:var(--text3);font-size:22px;"></i>
+      </div>
+      <div class="card-text">
+        <div class="card-title">More Exams</div>
+        <div class="card-subtitle">NEET, Boards & more</div>
+      </div>
+      <span class="coming-badge">Coming Soon</span>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── LOGIN MODAL (web-only) ── -->
+<div class="modal-overlay" id="loginModal" onclick="handleModalBackdrop(event)">
+  <div class="login-modal">
+    <div class="modal-drag"></div>
+    <div style="margin-bottom:14px;">
+      <i class="fa-solid fa-lock" style="font-size:32px;color:var(--accent);"></i>
+    </div>
+    <div class="modal-title">Sign in to continue</div>
+    <div class="modal-sub">You need to sign in to access mock tests and track your progress.</div>
+    <a href="login.html" class="modal-login-btn">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+      Continue with Google
+    </a>
+    <span class="modal-cancel" onclick="closeLoginModal()">Maybe later</span>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV — dashboard-home style, direct navigation ── -->
+<div id="pwaBottomNav" class="pwa-bottom-nav">
+  <button class="nav-tab" id="nav-home" onclick="navigate('dashboard-home.html')">
+    <i class="fa-solid fa-house"></i><span>Home</span>
+  </button>
+  <button class="nav-tab active" id="nav-mock" onclick="triggerRipple(this)">
+    <i class="fa-solid fa-file-pen"></i><span>Mock</span>
+  </button>
+  <button class="nav-tab" id="nav-tests" onclick="navigate('testhistory.html')">
+    <i class="fa-solid fa-clock-rotate-left"></i><span>My Tests</span>
+  </button>
+  <button class="nav-tab" id="nav-profile" onclick="navigate('profile.html')">
+    <i class="fa-regular fa-circle-user"></i><span>Profile</span>
+  </button>
+</div>
+
+<script src="theme.js"></script>
+
+<script>
+// ── Ripple utility
+function triggerRipple(tabEl) {
+  const r = document.createElement('span');
+  r.className = 'nav-ripple';
+  r.style.cssText = 'width:60px;height:60px;left:50%;top:50%;margin:-30px 0 0 -30px;';
+  tabEl.appendChild(r);
+  setTimeout(() => r.remove(), 500);
+}
+
+// ── Theme pills sync
+function syncThemePills() {
+  const saved = localStorage.getItem('theme') || 'system';
+  document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
+  const map = { light:'pillLight', dark:'pillDark', system:'pillSystem' };
+  const el = document.getElementById(map[saved]);
+  if(el) el.classList.add('active');
+}
+window.setTheme = function(t) {
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolved = t === 'system' ? (systemDark ? 'dark' : 'light') : t;
+  document.documentElement.setAttribute('data-theme', resolved);
+  localStorage.setItem('theme', t);
+  syncThemePills();
+};
+syncThemePills();
+
+// ── Sidebar
+window.toggleSidebar = function() {
+  document.getElementById('sidebar').classList.toggle('active');
+  document.getElementById('pwaOverlay').classList.toggle('active');
+};
+window.closeSidebar = function() {
+  document.getElementById('sidebar').classList.remove('active');
+  document.getElementById('pwaOverlay').classList.remove('active');
+};
+
+// ── Navigate with fade
+window.navigate = function(url) {
+  const veil = document.getElementById('pageTransition');
+  veil.classList.add('leaving');
+  setTimeout(() => { window.location.href = url; }, 220);
+};
+</script>
+
+<script type="module">
+import { auth, onAuthStateChanged, signOut, db, doc, getDoc } from './firebase.js';
+
+const isPWA = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+/* ── Maintenance check ── */
+(async () => {
+  try {
+    const snap = await getDoc(doc(db, 'maintenance', 'current'));
+    if (snap.exists() && snap.data().enabled) {
+      const d = snap.data();
+      const msg = d.message || 'We are performing scheduled maintenance. Please check back soon.';
+      document.body.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;font-family:Poppins,sans-serif;"><div style="max-width:440px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🔧</div><div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:10px;">Under Maintenance</div><div style="font-size:14px;color:var(--text2);line-height:1.6;">${msg}</div></div></div>`;
+    }
+  } catch(e) {}
+})();
+
+/* ── Auth state ── */
+let currentUser = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    initWithUser(user);
+  } else {
+    currentUser = null;
+    if (!isPWA()) window.navigate('login.html');
+  }
+});
+
+function initWithUser(user) {
+  const name = (user.displayName || '').split(' ')[0] || localStorage.getItem('userName') || 'Student';
+  const initial = name.charAt(0).toUpperCase();
+
+  // Header profile
+  const profileBtn = document.getElementById('headerProfileBtn');
+  if (profileBtn) profileBtn.textContent = initial;
+
+  // Sidebar
+  const avatarEl = document.getElementById('sidebarAvatar');
+  const nameEl   = document.getElementById('sidebarName');
+  const emailEl  = document.getElementById('sidebarEmail');
+  if (avatarEl) avatarEl.textContent = initial;
+  if (nameEl)   nameEl.textContent   = name;
+  if (emailEl)  emailEl.textContent  = user.email || '';
+
+  // Greeting
+  const greetEl = document.getElementById('greetingText');
+  if (greetEl) greetEl.textContent = `Hi, ${name} 👋`;
+}
+
+/* ── Card click ── */
+window.handleCardClick = function(exam) {
+  if (!currentUser) { openLoginModal(); return; }
+  const routes = { cuet: 'cuetmockselect.html', jee: 'jeemockselect.html' };
+  const dest = routes[exam];
+  if (dest) window.navigate(dest);
+};
+
+/* ── Login modal ── */
+window.openLoginModal = function() { document.getElementById('loginModal').classList.add('open'); };
+window.closeLoginModal = function() { document.getElementById('loginModal').classList.remove('open'); };
+window.handleModalBackdrop = function(e) { if (e.target === document.getElementById('loginModal')) closeLoginModal(); };
+
+/* ── Logout ── */
+window.handleLogout = async function() {
+  try {
+    await signOut(auth);
+    localStorage.removeItem('userName'); localStorage.removeItem('userEmail');
+    window.navigate('login.html');
+  } catch(e) { console.error('Logout error:', e); }
+};
+
+/* ── Theme color meta sync ── */
+(function(){
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(!meta) return;
+  function sync() { meta.content = document.documentElement.getAttribute('data-theme')==='dark' ? '#0D1120' : '#F0F2F8'; }
+  sync();
+  new MutationObserver(sync).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+})();
+</script>
+
+<script type="module" src="index.js"></script>
+
+</body>
+</html>
