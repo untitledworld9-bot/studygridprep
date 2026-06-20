@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Solutions — Study Grid Prep</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="/icon-192.png">
+<meta name="theme-color" content="#0f2027">
+
+<!-- AUTH GATE -->
+<script>
+(function(){
+  var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(isPWA && !localStorage.getItem("userName")){
+    document.documentElement.style.display='none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+
+<!-- THEME — instant -->
+<script>
+(function(){
+  var saved = localStorage.getItem("theme");
+  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute("data-theme", saved || (systemDark ? "dark" : "light"));
+})();
+</script>
+<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+
+<!-- MathJax — same as mock.html -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath:  [['\\(','\\)'], ['$','$']],
+    displayMath: [['\\[','\\]'], ['$$','$$']],
+    packages: {'[+]': ['base', 'ams', 'boldsymbol']},
+    tags: 'none'
+  },
+  options: {
+    skipHtmlTags: ['script','noscript','style','textarea','pre'],
+    processHtmlClass: 'math-render',
+    menuOptions: { settings: { zoom: 'None' } }
+  },
+  startup: { typeset: false }
+};
+document.addEventListener('contextmenu', function(e) {
+  if (e.target && e.target.closest && e.target.closest('mjx-container')) e.preventDefault();
+}, true);
+// Block long-press MathJax popup on mobile
+document.addEventListener('touchstart', function(e) {
+  if (e.target && e.target.closest && e.target.closest('mjx-container')) {
+    e.stopPropagation();
+  }
+}, true);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" crossorigin="anonymous" async></script>
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+============================================================ */
+:root {
+  /* ── Dashboard-home exact tokens ── */
+  --bg:             #F0F2F8;
+  --surface:        #FFFFFF;
+  --surface2:       #F4F6FB;
+  --border:         #E2E8F2;
+  --text:           #0F172A;
+  --text2:          #5A6785;
+  --text3:          #94A3B8;
+  --accent:         #5B5BF6;
+  --accent2:        #7C3AED;
+  --green:          #10B981;
+  --orange:         #F97316;
+  --red:            #EF4444;
+  /* Compat aliases */
+  --bg-start:       #F0F2F8;
+  --bg-end:         #F4F6FB;
+  --primary:        #5B5BF6;
+  --primary-dark:   #7C3AED;
+  --secondary:      #10B981;
+  --text-primary:   #0F172A;
+  --text-secondary: #5A6785;
+  --card-bg:        #FFFFFF;
+  --card-border:    #E2E8F2;
+  --header-bg:      rgba(240,242,248,0.97);
+  --glass-bg:       #FFFFFF;
+  --radius:         14px;
+  --shadow:         0 4px 16px rgba(0,0,0,0.09);
+}
+[data-theme="dark"] {
+  --bg:             #0D1120;
+  --surface:        #151E32;
+  --surface2:       #1A2440;
+  --border:         rgba(255,255,255,0.08);
+  --text:           #E8F0FE;
+  --text2:          #8B9EC8;
+  --text3:          #3D5080;
+  --bg-start:       #0D1120;
+  --bg-end:         #0D1120;
+  --text-primary:   #E8F0FE;
+  --text-secondary: #8B9EC8;
+  --card-bg:        rgba(255,255,255,0.05);
+  --card-border:    rgba(255,255,255,0.08);
+  --header-bg:      rgba(13,17,32,0.98);
+  --glass-bg:       rgba(255,255,255,0.04);
+  --shadow:         0 4px 20px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after {
+  margin:0; padding:0; box-sizing:border-box;
+  font-family:'Poppins', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html { background:var(--bg); height:100%; overflow:hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  display: flex; flex-direction: column;
+  height: 100%; height: 100dvh;
+  overflow: hidden;
+  user-select: none; -webkit-user-select: none;
+  overscroll-behavior-y: none;
+}
+
+/* PAGE TRANSITION */
+#pageTransition {
+  position:fixed; inset:0; background:var(--bg);
+  z-index:99999; opacity:0; pointer-events:none;
+  transition:opacity 0.22s ease;
+}
+#pageTransition.leaving { opacity:1; pointer-events:all; }
+
+/* ── HEADER ── */
+header {
+  display:flex; align-items:center;
+  padding:10px 14px;
+  background: var(--header-bg);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--card-border);
+  flex-shrink:0; z-index:900; gap:10px; min-height:54px;
+}
+[data-theme="light"] header {
+  background: rgba(255,255,255,0.97) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+
+.hdr-back {
+  width:34px; height:34px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card-bg); border:1px solid var(--card-border);
+  color:var(--text-secondary); font-size:14px;
+  cursor:pointer; flex-shrink:0; transition:all 0.18s;
+}
+.hdr-back:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+.hdr-center { flex:1; text-align:center; }
+.hdr-title  { font-size:clamp(13px,3.5vw,16px); font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hdr-sub    { font-size:10px; color:var(--text-secondary); font-weight:500; }
+
+.hdr-counter {
+  font-size:12px; font-weight:600; color:var(--text-secondary);
+  background:var(--card-bg); border:1px solid var(--card-border);
+  padding:4px 10px; border-radius:99px; white-space:nowrap; flex-shrink:0;
+}
+.hdr-avatar {
+  width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:700; color:#fff; flex-shrink:0;
+  box-shadow:0 3px 10px rgba(91,91,246,0.35);
+  transition:transform 0.2s;
+  cursor:pointer;
+}
+.hdr-avatar:hover { transform:scale(1.08); }
+
+/* ── QUESTION PANEL ── */
+#questionPanel {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  padding:16px 16px calc(140px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling:touch; scroll-behavior:smooth;
+}
+#questionPanel::-webkit-scrollbar { width:3px; }
+#questionPanel::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99px; }
+
+/* ── QUESTION CARD ── */
+.question-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding:18px; margin-bottom:14px;
+  animation: qIn 0.25s ease;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+[data-theme="dark"] .question-card { box-shadow:none; }
+@keyframes qIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+
+.q-header {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:14px; flex-wrap:wrap;
+}
+.q-num { font-size:12px; font-weight:700; color:var(--accent); text-transform:uppercase; }
+.q-subj-badge {
+  font-size:10px; font-weight:600; padding:3px 9px; border-radius:99px;
+  background:rgba(91,91,246,0.08); border:1px solid rgba(91,91,246,0.2);
+  color:var(--accent);
+}
+
+/* ── QUESTION TEXT ── */
+.q-text {
+  font-size:14px; line-height:1.8; color:var(--text-primary);
+  margin-bottom:16px; user-select:text; -webkit-user-select:text;
+  word-break:break-word; overflow-wrap:break-word;
+  overflow-x:auto; max-width:100%; white-space:normal;
+}
+
+/* Math overflow fix — inline math must stay inline-block */
+mjx-container[jax="CHTML"] {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  line-height: 1.4 !important;
+  margin: 0 1px !important;
+}
+mjx-container[jax="CHTML"][display="true"] {
+  display: block !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  margin: 8px 0 !important;
+  max-width: 100% !important;
+}
+.MathJax { max-width: 100% !important; }
+.math-render {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.8;
+}
+.question-card .match-table-wrap { max-width:100%; overflow-x:auto; }
+.question-card .match-table-wrap table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.question-card td, .question-card th { word-break:break-word; overflow-wrap:break-word; }
+
+/* ── OPTIONS ── */
+.options-list { display:flex; flex-direction:column; gap:10px; }
+
+.option-item {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:13px 15px;
+  background: var(--glass-bg);
+  border:1.5px solid var(--card-border);
+  border-radius:12px;
+  position:relative;
+  user-select:none;
+  transition: all 0.18s;
+}
+[data-theme="light"] .option-item {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+/* Correct option: green */
+.option-item.correct {
+  background: rgba(16,185,129,0.1);
+  border-color: #10B981;
+}
+
+/* Chosen wrong option: red */
+.option-item.chosen-wrong {
+  background: rgba(239,68,68,0.1);
+  border-color: #EF4444;
+}
+
+.opt-letter {
+  width:30px; height:30px; border-radius:8px;
+  background:var(--card-bg); border:1.5px solid var(--card-border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:var(--text-secondary);
+  flex-shrink:0; transition:all 0.18s;
+}
+.option-item.correct .opt-letter {
+  background:#10B981; border-color:#10B981; color:#fff;
+}
+.option-item.chosen-wrong .opt-letter {
+  background:#EF4444; border-color:#EF4444; color:#fff;
+}
+
+.opt-text { font-size:13px; line-height:1.6; color:var(--text-primary); flex:1; }
+
+/* Result badge below option */
+.opt-result-badge {
+  font-size:10px; font-weight:700; margin-top:4px; display:flex; align-items:center; gap:4px;
+}
+.badge-correct { color:#10B981; }
+.badge-wrong   { color:#EF4444; }
+
+/* Status box at bottom of card */
+.q-result-box {
+  margin-top:14px; padding:10px 14px; border-radius:10px;
+  font-size:12px; font-weight:600; display:flex; align-items:center; gap:8px;
+}
+.q-result-box.correct { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); color:#10B981; }
+.q-result-box.wrong   { background:rgba(239,68,68,0.08);  border:1px solid rgba(239,68,68,0.2);  color:#EF4444; }
+.q-result-box.skipped { background:rgba(156,163,175,0.08); border:1px solid rgba(156,163,175,0.2); color:var(--text-secondary); }
+
+/* ── CONTROLS BAR (only Next / Back) ── */
+#controlsBar {
+  position:fixed; bottom:0; left:0; right:0; z-index:800;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:var(--header-bg);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--card-border);
+  display:flex; gap:10px;
+}
+[data-theme="light"] #controlsBar {
+  box-shadow: 0 -1px 8px rgba(0,0,0,0.07);
+}
+
+.ctrl-btn {
+  flex:1; padding:12px 16px;
+  border-radius:12px; border:none;
+  font-size:13px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  transition:all 0.18s;
+}
+.ctrl-btn:active { transform:scale(0.96); }
+
+.btn-back-sol {
+  background:var(--card-bg); border:1px solid var(--card-border);
+  color:var(--text-primary);
+}
+.btn-prev-sol {
+  background:var(--card-bg); border:1.5px solid var(--card-border);
+  color:var(--text-secondary);
+  flex:0.85;
+}
+.btn-prev-sol:disabled {
+  opacity:0.35;
+  cursor:not-allowed;
+}
+.btn-next-sol {
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+  color:#fff;
+}
+
+/* ── EMPTY / LOADING ── */
+.no-data {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:60px 20px; text-align:center; gap:14px;
+}
+.no-data-icon { font-size:48px; opacity:0.3; }
+.no-data-title { font-size:17px; font-weight:700; }
+.no-data-sub { font-size:13px; color:var(--text-secondary); line-height:1.6; }
+.no-data-btn {
+  margin-top:8px; padding:11px 24px;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED); color:#fff;
+  border:none; border-radius:12px;
+  font-size:13px; font-weight:700; cursor:pointer;
+}
+
+/* Toast */
+#toastWrap {
+  position:fixed; bottom:120px; left:50%;
+  transform:translateX(-50%); z-index:9999;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  pointer-events:none;
+}
+.toast-msg {
+  background:var(--text); color:var(--bg);
+  padding:9px 18px; border-radius:99px;
+  font-size:12px; font-weight:600;
+  animation:toastIn 0.22s ease, toastOut 0.22s ease 1.8s forwards;
+  white-space:nowrap;
+}
+@keyframes toastIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateY(-6px)} }
+</style>
+</head>
+<body>
+
+<!-- AI ANSWER STYLES -->
+<style>
+/* ── AI Detailed Answer Button ── */
+.ai-ans-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(91,91,246,0.1) 0%, rgba(124,58,237,0.1) 100%);
+  border: 1.5px solid rgba(91,91,246,0.25);
+  color: var(--accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="dark"] .ai-ans-btn {
+  background: linear-gradient(135deg, rgba(139,92,246,0.16) 0%, rgba(34,211,238,0.10) 100%);
+}
+.ai-ans-btn:active { transform: scale(0.97); }
+.ai-ans-btn.open {
+  background: linear-gradient(135deg, rgba(139,92,246,0.22) 0%, rgba(34,211,238,0.18) 100%);
+  border-color: rgba(139,92,246,0.45);
+}
+.ai-ans-btn .btn-icon { font-size: 16px; }
+.ai-ans-btn .btn-label { flex: 1; text-align: left; }
+.ai-ans-btn .btn-chevron {
+  font-size: 11px;
+  transition: transform 0.22s;
+}
+.ai-ans-btn.open .btn-chevron { transform: rotate(180deg); }
+
+/* ── AI Answer Box ── */
+.ai-ans-box {
+  margin-top: 10px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(34,211,238,0.06) 100%);
+  border: 1.5px solid rgba(139,92,246,0.2);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease;
+  position: relative;
+}
+.ai-ans-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,#5B5BF6,#7C3AED);
+}
+.ai-ans-box.open {
+  max-height: 4000px;
+  opacity: 1;
+}
+.ai-ans-box-inner {
+  padding: 16px 16px 14px;
+}
+.ai-ans-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.ai-ans-avatar {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#5B5BF6,#7C3AED);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 12px rgba(139,92,246,0.28);
+}
+.ai-ans-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.ai-ans-sub { font-size: 10px; color: var(--text-secondary); font-weight: 500; }
+.ai-ans-body {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-primary);
+  min-height: 32px;
+}
+.ai-ans-body p { margin-bottom: 9px; }
+.ai-ans-body p:last-child { margin-bottom: 0; }
+
+.ai-ans-body strong { color: #8B5CF6; font-weight: 700; }
+.ai-ans-body em { color: var(--accent); font-style: normal; font-weight: 600; }
+.ai-ans-body ul { padding-left: 16px; margin: 6px 0; }
+.ai-ans-body ul li { margin-bottom: 5px; }
+
+/* AI typing cursor */
+.ai-cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  vertical-align: text-bottom;
+  background: #8B5CF6;
+  margin-left: 2px;
+  animation: ai-blink 0.9s step-end infinite;
+}
+@keyframes ai-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* loading state in ai box */
+.ai-ans-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 4px 0;
+}
+.ai-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(139,92,246,0.2);
+  border-top-color: #8B5CF6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Scroll Hint Popup ── */
+#aiScrollHint {
+  position: fixed;
+  bottom: 88px;
+  right: 14px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border-radius: 99px;
+  background: linear-gradient(135deg,#5B5BF6,#7C3AED);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.38);
+  opacity: 0;
+  transform: translateY(10px) scale(0.92);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+#aiScrollHint.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+#aiScrollHint .hint-icon {
+  animation: bounce-hint 1.4s ease infinite;
+}
+@keyframes bounce-hint {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+#aiScrollHint .hint-close {
+  margin-left: 3px;
+  font-size: 13px;
+  opacity: 0.7;
+  font-weight: 400;
+}
+</style>
+
+<div id="pageTransition"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr-back" onclick="goBack()" title="Back to Analysis">
+    <i class="fa-solid fa-arrow-left"></i>
+  </div>
+  <div class="hdr-center">
+    <div class="hdr-title">Solutions</div>
+    <div class="hdr-sub" id="hdrSub">Question by Question Review</div>
+  </div>
+  <div class="hdr-counter" id="hdrCounter">Q 1 / —</div>
+</header>
+
+<!-- QUESTION PANEL -->
+<div id="questionPanel">
+  <div id="questionContent"></div>
+</div>
+
+<!-- CONTROLS: Back to analysis, Previous, Next -->
+<div id="controlsBar" style="flex-wrap:wrap; gap:8px;">
+  <div style="display:flex;gap:8px;width:100%;">
+    <button class="ctrl-btn btn-back-sol" onclick="goBack()" style="flex:0.6;">
+      <i class="fa-solid fa-arrow-left"></i> Back
+    </button>
+    <button class="ctrl-btn btn-prev-sol" id="prevBtn" onclick="prevQuestion()">
+      <i class="fa-solid fa-arrow-left"></i> Prev
+    </button>
+    <button class="ctrl-btn btn-next-sol" id="nextBtn" onclick="nextQuestion()">
+      Next <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+  <!-- AI Analysis button — full width, appears after question data is loaded -->
+  <button id="solAiBtn" onclick="launchAIFromSolutions()" style="
+    display:none; width:100%; padding:7px 16px;
+    border:none; border-radius:10px;
+    background: linear-gradient(135deg,#5B5BF6 0%,#7C3AED 60%,#10B981 100%);
+    color:#fff; font-family:'Poppins',sans-serif;
+    font-size:12px; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 3px 12px rgba(139,92,246,0.25);
+    transition:all 0.18s; position:relative; overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+  ">
+    <span style="font-size:14px;">🤖</span>
+    AI Detailed Analysis
+    <span style="font-size:9px;font-weight:700;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:99px;padding:1px 7px;">NEW</span>
+  </button>
+</div>
+
+<div id="toastWrap"></div>
+
+<!-- AI Scroll Hint Popup -->
+<div id="aiScrollHint" onclick="handleScrollHintClick()">
+  <span class="hint-icon">👇</span>
+  <span>Try AI Detailed Answer</span>
+  <span class="hint-close" onclick="dismissScrollHint(event)">✕</span>
+</div>
+
+<script src="theme.js"></script>
+
+<script>
+/* ============================================================
+   SOLUTIONS PAGE
+   Reads lastTestResult from localStorage (written by mock.html).
+   Also re-fetches questions from Firestore to get correct answers
+   and question text for each question.
+============================================================ */
+
+window.navigate = function(url) {
+  const v = document.getElementById('pageTransition');
+  if (v) v.classList.add('leaving');
+  setTimeout(() => { window.location.href = url; }, 210);
+};
+
+window.goBack = function() {
+  // Flag so result-analysis knows we are returning — use cached result, not fresh localStorage
+  sessionStorage.setItem("returnFromSolutions", "1");
+  navigate("result-analysis.html");
+};
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast-msg';
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+/* ── Full math renderer — same as mock.html ── */
+function prepareMathHtml(raw) {
+  if (!raw) return '';
+
+  const imgPlaceholders = [];
+  const imgRe = /(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s]*)?)/gi;
+  let processed = raw.replace(imgRe, (match) => {
+    const idx = imgPlaceholders.length;
+    imgPlaceholders.push(`<br><img src="${match}" alt="image" style="max-width:100%;border-radius:8px;margin:8px 0;border:1px solid var(--card-border);" onerror="this.style.display='none'"><br>`);
+    return `\x00IMG${idx}\x00`;
+  });
+
+  processed = processed.replace(/(\\begin\{[^}]+\}[\s\S]*?\\end\{[^}]+\})/g, m => `\\[${m}\\]`);
+
+  const mathDelimRe = /(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g;
+  const parts = [];
+  let lastIdx = 0, match;
+  mathDelimRe.lastIndex = 0;
+  while ((match = mathDelimRe.exec(processed)) !== null) {
+    if (match.index > lastIdx) parts.push({ type:'text', val: processed.slice(lastIdx, match.index) });
+    parts.push({ type:'math', val: match[0] });
+    lastIdx = match.index + match[0].length;
+  }
+  if (lastIdx < processed.length) parts.push({ type:'text', val: processed.slice(lastIdx) });
+
+  const latexTokenRe = /\\[a-zA-Z]+|[_^]\{[^}]*\}|[_^][^\s{,;)}\]]+|\{[^{}]*\\[a-zA-Z]+[^{}]*\}/;
+
+  const resultParts = parts.map(part => {
+    if (part.type === 'math') return part.val;
+    const text = part.val;
+    const imgPlaceholderRe = /(\x00IMG\d+\x00)/g;
+    const subParts = text.split(imgPlaceholderRe);
+    return subParts.map(sp => {
+      if (/^\x00IMG\d+\x00$/.test(sp)) return sp;
+      if (latexTokenRe.test(sp)) {
+        // Wrap ONLY individual math tokens — not the whole segment.
+                // Only wrap fully-braced tokens — bare [_^] without {} cause MathJax errors
+        const tokenRe = /(\\[a-zA-Z]+(?:\s*\{[^{}]*\})*|[a-zA-Z0-9]+[_^]\{[^{}]*\})/g;
+        let r = '', li = 0, tm;
+        tokenRe.lastIndex = 0;
+        while ((tm = tokenRe.exec(sp)) !== null) {
+          if (tm.index > li) r += escHtml(sp.slice(li, tm.index));
+          r += `\\(${tm[0]}\\)`;
+          li = tm.index + tm[0].length;
+        }
+        if (li < sp.length) r += escHtml(sp.slice(li));
+        return r;
+      }
+      const fracRe = /(?<![:/\w])(-?\d+)\/(\d+)(?![\w/])/g;
+      const withFrac = sp.replace(fracRe, (_, num, den) => `\\(\\frac{${num}}{${den}}\\)`);
+      return escHtml(withFrac);
+    }).join('');
+  });
+
+  let html = resultParts.join('');
+  imgPlaceholders.forEach((imgHtml, idx) => { html = html.replace(`\x00IMG${idx}\x00`, imgHtml); });
+  return html;
+}
+
+function triggerMathJax(el) {
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise([el]).catch(e => console.warn('MathJax error:', e));
+  }
+}
+
+/* ── Format question text — same as mock.html ── */
+function formatQuestionText(raw) {
+  if (!raw) return '';
+  // Pre-convert Unicode superscripts/subscripts → LaTeX {braced} form
+  const _sup = {'²':'2','³':'3','¹':'1','⁰':'0','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-','⁺':'+'};
+  const _sub = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','₋':'-'};
+  const toSup = s => [...s].map(c => _sup[c] !== undefined ? _sup[c] : c).join('');
+  const toSub = s => [...s].map(c => _sub[c] !== undefined ? _sub[c] : c).join('');
+  const text = raw
+    .replace(/([×·x]10)([²³¹⁰-⁼]+)/g, (_, b, e) => `${b}^{${toSup(e)}}`)
+    .replace(/([A-Za-z\d])([²³¹⁰-⁼]+)/g, (_, c, e) => {
+      const a = toSup(e);
+      return /^[-+\d]+$/.test(a) ? `${c}^{${a}}` : c + e;
+    })
+    .replace(/([A-Za-z\d])([₀-₋]+)/g, (_, c, s) => `${c}_{${toSub(s)}}`);
+
+  // 1. Match List-I / List-II table
+  if (/Match\s+List[- ]?I/i.test(text)) {
+    const listIStart  = text.search(/\bList[- ]?I\b/i);
+    const listIIIdx   = text.search(/\bList[- ]?II\b/i);
+    const beforeListI = listIStart > 0 ? text.slice(0, listIStart).replace(/Match\s+List.*$/i,'').trim() : '';
+    const mainQ = beforeListI ? prepareMathHtml(beforeListI) : '';
+
+    const listISection  = listIIIdx > listIStart ? text.slice(listIStart, listIIIdx) : text.slice(listIStart);
+    const listIISection = listIIIdx > 0 ? text.slice(listIIIdx) : '';
+
+    const listIItems = [];
+    // Run on full text — lookahead stops at next (A-D), Roman numeral, Choose, or end.
+    const listIRe = /\(([A-D])\)\s*([^;(]+?)(?=\s*[,;]?\s*(?:\([A-D]\)|\((?:I{1,3}V?|VI{0,3}|IV|V|IX)\)|List[- ]?II|Choose|$))/g;
+    let m;
+    while ((m = listIRe.exec(text)) !== null) {
+      const val = m[2].replace(/[,;.]\s*$/, '').trim();
+      if (val && val.length > 1) listIItems.push({ key: m[1], val });
+    }
+
+    const listIIItems = [];
+    const listIIRe = /\((I{1,3}V?|VI{0,3}|IV|V|IX|\d+)\)\s*([^;(]+?)(?=\s*[,;]?\s*(?:\((?:I{1,3}V?|VI{0,3}|IV|V|IX|\d+)\)|Choose|$))/g;
+    while ((m = listIIRe.exec(text)) !== null) {
+      const val = m[2].replace(/[,;.]\s*$/, '').trim();
+      if (val && val.length > 1) listIIItems.push({ key: m[1], val });
+    }
+
+    if (listIItems.length > 0 || listIIItems.length > 0) {
+      const maxRows = Math.max(listIItems.length, listIIItems.length);
+      let tableHtml = `<div style="overflow-x:auto;">`;
+      if (mainQ) tableHtml += `<div style="margin-bottom:10px;" class="math-render">${mainQ}</div>`;
+      tableHtml += `<div style="font-weight:600;margin-bottom:8px;">Match List-I with List-II</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;">
+          <thead><tr>
+            <th style="text-align:left;padding:6px 10px;background:rgba(34,211,238,0.08);border:1px solid var(--card-border);width:50%;word-break:break-word;">List-I</th>
+            <th style="text-align:left;padding:6px 10px;background:rgba(34,211,238,0.08);border:1px solid var(--card-border);width:50%;word-break:break-word;">List-II</th>
+          </tr></thead><tbody>`;
+      for (let r = 0; r < maxRows; r++) {
+        const li  = listIItems[r]  ? `<strong>(${listIItems[r].key})</strong>&nbsp;<span class="math-render">${prepareMathHtml(listIItems[r].val)}</span>`  : '';
+        const lii = listIIItems[r] ? `<strong>(${listIIItems[r].key})</strong>&nbsp;<span class="math-render">${prepareMathHtml(listIIItems[r].val)}</span>` : '';
+        tableHtml += `<tr>
+          <td style="padding:7px 10px;border:1px solid var(--card-border);vertical-align:top;word-break:break-word;">${li}</td>
+          <td style="padding:7px 10px;border:1px solid var(--card-border);vertical-align:top;word-break:break-word;">${lii}</td>
+        </tr>`;
+      }
+      tableHtml += `</tbody></table></div>`;
+      return tableHtml;
+    }
+  }
+
+  // 2. (A)(B)(C)(D) sub-statement list
+  const abcdRe = /\(([A-D])\)\s+(.+?)(?=\s*(?:[,;]\s*)?\([A-D]\)|\s*Choose\s|\s*$)/g;
+  const validItems = [];
+  let am;
+  while ((am = abcdRe.exec(text)) !== null) {
+    if (am[2].trim().length > 5) validItems.push(am);
+  }
+
+  if (validItems.length >= 2) {
+    const firstIdx = text.indexOf(validItems[0][0]);
+    const mainPart = text.slice(0, firstIdx).trim();
+    const listPart = text.slice(firstIdx);
+
+    const itemParts = listPart.split(/(?=\([A-D]\)\s)/);
+    const items = itemParts
+      .map(p => p.trim())
+      .filter(p => /^\([A-D]\)\s/.test(p))
+      .map(p => {
+        const letter = p.match(/^\(([A-D])\)/)?.[1] || '';
+        let content = p.replace(/^\([A-D]\)\s*/, '').replace(/[,;]\s*$/, '').trim();
+        content = content.replace(/\s*Choose the correct[^.]*\.?/i, '').trim();
+        return { letter, content };
+      })
+      .filter(item => item.content.length > 2);
+
+    const chooseMatch = text.match(/Choose the correct[^.]*\.?/i);
+    const chooseNote = chooseMatch
+      ? `<div style="margin-top:10px;font-size:13px;color:var(--text-secondary);">${prepareMathHtml(chooseMatch[0])}</div>`
+      : '';
+
+    if (items.length >= 2) {
+      let html = '';
+      if (mainPart) html += `<div class="math-render" style="margin-bottom:10px;">${prepareMathHtml(mainPart)}</div>`;
+      html += `<div style="display:flex;flex-direction:column;gap:8px;">`;
+      items.forEach(item => {
+        html += `<div style="display:flex;gap:8px;align-items:flex-start;">
+          <span style="font-weight:700;color:var(--primary);flex-shrink:0;min-width:26px;">(${item.letter})</span>
+          <span class="math-render" style="flex:1;word-break:break-word;">${prepareMathHtml(item.content)}</span>
+        </div>`;
+      });
+      html += `</div>${chooseNote}`;
+      return html;
+    }
+  }
+
+  // 3. Default
+  return prepareMathHtml(text);
+}
+function processImageUrls(escapedText) {
+  const raw = escapedText.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+  return prepareMathHtml(raw);
+}
+
+/* ── STATE ── */
+const SOL_STATE = {
+  allQuestions: [], // [{subject, questionNo, question, options, correctAnswer, type}]
+  answers:      {}, // from lastTestResult.answers
+  flatList:     [], // flat [{secIdx, qIdx, subject, q, ans}] for navigation
+  currentIdx:   0,
+};
+
+/* ── LOAD ── */
+(async function init() {
+  let result = null;
+  // Priority: sessionStorage.solutionsData (passed from result-analysis when coming from history)
+  //           → localStorage.lastTestResult (direct from mock submit)
+  try {
+    const fromSession = sessionStorage.getItem('solutionsData');
+    if (fromSession) {
+      result = JSON.parse(fromSession);
+      sessionStorage.removeItem('solutionsData'); // clean up after reading
+      // Cache for launchAIFromSolutions to use
+      try { sessionStorage.setItem('_solResult', JSON.stringify(result)); } catch(e) {}
+    }
+  } catch(e) {}
+  if (!result) {
+    try { result = JSON.parse(localStorage.getItem('lastTestResult') || 'null'); } catch(e){}
+  }
+
+  if (!result) {
+    document.getElementById('questionContent').innerHTML = `
+      <div class="no-data">
+        <div class="no-data-icon"><i class="fa-regular fa-circle-xmark"></i></div>
+        <div class="no-data-title">No Test Data Found</div>
+        <div class="no-data-sub">Please complete a mock test first to view solutions.</div>
+        <button class="no-data-btn" onclick="navigate('mock-home.html')">Go to Mock Tests</button>
+      </div>`;
+    return;
+  }
+
+  SOL_STATE.answers = result.answers || {};
+
+  const exam    = (result.exam || 'cuet').toLowerCase();
+  const testId  = result.testId || localStorage.getItem('selectedTestId') || '';
+
+  // Update sub header
+  const sub = document.getElementById('hdrSub');
+  if (sub) sub.textContent = `${(exam).toUpperCase()} Mock — Solutions`;
+
+  // Fetch questions from Firestore
+  try {
+    // We use dynamic import to work with module system
+    const firebase = await import('./firebase.js');
+    const { db, collection, getDocs, query, where, orderBy } = firebase;
+
+    let q;
+    if (testId) {
+      q = query(collection(db, 'mockQuestions'), where('testId','==', testId));
+    } else if (exam === 'jee') {
+      q = query(collection(db, 'mockQuestions'), where('exam','==','jee'));
+    } else {
+      const year  = result.year  || localStorage.getItem('selectedYear')  || '';
+      const shift = result.shift || localStorage.getItem('selectedShift') || '';
+      q = query(collection(db, 'mockQuestions'), where('exam','==','cuet'), where('year','==', parseInt(year)||year), where('shift','==', shift));
+    }
+
+    const snap = await getDocs(q);
+    const allQ = [];
+    snap.forEach(d => allQ.push({ id: d.id, ...d.data() }));
+    SOL_STATE.allQuestions = allQ;
+  } catch(err) {
+    console.warn('Firestore fetch error:', err);
+    // Fallback: reconstruct from answers only (no question text)
+  }
+
+  buildFlatList(result);
+  renderCurrentQuestion();
+
+  // Show AI button now that we have data
+  const aiBtn = document.getElementById('solAiBtn');
+  if (aiBtn) aiBtn.style.display = 'flex';
+})();
+
+function buildFlatList(result) {
+  const answers  = SOL_STATE.answers;
+  const allQ     = SOL_STATE.allQuestions;
+
+  // Group questions by subject same way mock.html does
+  let subjects = result.subjects || [];
+  if (!subjects.length) {
+    try { subjects = JSON.parse(localStorage.getItem('selectedSubjects') || '[]'); } catch(e){}
+  }
+  if (!subjects.length) subjects = Object.keys(answers);
+
+  function normSubject(s) { return (s||'').trim().toLowerCase(); }
+
+  subjects.forEach(sub => {
+    const subAnswers = answers[sub] || {};
+    const subQs = allQ
+      .filter(q => normSubject(q.subject) === normSubject(sub))
+      .sort((a,b) => (a.questionNo||0) - (b.questionNo||0));
+
+    const ansKeys = Object.keys(subAnswers).map(Number).sort((a,b)=>a-b);
+
+    // If we have Firestore questions, use them; otherwise generate stubs
+    const questionsToUse = subQs.length > 0
+      ? subQs
+      : ansKeys.map(i => ({ subject: sub, questionNo: i+1, question: `Question ${i+1}`, options: [], correctAnswer: '' }));
+
+    questionsToUse.forEach((q, i) => {
+      const ansObj = subAnswers[i] || { answer: null };
+      SOL_STATE.flatList.push({ subject: sub, q, ansObj, globalIdx: SOL_STATE.flatList.length });
+    });
+  });
+
+  // Update counter
+  updateCounter();
+}
+
+function updateCounter() {
+  const el = document.getElementById('hdrCounter');
+  if (el) el.textContent = `Q ${SOL_STATE.currentIdx + 1} / ${SOL_STATE.flatList.length}`;
+}
+
+function renderCurrentQuestion() {
+  const content = document.getElementById('questionContent');
+  const flat    = SOL_STATE.flatList;
+  const total   = flat.length;
+
+  if (!total) {
+    content.innerHTML = `<div class="no-data"><div class="no-data-icon"><i class="fa-regular fa-circle-question"></i></div><div class="no-data-title">No Questions Found</div><div class="no-data-sub">Questions could not be loaded. Try completing the test again.</div></div>`;
+    return;
+  }
+
+  const item    = flat[SOL_STATE.currentIdx];
+  const { subject, q, ansObj } = item;
+  const letters = ['A','B','C','D','E'];
+
+  const userAnswer    = ansObj?.answer !== undefined ? ansObj.answer : null;
+  const correctAnswer = (q.correctAnswer || '').toString().toUpperCase();
+  const type          = (q.type || 'mcq').toLowerCase();
+
+  const isCorrect = userAnswer !== null && String(userAnswer).trim() !== '' && String(userAnswer).toUpperCase() === correctAnswer;
+  const isSkipped = userAnswer === null || userAnswer === '';
+
+  const typeLabelMap = { mcq:'MCQ', integer:'Integer', match:'Match', table:'Table' };
+  const typeLabel = typeLabelMap[type] || 'MCQ';
+
+  let optionsHTML = '';
+
+  if (type === 'integer') {
+    const ua      = userAnswer !== null ? String(userAnswer) : '—';
+    const correct = (q.correctAnswer || '').toString();
+    optionsHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+        <div style="padding:12px 15px;border-radius:12px;background:rgba(16,185,129,0.1);border:1.5px solid #10B981;">
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check" style="margin-right:5px;"></i>Correct Answer</div>
+          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">${escHtml(correct)}</div>
+        </div>
+        <div style="padding:12px 15px;border-radius:12px;background:${isCorrect?'rgba(16,185,129,0.08)':isSkipped?'rgba(156,163,175,0.08)':'rgba(239,68,68,0.08)'};border:1.5px solid ${isCorrect?'#10B981':isSkipped?'var(--card-border)':'#EF4444'};">
+          <div style="font-size:11px;color:${isCorrect?'#10B981':isSkipped?'var(--text-secondary)':'#EF4444'};font-weight:700;margin-bottom:4px;">
+            <i class="fa-solid ${isCorrect?'fa-check':isSkipped?'fa-minus':'fa-xmark'}" style="margin-right:5px;"></i>Your Answer
+          </div>
+          <div style="font-size:18px;font-weight:700;color:var(--text-primary);">${escHtml(ua)}</div>
+        </div>
+      </div>`;
+
+  } else if (type === 'match') {
+    const left    = Array.isArray(q.left)    ? q.left    : [];
+    const right   = Array.isArray(q.right)   ? q.right   : [];
+    const options = Array.isArray(q.options) ? q.options : [];
+    const abcd    = ['A','B','C','D','E','F'];
+    const roman   = ['I','II','III','IV','V','VI'];
+    const maxRows = Math.max(left.length, right.length, 1);
+
+    optionsHTML = `
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--card-border);margin:4px 0 12px;">
+        <table style="width:100%;border-collapse:collapse;min-width:300px;font-size:13px;">
+          <thead>
+            <tr>
+              <th style="padding:9px 14px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);background:rgba(34,211,238,.06);border-bottom:1px solid var(--card-border);">Column I</th>
+              <th style="padding:9px 14px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);background:rgba(34,211,238,.06);border-bottom:1px solid var(--card-border);">Column II</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Array.from({length:maxRows},(_,i)=>`
+            <tr style="${i%2===1?'background:rgba(0,0,0,.018);':''}">
+              <td style="padding:10px 14px;border-bottom:${i<maxRows-1?'1px solid var(--card-border)':'none'};">
+                <div style="display:flex;align-items:flex-start;gap:8px;">
+                  <span style="flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(34,211,238,.12);color:var(--primary);border:1px solid rgba(34,211,238,.25);font-size:11px;font-weight:700;margin-top:1px;">${abcd[i]||String.fromCharCode(65+i)}</span>
+                  <span class="math-render" style="flex:1;line-height:1.5;">${prepareMathHtml(left[i]||'')}</span>
+                </div>
+              </td>
+              <td style="padding:10px 14px;border-bottom:${i<maxRows-1?'1px solid var(--card-border)':'none'};">
+                <div style="display:flex;align-items:flex-start;gap:8px;">
+                  <span style="flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(139,92,246,.12);color:#8B5CF6;border:1px solid rgba(139,92,246,.25);font-size:11px;font-weight:700;margin-top:1px;">${roman[i]||String(i+1)}</span>
+                  <span class="math-render" style="flex:1;line-height:1.5;">${prepareMathHtml(right[i]||'')}</span>
+                </div>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    if (options.length) {
+      optionsHTML += `<div class="options-list">` +
+        options.map((opt,oi) => {
+          const letter        = letters[oi];
+          const isThisCorrect = letter.toUpperCase() === correctAnswer;
+          const isChosen      = String(userAnswer).toUpperCase() === letter.toUpperCase();
+          const isChosenWrong = isChosen && !isThisCorrect;
+          let cls = isThisCorrect ? 'correct' : isChosenWrong ? 'chosen-wrong' : '';
+          let resultBadge = '';
+          if (isThisCorrect && isChosen)       resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct — You chose this</div>`;
+          else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct Answer</div>`;
+          else if (isChosenWrong)              resultBadge = `<div class="opt-result-badge badge-wrong"><i class="fa-solid fa-xmark"></i> Wrong — You chose this</div>`;
+          return `
+            <div class="option-item ${cls}">
+              <div class="opt-letter">${letter}</div>
+              <div style="flex:1;min-width:0;overflow:hidden;">
+                <div class="opt-text math-render">${prepareMathHtml(opt)}</div>
+                ${resultBadge}
+              </div>
+            </div>`;
+        }).join('') + `</div>`;
+    } else {
+      optionsHTML += `
+        <div style="padding:12px 15px;border-radius:12px;background:rgba(16,185,129,0.08);border:1.5px solid #10B981;margin-top:4px;">
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check" style="margin-right:5px;"></i>Correct Answer</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text-primary);">${escHtml(correctAnswer||'—')}</div>
+        </div>`;
+    }
+
+  } else if (type === 'table') {
+    const tableData = Array.isArray(q.table)   ? q.table   : [];
+    const options   = Array.isArray(q.options) ? q.options : [];
+
+    if (tableData.length) {
+      let thead = '', tbody = '', headerDone = false;
+      tableData.forEach(row => {
+        if (row.header && !headerDone) {
+          thead = `<thead><tr>${row.header.map(h=>`<th style="padding:9px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);background:rgba(245,158,11,.07);border-bottom:1px solid var(--card-border);white-space:nowrap;" class="math-render">${prepareMathHtml(h)}</th>`).join('')}</tr></thead>`;
+          headerDone = true;
+        } else if (row.row) {
+          tbody += `<tr>${row.row.map(cell=>`<td style="padding:9px 12px;border-bottom:1px solid var(--card-border);color:var(--text-primary);font-size:13px;" class="math-render">${prepareMathHtml(cell)}</td>`).join('')}</tr>`;
+        }
+      });
+      optionsHTML = `
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--card-border);margin:4px 0 12px;">
+          <table style="width:100%;border-collapse:collapse;min-width:260px;">${thead}<tbody>${tbody}</tbody></table>
+        </div>`;
+    }
+
+    if (options.length) {
+      optionsHTML += `<div class="options-list">` +
+        options.map((opt,oi) => {
+          const letter        = letters[oi];
+          const isThisCorrect = letter.toUpperCase() === correctAnswer;
+          const isChosen      = String(userAnswer).toUpperCase() === letter.toUpperCase();
+          const isChosenWrong = isChosen && !isThisCorrect;
+          let cls = isThisCorrect ? 'correct' : isChosenWrong ? 'chosen-wrong' : '';
+          let resultBadge = '';
+          if (isThisCorrect && isChosen)       resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct — You chose this</div>`;
+          else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct Answer</div>`;
+          else if (isChosenWrong)              resultBadge = `<div class="opt-result-badge badge-wrong"><i class="fa-solid fa-xmark"></i> Wrong — You chose this</div>`;
+          return `
+            <div class="option-item ${cls}">
+              <div class="opt-letter">${letter}</div>
+              <div style="flex:1;min-width:0;overflow:hidden;">
+                <div class="opt-text math-render">${prepareMathHtml(opt)}</div>
+                ${resultBadge}
+              </div>
+            </div>`;
+        }).join('') + `</div>`;
+    } else {
+      optionsHTML += `
+        <div style="padding:12px 15px;border-radius:12px;background:rgba(16,185,129,0.08);border:1.5px solid #10B981;margin-top:4px;">
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check" style="margin-right:5px;"></i>Correct Answer</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text-primary);">${escHtml(correctAnswer||'—')}</div>
+        </div>`;
+    }
+
+  } else {
+    // MCQ — original code exactly
+    const opts = q.options || [];
+    optionsHTML = `<div class="options-list">` +
+      opts.map((opt, oi) => {
+        const letter = letters[oi];
+        const isThisCorrect = letter.toUpperCase() === correctAnswer;
+        const isChosen      = String(userAnswer).toUpperCase() === letter.toUpperCase();
+        const isChosenWrong = isChosen && !isThisCorrect;
+        let cls = '';
+        if (isThisCorrect) cls = 'correct';
+        else if (isChosenWrong) cls = 'chosen-wrong';
+        let resultBadge = '';
+        if (isThisCorrect && isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct — You chose this</div>`;
+        else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct Answer</div>`;
+        else if (isChosenWrong) resultBadge = `<div class="opt-result-badge badge-wrong"><i class="fa-solid fa-xmark"></i> Wrong — You chose this</div>`;
+        return `
+          <div class="option-item ${cls}">
+            <div class="opt-letter">${letter}</div>
+            <div style="flex:1;min-width:0;overflow:hidden;">
+              <div class="opt-text math-render">${prepareMathHtml(opt)}</div>
+              ${resultBadge}
+            </div>
+          </div>`;
+      }).join('') + `</div>`;
+  }
+
+  // Result box — original
+  let resultBox = '';
+  if (isSkipped) {
+    resultBox = `<div class="q-result-box skipped"><i class="fa-solid fa-minus"></i> Skipped — No answer selected</div>`;
+  } else if (isCorrect) {
+    resultBox = `<div class="q-result-box correct"><i class="fa-solid fa-check-circle"></i> Correct</div>`;
+  } else {
+    resultBox = `<div class="q-result-box wrong"><i class="fa-solid fa-times-circle"></i> Incorrect</div>`;
+  }
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="q-header">
+        <span class="q-num">Q.${SOL_STATE.currentIdx + 1} of ${total}</span>
+        <span class="q-subj-badge">${escHtml(subject)}</span>
+        <span class="q-subj-badge" style="background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.2);color:#8B5CF6;">${typeLabel}</span>
+      </div>
+      <div class="q-text math-render">${formatQuestionText(q.question || q.questionText || 'Question text not available.')}</div>
+      ${optionsHTML}
+      ${resultBox}
+      <button class="ai-ans-btn" id="aiAnsBtn" onclick="toggleAIAnswer()">
+        <span class="btn-icon">🤖</span>
+        <span class="btn-label">AI Detailed Answer</span>
+        <i class="fa-solid fa-chevron-down btn-chevron"></i>
+      </button>
+      <div class="ai-ans-box" id="aiAnsBox">
+        <div class="ai-ans-box-inner">
+          <div class="ai-ans-header">
+            <div class="ai-ans-avatar">🤖</div>
+            <div>
+              <div class="ai-ans-title">AI Explanation</div>
+
+            </div>
+          </div>
+          <div class="ai-ans-body" id="aiAnsBody"></div>
+        </div>
+      </div>
+    </div>`;
+
+  triggerMathJax(content);
+  document.getElementById('questionPanel').scrollTo({ top:0, behavior:'smooth' });
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (nextBtn) {
+    const isLast = SOL_STATE.currentIdx >= total - 1;
+    nextBtn.innerHTML = isLast ? `<i class="fa-solid fa-flag-checkered"></i> Finish` : `Next <i class="fa-solid fa-arrow-right"></i>`;
+    nextBtn.onclick = isLast ? () => goBack() : () => nextQuestion();
+  }
+  const prevBtn = document.getElementById('prevBtn');
+  if (prevBtn) prevBtn.disabled = SOL_STATE.currentIdx <= 0;
+
+  updateCounter();
+}
+
+window.nextQuestion = function() {
+  const flat = SOL_STATE.flatList;
+  if (SOL_STATE.currentIdx < flat.length - 1) {
+    SOL_STATE.currentIdx++;
+    aiBoxOpen = false;
+    renderCurrentQuestion();
+  }
+};
+
+window.prevQuestion = function() {
+  if (SOL_STATE.currentIdx > 0) {
+    SOL_STATE.currentIdx--;
+    aiBoxOpen = false;
+    renderCurrentQuestion();
+  }
+};
+
+/* ── Launch AI Analysis from Solutions (rich question-level data) ── */
+window.launchAIFromSolutions = function() {
+  const btn = document.getElementById('solAiBtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+
+  // Base result data — prefer cached solutionsData (current test), not lastTestResult (may be newer)
+  let baseResult = null;
+  try { baseResult = JSON.parse(sessionStorage.getItem('_solResult') || 'null'); } catch(e) {}
+  if (!baseResult) {
+    try { baseResult = JSON.parse(localStorage.getItem('lastTestResult') || 'null'); } catch(e) {}
+  }
+
+  // Build rich questions array from SOL_STATE.flatList
+  // Each item: { subject, topic, correct: bool }
+  const questions = SOL_STATE.flatList.map(item => {
+    const { subject, q, ansObj } = item;
+    const userAnswer    = ansObj?.answer !== undefined ? ansObj.answer : null;
+    const correctAnswer = (q.correctAnswer || '').toString().toUpperCase();
+    const isCorrect     = userAnswer !== null && userAnswer !== ''
+                          && String(userAnswer).toUpperCase() === correctAnswer;
+    return {
+      subject: subject || q.subject || 'Unknown',
+      topic:   q.topic || q.chapter || q.section || subject || 'Unknown',
+      correct: isCorrect,
+    };
+  });
+
+  // Build subjects summary from flatList
+  const subjectsMap = {};
+  SOL_STATE.flatList.forEach(item => {
+    const sub = (item.subject || 'Unknown').toLowerCase().replace(/\s+/g,'_');
+    if (!subjectsMap[sub]) subjectsMap[sub] = { correct: 0, wrong: 0 };
+    const userAnswer    = item.ansObj?.answer !== undefined ? item.ansObj.answer : null;
+    const correctAnswer = (item.q.correctAnswer || '').toString().toUpperCase();
+    const isCorrect     = userAnswer !== null && userAnswer !== ''
+                          && String(userAnswer).toUpperCase() === correctAnswer;
+    const isSkipped     = userAnswer === null || userAnswer === '';
+    if (!isSkipped) {
+      if (isCorrect) subjectsMap[sub].correct++;
+      else           subjectsMap[sub].wrong++;
+    }
+  });
+
+  // Merge with base result
+  const total       = baseResult?.total     || SOL_STATE.flatList.length;
+  const _examS      = (baseResult?.exam || '').toLowerCase();
+  const _markingS   = baseResult?.marking || localStorage.getItem('selectedMarking') || (_examS === 'jee' ? '+4/-1' : '+5/-1');
+  const _posMarkS   = parseInt(_markingS.split('/')[0]) || (_examS === 'jee' ? 4 : 5);
+  const maxScore    = total * _posMarkS;
+  const correct     = baseResult?.correct   || Object.values(subjectsMap).reduce((s,v)=>s+v.correct,0);
+  const incorrect   = baseResult?.incorrect || Object.values(subjectsMap).reduce((s,v)=>s+v.wrong,0);
+  const attempted   = correct + incorrect;
+  const accuracy    = attempted > 0 ? Math.round((correct / attempted) * 100) : (baseResult?.accuracy || 0);
+
+  const payload = {
+    score:      baseResult?.score      || 0,
+    total,
+    maxScore,
+    correct,
+    incorrect,
+    accuracy:   baseResult?.accuracy   ?? accuracy,
+    percentile: baseResult?.percentile || 0,
+    rank:       baseResult?.rank       || '—',
+    timeTaken:  baseResult?.timeTaken  || 0,
+    exam:       baseResult?.exam       || '',
+    year:       baseResult?.year       || '',
+    subjects:   Object.keys(subjectsMap).length > 0 ? subjectsMap : (baseResult?.subjects || {}),
+    questions,  // ← rich question-level data from Firestore
+  };
+
+  try {
+    localStorage.setItem('analysisData', JSON.stringify(payload));
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    alert('Storage error. Please try again.');
+    return;
+  }
+
+  navigate('ai-analysis.html');
+};
+
+/* ================================================================
+   AI DETAILED ANSWER
+================================================================ */
+const GROQ_WORKER_URL = 'https://ai-analysis.untitledworld9.workers.dev';
+
+// Cache: key = qIndex, value = text
+const aiAnswerCache = {};
+// Track open state per question
+let aiBoxOpen = false;
+
+window.toggleAIAnswer = async function() {
+  const btn  = document.getElementById('aiAnsBtn');
+  const box  = document.getElementById('aiAnsBox');
+  const body = document.getElementById('aiAnsBody');
+  if (!btn || !box || !body) return;
+
+  const qIdx = SOL_STATE.currentIdx;
+
+  if (aiBoxOpen) {
+    // Close
+    box.classList.remove('open');
+    btn.classList.remove('open');
+    aiBoxOpen = false;
+    return;
+  }
+
+  // Open
+  box.classList.add('open');
+  btn.classList.add('open');
+  aiBoxOpen = true;
+
+  // Mark that user used AI — suppress scroll hint forever in this session
+  sessionStorage.setItem('aiAnswerUsed', '1');
+  dismissScrollHint();
+
+  // Scroll button into view after animation starts
+  setTimeout(() => {
+    btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+
+  // Already cached
+  if (aiAnswerCache[qIdx]) {
+    renderAIText(body, aiAnswerCache[qIdx]);
+    return;
+  }
+
+  // Show loading
+  body.innerHTML = `<div class="ai-ans-loading"><div class="ai-spinner"></div> Generating explanation…</div>`;
+
+  // Build current question context
+  const item = SOL_STATE.flatList[qIdx];
+  if (!item) return;
+
+  const { subject, q, ansObj } = item;
+  const userAnswer    = ansObj?.answer !== undefined ? ansObj.answer : null;
+  const correctAnswer = (q.correctAnswer || '').toString().toUpperCase();
+  const isCorrect     = userAnswer !== null && String(userAnswer).toUpperCase() === correctAnswer;
+  const isSkipped     = userAnswer === null || userAnswer === '';
+  const type          = (q.type || 'mcq').toLowerCase();
+  const opts          = q.options || [];
+  const letters       = ['A','B','C','D','E'];
+  const optionsText   = opts.map((o, i) => `(${letters[i]}) ${o}`).join('  |  ');
+
+  // Build type-specific context for AI prompt
+  let typeContext = '';
+  if (type === 'match') {
+    const left  = Array.isArray(q.left)  ? q.left  : [];
+    const right = Array.isArray(q.right) ? q.right : [];
+    const roman = ['I','II','III','IV','V'];
+    const lower = ['p','q','r','s','t'];
+    const leftStr  = left.map((l,i)  => `${roman[i]||i+1}. ${l}`).join(' | ');
+    const rightStr = right.map((r,i) => `${lower[i]||String.fromCharCode(97+i)}. ${r}`).join(' | ');
+    typeContext = `Column I: ${leftStr}\nColumn II: ${rightStr}\nAnswer Choices: ${optionsText || 'N/A'}`;
+  } else if (type === 'table') {
+    const tableData = Array.isArray(q.table) ? q.table : [];
+    const rows = tableData.map(r => {
+      if (r.header) return 'Headers: ' + r.header.join(' | ');
+      if (r.row)    return r.row.join(' | ');
+      return '';
+    }).filter(Boolean).join('\n');
+    typeContext = `Table Data:\n${rows}\nAnswer Choices: ${optionsText || 'N/A'}`;
+  } else {
+    typeContext = `Options: ${optionsText || 'N/A (Integer type)'}`;
+  }
+
+  const prompt = `You are a concise expert tutor for Indian competitive exams (JEE, NEET, CUET, Boards).
+
+Question: ${q.question || 'N/A'}
+Subject: ${subject}  Topic: ${q.topic || q.chapter || subject}
+${typeContext}
+Correct Answer: ${correctAnswer}
+Student's Answer: ${isSkipped ? 'Skipped' : (userAnswer + (isCorrect ? ' ✓ Correct' : ' ✗ Wrong'))}
+
+Write a clear explanation in understandable English. Include:
+1. **Core Concept** — what principle/formula is tested
+2. **Solution Steps** — how to solve it (brief, logical)
+3. **Why Correct** — why ${correctAnswer} is right
+4. **Key Trick / Tip** — what to remember for next time
+
+Format: use **bold** for key terms. Keep it 120-180 words. No unnecessary intro. Start directly with the concept.`;
+
+  try {
+    // The Cloudflare Worker expects Gemini format — wrap as Gemini-compatible payload
+    const response = await fetch(GROQ_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.5, maxOutputTokens: 400 }
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!text) throw new Error('Empty response');
+
+    aiAnswerCache[qIdx] = text;
+    renderAIText(body, text);
+
+  } catch(err) {
+    console.error('AI answer error:', err);
+    body.innerHTML = `<div style="color:var(--text-secondary);font-size:12px;">
+      <i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;margin-right:5px;"></i>
+      Could not load AI explanation. Check your internet connection and try again.
+    </div>`;
+  }
+};
+
+function renderAIText(el, text) {
+  el.innerHTML = '';
+
+  // Normalise line endings, then split into lines
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+
+  // Helper: parse inline **bold** in a string → DocumentFragment
+  function parseBold(str, container) {
+    const parts = str.split(/(\*\*[^*]+\*\*)/g);
+    parts.forEach(part => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const strong = document.createElement('strong');
+        strong.textContent = part.slice(2, -2);
+        container.appendChild(strong);
+      } else if (part) {
+        container.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  let currentPara = null;
+  function flushPara() {
+    if (currentPara && currentPara.childNodes.length > 0) {
+      el.appendChild(currentPara);
+    }
+    currentPara = null;
+  }
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+
+    // Blank line — flush current paragraph
+    if (!trimmed) {
+      flushPara();
+      return;
+    }
+
+    // Numbered list item: "1. ", "2. " etc
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      flushPara();
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;';
+      const num = document.createElement('span');
+      num.style.cssText = 'font-size:12px;font-weight:700;color:var(--primary);flex-shrink:0;min-width:18px;padding-top:1px;';
+      num.textContent = numMatch[1] + '.';
+      div.appendChild(num);
+      const body = document.createElement('span');
+      body.style.cssText = 'flex:1;font-size:13px;line-height:1.7;';
+      parseBold(numMatch[2], body);
+      div.appendChild(body);
+      el.appendChild(div);
+      return;
+    }
+
+    // Bullet item: "- " or "* "
+    const bulletMatch = trimmed.match(/^[-*]\s+(.*)$/);
+    if (bulletMatch) {
+      flushPara();
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:5px;';
+      const dot = document.createElement('span');
+      dot.style.cssText = 'font-size:16px;line-height:1.3;color:var(--primary);flex-shrink:0;';
+      dot.textContent = '•';
+      div.appendChild(dot);
+      const body = document.createElement('span');
+      body.style.cssText = 'flex:1;font-size:13px;line-height:1.7;';
+      parseBold(bulletMatch[1], body);
+      div.appendChild(body);
+      el.appendChild(div);
+      return;
+    }
+
+    // Regular text — accumulate into current paragraph
+    if (!currentPara) {
+      currentPara = document.createElement('p');
+    } else {
+      // Add a space between lines within the same paragraph
+      currentPara.appendChild(document.createTextNode(' '));
+    }
+    parseBold(trimmed, currentPara);
+  });
+
+  flushPara();
+}
+
+/* ================================================================
+   SCROLL HINT POPUP — shows after 10 min if AI never used
+================================================================ */
+(function initScrollHint() {
+  // If already used in this session, never show
+  if (sessionStorage.getItem('aiAnswerUsed')) return;
+
+  let hintTimer = setTimeout(() => {
+    if (sessionStorage.getItem('aiAnswerUsed')) return;
+    const hint = document.getElementById('aiScrollHint');
+    if (hint) hint.classList.add('visible');
+  }, 10 * 60 * 1000); // 10 minutes
+})();
+
+window.handleScrollHintClick = function() {
+  dismissScrollHint();
+  // Scroll the AI button into view
+  const btn = document.getElementById('aiAnsBtn');
+  if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+window.dismissScrollHint = function(e) {
+  if (e) e.stopPropagation();
+  const hint = document.getElementById('aiScrollHint');
+  if (hint) hint.classList.remove('visible');
+};
+
+/* Theme sync */
+(function() {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) return;
+  function sync() { meta.content = document.documentElement.getAttribute('data-theme') === 'dark' ? '#0B1220' : '#ffffff'; }
+  sync();
+  new MutationObserver(sync).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+})();
+</script>
+
+</body>
+</html>
