@@ -549,5 +549,15 @@ watchSubscription((state) => renderState(state));
 handlePaymentReturn();
 </script>
 
+<!-- ERUDA DEBUG CONSOLE -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>
+  // Only enable when ?debug use karo
+  if (location.search.includes("debug")) {
+    eruda.init();
+    console.log("Eruda Debug Mode ON");
+  }
+</script>
+
 </body>
 </html>
