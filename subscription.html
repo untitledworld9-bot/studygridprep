@@ -479,11 +479,6 @@ function renderState(state){
 window.handleCtaClick = function(){
   const ctaBtn = document.getElementById('ctaBtn');
   if (ctaBtn.classList.contains('done') || ctaBtn.disabled) return;
-
-  if (RAZORPAY_PAYMENT_LINK === 'RAZORPAY_PAYMENT_LINK_HERE') {
-    alert('Razorpay link not configured yet.\nPaste your rzp.io link in subscription.html.');
-    return;
-  }
   startTrialCheckout(RAZORPAY_PAYMENT_LINK);
 };
 
@@ -554,9 +549,5 @@ watchSubscription((state) => renderState(state));
 handlePaymentReturn();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-  eruda.init();
-</script>
 </body>
 </html>
