@@ -341,7 +341,7 @@ import {
   getAuth, GoogleAuthProvider,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
@@ -366,24 +366,39 @@ function getTodayDate(){
 async function handleUser(user){
   const name  = user.displayName || user.email;
   const email = user.email;
-  const uid   = user.uid; // ✅ uid as doc ID — stable, no duplicate issue
+  const uid   = user.uid;
 
   localStorage.setItem("userName",  name);
   localStorage.setItem("userEmail", email);
   localStorage.setItem("userUID",   uid);
 
-  // ✅ Doc keyed by uid — works even if same person logs in again
-  await setDoc(doc(db, "users", uid), {
-    uid,
-    name,
-    email,
-    focusTime:      0,
-    weeklyXP:       0,
-    status:         "Online",
-    room:           "global",
-    lastActive:     Date.now(),    // ✅ admin panel orderBy("lastActive") ke liye
-    lastActiveDate: getTodayDate()
-  }, { merge: true });
+  // Pehle check karo doc exist karta hai ya nahi
+  const userRef  = doc(db, "users", uid);
+  const existing = await getDoc(userRef);
+
+  if(!existing.exists()){
+    // Naya user — fresh doc banao default values ke saath
+    await setDoc(userRef, {
+      uid,
+      name,
+      email,
+      focusTime:      0,
+      weeklyXP:       0,
+      status:         "Online",
+      room:           "global",
+      lastActive:     Date.now(),
+      lastActiveDate: getTodayDate()
+    });
+  } else {
+    // Existing user — SIRF safe fields update karo, data mat chhuo
+    await updateDoc(userRef, {
+      name,
+      email,
+      status:         "Online",
+      lastActive:     Date.now(),
+      lastActiveDate: getTodayDate()
+    });
+  }
 
   document.body.style.opacity    = "0";
   document.body.style.transition = "opacity 0.2s ease";
