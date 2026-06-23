@@ -337,7 +337,10 @@ h1 {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getAuth, GoogleAuthProvider,
+  signInWithPopup, signInWithRedirect, getRedirectResult
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -349,9 +352,9 @@ const firebaseConfig = {
   appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app      = initializeApp(firebaseConfig);
+const auth     = getAuth(app);
+const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 function getTodayDate(){
@@ -359,10 +362,67 @@ function getTodayDate(){
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
-window.login = async function(){
-  const btn   = document.getElementById("loginBtn");
-  const toast = document.getElementById("errorToast");
+// ── Shared: save user to Firestore + localStorage then redirect ──
+async function handleUser(user){
+  const name  = user.displayName || user.email;
+  const email = user.email;
+  const uid   = user.uid; // ✅ uid as doc ID — stable, no duplicate issue
 
+  localStorage.setItem("userName",  name);
+  localStorage.setItem("userEmail", email);
+  localStorage.setItem("userUID",   uid);
+
+  // ✅ Doc keyed by uid — works even if same person logs in again
+  await setDoc(doc(db, "users", uid), {
+    uid,
+    name,
+    email,
+    focusTime:      0,
+    weeklyXP:       0,
+    status:         "Online",
+    room:           "global",
+    lastActive:     Date.now(),    // ✅ admin panel orderBy("lastActive") ke liye
+    lastActiveDate: getTodayDate()
+  }, { merge: true });
+
+  document.body.style.opacity    = "0";
+  document.body.style.transition = "opacity 0.2s ease";
+  setTimeout(() => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    window.location.href = isPWA ? "mainwelcome.html" : "dashboard-home.html";
+  }, 200);
+}
+
+// ── Handle redirect result on page load (mobile flow — silent check) ──
+const btn   = document.getElementById("loginBtn");
+const toast = document.getElementById("errorToast");
+
+// Silent check — button normal rehta hai jab tak redirect result na aaye
+getRedirectResult(auth)
+  .then(async result => {
+    if(result && result.user){
+      // Google se wapas aaya — ab loading dikhao
+      btn.classList.add("loading");
+      await handleUser(result.user);
+    }
+    // else: fresh page load, koi redirect nahi — button untouched
+  })
+  .catch(err => {
+    console.error("Redirect result error:", err);
+    toast.style.display = "flex";
+  });
+
+function resetBtn(){
+  btn.classList.remove("loading");
+  btn.innerHTML = `
+    <span class="google-btn-icon">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+    </span>
+    Continue with Google`;
+}
+
+// ── Login button click ──
+window.login = async function(){
   btn.classList.add("loading");
   btn.innerHTML = `
     <span class="google-btn-icon">
@@ -373,43 +433,21 @@ window.login = async function(){
     Signing in…`;
   toast.style.display = "none";
 
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
   try {
-    const result = await signInWithPopup(auth, provider);
-    const user   = result.user;
-    const name   = user.displayName;
-    const email  = user.email;
-
-    localStorage.setItem("userName",  name);
-    localStorage.setItem("userEmail", email);
-
-    await setDoc(doc(db,"users",name),{
-      name:           name,
-      email:          email,
-      focusTime:      0,
-      weeklyXP:       0,
-      status:         "Online",
-      room:           "global",
-      lastActiveDate: getTodayDate()
-    },{merge:true});
-
-    document.body.style.opacity    = "0";
-    document.body.style.transition = "opacity 0.2s ease";
-
-    setTimeout(() => {
-      const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      if(isPWA){ window.location.href = "mainwelcome.html"; }
-      else      { window.location.href = "dashboard-home.html"; }
-    }, 200);
-
+    if(isMobile){
+      // ✅ Mobile: redirect flow — page reload ke baad getRedirectResult handle karega
+      await signInWithRedirect(auth, provider);
+    } else {
+      // Desktop: popup works fine
+      const result = await signInWithPopup(auth, provider);
+      await handleUser(result.user);
+    }
   } catch(err) {
-    console.log(err);
-    btn.classList.remove("loading");
-    btn.innerHTML = `
-      <span class="google-btn-icon">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
-      </span>
-      Continue with Google`;
+    console.error("Login error:", err);
     toast.style.display = "flex";
+    resetBtn();
   }
 };
 
