@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
 <title>My Tests — Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<meta name="theme-color" content="#0f2027">
+
 
 <script>
 (function(){
@@ -614,7 +616,7 @@ main {
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 8000;
+  z-index: 10001;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1471,5 +1473,16 @@ document.addEventListener('keydown', (e) => {
 });
 </script>
 
+<script>
+(function(){
+  function syncThemeColor(){
+    var isDark=document.documentElement.getAttribute("data-theme")==="dark";
+    var metas=document.querySelectorAll("meta[name='theme-color']");
+    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
+  }
+  syncThemeColor();
+  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+})();
+</script>
 </body>
 </html>
