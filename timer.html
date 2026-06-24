@@ -25,6 +25,16 @@
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = saved ? saved : (systemDark ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', theme);
+  // Dynamic theme-color sync
+  function _utc(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+    const m = document.createElement('meta'); m.name='theme-color';
+    m.content = isDark ? '#0D1120' : '#F0F2F8';
+    document.head.appendChild(m);
+  }
+  _utc();
+  new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
 <style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>

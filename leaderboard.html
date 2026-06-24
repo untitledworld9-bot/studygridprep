@@ -22,6 +22,16 @@
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  // Dynamic theme-color for status bar
+  function _utc(){
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
+    var m = document.createElement('meta'); m.name='theme-color';
+    m.content = isDark ? '#0B1220' : '#ffffff';
+    document.head.appendChild(m);
+  }
+  _utc();
+  new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
 <style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>

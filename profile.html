@@ -6,7 +6,17 @@
 <title>Profile - Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
-<meta name="theme-color" content="#0f2027">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f2027" media="(prefers-color-scheme: dark)">
+  <script>
+    (function(){
+      const saved = localStorage.getItem('theme');
+      const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved === 'dark' || ((!saved || saved === 'system') && sysDark);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if(meta) meta.content = isDark ? '#0f2027' : '#ffffff';
+    })();
+  </script>
 
 <!-- ✅ AUTH GUARD -->
 <script>
@@ -1120,5 +1130,18 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
 </script>
 
 <script src="theme.js"></script>
+<script>
+  (function(){
+    function _utc(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+      const m = document.createElement('meta'); m.name='theme-color';
+      m.content = isDark ? '#0f2027' : '#ffffff';
+      document.head.appendChild(m);
+    }
+    new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+    _utc();
+  })();
+</script>
 </body>
 </html>

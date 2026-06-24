@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#0a1628" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
+  <script>
+    // Dynamic theme-color: light/dark mode ke saath sync karo
+    (function(){
+      const saved = localStorage.getItem('theme');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved === 'dark' || ((!saved || saved === 'system') && systemDark);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if(meta) meta.content = isDark ? '#0a1628' : '#ffffff';
+    })();
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Todo List — Study Grid Prep</title>
@@ -1728,6 +1739,24 @@ syncTodoToFirebase();
   </script>
 
 <script src="theme.js"></script>
+<script>
+  // Theme toggle ke baad status bar color bhi update karo
+  (function(){
+    function _updateThemeColor(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+      const m = document.createElement('meta');
+      m.name = 'theme-color';
+      m.content = isDark ? '#0a1628' : '#ffffff';
+      document.head.appendChild(m);
+    }
+    // Observe theme attribute changes
+    new MutationObserver(_updateThemeColor).observe(
+      document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }
+    );
+    _updateThemeColor();
+  })();
+</script>
 <script type="module" src="/index.js"></script> 
 </body>
 </html>

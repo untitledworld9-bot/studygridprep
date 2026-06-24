@@ -6,7 +6,8 @@
 <title>Dashboard - Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
-<meta name="theme-color" content="#0f2027">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
 
 <!-- ✅ AUTH GUARD -->
 <script>
@@ -3244,24 +3245,28 @@ onAuthStateChanged(auth, async user => {
   let streakHistory=data.streakHistory||[];
 
   const hadStreakBefore = streak > 0;
+  // missedDay: lastStreakDate set tha, aaj nahi, kal bhi nahi → streak break
   const missedDay = lastStreakDate && lastStreakDate !== today && lastStreakDate !== yesterday;
+  // Also check if user was active but didn't complete streak (lastActive was before yesterday)
+  const missedActive = lastActive && lastActive !== today && lastActive !== yesterday;
 
   if(lastActive!==today){
     if(lastActive===yesterday) {
       // consecutive — don't increment here; only increment on daily goal completion
-    } else if(missedDay && hadStreakBefore){
+    } else if((missedDay || missedActive) && hadStreakBefore){
       // Broke streak — reset
       streak = 0;
       await updateDoc(userRef,{streak:0, lastActiveDate:today}).catch(()=>{});
       localStorage.setItem("uw_streak","0");
-      // Show streak break popup (once per day)
+      // Show streak break popup (once per day) — immediately, no extra delay
       const breakKey="streakBreakShown_"+today;
       if(!localStorage.getItem(breakKey)){
         localStorage.setItem(breakKey,"1");
-        setTimeout(()=>{ if(window.showStreakBreakPopup) window.showStreakBreakPopup(); }, 2200);
+        setTimeout(()=>{ if(window.showStreakBreakPopup) window.showStreakBreakPopup(); }, 1200);
       }
     } else if(!lastActive){
-      // first time user
+      // first time user — set lastActiveDate
+      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
     } else {
       // Just updating lastActiveDate without changing streak
       await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
@@ -3279,16 +3284,22 @@ onAuthStateChanged(auth, async user => {
   window._currentStreak = streak;
   window._streakHistory = streakHistory;
 
-  // ── Show streak popup on first open of new day (if streak > 0) ──
-  // This is the "Day Streak! 🔥" popup from image 4, shown once per day on first open
-  if(streak > 0 && lastActive !== today){
+  // ── Show streak popup on first open of new day (if active streak from yesterday) ──
+  // "First open in a day" popup — sirf tab dikhao jab streak genuinely active hai
+  const hadStreakYesterday = (lastStreakDate === yesterday);
+  if(streak > 0 && hadStreakYesterday && lastActive !== today){
     const streakOpenKey = "streakPopupOpenShown_" + today;
     if(!localStorage.getItem(streakOpenKey)){
       localStorage.setItem(streakOpenKey, "1");
+      // lastActiveDate update karo Firestore mein (popup ke baad)
+      updateDoc(userRef, { lastActiveDate: today }).catch(()=>{});
       setTimeout(()=>{
         if(window._showStreakPopup) window._showStreakPopup(streak);
       }, 1500);
     }
+  } else if(lastActive !== today){
+    // lastActiveDate silently update karo even if no popup
+    updateDoc(userRef, { lastActiveDate: today }).catch(()=>{});
   }
 
   // Notifications live
@@ -3369,7 +3380,12 @@ onAuthStateChanged(auth, async user => {
     const todayISO2=new Date().toISOString().slice(0,10);
     const existingNotifs=d.notifications||[];
     const alreadyHasStreakToday=existingNotifs.some(n=>n.icon==='🔥'&&n.ts&&new Date(n.ts).toISOString().slice(0,10)===todayISO2);
-    if(dailyXP>=10 && !localStorage.getItem(goalKey) && !alreadyHasStreakToday){
+    // FIX: lastStreakDate===todayStr means streak already counted today (could be from todo.html)
+    const streakAlreadyCountedToday = (d.lastStreakDate===todayStr);
+    // FIX: goalKey localStorage stale hone ki problem — Firestore ka lastStreakDate use karo
+    const goalAlreadyDone = streakAlreadyCountedToday && alreadyHasStreakToday;
+    if(dailyXP>=10 && !goalAlreadyDone){
+      // Set goalKey to prevent duplicate within same session
       localStorage.setItem(goalKey,"1");
 
       const yesterdayStr=new Date(Date.now()-86400000).toDateString();
@@ -3411,6 +3427,13 @@ onAuthStateChanged(auth, async user => {
       if(headerNum) headerNum.textContent=newStreak;
       const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=newStreak;
       if(window._renderNotifications) window._renderNotifications(newNotifs);
+
+      // Show streak popup (once per day) — works for both playlist and todo completion
+      const streakGoalPopupKey = "streakGoalPopupShown_" + todayStr;
+      if(!localStorage.getItem(streakGoalPopupKey)){
+        localStorage.setItem(streakGoalPopupKey, "1");
+        setTimeout(()=>{ if(window._showStreakPopup) window._showStreakPopup(newStreak); }, 900);
+      }
 
       // Show daily goal congrats popup (once per day)
       const congratsKey="dailyGoalCongratsShown_"+todayStr;
