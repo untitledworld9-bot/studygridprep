@@ -960,17 +960,24 @@ tr:hover td { background:rgba(255,255,255,.02); }
         </div>
       </div>
 
+      <!-- Test Name — PRIMARY field, shown to users -->
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label">TEST NAME <span class="req">*</span></label>
+        <input class="form-control" type="text" id="ctTestNameTop" placeholder="e.g. CUET 2025 May 20 Shift 1 Official" oninput="document.getElementById('ctTestName').value=this.value">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">This is what users will see on the test card.</div>
+      </div>
+
       <div class="form-grid cols-3">
         <div class="form-group">
-          <label class="form-label">Year</label>
+          <label class="form-label">Year <span style="color:var(--text-muted);font-size:10px;">(optional)</span></label>
           <input class="form-control" type="number" id="ctYear" placeholder="e.g. 2025" min="2020" max="2030">
         </div>
         <div class="form-group">
-          <label class="form-label">Exam Date</label>
+          <label class="form-label">Exam Date <span style="color:var(--text-muted);font-size:10px;">(optional)</span></label>
           <input class="form-control" type="date" id="ctDate">
         </div>
         <div class="form-group">
-          <label class="form-label">Shift</label>
+          <label class="form-label">Shift <span style="color:var(--text-muted);font-size:10px;">(optional)</span></label>
           <select class="form-control" id="ctShift">
             <option value="">Select Shift</option>
             <option value="Shift 1">Shift 1</option>
@@ -1030,10 +1037,8 @@ tr:hover td { background:rgba(255,255,255,.02); }
         </div>
       </div>
 
-      <div class="form-group" style="margin-bottom:16px;">
-        <label class="form-label">Test Name (optional)</label>
-        <input class="form-control" type="text" id="ctTestName" placeholder="e.g. CUET 2025 May 20 Shift 1 Official">
-      </div>
+      <!-- hidden — synced from ctTestNameTop above -->
+      <input type="hidden" id="ctTestName">
 
       <div class="toggle-row" style="padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;justify-content:space-between;">
         <div>

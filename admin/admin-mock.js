@@ -105,13 +105,12 @@ function computeMaxMarks(h) {
 }
 
 function buildTestLabel(h) {
+  // testName always wins — admin sets this
   if (h.testName && h.testName.trim()) return h.testName.trim();
+  // Fallback: exam + year only (no shift/date clutter)
   const exam = (h.exam || '').toUpperCase();
   const year = h.year || '';
-  const subs = Array.isArray(h.subjects) && h.subjects.length
-    ? h.subjects.join(', ')
-    : (h.shift || '');
-  return (exam + ' ' + year + (subs ? ' — ' + subs : '')).trim() || '—';
+  return (exam + (year ? ' ' + year : '')).trim() || '—';
 }
 
 // ============================================================
@@ -634,11 +633,12 @@ window.createTest = async () => {
   const marking    = $('ctMarking').value;
   const desc       = $('ctDesc').value.trim();
   const paper      = $('ctPaper')?.value.trim() || '';
-  const testName   = $('ctTestName')?.value.trim() || '';
+  const testName   = ($('ctTestNameTop')?.value.trim() || $('ctTestName')?.value.trim() || '');
   const isFree     = $('ctIsFree')?.checked || false;
 
-  if (!shift) { toast('Please select a shift.', 'warning'); return; }
-  if (!date)  { toast('Please select the exam date.', 'warning'); return; }
+  // testName is required
+  if (!testName) { toast('Please enter a Test Name — this is shown to users.', 'warning'); return; }
+  // shift and date are optional
 
   // Get selected subjects from checkboxes
   const subjCheckboxes = document.querySelectorAll(
@@ -679,7 +679,7 @@ window.createTest = async () => {
     STATE.draftQuestions = [];
     STATE.qBlockCount    = 0;
 
-    toast(`Test created! ${exam.toUpperCase()} ${year} · ${shift}`, 'success');
+    toast(`Test created! ${testName || (exam.toUpperCase() + (year ? ' ' + year : ''))}`, 'success');
     refreshActiveTestBanner();
     resetCreateForm();
 
@@ -855,7 +855,7 @@ function refreshActiveTestBanner() {
   banner.className = 'active-test-banner';
   banner.querySelector('.active-test-dot').style.background = 'var(--accent-green)';
   banner.querySelector('.active-test-dot').style.boxShadow  = '0 0 8px rgba(0,229,160,.6)';
-  if (nameEl) nameEl.textContent = t.testName || `${t.exam.toUpperCase()} Mock ${t.year} · ${t.shift}`;
+  if (nameEl) nameEl.textContent = t.testName || `${t.exam.toUpperCase()} Mock${t.year ? ' ' + t.year : ''}`;
   if (metaEl) metaEl.textContent = `${formatDate(t.date)} · ${t.duration} min · ${t.totalQuestions} Questions · ${t.marking}`;
 
   const total = t.totalQuestions || 50;
@@ -1745,9 +1745,9 @@ function renderTestCards(tests) {
 
     return `<div class="test-card" onclick="viewTestDetail('${t.id}')">
       <div class="test-card-glow ${examCls}"></div>
-      <div class="test-card-exam ${examCls}">${t.testName || (t.exam.toUpperCase() + ' ' + (t.year||'')).trim()}</div>
+      <div class="test-card-exam ${examCls}">${t.testName || (t.exam.toUpperCase() + (t.year ? ' ' + t.year : ''))}</div>
       <div class="test-card-meta">
-        ${formatDate(t.date)} &nbsp;·&nbsp; ${t.shift || '—'}<br>
+        ${t.date ? formatDate(t.date) + ' &nbsp;·&nbsp; ' : ''}${t.shift || ''}<br>
         ${t.duration || '—'} min &nbsp;·&nbsp; ${t.marking || '—'}<br>
         ${t.paper ? `Paper: ${escHtml(t.paper)}<br>` : ''}
         ${t.description ? `<span style="color:var(--text-secondary);">${escHtml(t.description)}</span>` : ''}

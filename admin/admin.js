@@ -591,7 +591,7 @@ window.toggleSubFromTable = async (uid, uname, enable) => {
         subGrantedBy: 'admin',
         subGrantedAt: Date.now()
       });
-      showToast(`✅ Subscription enabled for ${uname}`);
+      toast(`✅ Subscription enabled for ${uname}`);
     } else {
       await updateDoc(doc(db, COLL.USERS, uid), {
         isSubscribed: false,
@@ -600,11 +600,11 @@ window.toggleSubFromTable = async (uid, uname, enable) => {
         subRevokedAt: Date.now(),
         subGrantedBy: 'admin'
       });
-      showToast(`🚫 Subscription revoked for ${uname}`, 'error');
+      toast(`🚫 Subscription revoked for ${uname}`, 'error');
     }
   } catch(e) {
     console.error(e);
-    showToast('Error updating subscription', 'error');
+    toast('Error updating subscription', 'error');
   }
 };
 
@@ -672,10 +672,10 @@ window.setSubDays = (n) => {
 
 window.grantSubscription = async () => {
   const uid  = STATE.selectedSubUID;
-  if (!uid) { showToast('Please select a user first', 'error'); return; }
+  if (!uid) { toast('Please select a user first', 'error'); return; }
 
   const days = parseInt(document.getElementById('subDaysInput')?.value || '0');
-  if (!days || days < 1) { showToast('Please enter valid number of days', 'error'); return; }
+  if (!days || days < 1) { toast('Please enter valid number of days', 'error'); return; }
 
   const expiry = Date.now() + days * 86400000;
   const validDate = new Date(expiry).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
@@ -689,19 +689,19 @@ window.grantSubscription = async () => {
       subGrantedAt: Date.now(),
       subDays:      days
     });
-    showToast(`✅ ${days}-day subscription granted! Valid till ${validDate}`);
+    toast(`✅ ${days}-day subscription granted! Valid till ${validDate}`);
     clearSelectedSubUser();
     document.getElementById('subDaysInput').value = '';
     document.querySelectorAll('.sub-days-pill').forEach(b => b.classList.remove('active'));
   } catch(e) {
     console.error(e);
-    showToast('Failed to grant subscription', 'error');
+    toast('Failed to grant subscription', 'error');
   }
 };
 
 window.revokeSubscription = async () => {
   const uid = STATE.selectedSubUID;
-  if (!uid) { showToast('Please select a user first', 'error'); return; }
+  if (!uid) { toast('Please select a user first', 'error'); return; }
 
   if (!confirm('Revoke this user\'s subscription?')) return;
 
@@ -712,11 +712,11 @@ window.revokeSubscription = async () => {
       subExpiry:    0,
       subRevokedAt: Date.now()
     });
-    showToast('🚫 Subscription revoked', 'error');
+    toast('🚫 Subscription revoked', 'error');
     clearSelectedSubUser();
   } catch(e) {
     console.error(e);
-    showToast('Failed to revoke subscription', 'error');
+    toast('Failed to revoke subscription', 'error');
   }
 };
 
