@@ -23,20 +23,19 @@
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
-  var m = document.querySelector('meta[name="theme-color"]');
-  if(m) m.content = (theme === 'dark') ? '#0D1120' : '#ffffff';
-  new MutationObserver(function(){
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
-    var m2 = document.createElement('meta'); m2.name='theme-color';
-    m2.content = isDark ? '#0D1120' : '#ffffff';
-    document.head.appendChild(m2);
-  }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  
+  function syncThemeColor(){
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    var metas = document.querySelectorAll("meta[name='theme-color']");
+    metas.forEach(function(m){ 
+      m.removeAttribute("media"); 
+      m.content = isDark ? "#0D1120" : "#ffffff"; 
+    });
+  }
+  syncThemeColor();
+  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
-<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
-
-<style>
 /* ── DESIGN TOKENS — exact match dashboard-home ── */
 :root {
   --bg:        #F0F2F8;
