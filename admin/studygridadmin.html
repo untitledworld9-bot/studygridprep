@@ -837,6 +837,10 @@
       <span class="nav-icon">💎</span><span>Subscriptions</span>
       <span class="nav-badge" id="subBadge" style="background:rgba(245,158,11,0.2);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);">0</span>
     </button>
+    <button class="nav-btn" onclick="showSection('paymentrequests')" data-section="paymentrequests">
+      <span class="nav-icon">💳</span><span>Payment Requests</span>
+      <span class="nav-badge" id="paymentRequestsBadge" style="background:rgba(0,229,160,0.15);color:#00e5a0;border:1px solid rgba(0,229,160,0.3);display:none;">0</span>
+    </button>
     <button class="nav-btn" onclick="showSection('performance')" data-section="performance">
       <span class="nav-icon">📊</span><span>User Performance</span>
     </button>
@@ -1169,6 +1173,86 @@
             Revoke Subscription
           </button>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── PAYMENT REQUESTS ─────────── -->
+  <section id="paymentrequests" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Payment Requests</div>
+        <div class="section-subtitle">Manual UPI payments — approve or reject to activate subscriptions</div>
+      </div>
+      <div class="live-dot">Live</div>
+    </div>
+
+    <!-- Filter + Stats row -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;">
+        <select id="payFilterSelect" onchange="filterPayments()" style="
+          padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;
+          background:var(--bg-card);border:1px solid var(--border);
+          color:var(--text-primary);cursor:pointer;font-family:var(--font-body);">
+          <option value="pending">⏳ Pending</option>
+          <option value="approved">✅ Approved</option>
+          <option value="rejected">❌ Rejected</option>
+          <option value="all">All Requests</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);border-radius:10px;
+          padding:7px 14px;font-size:12px;font-weight:700;color:#00e5a0;">
+          ✅ <span id="payApprovedCount">0</span> Approved
+        </div>
+        <div style="background:rgba(255,184,48,0.1);border:1px solid rgba(255,184,48,0.25);border-radius:10px;
+          padding:7px 14px;font-size:12px;font-weight:700;color:var(--accent-amber);">
+          ⏳ <span id="payPendingCount">0</span> Pending
+        </div>
+        <div style="background:rgba(255,79,106,0.1);border:1px solid rgba(255,79,106,0.25);border-radius:10px;
+          padding:7px 14px;font-size:12px;font-weight:700;color:var(--accent-red);">
+          ❌ <span id="payRejectedCount">0</span> Rejected
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-scroll" style="max-height:65vh;">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Transaction ID</th>
+              <th>Screenshot</th>
+              <th>Amount / Plan</th>
+              <th>Submitted</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="payRequestsBody">
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EmailJS Setup Notice -->
+    <div style="margin-top:20px;background:rgba(124,92,252,0.07);border:1px solid rgba(124,92,252,0.2);
+      border-radius:14px;padding:16px 20px;">
+      <div style="font-size:12px;font-weight:700;color:var(--accent-violet);margin-bottom:6px;">
+        📧 Email Notifications Setup
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+        Set <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;font-size:11px;">EMAILJS_CONFIG</code>
+        in <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;font-size:11px;">admin.js</code>
+        with your EmailJS Public Key, Service ID, and Template IDs.<br>
+        Templates need: <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">to_name</code>,
+        <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">to_email</code>,
+        <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">plan_name</code>,
+        <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">exp_date</code>
+        (approve) · <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">to_name</code>,
+        <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">to_email</code> (reject).
       </div>
     </div>
   </section>

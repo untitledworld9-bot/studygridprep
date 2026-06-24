@@ -69,7 +69,8 @@ const COLL = {
   VIDEO_PROMOS:  "videoPromotions",
   MAINTENANCE:   "maintenance",
   OFFERS:        "offers",
-  SUBSCRIPTIONS: "subscriptions"
+  SUBSCRIPTIONS: "subscriptions",
+  PAYMENTS:      "payments"
 };
 
 // ============================================================
@@ -86,7 +87,8 @@ const STATE = {
   unsubscribers: [],  // Firestore listener cleanup functions
   promoType:   "popup",
   onlineUsersList: [], // live online users for modal
-  leaderboardData: [] // dedicated leaderboard collection data
+  leaderboardData: [], // dedicated leaderboard collection data
+  allPayments: []      // payment requests from users
 };
 
 // ============================================================
@@ -306,6 +308,7 @@ function initAdminPanel(user) {
   listenMaintenance(); // Maintenance Announcements
   listenPerformance(); // User Performance Analysis
   listenOffers();      // Offers Section
+  listenPayments();    // Payment Requests (manual UPI)
 }
 
 // ============================================================
@@ -717,6 +720,278 @@ window.revokeSubscription = async () => {
   } catch(e) {
     console.error(e);
     toast('Failed to revoke subscription', 'error');
+  }
+};
+
+// ============================================================
+//  PAYMENT REQUESTS — Manual UPI system
+// ============================================================
+
+// ── EmailJS config — fill these before going live ──
+// ⚠️  Steps:
+//  1. emailjs.com → create account (free)
+//  2. Add Gmail service → note Service ID
+//  3. Create 2 templates: approve + reject → note Template IDs
+//  4. Account → API Keys → note Public Key
+const EMAILJS_CONFIG = {
+  publicKey:          'hYGUOHKlAwnjcnnwz',  // ← EmailJS Dashboard → Account → API Keys
+  serviceId:          'service_h0c8jev',           // ← EmailJS Dashboard → Email Services
+  templateReceived:   'template_pjqg0sp',         // ← EmailJS Dashboard → Email Templates
+  templateApprove:    'template_n3zhhjk',          // ← EmailJS Dashboard → Email Templates
+  templateReject:     'template_reject'            // ← EmailJS Dashboard → Email Templates
+};
+
+// EmailJS lazy-load + send helper
+async function sendPaymentEmail(templateId, params) {
+  try {
+    // Load EmailJS SDK if not already loaded
+    if (!window.emailjs) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+      window.emailjs.init({ publicKey: EMAILJS_CONFIG.publicKey });
+    }
+    await window.emailjs.send(EMAILJS_CONFIG.serviceId, templateId, params);
+    console.log('[EmailJS] Sent:', templateId, params.to_email);
+  } catch(err) {
+    console.warn('[EmailJS] Failed — check config:', err);
+    // Don't block approve/reject flow if email fails
+  }
+}
+
+/** Listen to payments collection — live updates */
+function listenPayments() {
+  const q = query(
+    collection(db, COLL.PAYMENTS),
+    orderBy('createdAt', 'desc'),
+    limit(100)
+  );
+  const unsub = onSnapshot(q, snap => {
+    STATE.allPayments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Update badge on sidebar nav
+    const pending = STATE.allPayments.filter(p => p.status === 'pending').length;
+    const badge = document.getElementById('paymentRequestsBadge');
+    if (badge) {
+      badge.textContent = pending;
+      badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+    }
+
+    renderPaymentRequests();
+  }, err => console.warn('[Payments]', err));
+  STATE.unsubscribers.push(unsub);
+}
+
+/** Render payment requests table */
+function renderPaymentRequests() {
+  const filter   = document.getElementById('payFilterSelect')?.value || 'pending';
+  const tbody    = document.getElementById('payRequestsBody');
+  if (!tbody) return;
+
+  // Update stat counts
+  const allP = STATE.allPayments;
+  const pendCount    = allP.filter(p => p.status === 'pending').length;
+  const approveCount = allP.filter(p => p.status === 'approved').length;
+  const rejectCount  = allP.filter(p => p.status === 'rejected').length;
+  const pcEl = document.getElementById('payPendingCount');
+  const acEl = document.getElementById('payApprovedCount');
+  const rcEl = document.getElementById('payRejectedCount');
+  if (pcEl) pcEl.textContent = pendCount;
+  if (acEl) acEl.textContent = approveCount;
+  if (rcEl) rcEl.textContent = rejectCount;
+
+  const rows = STATE.allPayments.filter(p =>
+    filter === 'all' ? true : p.status === filter
+  );
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+      No ${filter} payment requests</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(p => {
+    const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : '—';
+
+    const statusColor = p.status === 'approved' ? 'var(--accent-green)'
+      : p.status === 'rejected' ? 'var(--accent-red)'
+      : 'var(--accent-amber)';
+
+    const statusIcon  = p.status === 'approved' ? '✅'
+      : p.status === 'rejected' ? '❌' : '⏳';
+
+    const ssHtml = p.screenshot
+      ? `<img src="${escHtml(p.screenshot)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;cursor:pointer;border:1px solid var(--border);"
+           onclick="window.open('${escHtml(p.screenshot)}','_blank')" title="View Screenshot" />`
+      : `<span style="font-size:11px;color:var(--text-muted);">No image</span>`;
+
+    const actionBtns = p.status === 'pending' ? `
+      <button onclick="approvePayment('${escHtml(p.id)}')" style="
+        background:rgba(0,229,160,0.12);color:var(--accent-green);
+        border:1px solid rgba(0,229,160,0.3);border-radius:8px;
+        padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;
+        transition:.2s;font-family:var(--font-body);"
+        onmouseover="this.style.background='rgba(0,229,160,0.22)'"
+        onmouseout="this.style.background='rgba(0,229,160,0.12)'">
+        ✅ Approve
+      </button>
+      <button onclick="rejectPayment('${escHtml(p.id)}')" style="
+        background:rgba(255,79,106,0.1);color:var(--accent-red);
+        border:1px solid rgba(255,79,106,0.3);border-radius:8px;
+        padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;
+        transition:.2s;font-family:var(--font-body);margin-left:6px;"
+        onmouseover="this.style.background='rgba(255,79,106,0.2)'"
+        onmouseout="this.style.background='rgba(255,79,106,0.1)'">
+        ❌ Reject
+      </button>
+    ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIcon} ${p.status}</span>`;
+
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;">
+            ${(p.name || p.email || '?')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:13px;">${escHtml(p.name || '—')}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${escHtml(p.email || p.userId || '—')}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-cyan);">
+          ${escHtml(p.txnId || '—')}
+        </span>
+      </td>
+      <td>${ssHtml}</td>
+      <td>
+        <span style="font-weight:700;color:var(--accent-amber);">₹${p.amount || '—'}</span>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${p.plan || '—'}</div>
+      </td>
+      <td style="font-size:11px;color:var(--text-muted);">${date}</td>
+      <td>${actionBtns}</td>
+    </tr>`;
+  }).join('');
+}
+
+window.filterPayments = () => renderPaymentRequests();
+
+/** Approve a payment — update user + payment doc + send email */
+window.approvePayment = async (paymentId) => {
+  const p = STATE.allPayments.find(x => x.id === paymentId);
+  if (!p) return;
+  if (!confirm(`Approve ₹${p.amount} (${p.plan}) payment from ${p.name || p.email || p.userId}?`)) return;
+
+  try {
+    const userId = p.userId;
+
+    // Fetch user doc for email/name (payments doc may have it too, but Firestore is authoritative)
+    let userName  = p.name  || '';
+    let userEmail = p.email || '';
+    if (!userEmail) {
+      const userSnap = await getDoc(doc(db, COLL.USERS, userId));
+      if (userSnap.exists()) {
+        const ud  = userSnap.data();
+        userName  = ud.name  || ud.displayName || userName;
+        userEmail = ud.email || userEmail;
+      }
+    }
+
+    // Calculate expiry
+    const days   = p.plan === 'trial' ? 7 : 30;
+    const expiry = Date.now() + days * 86400000;
+
+    // Update user doc
+    await updateDoc(doc(db, COLL.USERS, userId), {
+      isSubscribed:   true,
+      trialUsed:      true,
+      plan:           p.plan,
+      trialExpiry:    expiry,
+      subExpiry:      expiry,
+      payPending:     false,
+      payPendingPlan: null,
+      subGrantedBy:   'admin',
+      subGrantedAt:   Date.now()
+    });
+
+    // Update payment doc
+    await updateDoc(doc(db, COLL.PAYMENTS, paymentId), {
+      status:     'approved',
+      approvedAt: Date.now(),
+      approvedBy: auth.currentUser?.email || 'admin'
+    });
+
+    toast(`✅ Approved — ${p.plan === 'trial' ? '7-day trial' : '30-day plan'} activated for ${userName || userId}`);
+
+    // Send approval email
+    if (userEmail) {
+      const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹49 Monthly (30 Days)';
+      const expDate   = new Date(expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      await sendPaymentEmail(EMAILJS_CONFIG.templateApprove, {
+        to_name:   userName || 'Student',
+        to_email:  userEmail,
+        plan_name: planLabel,
+        exp_date:  expDate
+      });
+    }
+  } catch(err) {
+    console.error('Approve payment error:', err);
+    toast('Failed to approve payment', 'error');
+  }
+};
+
+/** Reject a payment — update payment doc + send email */
+window.rejectPayment = async (paymentId) => {
+  const p = STATE.allPayments.find(x => x.id === paymentId);
+  if (!p) return;
+  if (!confirm(`Reject payment from ${p.name || p.email || p.userId}?`)) return;
+
+  try {
+    const userId = p.userId;
+
+    // Fetch email if not in payment doc
+    let userName  = p.name  || '';
+    let userEmail = p.email || '';
+    if (!userEmail) {
+      const userSnap = await getDoc(doc(db, COLL.USERS, userId));
+      if (userSnap.exists()) {
+        const ud  = userSnap.data();
+        userName  = ud.name  || ud.displayName || userName;
+        userEmail = ud.email || userEmail;
+      }
+    }
+
+    // Clear payPending on user doc
+    await updateDoc(doc(db, COLL.USERS, userId), {
+      payPending:     false,
+      payPendingPlan: null
+    });
+
+    // Update payment doc
+    await updateDoc(doc(db, COLL.PAYMENTS, paymentId), {
+      status:     'rejected',
+      rejectedAt: Date.now(),
+      rejectedBy: auth.currentUser?.email || 'admin'
+    });
+
+    toast(`❌ Payment rejected for ${userName || userId}`, 'error');
+
+    // Send rejection email
+    if (userEmail) {
+      await sendPaymentEmail(EMAILJS_CONFIG.templateReject, {
+        to_name:  userName || 'Student',
+        to_email: userEmail
+      });
+    }
+  } catch(err) {
+    console.error('Reject payment error:', err);
+    toast('Failed to reject payment', 'error');
   }
 };
 
