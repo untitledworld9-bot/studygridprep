@@ -68,7 +68,8 @@ const COLL = {
   MUSIC:         "musicTracks",
   VIDEO_PROMOS:  "videoPromotions",
   MAINTENANCE:   "maintenance",
-  OFFERS:        "offers"
+  OFFERS:        "offers",
+  SUBSCRIPTIONS: "subscriptions"
 };
 
 // ============================================================
@@ -76,8 +77,10 @@ const COLL = {
 // ============================================================
 
 const STATE = {
-  allUsers:    [],    // full user list from Firestore
-  allMessages: [],    // full message list from Firestore
+  allUsers:        [],    // full user list from Firestore
+  allMessages:     [],    // full message list from Firestore
+  allSubscriptions: [],   // all subscription records
+  selectedSubUID:  null,  // currently selected user for grant/revoke
   rooms:       [],    // active room names (for filter dropdown)
   charts:      {},    // Chart.js instances
   unsubscribers: [],  // Firestore listener cleanup functions
@@ -289,6 +292,7 @@ function initAdminPanel(user) {
 
   // Start all real-time Firestore listeners
   listenUsers();
+  listenSubscriptions();
   listenMessages();
   listenRooms();
   listenAnnouncements();
@@ -483,10 +487,245 @@ async function loadDailyStats() {
  * Real-time listener on the "users" collection.
  * Updates dashboard stats, stat cards, user table, and recent-users table.
  */
+
+// ============================================================
+//  SUBSCRIPTIONS
+// ============================================================
+
+/** Listen to all users with isSubscribed:true in Firestore */
+function listenSubscriptions() {
+  // We derive subscription data from users collection (isSubscribed + trialExpiry fields)
+  // Real-time — whenever user doc changes, table refreshes
+  STATE._subUnsub = onSnapshot(
+    collection(db, COLL.USERS),
+    snap => {
+      STATE.allSubscriptions = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(u => u.isSubscribed === true);
+
+      // Update badge count
+      const badge = document.getElementById('subBadge');
+      const countEl = document.getElementById('activeSubCount');
+      const n = STATE.allSubscriptions.length;
+      if (badge) badge.textContent = n;
+      if (countEl) countEl.textContent = n;
+
+      renderSubTable();
+    },
+    err => console.warn('[Subscriptions]', err)
+  );
+}
+
+/** Render active subscribers table */
+function renderSubTable() {
+  const q = (document.getElementById('subSearch')?.value || '').toLowerCase();
+  const rows = STATE.allSubscriptions.filter(u =>
+    !q ||
+    (u.name  || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q)
+  );
+
+  const tbody = document.getElementById('subTable');
+  if (!tbody) return;
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-muted);">
+      No active subscribers</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(u => {
+    const expiry   = u.trialExpiry || u.subExpiry || 0;
+    const daysLeft = expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86400000)) : null;
+    const validDate = expiry ? new Date(expiry).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : 'Lifetime';
+    const isActive = !expiry || Date.now() < expiry;
+
+    const daysColor = daysLeft === null ? '#10B981'
+      : daysLeft <= 3  ? '#EF4444'
+      : daysLeft <= 7  ? '#F59E0B'
+      : '#10B981';
+
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="user-avatar-sm" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+            ${(u.name || u.email || '?')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:13px;">${escHtml(u.name || '—')}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${escHtml(u.email || u.id)}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:12px;color:var(--text-muted);">${validDate}</td>
+      <td>
+        <span style="font-weight:700;font-size:13px;color:${daysColor};">
+          ${daysLeft === null ? '∞ Lifetime' : daysLeft + ' days'}
+        </span>
+      </td>
+      <td>
+        <label class="sub-toggle-wrap" title="${isActive ? 'Click to revoke' : 'Revoked/Expired'}">
+          <input type="checkbox" class="sub-toggle-cb" ${isActive ? 'checked' : ''}
+            onchange="toggleSubFromTable('${escHtml(u.id)}', '${escHtml(u.name || u.email || u.id)}', this.checked)" />
+          <span class="sub-toggle-slider"></span>
+        </label>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/** Filter sub table on search */
+window.filterSubTable = () => renderSubTable();
+
+/** Toggle subscription on/off from table row */
+window.toggleSubFromTable = async (uid, uname, enable) => {
+  if (!uid) return;
+  try {
+    if (enable) {
+      // Re-enable with 30 days default
+      const expiry = Date.now() + 30 * 86400000;
+      await updateDoc(doc(db, COLL.USERS, uid), {
+        isSubscribed: true,
+        trialExpiry:  expiry,
+        subExpiry:    expiry,
+        subGrantedBy: 'admin',
+        subGrantedAt: Date.now()
+      });
+      showToast(`✅ Subscription enabled for ${uname}`);
+    } else {
+      await updateDoc(doc(db, COLL.USERS, uid), {
+        isSubscribed: false,
+        trialExpiry:  0,
+        subExpiry:    0,
+        subRevokedAt: Date.now(),
+        subGrantedBy: 'admin'
+      });
+      showToast(`🚫 Subscription revoked for ${uname}`, 'error');
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Error updating subscription', 'error');
+  }
+};
+
+// ── Grant user search ──
+window.searchGrantUser = () => {
+  const q = (document.getElementById('grantSubSearch')?.value || '').toLowerCase().trim();
+  const container = document.getElementById('grantUserResults');
+  if (!container) return;
+
+  if (!q) { container.innerHTML = ''; return; }
+
+  const matches = STATE.allUsers.filter(u =>
+    (u.name  || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  if (!matches.length) {
+    container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No users found</div>`;
+    return;
+  }
+
+  container.innerHTML = matches.map(u => `
+    <div class="grant-user-item" onclick="selectGrantUser('${escHtml(u.id)}','${escHtml(u.name||'')}','${escHtml(u.email||'')}')">
+      <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+        display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">
+        ${(u.name || u.email || '?')[0].toUpperCase()}
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:13px;">${escHtml(u.name || '—')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${escHtml(u.email || u.id)}</div>
+      </div>
+      ${u.isSubscribed ? '<span style="margin-left:auto;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;">PRO</span>' : ''}
+    </div>
+  `).join('');
+};
+
+window.selectGrantUser = (uid, name, email) => {
+  STATE.selectedSubUID = uid;
+  const box   = document.getElementById('selectedSubUser');
+  const av    = document.getElementById('selSubAvatar');
+  const nm    = document.getElementById('selSubName');
+  const em    = document.getElementById('selSubEmail');
+  const res   = document.getElementById('grantUserResults');
+  const inp   = document.getElementById('grantSubSearch');
+  if (box) box.style.display = 'block';
+  if (av)  av.textContent   = (name || email || '?')[0].toUpperCase();
+  if (nm)  nm.textContent   = name || '—';
+  if (em)  em.textContent   = email || uid;
+  if (res) res.innerHTML    = '';
+  if (inp) inp.value        = '';
+};
+
+window.clearSelectedSubUser = () => {
+  STATE.selectedSubUID = null;
+  const box = document.getElementById('selectedSubUser');
+  if (box) box.style.display = 'none';
+};
+
+window.setSubDays = (n) => {
+  const inp = document.getElementById('subDaysInput');
+  if (inp) inp.value = n;
+  document.querySelectorAll('.sub-days-pill').forEach(b => b.classList.remove('active'));
+  event?.target?.classList?.add('active');
+};
+
+window.grantSubscription = async () => {
+  const uid  = STATE.selectedSubUID;
+  if (!uid) { showToast('Please select a user first', 'error'); return; }
+
+  const days = parseInt(document.getElementById('subDaysInput')?.value || '0');
+  if (!days || days < 1) { showToast('Please enter valid number of days', 'error'); return; }
+
+  const expiry = Date.now() + days * 86400000;
+  const validDate = new Date(expiry).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+
+  try {
+    await updateDoc(doc(db, COLL.USERS, uid), {
+      isSubscribed: true,
+      trialExpiry:  expiry,
+      subExpiry:    expiry,
+      subGrantedBy: 'admin',
+      subGrantedAt: Date.now(),
+      subDays:      days
+    });
+    showToast(`✅ ${days}-day subscription granted! Valid till ${validDate}`);
+    clearSelectedSubUser();
+    document.getElementById('subDaysInput').value = '';
+    document.querySelectorAll('.sub-days-pill').forEach(b => b.classList.remove('active'));
+  } catch(e) {
+    console.error(e);
+    showToast('Failed to grant subscription', 'error');
+  }
+};
+
+window.revokeSubscription = async () => {
+  const uid = STATE.selectedSubUID;
+  if (!uid) { showToast('Please select a user first', 'error'); return; }
+
+  if (!confirm('Revoke this user\'s subscription?')) return;
+
+  try {
+    await updateDoc(doc(db, COLL.USERS, uid), {
+      isSubscribed: false,
+      trialExpiry:  0,
+      subExpiry:    0,
+      subRevokedAt: Date.now()
+    });
+    showToast('🚫 Subscription revoked', 'error');
+    clearSelectedSubUser();
+  } catch(e) {
+    console.error(e);
+    showToast('Failed to revoke subscription', 'error');
+  }
+};
+
 function listenUsers() {
-  // Full list for user management table (ordered by lastActive for correct time sort)
+  // ✅ FIX: orderBy("lastActive") Firestore pe nahi — client-side sort karo.
+  // Reason: agar kisi doc mein lastActive field missing ho (purane name-keyed docs)
+  // to Firestore us doc ko query result mein include hi nahi karta — user invisible ho jaata hai.
   const unsub = onSnapshot(
-    query(collection(db, COLL.USERS), orderBy("lastActive", "desc")),
+    collection(db, COLL.USERS),   // ← no orderBy — sab docs milenge
     snap => {
       // Step 1: Deduplicate by doc ID
       const seenId = new Map();
@@ -510,10 +749,11 @@ function listenUsers() {
         }
       }
       // Only dedup if we can — users without email/name stay as-is
-      const usersWithKey   = users.filter(u => (u.email || "").toLowerCase() || (u.name || "").toLowerCase());
+      const usersWithKey    = users.filter(u => (u.email || "").toLowerCase() || (u.name || "").toLowerCase());
       const usersWithoutKey = users.filter(u => !(u.email || "").toLowerCase() && !(u.name || "").toLowerCase());
+      // ✅ Client-side sort — missing lastActive wale bhi dikhenge (fallback 0)
       STATE.allUsers = [...seenName.values(), ...usersWithoutKey]
-        .sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0));
+        .sort((a, b) => (b.lastActive || b.lastSeen || 0) - (a.lastActive || a.lastSeen || 0));
 
       updateUserStats();
       renderUserTable();
@@ -641,8 +881,14 @@ function renderUserTable() {
            ✅ ${Array.isArray(todos) ? todos.length : todos} todos</div>`
       : "";
 
+    // Premium glow if subscribed
+    const isSubbed = u.isSubscribed === true;
+    const subExpiry = u.trialExpiry || u.subExpiry || 0;
+    const subActive = isSubbed && (!subExpiry || Date.now() < subExpiry);
+    const rowClass = subActive ? 'sub-active-row' : '';
+
     return `
-    <tr>
+    <tr class="${rowClass}">
       <td>
         <div class="user-cell">
           <div class="user-avatar-sm">${(u.name || u.displayName || u.email || "?")[0].toUpperCase()}</div>
@@ -651,6 +897,11 @@ function renderUserTable() {
             <div style="font-size:11px;color:var(--text-muted);">${escHtml(u.email || u.id)}</div>
             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
               ${goalHtml}${todoHtml}
+              ${subActive ? `<div style="display:inline-flex;align-items:center;gap:4px;
+                background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);
+                border-radius:20px;padding:2px 9px;font-size:10px;color:#F59E0B;font-weight:700;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                PRO</div>` : ''}
             </div>
           </div>
         </div>
