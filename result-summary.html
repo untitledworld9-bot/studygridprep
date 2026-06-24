@@ -527,6 +527,7 @@ function animateNumber(el, target, duration) {
   const exam     = (result?.exam     || localStorage.getItem('selectedExam')     || 'exam').toUpperCase();
   const year     = result?.year      || localStorage.getItem('selectedYear')     || '';
   const shift    = result?.shift     || localStorage.getItem('selectedShift')    || '';
+  const testName = result?.testName  || localStorage.getItem('selectedTestName') || '';
   let subjects   = result?.subjects;
   if (!subjects) {
     try { subjects = JSON.parse(localStorage.getItem('selectedSubjects') || '[]'); } catch(e){ subjects = []; }
@@ -535,7 +536,7 @@ function animateNumber(el, target, duration) {
 
   /* 3. Header */
   const hdrTitle = document.getElementById('hdrTitle');
-  if (hdrTitle) hdrTitle.textContent = `${exam} Mock Test Summary`;
+  if (hdrTitle) hdrTitle.textContent = testName || `${exam} Mock Test Summary`;
 
   const hdrSubtitle = document.getElementById('hdrSubtitle');
   if (hdrSubtitle) hdrSubtitle.textContent = 'Study Grid Prep';

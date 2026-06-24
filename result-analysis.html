@@ -985,13 +985,14 @@ function generateTips(subjectData, accuracy) {
   const exam     = (result?.exam  || localStorage.getItem('selectedExam')  || 'EXAM').toUpperCase();
   const year     = result?.year   || localStorage.getItem('selectedYear')   || '';
   const shift    = result?.shift  || localStorage.getItem('selectedShift')  || '';
+  const testName = result?.testName || localStorage.getItem('selectedTestName') || '';
   let subjects   = result?.subjects;
   if (!subjects) { try { subjects = JSON.parse(localStorage.getItem('selectedSubjects')||'[]'); } catch(e){subjects=[];} }
   const userName = localStorage.getItem('userName') || 'Student';
 
   /* 2. Header */
   const hdrTitle = document.getElementById('hdrTitle');
-  if (hdrTitle) hdrTitle.textContent = `${exam} Test Analysis`;
+  if (hdrTitle) hdrTitle.textContent = testName ? `${testName} — Analysis` : `${exam} Test Analysis`;
   const avatar = document.getElementById('hdrAvatar');
   if (avatar) avatar.textContent = (userName || 'S').charAt(0).toUpperCase();
 
@@ -1094,7 +1095,7 @@ function generateTips(subjectData, accuracy) {
 
   /* 5. Top info */
   const topExamName = document.getElementById('topExamName');
-  if (topExamName) topExamName.textContent = `${exam} Mock Test`;
+  if (topExamName) topExamName.textContent = testName || `${exam} Mock Test`;
 
   const topExamMeta = document.getElementById('topExamMeta');
   if (topExamMeta) {
@@ -1627,12 +1628,9 @@ window.launchAIAnalysis = async function() {
         const isCorrect     = !isSkipped && String(userAnswer).toUpperCase() === correctAnswer;
 
         questions.push({
-          subject:  sub,
-          topic:    q.topic || q.chapter || q.section || sub,
-          correct:  isCorrect,
-          text:     q.question || q.questionText || q.text || '',  // AI ko question text bhi do
-          userAns:  userAnswer,
-          correctAns: correctAnswer,
+          subject: sub,
+          topic:   q.topic || q.chapter || q.section || sub,
+          correct: isCorrect,
         });
       });
     });

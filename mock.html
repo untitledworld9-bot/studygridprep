@@ -1338,13 +1338,15 @@ onAuthStateChanged(auth, user => {
 function loadExamConfig() {
   STATE.exam     = (localStorage.getItem('selectedExam') || 'cuet').toLowerCase();
   STATE.year     = parseInt(localStorage.getItem('selectedYear')) || 2024;
-  STATE.shift    = localStorage.getItem('selectedShift') || 'Shift 1';
+  STATE.shift    = localStorage.getItem('selectedShift') || '';
   STATE.marking  = localStorage.getItem('selectedMarking') || (STATE.exam === 'jee' ? '+4/-1' : '+5/-1');
+  STATE.testName = localStorage.getItem('selectedTestName') || '';
   const savedSubs = localStorage.getItem('selectedSubjects');
   STATE.subjects = savedSubs ? JSON.parse(savedSubs) : [];
 
-  document.getElementById('hdrExamName').textContent =
-    STATE.exam === 'jee' ? 'JEE Mock Test' : 'CUET Mock Test';
+  // Header: show testName if set, else generic
+  const hdrNameEl = document.getElementById('hdrExamName');
+  if (hdrNameEl) hdrNameEl.textContent = STATE.testName || (STATE.exam === 'jee' ? 'JEE Mock Test' : 'CUET Mock Test');
 
   // Set timer — FIX: JEE uses subject count, not hardcoded 3 hours
   if (STATE.exam === 'jee') {
@@ -1366,7 +1368,7 @@ function loadExamConfig() {
         userName:  STATE.user?.displayName || localStorage.getItem("userName") || "User",
         exam:      STATE.exam,
         testId,
-        testName:  (STATE.exam||"").toUpperCase() + " " + STATE.year + " " + STATE.shift,
+        testName:  STATE.testName || ((STATE.exam||"").toUpperCase() + (STATE.year ? " " + STATE.year : "") + (STATE.shift ? " " + STATE.shift : "")),
         shift:     STATE.shift,
         status:    "started",  
         startedAt: serverTimestamp()
@@ -2031,7 +2033,7 @@ window.submitTest = async function() {
     year:        STATE.year,
     shift:       STATE.shift,
     testId,
-    testName:    `${STATE.exam.toUpperCase()} ${STATE.year} ${STATE.shift}`,
+    testName:    STATE.testName || `${STATE.exam.toUpperCase()}${STATE.year ? ' ' + STATE.year : ''}${STATE.shift ? ' ' + STATE.shift : ''}`,
     subjects:    STATE.subjects,
     marking:     markingScheme,
     score,

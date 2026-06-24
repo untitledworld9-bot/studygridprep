@@ -1060,8 +1060,7 @@ function buildCard(test, index) {
   card.style.animationDelay = `${0.08 + index * 0.07}s`;
 
   const metaParts = [];
-  if (test.shift) metaParts.push(test.shift);
-  if (test.date)  metaParts.push(test.date);
+  if (test.year) metaParts.push(test.year);
 
   const subjects = Array.isArray(test.subjects) ? test.subjects : [];
   const chipsHtml = subjects
@@ -1081,7 +1080,7 @@ function buildCard(test, index) {
       <i class="fa-solid fa-flask" style="display:none;font-size:20px;color:#f59e0b;"></i>
     </div>
     <div class="card-body">
-      <div class="card-name">${test.testName || 'JEE Mains Mock ' + (test.year || '')}</div>
+      <div class="card-name">${test.testName || 'JEE Mains Mock' + (test.year ? ' ' + test.year : '')}</div>
       <div class="card-meta">
         ${metaParts.map((p, i) => i === 0 ? p : `<span class="meta-dot"></span>${p}`).join('')}
       </div>
@@ -1188,9 +1187,8 @@ window.openSubjectModal = function(test) {
   }
 
   const metaParts = [];
-  if (test.year)  metaParts.push(`JEE Mains ${test.year}`);
-  if (test.shift) metaParts.push(test.shift);
-  if (test.date)  metaParts.push(test.date);
+  if (test.testName) metaParts.push(test.testName);
+  else if (test.year) metaParts.push('JEE Mains ' + test.year);
   document.getElementById('modalMetaText').textContent = metaParts.join(' · ');
 
   // Render dynamic subjects from admin's test.subjects
@@ -1261,6 +1259,7 @@ window.startTest = async function() {
   localStorage.setItem('selectedSubjects', JSON.stringify(subjects));
   localStorage.setItem('selectedTestId',   selectedTest.id    || '');
   localStorage.setItem('selectedMarking',  selectedTest.marking || '+4/-1');
+  localStorage.setItem('selectedTestName', selectedTest.testName || '');
 
   // Show loading overlay + navigate
   const overlay = document.getElementById('loadingOverlay');

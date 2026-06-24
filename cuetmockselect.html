@@ -1534,10 +1534,10 @@ window.openSubjectPopup = function(subjectName) {
   if (titleEl) titleEl.textContent = subjectName;
   if (metaEl)  metaEl.textContent  = `${tests.length} test${tests.length !== 1 ? 's' : ''} available`;
 
-  // Content
+  // Content — pass subject so chips aren't shown redundantly
   const content = document.getElementById('subpopContent');
   if (content) {
-    setupPopupContent(tests);
+    setupPopupContent(tests, subjectName);
   }
 
   // Scroll to top
@@ -1575,7 +1575,7 @@ window.openFullMockPopup = function(type) {
   const metaEl  = document.getElementById('subpopMeta');
   if (metaEl)  metaEl.textContent = meta;
 
-  setupPopupContent(tests);
+  setupPopupContent(tests, null);
 
   const scroll = document.getElementById('subpopScroll');
   if (scroll) scroll.scrollTop = 0;
@@ -1637,11 +1637,12 @@ function getInProgressTestId() {
 function buildPopupTestCard(test, index) {
   const subjects  = Array.isArray(test.subjects) ? test.subjects : [];
   const metaParts = [];
-  if (test.date)  metaParts.push(test.date);
-  if (test.shift) metaParts.push(test.shift);
+  // No date/shift in meta — testName is primary
 
-  const chipsHtml = subjects.slice(0, 3).map(s => `<span class="ptc-chip">${s}</span>`).join('');
-  const extra     = subjects.length > 3 ? `<span class="ptc-chip">+${subjects.length - 3}</span>` : '';
+  // Show ALL subjects on card — user should see all subjects in the test
+  const chipsHtml = subjects.slice(0, 4).map(s => `<span class="ptc-chip">${s}</span>`).join('');
+  const extra     = subjects.length > 4 ? `<span class="ptc-chip">+${subjects.length - 4}</span>` : '';
+  const visibleSubs = subjects;  // all subjects visible
 
   const completedIds   = getCompletedTestIds();
   const done           = completedIds.has(test.id);
@@ -1687,9 +1688,8 @@ function buildPopupTestCard(test, index) {
            onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-graduation-cap\' style=\'font-size:18px;color:#22D3EE;\'></i>';">
     </div>
     <div class="ptc-body">
-      <div class="ptc-name">${test.testName || 'CUET Mock ' + (test.year || '')}</div>
-      <div class="ptc-meta">${metaParts.join(' · ')}</div>
-      ${subjects.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${chipsHtml}${extra}</div>` : ''}
+      <div class="ptc-name">${test.testName || 'CUET Mock' + (test.year ? ' ' + test.year : '')}</div>
+      ${visibleSubs.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${chipsHtml}${extra}</div>` : ''}
       ${doneBadge}
     </div>
     ${rightIcon}
@@ -1697,9 +1697,10 @@ function buildPopupTestCard(test, index) {
 }
 
 /* ─── Setup popup content + event delegation ──────────── */
-function setupPopupContent(tests) {
-  window.__POPUP_TESTS = tests;
-  window.__SELECTED_IDX = -1;
+function setupPopupContent(tests, activeSubject) {
+  window.__POPUP_TESTS    = tests;
+  window.__SELECTED_IDX   = -1;
+  window.__ACTIVE_SUBJECT = activeSubject || null; // hide redundant chip
 
   const content = document.getElementById('subpopContent');
   const footer  = document.getElementById('subpopFooter');
@@ -1818,6 +1819,7 @@ function startTestWith(test) {
   localStorage.setItem('selectedSubjects', JSON.stringify(subjects));
   localStorage.setItem('selectedTestId',   test.id     || '');
   localStorage.setItem('selectedMarking',  test.marking || '+5/-1');
+  localStorage.setItem('selectedTestName', test.testName || '');
 
   // Check if this test has in-progress saved state — if yes, skip instructions
   const completedIds = getCompletedTestIds();
