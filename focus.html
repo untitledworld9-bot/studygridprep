@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0D1120">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,6 +23,15 @@
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  var m = document.querySelector('meta[name="theme-color"]');
+  if(m) m.content = (theme === 'dark') ? '#0D1120' : '#ffffff';
+  new MutationObserver(function(){
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
+    var m2 = document.createElement('meta'); m2.name='theme-color';
+    m2.content = isDark ? '#0D1120' : '#ffffff';
+    document.head.appendChild(m2);
+  }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
 <style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>

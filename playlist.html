@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Study Playlist | Study Grid Prep</title>
     <link rel="icon" href="/icon-192.png">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
     <!-- UW Core: shared XP, Streak, Firebase sync -->
     <script type="module" src="/uw-core.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -15,6 +17,8 @@
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.content = (theme==='dark') ? '#0a1628' : '#ffffff';
 })();
 </script>
 
@@ -3050,6 +3054,19 @@ window.updateVideoTitle = function(id, newTitle) {
 </div>
 
 <script src="theme.js"></script>
+<script>
+  (function(){
+    function _utc(){
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
+      var m = document.createElement('meta'); m.name='theme-color';
+      m.content = isDark ? '#0a1628' : '#ffffff';
+      document.head.appendChild(m);
+    }
+    new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+    _utc();
+  })();
+</script>
 
 <!-- ════════════════════════════════════════════
      🧠 QUIZ SETUP MODAL
