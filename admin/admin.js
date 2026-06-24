@@ -803,6 +803,9 @@ function renderPaymentRequests() {
   if (acEl) acEl.textContent = approveCount;
   if (rcEl) rcEl.textContent = rejectCount;
 
+  // Update earning summary box
+  updateEarningSummary();
+
   const rows = STATE.allPayments.filter(p =>
     filter === 'all' ? true : p.status === filter
   );
@@ -882,6 +885,47 @@ function renderPaymentRequests() {
 
 window.filterPayments = () => renderPaymentRequests();
 
+// ─── Earning Filter State ───
+let _earningFilterDays = 1; // default: 1 day
+
+window.setEarningFilter = (key) => {
+  const map = { '1d':1, '7d':7, '15d':15, '30d':30, '365d':365, '730d':730, 'all': Infinity };
+  _earningFilterDays = map[key] ?? 1;
+  // Update active button
+  document.querySelectorAll('.ef-btn').forEach(b => {
+    b.classList.toggle('ef-active', b.dataset.ef === key);
+  });
+  updateEarningSummary();
+};
+
+function updateEarningSummary() {
+  const approved = STATE.allPayments.filter(p => p.status === 'approved');
+
+  // Filter by time period
+  const now = Date.now();
+  const cutoff = _earningFilterDays === Infinity ? 0 : now - (_earningFilterDays * 86400000);
+
+  const inPeriod = approved.filter(p => {
+    const ts = p.approvedAt || p.createdAt || 0;
+    return ts >= cutoff;
+  });
+
+  const trial  = inPeriod.filter(p => p.plan === 'trial'   || p.amount == 1);
+  const monthly = inPeriod.filter(p => p.plan === 'monthly' || (p.amount != 1 && p.amount >= 49));
+
+  const earn1   = trial.reduce((s, p)   => s + (Number(p.amount) || 0), 0);
+  const earn49  = monthly.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  const total   = earn1 + earn49;
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('earn1Rupee',    earn1);
+  set('earn1Count',    trial.length);
+  set('earn49Rupee',   earn49);
+  set('earn49Count',   monthly.length);
+  set('earnTotal',     total);
+  set('earnTotalCount', inPeriod.length);
+}
+
 /** Approve a payment — update user + payment doc + send email */
 window.approvePayment = async (paymentId) => {
   const p = STATE.allPayments.find(x => x.id === paymentId);
@@ -928,6 +972,7 @@ window.approvePayment = async (paymentId) => {
     });
 
     toast(`✅ Approved — ${p.plan === 'trial' ? '7-day trial' : '30-day plan'} activated for ${userName || userId}`);
+    updateEarningSummary();
 
     // Send approval email
     if (userEmail) {

@@ -790,6 +790,18 @@
   }
   .grant-user-item:hover { border-color: rgba(91,91,246,0.4); background: rgba(91,91,246,0.06); }
   .grant-user-item.selected { border-color: #5B5BF6; background: rgba(91,91,246,0.1); }
+    /* Earning filter buttons */
+    .ef-btn {
+      padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;
+      cursor:pointer;transition:.18s;font-family:var(--font-body);
+      background:var(--bg-card);border:1px solid var(--border);
+      color:var(--text-secondary);
+    }
+    .ef-btn:hover { border-color:var(--accent-violet);color:var(--accent-violet); }
+    .ef-btn.ef-active {
+      background:rgba(124,92,252,0.15);border-color:var(--accent-violet);
+      color:var(--accent-violet);
+    }
   </style>
 </head>
 <body>
@@ -1212,6 +1224,49 @@
         <div style="background:rgba(255,79,106,0.1);border:1px solid rgba(255,79,106,0.25);border-radius:10px;
           padding:7px 14px;font-size:12px;font-weight:700;color:var(--accent-red);">
           ❌ <span id="payRejectedCount">0</span> Rejected
+        </div>
+      </div>
+    </div>
+
+    <!-- Earning Summary Box -->
+    <div id="earningSummaryBox" style="
+      margin-bottom:20px;
+      background:linear-gradient(135deg,rgba(0,229,160,0.07) 0%,rgba(124,92,252,0.07) 100%);
+      border:1px solid rgba(0,229,160,0.2);border-radius:16px;padding:18px 20px;">
+
+      <!-- Time Filter -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;color:var(--text-secondary);">⏱ Period:</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="earningFilterBtns">
+          <button onclick="setEarningFilter('1d')"   data-ef="1d"   class="ef-btn ef-active">1 Day</button>
+          <button onclick="setEarningFilter('7d')"   data-ef="7d"   class="ef-btn">1 Week</button>
+          <button onclick="setEarningFilter('15d')"  data-ef="15d"  class="ef-btn">15 Days</button>
+          <button onclick="setEarningFilter('30d')"  data-ef="30d"  class="ef-btn">1 Month</button>
+          <button onclick="setEarningFilter('365d')" data-ef="365d" class="ef-btn">1 Year</button>
+          <button onclick="setEarningFilter('730d')" data-ef="730d" class="ef-btn">2 Years</button>
+          <button onclick="setEarningFilter('all')"  data-ef="all"  class="ef-btn">All Time</button>
+        </div>
+      </div>
+
+      <!-- Earning Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+        <!-- ₹1 Trial earnings -->
+        <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.22);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:600;color:#00e5a0;margin-bottom:6px;">₹1 Trial</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text-primary);">₹<span id="earn1Rupee">0</span></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earn1Count">0</span> payments</div>
+        </div>
+        <!-- ₹49 Plan earnings -->
+        <div style="background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.22);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:600;color:var(--accent-amber);margin-bottom:6px;">₹49 Monthly</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text-primary);">₹<span id="earn49Rupee">0</span></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earn49Count">0</span> payments</div>
+        </div>
+        <!-- Total -->
+        <div style="background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(91,91,246,0.12));border:1px solid rgba(124,92,252,0.3);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:600;color:var(--accent-violet);margin-bottom:6px;">💰 Total Earned</div>
+          <div style="font-size:26px;font-weight:900;color:var(--text-primary);">₹<span id="earnTotal">0</span></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earnTotalCount">0</span> approved payments</div>
         </div>
       </div>
     </div>
