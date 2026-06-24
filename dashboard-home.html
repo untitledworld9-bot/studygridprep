@@ -2961,13 +2961,13 @@ if('serviceWorker' in navigator){
 }
 // Theme color update
 (function(){
-  function updateThemeColor(){
-    const isDark=document.documentElement.getAttribute("data-theme")==="dark";
-    const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta) meta.content=isDark?"#0B1220":"#ffffff";
+  function syncThemeColor(){
+    var isDark=document.documentElement.getAttribute("data-theme")==="dark";
+    var metas=document.querySelectorAll("meta[name='theme-color']");
+    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
   }
-  updateThemeColor();
-  new MutationObserver(updateThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  syncThemeColor();
+  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 })();
 </script>
 
