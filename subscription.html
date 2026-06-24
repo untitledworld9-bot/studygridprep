@@ -33,6 +33,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <style>
 /* ── DESIGN TOKENS — exact mirror of dashboard-home.html ── */
@@ -403,6 +404,16 @@ header{
     </div>
   </div>
 
+  <!-- Pending banner — shown when payment under review -->
+  <div class="pending-banner" id="pendingBanner" style="display:none;">
+    <i class="fa-regular fa-clock"></i>
+    <div style="flex:1;">
+      <div class="pending-banner-title">Payment Under Review</div>
+      <div class="pending-banner-sub">We'll activate your plan once verified. Usually a few hours.</div>
+    </div>
+    <button onclick="cancelPending()" style="background:none;border:none;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:8px;font-family:'Poppins',sans-serif;">Cancel</button>
+  </div>
+
   <!-- CTA Button -->
   <button class="notify-btn" id="ctaBtn" onclick="handleCtaClick()">
     <i class="fa-solid fa-bolt"></i> Start ₹1 Trial — 7 Days Pro Access
@@ -414,45 +425,350 @@ header{
 
 <script src="theme.js"></script>
 
+<style>
+/* ── PAYMENT FORM OVERLAY ── */
+#paymentOverlay{
+  display:none;
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(6px);
+  align-items:flex-end; justify-content:center;
+}
+#paymentOverlay.open{ display:flex; }
+.pay-sheet{
+  background:var(--surface);
+  border-radius:28px 28px 0 0;
+  border:1px solid var(--border);
+  width:100%; max-width:480px;
+  padding:24px 20px 40px;
+  box-shadow:var(--shadow-md);
+  animation:slideUp 0.3s ease;
+  max-height:90vh; overflow-y:auto;
+}
+@keyframes slideUp{ from{transform:translateY(40px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+.pay-handle{
+  width:40px; height:4px; border-radius:4px;
+  background:var(--border); margin:0 auto 20px;
+}
+.pay-title{ font-size:18px; font-weight:800; color:var(--text); margin-bottom:4px; }
+.pay-sub{ font-size:12px; color:var(--text2); margin-bottom:20px; }
+.qr-wrap{
+  display:flex; flex-direction:column; align-items:center;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:16px; padding:20px; margin-bottom:16px; gap:12px;
+}
+.qr-wrap img{ width:160px; height:160px; border-radius:12px; background:#fff; }
+.upi-id-row{
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:10px; padding:10px 14px; width:100%;
+}
+.upi-id-text{ flex:1; font-size:13px; font-weight:600; color:var(--text); font-family:monospace; }
+.copy-btn{
+  background:var(--accent); color:#fff; border:none;
+  border-radius:8px; padding:6px 12px; font-size:12px;
+  font-weight:700; cursor:pointer; font-family:'Poppins',sans-serif;
+  transition:0.2s;
+}
+.copy-btn:active{ transform:scale(0.94); }
+.pay-field-label{
+  font-size:11px; font-weight:700; color:var(--text2);
+  text-transform:uppercase; letter-spacing:0.06em;
+  margin-bottom:6px; display:block;
+}
+.pay-input{
+  width:100%; padding:13px 14px;
+  background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:12px; color:var(--text); font-size:14px;
+  font-family:'Poppins',sans-serif; outline:none;
+  transition:border-color 0.2s;
+}
+.pay-input:focus{ border-color:var(--accent); }
+.pay-field{ margin-bottom:14px; }
+.upload-area{
+  width:100%; padding:20px;
+  border:2px dashed var(--border); border-radius:14px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer; background:var(--surface2);
+  transition:0.2s; text-align:center;
+}
+.upload-area:hover,.upload-area.has-file{ border-color:var(--accent); background:rgba(91,91,246,0.04); }
+.upload-area i{ font-size:22px; color:var(--text3); }
+.upload-area.has-file i{ color:var(--green); }
+.upload-txt{ font-size:12px; color:var(--text2); font-weight:600; }
+.pay-btn-row{ display:flex; gap:10px; margin-top:20px; }
+.pay-submit-btn{
+  flex:1; padding:15px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff; border:none; border-radius:50px;
+  font-size:15px; font-weight:700; cursor:pointer;
+  font-family:'Poppins',sans-serif;
+  box-shadow:0 4px 16px rgba(91,91,246,0.3);
+  transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.pay-submit-btn:active{ transform:scale(0.97); }
+.pay-submit-btn:disabled{ opacity:0.6; pointer-events:none; }
+.pay-cancel-btn{
+  padding:15px 20px;
+  background:var(--surface2); color:var(--text2);
+  border:1.5px solid var(--border); border-radius:50px;
+  font-size:14px; font-weight:600; cursor:pointer;
+  font-family:'Poppins',sans-serif; transition:0.2s;
+}
+.pay-cancel-btn:active{ transform:scale(0.97); }
+/* Pending state banner */
+.pending-banner{
+  width:100%; max-width:400px;
+  display:flex; align-items:center; gap:12px;
+  background:rgba(249,115,22,0.08);
+  border:1px solid rgba(249,115,22,0.28);
+  border-radius:16px; padding:14px 16px; margin-bottom:16px;
+  color:var(--orange); font-size:18px;
+}
+.pending-banner-title{ font-size:14px; font-weight:700; color:var(--text); }
+.pending-banner-sub{ font-size:12px; color:var(--text2); margin-top:2px; font-weight:500; }
+</style>
+
+<!-- PAYMENT OVERLAY SHEET -->
+<div id="paymentOverlay">
+  <div class="pay-sheet" id="paySheet">
+    <div class="pay-handle"></div>
+    <div class="pay-title" id="paySheetTitle">₹1 Trial — Pay via UPI</div>
+    <div class="pay-sub">Scan QR or copy UPI ID · then submit your Transaction ID</div>
+
+    <!-- QR + UPI ID — set dynamically by openPaymentSheet() from PAYMENT_CONFIG -->
+    <div class="qr-wrap">
+      <img id="payQrImg" src="" alt="UPI QR Code" style="background:#fff;" />
+      <div class="upi-id-row">
+        <span class="upi-id-text" id="upiIdText">—</span>
+        <button class="copy-btn" onclick="copyUpiId()">Copy</button>
+      </div>
+    </div>
+
+    <!-- Transaction ID -->
+    <div class="pay-field">
+      <label class="pay-field-label">Transaction ID (UTR / UPI Ref No.)</label>
+      <input type="text" class="pay-input" id="txnInput" placeholder="e.g. 412345678901" autocomplete="off" />
+    </div>
+
+    <!-- Screenshot Upload -->
+    <div class="pay-field">
+      <label class="pay-field-label">Payment Screenshot <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('ssInput').click()">
+        <i class="fa-solid fa-image" id="uploadIcon"></i>
+        <div class="upload-txt" id="uploadTxt">Tap to upload screenshot</div>
+        <input type="file" id="ssInput" accept="image/*" style="display:none" onchange="handleScreenshot(this)" />
+      </div>
+    </div>
+
+    <div class="pay-btn-row">
+      <button class="pay-cancel-btn" onclick="closePaymentSheet()">Cancel</button>
+      <button class="pay-submit-btn" id="submitPayBtn" onclick="submitPayment()">
+        <i class="fa-solid fa-paper-plane"></i> Submit Payment
+      </button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import {
   activateTrial,
-  verifyAndActivate,
   initSubscriptionSync,
   watchSubscription,
-  startTrialCheckout
+  getUserId,
+  getPaymentStatus,
+  submitPaymentRequest,
+  cancelPendingPayment
 } from './subscription.js';
+import { auth } from './firebase.js';
 
-/* ─── Page transition ────────────────────────────────── */
+// ── ⚠️ CONFIG — apne UPI ID aur QR URLs yahan dalo ──
+const PAYMENT_CONFIG = {
+  upiId: 'ayushgupta12@ptyes',            // ← apna UPI ID dalo (same dono plans ke liye)
+  trial: {
+    amount: 1,
+    qr:     'https://res.cloudinary.com/dm9hqkipf/image/upload/v1782295160/rytli6viec2ghrwaaadc.png',  // ← admin-media.html se ₹1 QR image URL
+    label:  '₹1 Trial — Pay via UPI'
+  },
+  monthly: {
+    amount: 49,
+    qr:     'https://res.cloudinary.com/dm9hqkipf/image/upload/v1782295175/hjgfvrqictus4mou8ktl.png', // ← admin-media.html se ₹49 QR image URL
+    label:  '₹49 Monthly — Pay via UPI'
+  }
+};
+
+// ── EmailJS config — same IDs as admin.js ──
+const EMAILJS_SUB = {
+  publicKey:        'hYGUOHKlAwnjcnnwz', // ← same as admin.js
+  serviceId:        'service_h0c8jev',          // ← same as admin.js
+  templateReceived: 'template_pjqg0sp'         // ← EmailJS template ID
+};
+
+// Init EmailJS once
+(function initEJS(){
+  if (window.emailjs) {
+    window.emailjs.init({ publicKey: EMAILJS_SUB.publicKey });
+  } else {
+    // SDK already loaded via <script> tag above
+    document.addEventListener('DOMContentLoaded', () => {
+      window.emailjs?.init({ publicKey: EMAILJS_SUB.publicKey });
+    });
+  }
+})();
+
+function sendEmail(templateId, data) {
+  if (!window.emailjs) return Promise.resolve(); // silent fail if not loaded
+  return window.emailjs.send(EMAILJS_SUB.serviceId, templateId, data)
+    .catch(err => console.warn('[EmailJS]', err));
+}
+
+// ── Page transition ──
 window.navigate = function(url){
   const veil = document.getElementById('pageTransition');
   if (veil) veil.classList.add('leaving');
   setTimeout(() => { window.location.href = url; }, 210);
 };
 
-/* ─────────────────────────────────────────────────────────
-   RAZORPAY SETUP:
-   1. razorpay.com → Payment Links → Create Link
-   2. Amount = ₹1, Description = "Study Grid Prep Pro Trial"
-   3. Success URL = https://studygridprep.online/subscription.html?payment=pending
-   4. Cancel URL  = https://studygridprep.online/subscription.html?payment=cancel
-   5. Paste your rzp.io link below
-   ───────────────────────────────────────────────────────── */
-const RAZORPAY_PAYMENT_LINK = "RAZORPAY_PAYMENT_LINK_HERE";
-
-/* ─── Notification permission ─────────────────────────── */
+// ── Notification permission ──
 if ('Notification' in window && Notification.permission === 'default') {
   Notification.requestPermission();
 }
 
-/* ─── Plan card selection (visual only) ──────────────── */
+// ── Plan card selection ──
 window.selectPlan = function(plan){
   document.getElementById('freePlanCard').classList.toggle('active', plan === 'free');
   document.getElementById('proPlanCard').classList.toggle('active', plan === 'pro');
 };
 
-/* ─── Render subscription state ──────────────────────── */
-function renderState(state){
+// ── Cloudinary config — same as admin-media.html ──
+const CLOUDINARY = {
+  cloud:  'dm9hqkipf',        // ← tera existing cloud name
+  preset: 'e3vvwepk'          // ← tera existing upload_preset
+};
+
+async function uploadScreenshotToCloudinary(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY.preset);
+  formData.append('folder', 'payment_screenshots'); // organized folder
+  const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloud}/image/upload`, {
+    method: 'POST', body: formData
+  });
+  const data = await res.json();
+  if (!data.secure_url) throw new Error('Cloudinary upload failed');
+  return data.secure_url;
+}
+
+// ── Screenshot state ──
+let screenshotFile = null; // store File object, not base64
+
+window.handleScreenshot = function(input){
+  const file = input.files[0];
+  if (!file) return;
+  screenshotFile = file;
+  document.getElementById('uploadArea').classList.add('has-file');
+  document.getElementById('uploadIcon').className = 'fa-solid fa-circle-check';
+  document.getElementById('uploadTxt').textContent = file.name;
+};
+
+// ── Copy UPI ID ──
+window.copyUpiId = function(){
+  navigator.clipboard.writeText(document.getElementById('upiIdText').textContent.trim())
+    .then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+};
+
+// ── Open/close payment sheet ──
+let currentPlan = 'trial';
+
+window.openPaymentSheet = function(plan){
+  currentPlan = plan;
+  const cfg = PAYMENT_CONFIG[plan] || PAYMENT_CONFIG.trial;
+
+  // Set title, QR image, UPI ID dynamically based on plan
+  document.getElementById('paySheetTitle').textContent = cfg.label;
+  document.getElementById('payQrImg').src              = cfg.qr;
+  document.getElementById('upiIdText').textContent     = PAYMENT_CONFIG.upiId;
+
+  document.getElementById('paymentOverlay').classList.add('open');
+  document.getElementById('txnInput').value = '';
+  screenshotFile = null;
+  document.getElementById('uploadArea').classList.remove('has-file');
+  document.getElementById('uploadIcon').className = 'fa-solid fa-image';
+  document.getElementById('uploadTxt').textContent = 'Tap to upload screenshot';
+};
+
+window.closePaymentSheet = function(){
+  document.getElementById('paymentOverlay').classList.remove('open');
+};
+
+// ── Submit payment ──
+window.submitPayment = async function(){
+  const txnId = (document.getElementById('txnInput').value || '').trim();
+  if (!txnId) {
+    alert('Please enter your Transaction ID');
+    return;
+  }
+
+  const btn = document.getElementById('submitPayBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-dot"></span> Submitting…';
+
+  try {
+    // Wait for auth to resolve user info
+    const user = auth.currentUser;
+    const userId = getUserId();
+    const name  = user?.displayName || localStorage.getItem('userName') || '';
+    const email = user?.email       || localStorage.getItem('userEmail') || '';
+    const amount = currentPlan === 'trial' ? 1 : 49;
+
+    // Upload screenshot to Cloudinary if provided
+    let screenshotUrl = '';
+    if (screenshotFile) {
+      btn.innerHTML = '<span class="spinner-dot"></span> Uploading screenshot…';
+      screenshotUrl = await uploadScreenshotToCloudinary(screenshotFile);
+    }
+
+    await submitPaymentRequest({ userId, name, email, txnId, screenshot: screenshotUrl, plan: currentPlan, amount });
+
+    // Send "Under Review" confirmation email
+    if (email) {
+      sendEmail(EMAILJS_SUB.templateReceived, {
+        to_name:   name || 'Student',
+        to_email:  email,
+        txn_id:    txnId,
+        plan_name: currentPlan === 'trial' ? '₹1 Trial (7 Days)' : '₹49 Monthly'
+      });
+    }
+
+    closePaymentSheet();
+    // Re-render with pending state
+    renderStateFull({ isSubscribed: false, payPending: true, payPendingPlan: currentPlan });
+
+  } catch(err) {
+    console.error('Submit payment error:', err);
+    alert('Something went wrong. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Payment';
+  }
+};
+
+// ── Cancel pending payment ──
+window.cancelPending = async function(){
+  if (!confirm('Cancel your payment request? You can submit again anytime.')) return;
+  const userId = getUserId();
+  await cancelPendingPayment(userId);
+  // Re-render
+  const { getLocalSubscriptionState } = await import('./subscription.js');
+  renderStateFull({ ...getLocalSubscriptionState(), payPending: false });
+};
+
+// ── Full render (subscription + pending state) ──
+window.renderStateFull = function(state){
   const ctaBtn       = document.getElementById('ctaBtn');
   const proCard      = document.getElementById('proPlanCard');
   const proBadge     = document.getElementById('proPlanBadge');
@@ -461,10 +777,14 @@ function renderState(state){
   const statusSub    = document.getElementById('statusBannerSub');
   const footerLine   = document.getElementById('footerLine');
 
+  // ── CASE 1: Subscribed (PRO active) ──
   if (state.isSubscribed) {
     proCard.classList.add('active', 'pro-active');
     proCard.classList.remove('locked');
     document.getElementById('freePlanCard').classList.add('hide-when-subscribed');
+    // Hide pending banner if showing
+    const pb = document.getElementById('pendingBanner');
+    if (pb) pb.style.display = 'none';
 
     proBadge.textContent = '✦ Active';
     proPrice.textContent = 'Full access unlocked';
@@ -484,90 +804,99 @@ function renderState(state){
     ctaBtn.classList.add('done');
     ctaBtn.disabled   = true;
     footerLine.textContent = 'Thanks for going Pro — study smarter, score better.';
-
-  } else {
-    document.getElementById('freePlanCard').classList.remove('hide-when-subscribed');
-    proCard.classList.remove('pro-active');
-    statusBanner.style.display = 'none';
-    ctaBtn.classList.remove('done');
-    ctaBtn.disabled   = false;
-    ctaBtn.innerHTML  = '<i class="fa-solid fa-bolt"></i> Start ₹1 Trial — 7 Days Pro Access';
-    footerLine.textContent = 'Cancel anytime. No questions asked.';
-  }
-}
-
-/* ─── CTA click → Razorpay ───────────────────────────── */
-window.handleCtaClick = function(){
-  const ctaBtn = document.getElementById('ctaBtn');
-  if (ctaBtn.classList.contains('done') || ctaBtn.disabled) return;
-  startTrialCheckout(RAZORPAY_PAYMENT_LINK);
-};
-
-/* ─────────────────────────────────────────────────────────
-   SECURE PAYMENT RETURN HANDLER
-
-   SECURITY NOTE:
-   ?payment=pending only TRIGGERS a Firestore verification check.
-   It does NOT activate the subscription directly.
-
-   Activation only happens when Firestore shows:
-     paymentVerified = true   (written by Razorpay webhook → Cloud Function)
-   OR
-     isSubscribed = true      (already active from another session)
-
-   A user manually opening ?payment=pending gets nothing —
-   they have no paymentVerified flag in their Firestore doc.
-   ───────────────────────────────────────────────────────── */
-async function handlePaymentReturn(){
-  const params = new URLSearchParams(window.location.search);
-  const status = params.get('payment');
-
-  // Clean URL immediately — prevents re-trigger on refresh
-  window.history.replaceState({}, document.title, window.location.pathname);
-
-  if (status === 'cancel') {
-    document.getElementById('footerLine').textContent =
-      'Payment cancelled. You can try again anytime.';
     return;
   }
 
-  if (status !== 'pending') return;
+  // ── CASE 2: Payment pending (Under Review) ──
+  if (state.payPending) {
+    proCard.classList.remove('active', 'pro-active', 'locked');
+    document.getElementById('freePlanCard').classList.remove('hide-when-subscribed');
+    statusBanner.style.display = 'none';
 
-  // Payment flow was completed on Razorpay side.
-  // Now verify against Firestore — do NOT trust the URL param alone.
-  const ctaBtn     = document.getElementById('ctaBtn');
-  const footerLine = document.getElementById('footerLine');
+    // Show pending banner
+    const pb = document.getElementById('pendingBanner');
+    if (pb) pb.style.display = 'flex';
 
-  ctaBtn.disabled = true;
-  ctaBtn.innerHTML = '<span class="spinner-dot"></span> Verifying payment…';
+    // Update badge on pro card
+    proBadge.textContent = '⏳ Under Review';
+    proPrice.textContent  = state.payPendingPlan === 'trial' ? '₹1 Trial · Under Review' : '₹49 Monthly · Under Review';
 
-  const result = await verifyAndActivate(({ msg, done, err }) => {
-    // Live status updates while polling
-    if (!done) {
-      ctaBtn.innerHTML = `<span class="spinner-dot"></span> ${msg}`;
-      footerLine.textContent = msg;
-    }
-    if (err) {
-      footerLine.textContent = msg + ' Refresh this page if Pro does not activate.';
-    }
+    ctaBtn.innerHTML  = '<i class="fa-regular fa-clock"></i> Payment Under Review…';
+    ctaBtn.classList.remove('done');
+    ctaBtn.disabled   = true;
+    footerLine.textContent = 'Your payment is being verified. Usually takes a few hours.';
+    return;
+  }
+
+  // ── CASE 3: Normal (not subscribed, not pending) ──
+  document.getElementById('freePlanCard').classList.remove('hide-when-subscribed');
+  proCard.classList.remove('pro-active');
+  statusBanner.style.display = 'none';
+  const pb2 = document.getElementById('pendingBanner');
+  if (pb2) pb2.style.display = 'none';
+
+  // Auto-detect: trial used → show ₹49, else ₹1
+  if (state.trialUsed) {
+    proBadge.textContent = 'Monthly Plan';
+    proPrice.textContent  = '₹49 / month · Full access';
+    ctaBtn.innerHTML  = '<i class="fa-solid fa-bolt"></i> Start ₹49 Monthly Plan';
+  } else {
+    proBadge.textContent = '7-Day Trial';
+    proPrice.textContent  = '₹1 for 7 days · then renews';
+    ctaBtn.innerHTML  = '<i class="fa-solid fa-bolt"></i> Start ₹1 Trial — 7 Days Pro Access';
+  }
+  ctaBtn.classList.remove('done');
+  ctaBtn.disabled   = false;
+  footerLine.textContent = 'Cancel anytime. No questions asked.';
+};
+
+// ── CTA click → open payment sheet ──
+window.handleCtaClick = function(){
+  const ctaBtn = document.getElementById('ctaBtn');
+  if (ctaBtn.disabled) return;
+  // Detect which plan to show
+  const localTrialUsed = localStorage.getItem('sgp_trialUsed') === 'true';
+  openPaymentSheet(localTrialUsed ? 'monthly' : 'trial');
+};
+
+// ── Init: load sub state + payment pending state ──
+async function init(){
+  // Fast local render first
+  const { getLocalSubscriptionState } = await import('./subscription.js');
+  const local = getLocalSubscriptionState();
+  renderStateFull(local);
+
+  // Then sync with Firestore (source of truth)
+  initSubscriptionSync(async (state) => {
+    const userId = getUserId();
+    const full = await getPaymentStatus(userId);
+    // Merge: Firestore sub state + pending state
+    renderStateFull({
+      isSubscribed:   full.isSubscribed,
+      trialExpiry:    full.trialExpiry,
+      trialUsed:      full.trialUsed,
+      payPending:     full.payPending,
+      payPendingPlan: full.payPendingPlan
+    });
+    // Cache trialUsed in localStorage for CTA logic
+    if (full.trialUsed) localStorage.setItem('sgp_trialUsed', 'true');
   });
 
-  if (result.success) {
-    // renderState will be triggered by watchSubscription listener
-    // but call it explicitly here too for instant feedback
-    const { getLocalSubscriptionState } = await import('./subscription.js');
-    renderState(getLocalSubscriptionState());
-  } else {
-    // Timed out — reset button so user can see status
-    ctaBtn.disabled  = false;
-    ctaBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Start ₹1 Trial — 7 Days Pro Access';
-  }
+  // Live listener — activates UI immediately when admin approves
+  watchSubscription(async (state) => {
+    const userId = getUserId();
+    const full = await getPaymentStatus(userId);
+    renderStateFull({
+      isSubscribed:   full.isSubscribed,
+      trialExpiry:    full.trialExpiry,
+      trialUsed:      full.trialUsed,
+      payPending:     full.payPending,
+      payPendingPlan: full.payPendingPlan
+    });
+  });
 }
 
-/* ─── Init ───────────────────────────────────────────── */
-initSubscriptionSync((state) => renderState(state));
-watchSubscription((state) => renderState(state));
-handlePaymentReturn();
+init();
 </script>
 
 <!-- ERUDA DEBUG CONSOLE -->

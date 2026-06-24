@@ -25,6 +25,8 @@ import {
   doc,
   getDoc,
   setDoc,
+  addDoc,
+  collection,
   onSnapshot
 } from './firebase.js';
 
@@ -396,4 +398,69 @@ export function startTrialCheckout(paymentLink) {
   const link = paymentLink || 'RAZORPAY_PAYMENT_LINK_HERE';
   const url = link + (link.includes('?') ? '&' : '?') + 'userId=' + encodeURIComponent(userId);
   window.location.href = url;
+}
+
+// ============================================================
+//  MANUAL UPI PAYMENT SYSTEM (replaces Razorpay)
+//  payments/{docId}  ← Firestore collection
+// ============================================================
+
+const PAYMENTS_COLL = 'payments';
+
+/**
+ * Submit a manual UPI payment request.
+ * Stores txnId + screenshot (base64) in Firestore payments collection.
+ * Also sets payPending=true on the user doc so UI shows "Under Review".
+ *
+ * @param {Object} opts
+ *   userId   - string
+ *   name     - string
+ *   email    - string
+ *   txnId    - string
+ *   screenshot - base64 data-url string
+ *   plan     - 'trial' | 'monthly'
+ *   amount   - number (1 or 49)
+ */
+export async function submitPaymentRequest({ userId, name, email, txnId, screenshot, plan, amount }) {
+  if (!userId || !txnId) throw new Error('userId and txnId are required');
+
+  // 1. Write to payments collection
+  const payRef = await addDoc(collection(db, PAYMENTS_COLL), {
+    userId,
+    name:      name  || '',
+    email:     email || '',
+    txnId:     txnId.trim(),
+    screenshot: screenshot || '',
+    amount,
+    plan,
+    status:    'pending',
+    createdAt: Date.now()
+  });
+
+  // 2. Mark user doc as payment pending
+  await writeRemote(userId, { payPending: true, payPendingPlan: plan });
+
+  return payRef.id;
+}
+
+/**
+ * Cancel a pending payment request from user side.
+ * Clears payPending flag so user goes back to normal UI.
+ */
+export async function cancelPendingPayment(userId) {
+  await writeRemote(userId, { payPending: false, payPendingPlan: null });
+}
+
+/**
+ * Returns whether user has a pending payment (fast local check via Firestore).
+ */
+export async function getPaymentStatus(userId) {
+  const remote = await readRemote(userId);
+  return {
+    payPending:     !!(remote?.payPending),
+    payPendingPlan: remote?.payPendingPlan || null,
+    trialUsed:      !!(remote?.trialUsed),
+    isSubscribed:   !!(remote?.isSubscribed),
+    trialExpiry:    remote?.trialExpiry || null
+  };
 }
