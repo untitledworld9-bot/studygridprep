@@ -36,6 +36,8 @@
   new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
+<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
+<style>
 /* ── DESIGN TOKENS — exact match dashboard-home ── */
 :root {
   --bg:        #F0F2F8;
