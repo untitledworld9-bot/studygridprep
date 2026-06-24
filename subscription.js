@@ -53,11 +53,16 @@ function generateId() {
 export function getUserId() {
   const authedUid = auth?.currentUser?.uid;
   if (authedUid) {
-    // Logged-in identity always wins — overwrite local fallback id
-    // so any cached local id doesn't get used by mistake elsewhere.
-    if (localStorage.getItem(LS_KEYS.USER_ID) !== authedUid) {
-      localStorage.setItem(LS_KEYS.USER_ID, authedUid);
+    // ✅ Firebase UID always wins
+    // If stored ID is different (previous user or generated id) — overwrite + clear old sub state
+    const storedId = localStorage.getItem(LS_KEYS.USER_ID);
+    if (storedId && storedId !== authedUid) {
+      // Different user logged in — clear old subscription state so it doesn't bleed over
+      localStorage.removeItem(LS_KEYS.IS_SUB);
+      localStorage.removeItem(LS_KEYS.TRIAL_EXPIRY);
+      localStorage.removeItem(LS_KEYS.FREE_USED);
     }
+    localStorage.setItem(LS_KEYS.USER_ID, authedUid);
     return authedUid;
   }
   let id = localStorage.getItem(LS_KEYS.USER_ID);

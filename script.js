@@ -853,9 +853,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ─── Logout ──────────────────────────────────────────────────────────────────
   window.logoutUser = async () => {
-    await signOut(auth);
-    localStorage.removeItem("userName");
-    location.reload();
+    try {
+      const { doLogout } = await import("./auth-helper.js");
+      await doLogout(auth, "login.html");
+    } catch(e) {
+      await signOut(auth).catch(()=>{});
+      ["userName","userEmail","userUID","uwUid","uw_xp","uw_streak",
+       "uw_last_streak","uw_todo_daily_bonus","uw_offline_queue",
+       "uw_recent_rooms","uw_accessed_rooms","dailyXP","dailyXPDate",
+       "returningUser","seenWelcome","appRated","goal","customUserName"
+      ].forEach(k => localStorage.removeItem(k));
+      window.location.replace("login.html");
+    }
   };
 
   // ─── FCM foreground ──────────────────────────────────────────────────────────

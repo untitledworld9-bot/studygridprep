@@ -1,17 +1,7 @@
 /**
- * firebase.js — Study Grid Prep (FIXED)
- *
- * FIX: Removed Notification.requestPermission() + getToken() from module
- *      top level (lines 68-85 in original).
- *
- * WHY IT WAS BROKEN:
- *   • Called at import time, before any user gesture → browser blocks it silently
- *   • Even if granted, there was no currentUser yet → token saved under empty key
- *   • getToken() was essentially running uselessly every page load
- *
- * WHERE TO CALL IT INSTEAD:
- *   Inside onAuthStateChanged() in script.js, AFTER user is confirmed.
- *   See script.js for the correct placement.
+ * firebase.js — Study Grid Prep
+ * Central Firebase config + exports.
+ * IMPORT THIS FILE ONLY — config yahan rahega, baaki pages mein nahi.
  */
 
 import { initializeApp, getApps } from
@@ -19,26 +9,13 @@ import { initializeApp, getApps } from
 
 import {
   getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  setDoc,
-  updateDoc,
-  increment,
-  deleteDoc,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-  getDoc,
-  where,
-  serverTimestamp,
-  Timestamp,
-  writeBatch,
-  arrayUnion
-} from
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  collection, addDoc, onSnapshot,
+  doc, setDoc, updateDoc, increment,
+  deleteDoc, query, orderBy, limit,
+  getDocs, getDoc, where,
+  serverTimestamp, Timestamp,
+  writeBatch, arrayUnion
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import {
   getAuth,
@@ -46,18 +23,14 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   signOut
-} from
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
-  getMessaging,
-  getToken,
-  onMessage
-} from
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+  getMessaging, getToken, onMessage
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
-
-const firebaseConfig = {
+// ── Singleton init ──────────────────────────────────────────────────
+const _cfg = {
   apiKey:            "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
   authDomain:        "untitled-world-2e645.firebaseapp.com",
   projectId:         "untitled-world-2e645",
@@ -67,48 +40,20 @@ const firebaseConfig = {
   measurementId:     "G-X2PB6L0C75"
 };
 
-// Safe singleton init — works even if this module is evaluated twice
-const app = getApps().length
-  ? getApps()[0]
-  : initializeApp(firebaseConfig);
-
+const app       = getApps().length ? getApps()[0] : initializeApp(_cfg);
 const db        = getFirestore(app);
 const auth      = getAuth(app);
 const provider  = new GoogleAuthProvider();
 const messaging = getMessaging(app);
 
-// ─── REMOVED: Notification.requestPermission() was here ──────────────────────
-// It ran at import time before any user interaction — browser silently denies
-// these requests, so FCM tokens were never obtained. Token acquisition is now
-// handled inside onAuthStateChanged in script.js once the user is confirmed.
-// ─────────────────────────────────────────────────────────────────────────────
-
 export {
-  db,
-  auth,
-  provider,
-  messaging,
-  getToken,
-  onMessage,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut,
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  setDoc,
-  updateDoc,
-  increment,
-  deleteDoc,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-  getDoc,
-  where,
-  serverTimestamp,
-  Timestamp,
-  writeBatch,
-  arrayUnion
+  db, auth, provider, messaging,
+  getToken, onMessage,
+  signInWithPopup, onAuthStateChanged, signOut,
+  collection, addDoc, onSnapshot,
+  doc, setDoc, updateDoc, increment,
+  deleteDoc, query, orderBy, limit,
+  getDocs, getDoc, where,
+  serverTimestamp, Timestamp,
+  writeBatch, arrayUnion
 };

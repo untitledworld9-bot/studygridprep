@@ -94,7 +94,9 @@ function markSeen(type, id) {
   }).catch(() => {}); // silent — doc may be deleted or rules may block
 }
 
-const CURRENT_USER = localStorage.getItem("userName") || null;
+const CURRENT_USER  = localStorage.getItem("userName")  || null;
+const CURRENT_EMAIL = localStorage.getItem("userEmail") || null;
+const CURRENT_UID   = localStorage.getItem("userUID")   || localStorage.getItem("uwUid") || null;
 
 const unsubs = {
   announcements : null,
@@ -333,15 +335,12 @@ function initNotifications() {
       const id = change.doc.id;
       const d  = change.doc.data();
 
-      // FIX-AC: only fire if notification was created AFTER this session started
       if (d.createdAt && d.createdAt.toMillis() < start.toMillis()) return;
-      // Permanent localStorage dedup — never shows same notification twice
       if (seen.notifications.has(id)) return;
-      // Platform targeting
       if (d.platform === "pwa" && !isPWA()) return;
       if (d.platform === "web" && isPWA())  return;
 
-      fireNotification(d.title, d.body, d.url || null, d.image || null); // ← image pass karo
+      fireNotification(d.title, d.body, d.url || null, d.image || null);
       markSeen("notifications", id);
       updateDoc(doc(db, "notifications", id), { read: true });
     });
@@ -349,11 +348,12 @@ function initNotifications() {
 
   const err = e => console.warn("[Notifications]", e);
   const unsubAll  = onSnapshot(makeQuery("all"), handle, err);
-  let   unsubUser = () => {};
-  if (CURRENT_USER) {
-    unsubUser = onSnapshot(makeQuery(CURRENT_USER), handle, err);
-  }
-  unsubs.notifications = () => { unsubAll(); unsubUser(); };
+  let   unsubUser  = () => {};
+  let   unsubEmail = () => {};
+  // ✅ Both name AND email se target karo — admin panel dono use karta hai
+  if (CURRENT_USER)  unsubUser  = onSnapshot(makeQuery(CURRENT_USER),  handle, err);
+  if (CURRENT_EMAIL) unsubEmail = onSnapshot(makeQuery(CURRENT_EMAIL), handle, err);
+  unsubs.notifications = () => { unsubAll(); unsubUser(); unsubEmail(); };
 }
 
 function fireNotification(title, body, url, image) {   // ← image param add
