@@ -187,12 +187,48 @@
 </head>
 <body>
 
+<!-- LOGIN GATE -->
+<div id="loginGate" style="display:none;position:fixed;inset:0;z-index:9999;
+  background:#07080d;align-items:center;justify-content:center;">
+  <div style="background:#111420;border:1px solid rgba(255,255,255,.06);border-radius:16px;
+    padding:40px;width:340px;text-align:center;">
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
+      background:linear-gradient(135deg,#00e0ff,#7c5cfc);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">
+      Media SaaS
+    </div>
+    <div style="font-size:12px;color:#4a5070;margin-bottom:28px;text-transform:uppercase;letter-spacing:.08em;">
+      Admin Access Only
+    </div>
+    <input id="lgEmail" type="email" placeholder="Admin Email"
+      style="width:100%;padding:12px 14px;background:#0f1220;border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;color:#eef0ff;font-size:14px;margin-bottom:10px;outline:none;
+      font-family:'Manrope',sans-serif;">
+    <input id="lgPass" type="password" placeholder="Password"
+      style="width:100%;padding:12px 14px;background:#0f1220;border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;color:#eef0ff;font-size:14px;margin-bottom:16px;outline:none;
+      font-family:'Manrope',sans-serif;">
+    <div id="lgErr" style="color:#ff4f6a;font-size:12px;margin-bottom:12px;min-height:16px;"></div>
+    <button onclick="adminLogin()"
+      style="width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;
+      background:linear-gradient(135deg,#00e0ff,#7c5cfc);color:#000;
+      font-weight:700;font-size:14px;font-family:'Manrope',sans-serif;">
+      Login
+    </button>
+  </div>
+</div>
+
+<!-- APP SHELL — hidden until auth confirmed -->
+<div id="appShell" style="display:none;width:100%;height:100vh;overflow:hidden;">
+
   <nav class="sidebar">
     <div class="sidebar-logo">Media SaaS</div>
     <button class="nav-btn active" onclick="showSection('dashboard')" id="nav-dashboard">📊 Dashboard</button>
     <button class="nav-btn" onclick="showSection('media')" id="nav-media">🖼 Media Manager</button>
     <button class="nav-btn" onclick="goBackAdmin()" style="margin-top:20px; border:1px solid rgba(0,224,255,0.2);">
   ⬅ Back to Admin Panel</button>
+    <button class="nav-btn" onclick="adminLogout()" style="margin-top:8px;color:#ff4f6a;border:1px solid rgba(255,79,106,0.2);">
+  🚪 Logout</button>
   </nav>
 
   <main class="main">
@@ -248,6 +284,9 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
@@ -259,7 +298,37 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db  = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ── Auth Gate — block non-admins ──
+    onAuthStateChanged(auth, (user) => {
+      if (!user || !ADMIN_EMAILS.includes(user.email)) {
+        // Not logged in or not admin — show login gate
+        document.getElementById('loginGate').style.display = 'flex';
+        document.getElementById('appShell').style.display  = 'none';
+      } else {
+        document.getElementById('loginGate').style.display = 'none';
+        document.getElementById('appShell').style.display  = 'flex';
+        loadStats();
+      }
+    });
+
+    window.adminLogin = async () => {
+      const email = document.getElementById('lgEmail').value.trim();
+      const pass  = document.getElementById('lgPass').value;
+      const err   = document.getElementById('lgErr');
+      err.textContent = '';
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch(e) {
+        err.textContent = 'Invalid email or password.';
+      }
+    };
+
+    window.adminLogout = async () => {
+      await signOut(auth);
+    };
 
 async function uploadToCloudinary(file){
   const formData = new FormData();
@@ -453,10 +522,7 @@ window.deleteImg = async (id) => {
       document.getElementById("stat-used").innerText = used;
     };
 
-    // Initial Load
-    window.onload = () => {
-      loadStats();
-    };
+    // Initial Load handled by onAuthStateChanged above
 
     window.goBackAdmin = () => {
   window.open("/admin/studygridadmin.html", "_self");
@@ -467,5 +533,6 @@ window.deleteImg = async (id) => {
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
 
+</div><!-- /appShell -->
 </body>
 </html>
