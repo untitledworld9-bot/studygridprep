@@ -132,6 +132,23 @@ header{
   color:var(--accent); padding:5px 13px; border-radius:50px;
   font-size:12px; font-weight:700; flex-shrink:0; letter-spacing:0.2px;
 }
+/* Premium plan badge in header */
+.hd-plan-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:10px; font-weight:700; letter-spacing:0.4px;
+  padding:3px 10px; border-radius:99px; flex-shrink:0;
+}
+.hd-plan-badge.pro{
+  background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(251,191,36,0.1));
+  border:1.5px solid rgba(245,158,11,0.5);
+  color:#F59E0B;
+  box-shadow:0 2px 8px rgba(245,158,11,0.2);
+}
+.hd-plan-badge.free{
+  background:rgba(91,91,246,0.08);
+  border:1.5px solid rgba(91,91,246,0.22);
+  color:#5B5BF6;
+}
 
 /* ─── MAIN WRAP ─── */
 .wrap{ max-width:480px; margin:0 auto; padding:12px 14px 10px 14px; }
@@ -538,7 +555,13 @@ header{
     <div class="hd-name" id="hdName">Loading...</div>
     <div class="hd-sub" id="hdSub">Profile &amp; Settings</div>
   </div>
-  <div class="hd-badge" id="hdBadge">--</div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+    <div class="hd-badge" id="hdBadge">--</div>
+    <div id="hdPlanBadge" class="hd-plan-badge free">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      Free
+    </div>
+  </div>
 </header>
 
 <!-- ── MAIN WRAP ── -->
@@ -734,21 +757,8 @@ header{
 
 <!-- ── FIREBASE + PROFILE LOGIC ── -->
 <script type="module">
-import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const cfg = {
-  apiKey:"AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
-  authDomain:"untitled-world-2e645.firebaseapp.com",
-  projectId:"untitled-world-2e645",
-  storageBucket:"untitled-world-2e645.firebasestorage.app",
-  messagingSenderId:"990115586087",
-  appId:"1:990115586087:web:963f68bd59dec5ef0c6e02"
-};
-const app  = initializeApp(cfg);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+import { db, auth, onAuthStateChanged } from "./firebase.js";
+import { doc, getDoc, setDoc } from "./firebase.js";
 
 // ── EXAM CONFIG 2027 ──
 // JEE Main: Jan 21-31 (tentative) — using Jan 21 as start
@@ -803,7 +813,19 @@ function renderProfile(name, email, goal, examDate){
   // Header
   document.getElementById("hdAvatar").innerText = name.charAt(0).toUpperCase();
   document.getElementById("hdName").innerText   = name;
-  document.getElementById("hdBadge").innerText  = goal;
+  document.getElementById("hdBadge").innerText  = goal || "--";
+
+  // Plan badge update
+  try {
+    const isSubscribed = localStorage.getItem('isSubscribed') === 'true';
+    const trialExpiry  = parseInt(localStorage.getItem('trialExpiry') || '0');
+    const activeSub    = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+    const planBadge    = document.getElementById('hdPlanBadge');
+    if(planBadge && activeSub){
+      planBadge.className = 'hd-plan-badge pro';
+      planBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Pro`;
+    }
+  } catch(e){}
 
   // View mode
   document.getElementById("vmAvatar").innerText = name.charAt(0).toUpperCase();
@@ -1048,14 +1070,20 @@ window.enableNotif = async function(){
 };
 
 // ── LOGOUT ──
-window.doLogout = function(){
+window.doLogout = async function(){
   document.body.style.opacity = "0";
   document.body.style.transition = "opacity .2s ease";
-  setTimeout(()=>{
-    ["userName","customUserName","userEmail","goal","examDate","seenWelcome","examNotifEnabled"]
-      .forEach(k => localStorage.removeItem(k));
-    window.location.href = "login.html";
-  }, 200);
+  try {
+    const { doLogout } = await import("./auth-helper.js");
+    await doLogout(auth, "login.html");
+  } catch(e) {
+    ["userName","userUID","uwUid","customUserName","userEmail","goal","examDate",
+     "seenWelcome","examNotifEnabled","returningUser","appRated",
+     "uw_xp","uw_streak","uw_last_streak","uw_todo_daily_bonus",
+     "uw_offline_queue","uw_recent_rooms","uw_accessed_rooms","dailyXP","dailyXPDate"
+    ].forEach(k => localStorage.removeItem(k));
+    window.location.replace("login.html");
+  }
 };
 </script>
 

@@ -881,9 +881,12 @@ function processAnalysisData(data) {
   });
 
   // Time insights
-  const totalMinutes = data.timeTaken || 0;
+  // timeTaken is stored in SECONDS from mock.html (totalSeconds - remainingSeconds)
+  // Convert to minutes for display; secPerQ uses raw seconds
+  const timeTakenSec = data.timeTaken || 0;
+  const totalMinutes = Math.round(timeTakenSec / 60);
   const questionCount = questions.length || data.total || 1;
-  const secPerQ = Math.round((totalMinutes * 60) / questionCount);
+  const secPerQ = questionCount > 0 ? Math.round(timeTakenSec / questionCount) : 0;
 
   return {
     score:        data.score || 0,
@@ -1341,9 +1344,13 @@ async function callGeminiAPI(p) {
     ? p.weakTopics.map(t => {
         const tot = t.correct + t.wrong;
         const acc = tot > 0 ? Math.round(t.correct / tot * 100) : 0;
-        return `• ${t.topic} (${cap(t.subject)}): ${t.wrong} galat, ${t.correct} sahi — ${acc}% accuracy`;
+        // Topic name meaningful hai ya generic (subject name hi hai)?
+        const topicLabel = (t.topic && t.topic !== t.subject && t.topic.length > 2)
+          ? t.topic
+          : `${cap(t.subject)} (topic data unavailable — suggest common weak chapters)`;
+        return `• ${topicLabel} (${cap(t.subject)}): ${t.wrong} galat, ${t.correct} sahi — ${acc}% accuracy`;
       }).join('\n')
-    : 'Koi specific weak chapter detect nahi hua (topic data available nahi)';
+    : 'Koi specific weak chapter detect nahi hua — subject ke common weak chapters suggest karo';
 
   const strongList = p.strongTopics.length > 0
     ? p.strongTopics.map(t => `${t.topic} (${cap(t.subject)})`).join(', ')
@@ -1357,7 +1364,7 @@ async function callGeminiAPI(p) {
 
 STUDENT KA TEST DATA:
 Exam: ${exam} | Score: ${p.score}/${p.maxScore} marks | Accuracy: ${p.accuracy}%
-Percentile: ${p.percentile}ile | Time: ${p.timeTaken} min | Avg: ${p.secPerQ}s per question
+Percentile: ${p.percentile}ile | Time: ${p.timeTaken} min (${Math.round(p.timeTaken * 60)} sec total) | Avg: ${p.secPerQ}s per question
 Total Questions: ${p.questionCount}
 
 SUBJECT-WISE:
@@ -1382,7 +1389,7 @@ Har subject ke liye ek paragraph:
 Jo weak topics/chapters hain unhe NUMBERED LIST mein likh:
 1. [Chapter/Topic naam] ([Subject]): [Kyu urgent hai] → Kya karna hai exactly (NCERT/formula revision/practice sets)
 2. ...
-Agar topic data "Unknown" ya "A/B/C" jaisa hai — tab subject ke basis pe common weak chapters suggest kar.
+Agar topic naam generic/subject-naam jaisa hai ya 'topic data unavailable' likha hai — tab us subject ke most common weak chapters suggest kar (e.g. Physics mein: Kinematics, Electrostatics, Optics; Chemistry mein: Equilibrium, Organic reactions; Maths mein: Calculus, Coordinate Geometry).
 
 **⏱️ Time Management**
 ${p.secPerQ}s per question — JEE/CUET ke standard (90-120s/Q) se compare karke bata. Kya strategy adopt karni chahiye?

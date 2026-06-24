@@ -372,28 +372,30 @@ async function handleUser(user){
   localStorage.setItem("userEmail", email);
   localStorage.setItem("userUID",   uid);
 
-  // Pehle check karo doc exist karta hai ya nahi
   const userRef  = doc(db, "users", uid);
   const existing = await getDoc(userRef);
 
   if(!existing.exists()){
-    // Naya user — fresh doc banao default values ke saath
+    // ✅ Naya user — fresh doc, default values
     await setDoc(userRef, {
       uid,
       name,
       email,
       focusTime:      0,
       weeklyXP:       0,
+      xp:             0,
+      streak:         0,
       status:         "Online",
       room:           "global",
       lastActive:     Date.now(),
       lastActiveDate: getTodayDate()
     });
   } else {
-    // Existing user — SIRF safe fields update karo, data mat chhuo
+    // ✅ Existing user — SIRF identity + presence update, baaki data untouched
     await updateDoc(userRef, {
       name,
       email,
+      uid,
       status:         "Online",
       lastActive:     Date.now(),
       lastActiveDate: getTodayDate()

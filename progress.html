@@ -514,22 +514,8 @@ body {
 </main>
 
 <script type="module">
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
-  authDomain: "untitled-world-2e645.firebaseapp.com",
-  projectId: "untitled-world-2e645",
-  storageBucket: "untitled-world-2e645.firebasestorage.app",
-  messagingSenderId: "990115586087",
-  appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
-};
-
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+import { db, auth, onAuthStateChanged } from "./firebase.js";
+import { doc, getDoc } from "./firebase.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 function isDark() { return document.documentElement.getAttribute("data-theme") === "dark"; }

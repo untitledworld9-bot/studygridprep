@@ -202,6 +202,19 @@ header{
 .pwa-email{ font-size:11px; color:var(--text2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .pwa-xp-mini{ font-size:12px; color:var(--text2); margin-top:6px; font-weight:600; display:flex; align-items:center; gap:10px; }
 .pwa-xp-mini .mini-stat{ display:flex; align-items:center; gap:4px; }
+.sidebar-plan-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:10px; font-weight:700; letter-spacing:0.4px;
+  padding:3px 9px; border-radius:99px; margin-top:6px;
+}
+.sidebar-plan-badge.pro{
+  background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(251,191,36,0.12));
+  border:1px solid rgba(245,158,11,0.45); color:#F59E0B;
+}
+.sidebar-plan-badge.free{
+  background:rgba(91,91,246,0.08);
+  border:1px solid rgba(91,91,246,0.22); color:#5B5BF6;
+}
 
 .sidebar-nav{ padding:0 12px; }
 .sidebar-section-label{
@@ -515,6 +528,10 @@ main{
       <div class="pwa-profile-info">
         <div class="pwa-profile-name" id="sidebarName">Student</div>
         <div class="pwa-email" id="sidebarEmail"></div>
+        <div id="sidebarPlanBadge" class="sidebar-plan-badge free">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          Free Plan
+        </div>
       </div>
     </div>
   </div>
@@ -822,11 +839,33 @@ window.handleModalBackdrop = function(e) { if (e.target === document.getElementB
 /* ── Logout ── */
 window.handleLogout = async function() {
   try {
-    await signOut(auth);
-    localStorage.removeItem('userName'); localStorage.removeItem('userEmail');
-    window.navigate('login.html');
-  } catch(e) { console.error('Logout error:', e); }
+    const { doLogout } = await import('./auth-helper.js');
+    await doLogout(auth, 'login.html');
+  } catch(e) {
+    await signOut(auth).catch(()=>{});
+    ['userName','userEmail','userUID','uwUid','isSubscribed','trialExpiry',
+     'freeMockUsed','sgp_userId','lastTestResult','analysisData','uw_xp',
+     'uw_streak','returningUser','seenWelcome','goal','appRated'
+    ].forEach(k => localStorage.removeItem(k));
+    window.location.replace('login.html');
+  }
 };
+
+/* ── Sidebar plan badge ── */
+(function(){
+  try {
+    const isSubscribed = localStorage.getItem('isSubscribed') === 'true';
+    const trialExpiry  = parseInt(localStorage.getItem('trialExpiry') || '0');
+    const activeSub    = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+    const badge = document.getElementById('sidebarPlanBadge');
+    if(badge){
+      if(activeSub){
+        badge.className = 'sidebar-plan-badge pro';
+        badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h20v2H2zm2-4l5-9 5 4 3-6 5 11H4z"/></svg> Pro Plan`;
+      }
+    }
+  } catch(e){}
+})();
 
 /* ── Theme color meta sync ── */
 (function(){

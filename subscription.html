@@ -169,6 +169,24 @@ header{
 .plan-card.locked{
   opacity:0.92;
 }
+/* Pro card when subscribed — gold glow */
+.plan-card.pro-active {
+  border-color: rgba(245,158,11,0.6) !important;
+  box-shadow: 0 4px 24px rgba(245,158,11,0.22), 0 0 0 1px rgba(245,158,11,0.15) !important;
+  background: linear-gradient(145deg, var(--surface), rgba(245,158,11,0.04)) !important;
+}
+.plan-card.pro-active:hover {
+  box-shadow: 0 8px 32px rgba(245,158,11,0.32), 0 0 0 2px rgba(245,158,11,0.2) !important;
+  transform: translateY(-2px);
+}
+.plan-card.pro-active .plan-check {
+  background: linear-gradient(135deg,#F59E0B,#D97706) !important;
+  border-color: #F59E0B !important;
+}
+/* Hide free card when subscribed */
+.plan-card.hide-when-subscribed {
+  display: none !important;
+}
 .plan-card-hdr{
   display:flex; align-items:center; justify-content:space-between;
   margin-bottom:4px;
@@ -444,36 +462,38 @@ function renderState(state){
   const footerLine   = document.getElementById('footerLine');
 
   if (state.isSubscribed) {
-    proCard.classList.add('active');
+    proCard.classList.add('active', 'pro-active');
     proCard.classList.remove('locked');
-    document.getElementById('freePlanCard').classList.remove('active');
+    document.getElementById('freePlanCard').classList.add('hide-when-subscribed');
 
-    proBadge.textContent = 'Active';
+    proBadge.textContent = '✦ Active';
     proPrice.textContent = 'Full access unlocked';
 
     statusBanner.style.display = 'flex';
     if (state.trialExpiry) {
-      const d = new Date(state.trialExpiry);
-      statusSub.textContent = 'Expires on ' + d.toLocaleDateString('en-IN', {
+      const d        = new Date(state.trialExpiry);
+      const daysLeft = Math.max(0, Math.ceil((state.trialExpiry - Date.now()) / 86400000));
+      statusSub.textContent = 'Expires ' + d.toLocaleDateString('en-IN', {
         day: 'numeric', month: 'short', year: 'numeric'
-      });
+      }) + ' · ' + daysLeft + (daysLeft !== 1 ? ' days' : ' day') + ' left';
     } else {
-      statusSub.textContent = 'Enjoy unlimited access to all mock tests.';
+      statusSub.textContent = 'Enjoy unlimited access to all features.';
     }
 
-    ctaBtn.innerHTML  = '<i class="fa-solid fa-circle-check"></i> You\'re on Pro';
+    ctaBtn.innerHTML  = '<i class="fa-solid fa-circle-check"></i> You\'re on Pro — All Unlocked';
     ctaBtn.classList.add('done');
-    ctaBtn.disabled   = false;
-    footerLine.textContent = 'Thanks for going Pro — happy studying.';
+    ctaBtn.disabled   = true;
+    footerLine.textContent = 'Thanks for going Pro — study smarter, score better.';
 
   } else {
+    document.getElementById('freePlanCard').classList.remove('hide-when-subscribed');
+    proCard.classList.remove('pro-active');
     statusBanner.style.display = 'none';
     ctaBtn.classList.remove('done');
     ctaBtn.disabled   = false;
     ctaBtn.innerHTML  = '<i class="fa-solid fa-bolt"></i> Start ₹1 Trial — 7 Days Pro Access';
     footerLine.textContent = 'Cancel anytime. No questions asked.';
   }
-}
 
 /* ─── CTA click → Razorpay ───────────────────────────── */
 window.handleCtaClick = function(){

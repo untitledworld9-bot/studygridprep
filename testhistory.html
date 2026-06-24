@@ -630,17 +630,17 @@ main {
 .popup-sheet {
   background: var(--header-bg);
   border-radius: 24px 24px 0 0;
-  padding: 0 0 max(env(safe-area-inset-bottom), 20px);
+  padding: 0;
   width: 100%;
   max-width: 480px;
   max-height: 86vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  /* Flex column so CTA sticks to bottom */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   transform: translateY(100%);
   transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
   box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
-
-  /* Hide scrollbar visually */
   scrollbar-width: none;
 }
 .popup-sheet::-webkit-scrollbar { display: none; }
@@ -664,6 +664,7 @@ main {
   background: var(--card-border);
   margin: 12px auto 20px;
   opacity: 0.6;
+  flex-shrink: 0;
 }
 
 .popup-header {
@@ -672,6 +673,7 @@ main {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 .popup-header-dot {
   width: 44px;
@@ -716,7 +718,13 @@ main {
 
 .popup-body {
   padding: 20px 20px 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  /* Hide scrollbar */
+  scrollbar-width: none;
 }
+.popup-body::-webkit-scrollbar { display: none; }
 
 /* Stats grid inside popup */
 .popup-stats-grid {
@@ -809,8 +817,13 @@ main {
 
 /* CTA button */
 .popup-cta {
-  padding: 0 20px 8px;
+  padding: 14px 20px max(env(safe-area-inset-bottom), 16px);
+  background: var(--header-bg);
+  border-top: 1px solid var(--card-border);
+  flex-shrink: 0;
 }
+[data-theme="dark"] .popup-cta { background: #111B2E; }
+[data-theme="light"] .popup-cta { background: #ffffff; }
 .popup-cta-btn {
   display: flex;
   align-items: center;

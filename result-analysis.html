@@ -1627,9 +1627,12 @@ window.launchAIAnalysis = async function() {
         const isCorrect     = !isSkipped && String(userAnswer).toUpperCase() === correctAnswer;
 
         questions.push({
-          subject: sub,
-          topic:   q.topic || q.chapter || q.section || sub,
-          correct: isCorrect,
+          subject:  sub,
+          topic:    q.topic || q.chapter || q.section || sub,
+          correct:  isCorrect,
+          text:     q.question || q.questionText || q.text || '',  // AI ko question text bhi do
+          userAns:  userAnswer,
+          correctAns: correctAnswer,
         });
       });
     });
