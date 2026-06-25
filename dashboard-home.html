@@ -3205,7 +3205,32 @@ onAuthStateChanged(auth, async user => {
     setTimeout(()=>{ el.style.transform=''; el.style.transition=''; },300);
   }
 
-  // Initial load from Firebase
+  // ── Instant render from localStorage cache (BEFORE Firestore) ──
+  // This makes XP/streak appear instantly on every page visit
+  try {
+    const _todayNow = new Date().toDateString();
+    const _cachedXP = parseInt(localStorage.getItem("dailyXP")||"0");
+    const _cachedDate = localStorage.getItem("dailyXPDate")||"";
+    const _cachedStreak = parseInt(localStorage.getItem("uw_streak")||"0");
+    const _xpIsToday = _cachedDate === _todayNow;
+    const _xpToShow = _xpIsToday ? _cachedXP : 0;
+    const _hitFlag = localStorage.getItem("dailyGoalHit_"+_todayNow);
+    const _xpRender = (_hitFlag==="1") ? Math.max(_xpToShow,10) : _xpToShow;
+
+    // Instant streak display
+    const hnum=document.getElementById("headerStreakNum"); if(hnum) hnum.textContent=_cachedStreak;
+    const sval=document.getElementById("streakStatVal"); if(sval) sval.textContent=_cachedStreak;
+
+    // Instant XP bar fill
+    if(window.updateDailyGoalBar) window.updateDailyGoalBar(_xpRender);
+    const sub=document.getElementById("streakSubText");
+    if(sub){
+      if(_xpRender>=10) sub.textContent="🎉 Daily goal complete! Amazing work!";
+      else sub.textContent=(10-Math.min(_xpRender,10))+" XP more to complete today";
+    }
+  } catch(_e){}
+
+  // Initial load from Firebase (background — cache already shown above)
   let data={};
   try{
     const snap0=await getDoc(userRef);

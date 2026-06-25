@@ -563,7 +563,7 @@ header{
 
     <!-- Screenshot Upload -->
     <div class="pay-field">
-      <label class="pay-field-label">Payment Screenshot <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
+      <label class="pay-field-label">Payment Screenshot <span style="color:#EF4444;font-weight:600;">*</span></label>
       <div class="upload-area" id="uploadArea" onclick="document.getElementById('ssInput').click()">
         <i class="fa-solid fa-image" id="uploadIcon"></i>
         <div class="upload-txt" id="uploadTxt">Tap to upload screenshot</div>
@@ -720,6 +720,16 @@ window.submitPayment = async function(){
   const txnId = (document.getElementById('txnInput').value || '').trim();
   if (!txnId) {
     alert('Please enter your Transaction ID');
+    return;
+  }
+  if (!screenshotFile) {
+    alert('Please upload your payment screenshot — it is required for verification.');
+    // Highlight upload area
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+      uploadArea.style.borderColor = '#EF4444';
+      setTimeout(() => { uploadArea.style.borderColor = ''; }, 2500);
+    }
     return;
   }
 

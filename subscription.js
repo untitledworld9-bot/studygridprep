@@ -186,18 +186,47 @@ export function initSubscriptionSync(onUpdate) {
  * activation on another device reflects here without a refresh.
  * Returns the unsubscribe function.
  */
+function _fireProActivationNotification(plan) {
+  try {
+    const label = plan === 'trial' ? '7-day trial' : '30-day plan';
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification('🎉 Pro Activated — Study Grid Prep', {
+          body: `Your ${label} is now active! All mock tests are unlocked.`,
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          vibrate: [200, 100, 200, 100, 200],
+          tag: 'sgp_pro_activated',
+          requireInteraction: true,
+          data: { url: '/subscription.html' }
+        });
+      }).catch(() => {});
+    }
+  } catch(e) {}
+}
+
 export function watchSubscription(onUpdate) {
   const userId = getUserId();
   const ref = doc(db, USERS_COLL, userId);
+  let _prevIsSubscribed = getLocalSubscriptionState().isSubscribed;
   return onSnapshot(ref, (snap) => {
     if (!snap.exists()) return;
     const data = snap.data();
     const state = applyExpiryLocal({
       isSubscribed: !!data.isSubscribed,
       trialExpiry:  data.trialExpiry || null,
-      freeMockUsed: !!data.freeMockUsed
+      freeMockUsed: !!data.freeMockUsed,
+      trialUsed:    !!data.trialUsed,
+      plan:         data.plan || null,
+      payPending:   !!data.payPending
     });
     writeLocal(state);
+
+    // Fire PWA notification when subscription just became active
+    if (!_prevIsSubscribed && state.isSubscribed) {
+      _fireProActivationNotification(data.plan || 'trial');
+    }
+    _prevIsSubscribed = state.isSubscribed;
     if (typeof onUpdate === 'function') onUpdate(state, { source: 'remote-live' });
   }, (err) => {
     console.warn('Subscription listener error:', err);

@@ -775,7 +775,7 @@ window.navigate = function(url) {
 </script>
 
 <script type="module">
-import { auth, onAuthStateChanged, signOut, db, doc, getDoc } from './firebase.js';
+import { auth, onAuthStateChanged, signOut, db, doc, getDoc, onSnapshot } from './firebase.js';
 
 const isPWA = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
@@ -798,6 +798,21 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
     initWithUser(user);
+
+    // ── Live subscription watch ──
+    try {
+      onSnapshot(doc(db, 'users', user.uid), snap => {
+        if (!snap.exists()) return;
+        const d = snap.data();
+        const isSubscribed = !!d.isSubscribed;
+        const trialExpiry  = d.trialExpiry || 0;
+        const active = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+        localStorage.setItem('isSubscribed', active ? 'true' : 'false');
+        if (trialExpiry) localStorage.setItem('trialExpiry', String(trialExpiry));
+        _updateMockHomeBadge(isSubscribed, trialExpiry);
+      });
+    } catch(e) { console.warn('[SubWatch]', e); }
+
   } else {
     currentUser = null;
     if (!isPWA()) window.navigate('login.html');
@@ -853,19 +868,26 @@ window.handleLogout = async function() {
   }
 };
 
-/* ── Sidebar plan badge ── */
+/* ── Sidebar plan badge — live Firestore watch ── */
+function _updateMockHomeBadge(isSubscribed, trialExpiry) {
+  const active = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+  const badge  = document.getElementById('sidebarPlanBadge');
+  if (!badge) return;
+  if (active) {
+    badge.className = 'sidebar-plan-badge pro';
+    badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h20v2H2zm2-4l5-9 5 4 3-6 5 11H4z"/></svg> Pro Plan`;
+  } else {
+    badge.className = 'sidebar-plan-badge free';
+    badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg> Free Plan`;
+  }
+}
+
+// Initial render from localStorage
 (function(){
   try {
     const isSubscribed = localStorage.getItem('isSubscribed') === 'true';
     const trialExpiry  = parseInt(localStorage.getItem('trialExpiry') || '0');
-    const activeSub    = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
-    const badge = document.getElementById('sidebarPlanBadge');
-    if(badge){
-      if(activeSub){
-        badge.className = 'sidebar-plan-badge pro';
-        badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h20v2H2zm2-4l5-9 5 4 3-6 5 11H4z"/></svg> Pro Plan`;
-      }
-    }
+    _updateMockHomeBadge(isSubscribed, trialExpiry);
   } catch(e){}
 })();
 

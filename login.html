@@ -366,14 +366,18 @@ const auth     = getAuth(app);
 const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// IMPORTANT FIX: Firebase state listener
-// Ye code un logon ke liye fix karega jinka popup fail ho gaya tha but Firebase ne unhe login kara diya tha.
+// Auth state listener — ONLY handles the case where user is already logged in
+// on page load (e.g. came back after closing app but session persisted)
+// Does NOT run if signInWithPopup already handled login (flag prevents double call)
+let _loginHandledByPopup = false;
+
 onAuthStateChanged(auth, async (user) => {
+  if (_loginHandledByPopup) return; // popup already handled it — skip
   if (user && !localStorage.getItem("userName")) {
-    console.log("Found missing local state. Syncing...");
+    // Session persisted but localStorage was cleared (e.g. different device/logout bug)
+    console.log("[Auth] Restoring session from Firebase...");
     const btn = document.getElementById("loginBtn");
-    btn.classList.add("loading");
-    btn.innerHTML = `Syncing your account...`;
+    if (btn) { btn.classList.add("loading"); btn.innerHTML = `Syncing account…`; }
     await handleUser(user);
   }
 });
@@ -457,9 +461,11 @@ window.login = async function(){
   toast.style.display = "none";
 
   try {
+    _loginHandledByPopup = true; // Prevent onAuthStateChanged from also calling handleUser
     const result = await signInWithPopup(auth, provider);
     await handleUser(result.user);
   } catch(err) {
+    _loginHandledByPopup = false; // Reset on failure
     console.error("Login error:", err);
     
     // Smart error handling to let user know exactly what went wrong

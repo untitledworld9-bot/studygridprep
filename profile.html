@@ -767,7 +767,7 @@ header{
 
 <!-- ── FIREBASE + PROFILE LOGIC ── -->
 <script type="module">
-import { db, auth, onAuthStateChanged } from "./firebase.js";
+import { db, auth, onAuthStateChanged, onSnapshot } from "./firebase.js";
 import { doc, getDoc, setDoc } from "./firebase.js";
 
 // ── EXAM CONFIG 2027 ──
@@ -825,17 +825,40 @@ function renderProfile(name, email, goal, examDate){
   document.getElementById("hdName").innerText   = name;
   document.getElementById("hdBadge").innerText  = goal || "--";
 
-  // Plan badge update
+  // Plan badge — live Firestore watch (updates without page reload)
+  function _updateProfileBadge(isSubscribed, trialExpiry) {
+    const active    = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+    const planBadge = document.getElementById('hdPlanBadge');
+    if (!planBadge) return;
+    if (active) {
+      planBadge.className = 'hd-plan-badge pro';
+      planBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Pro`;
+    } else {
+      planBadge.className = 'hd-plan-badge free';
+      planBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg> Free`;
+    }
+  }
+
+  // Initial render from localStorage
   try {
     const isSubscribed = localStorage.getItem('isSubscribed') === 'true';
     const trialExpiry  = parseInt(localStorage.getItem('trialExpiry') || '0');
-    const activeSub    = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
-    const planBadge    = document.getElementById('hdPlanBadge');
-    if(planBadge && activeSub){
-      planBadge.className = 'hd-plan-badge pro';
-      planBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Pro`;
-    }
+    _updateProfileBadge(isSubscribed, trialExpiry);
   } catch(e){}
+
+  // Live Firestore watch — updates badge when admin approves subscription
+  try {
+    onSnapshot(doc(db, 'users', user.uid), snap => {
+      if (!snap.exists()) return;
+      const d = snap.data();
+      const isSubscribed = !!d.isSubscribed;
+      const trialExpiry  = d.trialExpiry || 0;
+      const active = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+      localStorage.setItem('isSubscribed', active ? 'true' : 'false');
+      if (trialExpiry) localStorage.setItem('trialExpiry', String(trialExpiry));
+      _updateProfileBadge(isSubscribed, trialExpiry);
+    });
+  } catch(e) { console.warn('[SubWatch profile]', e); }
 
   // View mode
   document.getElementById("vmAvatar").innerText = name.charAt(0).toUpperCase();

@@ -3859,6 +3859,24 @@ window.GOAL_SUBJECTS = GOAL_SUBJECTS;
 
 <script type="module" src="/index.js"></script> 
 
+
+<!-- Live subscription watch — AI button updates without page reload -->
+<script type="module">
+import { db, auth, onAuthStateChanged, onSnapshot, doc } from './firebase.js';
+onAuthStateChanged(auth, user => {
+  if (!user) return;
+  onSnapshot(doc(db, 'users', user.uid), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const isSubscribed = !!d.isSubscribed;
+    const trialExpiry  = d.trialExpiry || 0;
+    const active = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
+    localStorage.setItem('isSubscribed', active ? 'true' : 'false');
+    if (trialExpiry) localStorage.setItem('trialExpiry', String(trialExpiry));
+    if (typeof window._updateAIBtnState === 'function') window._updateAIBtnState();
+  });
+});
+</script>
 </body>
 </html>
 <script>
