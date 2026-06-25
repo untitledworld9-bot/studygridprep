@@ -501,10 +501,29 @@ function listenSubscriptions() {
   // Real-time — whenever user doc changes, table refreshes
   STATE._subUnsub = onSnapshot(
     collection(db, COLL.USERS),
-    snap => {
+    async snap => {
+      const now = Date.now();
+      const toExpire = [];
+
       STATE.allSubscriptions = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter(u => u.isSubscribed === true);
+        .filter(u => {
+          if (!u.isSubscribed) return false;
+          const expiry = u.trialExpiry || u.subExpiry || 0;
+          // Auto-expire: if expiry passed, mark for update and exclude
+          if (expiry && now > expiry) {
+            toExpire.push(u.id);
+            return false;
+          }
+          return true;
+        });
+
+      // Auto-revoke expired subscriptions in Firestore
+      toExpire.forEach(uid => {
+        updateDoc(doc(db, COLL.USERS, uid), {
+          isSubscribed: false
+        }).catch(e => console.warn('Auto-expire failed for', uid, e));
+      });
 
       // Update badge count
       const badge = document.getElementById('subBadge');
@@ -1052,27 +1071,35 @@ function listenUsers() {
       snap.docs.forEach(d => { seenId.set(d.id, { id: d.id, ...d.data() }); });
       let users = [...seenId.values()];
 
-      // Step 2: FIX-DUP — Secondary dedup by name+email: keep the most recently active doc.
-      // This removes old displayName-keyed docs when uid-keyed doc already exists for same user.
-      const seenName = new Map();
+      // Step 2: FIX-DUP — Dedup by email (primary) — keeps uid-keyed doc over name-keyed
+      // Rule: if same email exists in multiple docs, keep the one whose doc ID === uid field
+      const seenEmail = new Map();
       for (const u of users) {
-        const key = (u.email || "").toLowerCase() || (u.name || "").toLowerCase();
-        if (!key) continue;
-        if (!seenName.has(key)) {
-          seenName.set(key, u);
+        const emailKey = (u.email || "").toLowerCase().trim();
+        if (!emailKey) continue;
+        if (!seenEmail.has(emailKey)) {
+          seenEmail.set(emailKey, u);
         } else {
-          // Keep the one with higher lastActive (more recent)
-          const existing = seenName.get(key);
-          if ((u.lastActive || 0) > (existing.lastActive || 0)) {
-            seenName.set(key, u);
+          const existing = seenEmail.get(emailKey);
+          // Prefer uid-keyed doc (id === uid field) over name-keyed
+          const uIsUidKeyed  = u.id === u.uid;
+          const exIsUidKeyed = existing.id === existing.uid;
+          if (uIsUidKeyed && !exIsUidKeyed) {
+            seenEmail.set(emailKey, u); // new one is uid-keyed — prefer it
+          } else if (!uIsUidKeyed && exIsUidKeyed) {
+            // existing is uid-keyed — keep it
+          } else {
+            // Both same type — keep more recently active
+            if ((u.lastActive || 0) > (existing.lastActive || 0)) {
+              seenEmail.set(emailKey, u);
+            }
           }
         }
       }
-      // Only dedup if we can — users without email/name stay as-is
-      const usersWithKey    = users.filter(u => (u.email || "").toLowerCase() || (u.name || "").toLowerCase());
-      const usersWithoutKey = users.filter(u => !(u.email || "").toLowerCase() && !(u.name || "").toLowerCase());
+      // Users without email — keep as-is (rare edge case)
+      const usersWithoutEmail = users.filter(u => !(u.email || "").toLowerCase().trim());
       // ✅ Client-side sort — missing lastActive wale bhi dikhenge (fallback 0)
-      STATE.allUsers = [...seenName.values(), ...usersWithoutKey]
+      STATE.allUsers = [...seenEmail.values(), ...usersWithoutEmail]
         .sort((a, b) => (b.lastActive || b.lastSeen || 0) - (a.lastActive || a.lastSeen || 0));
 
       updateUserStats();
