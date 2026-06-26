@@ -3099,31 +3099,38 @@ onAuthStateChanged(auth, async user => {
       where("target","in",["all", user.email||"", user.uid||"", user.displayName||""])
     );
     onSnapshot(adminQ, snap=>{
-      const existing = [];
-      try{ existing.push(...JSON.parse(localStorage.getItem("pwa_admin_notifs")||"[]")); }catch(e){}
-      const existingIds = new Set(existing.map(n=>n.id));
-      let changed = false;
+      // Build fresh map from Firestore — always sync all matching notifications
+      const firestoreMap = {};
       snap.forEach(docSnap=>{
-        if(!existingIds.has(docSnap.id)){
-          const d = docSnap.data();
-          // Admin saves: time (ms number), sentAt (serverTimestamp), title, body, icon, image, target
-          existing.unshift({
-            id:       docSnap.id,
-            title:    d.title || "Notification",
-            body:     d.body  || "",
-            icon:     d.icon  || "📢",
-            imageUrl: d.image || "",
-            ts:       typeof d.time === "number" ? d.time : (d.sentAt ? d.sentAt.toMillis() : Date.now()),
-            source:   "admin"
-          });
-          changed = true;
-        }
+        const d = docSnap.data();
+        firestoreMap[docSnap.id] = {
+          id:       docSnap.id,
+          title:    d.title || "Notification",
+          body:     d.body  || "",
+          icon:     d.icon  || "📢",
+          imageUrl: d.image || d.imageUrl || "",  // support both field names
+          ts:       typeof d.time === "number" ? d.time : (d.sentAt?.toMillis?.() || Date.now()),
+          source:   "admin"
+        };
       });
-      if(changed){
-        // Sort by ts descending
-        existing.sort((a,b)=>(b.ts||0)-(a.ts||0));
-        localStorage.setItem("pwa_admin_notifs", JSON.stringify(existing.slice(0,30)));
-        if(window._mergePushAndRender) window._mergePushAndRender(window._lastFirebaseNotifs||[]);
+
+      // Merge with existing localStorage (keep any that Firestore query didn't return)
+      let existing = [];
+      try{ existing = JSON.parse(localStorage.getItem("pwa_admin_notifs")||"[]"); }catch(e){}
+
+      // Override existing with fresh Firestore data, add new ones
+      const existingNonAdmin = existing.filter(n => n.source !== "admin");
+      const merged = [...Object.values(firestoreMap), ...existingNonAdmin]
+        .sort((a,b)=>(b.ts||0)-(a.ts||0))
+        .slice(0,30);
+
+      localStorage.setItem("pwa_admin_notifs", JSON.stringify(merged));
+
+      // ✅ ALWAYS render — not just when changed
+      if(window._mergePushAndRender) window._mergePushAndRender(window._lastFirebaseNotifs||[]);
+
+      // Show unread dot if there are admin notifications
+      if(Object.keys(firestoreMap).length > 0){
         const dot=document.getElementById("notifUnreadDot");
         if(dot) dot.style.display="block";
       }

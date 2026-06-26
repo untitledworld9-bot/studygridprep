@@ -18,6 +18,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   serverTimestamp
 } from "./firebase.js";
 
@@ -92,22 +93,45 @@ function getStreak() {
 
 async function updateStreak() {
   const today     = new Date().toDateString();
-  const last      = localStorage.getItem(STREAK_DATE_KEY) || "";
 
-  if (last === today) return getStreak();
+  // ✅ FIX: Always read from Firestore first — localStorage may be stale on new device
+  // This prevents streak reset when user logs in on a new device
+  let firestoreStreak   = 0;
+  let firestoreLastDate = "";
+  try {
+    if (_authUser) {
+      const snap = await getDoc(doc(db, "users", _authUser.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        firestoreStreak   = d.streak || 0;
+        firestoreLastDate = d.lastStreakDate || "";
+        // Sync localStorage from Firestore so it's always fresh
+        localStorage.setItem(STREAK_KEY,      String(firestoreStreak));
+        localStorage.setItem(STREAK_DATE_KEY, firestoreLastDate);
+      }
+    }
+  } catch(e) { console.warn("[UW Core] streak Firestore read failed:", e); }
+
+  // Use Firestore data (or localStorage fallback if Firestore read failed)
+  const last  = firestoreLastDate || localStorage.getItem(STREAK_DATE_KEY) || "";
+  let   count = firestoreStreak   || parseInt(localStorage.getItem(STREAK_KEY) || "0", 10);
+
+  // Already counted today — return current streak, no update needed
+  if (last === today) return count;
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toDateString();
 
-  let count = getStreak();
   if (last === yesterdayStr) {
-    count++;
+    count++; // Consecutive day — increment
+  } else if (last === "") {
+    count = 1; // First ever streak
   } else {
-    count = 1;
+    count = 1; // Streak broken — reset to 1 for today
   }
 
-  localStorage.setItem(STREAK_KEY, String(count));
+  localStorage.setItem(STREAK_KEY,      String(count));
   localStorage.setItem(STREAK_DATE_KEY, today);
 
   window.dispatchEvent(new CustomEvent("uw_streak_changed", { detail: { streak: count } }));
@@ -159,12 +183,18 @@ async function loadUserData() {
     const snap = await getDoc(doc(db, "users", _authUser.uid));
     if (snap.exists()) {
       const d = snap.data();
+      // ✅ FIX: Always sync from Firestore — this is the source of truth
+      // Overwrite any stale localStorage values from old/different device
       if (d.xp !== undefined) {
         localStorage.setItem(XP_KEY, String(Math.max(0, d.xp)));
         window.dispatchEvent(new CustomEvent("uw_xp_changed", { detail: { xp: d.xp } }));
       }
-      if (d.streak !== undefined)   localStorage.setItem(STREAK_KEY, String(d.streak));
-      if (d.lastStreakDate)          localStorage.setItem(STREAK_DATE_KEY, d.lastStreakDate);
+      // Always write streak — even if 0, so stale localStorage value is cleared
+      if (d.streak !== undefined) {
+        localStorage.setItem(STREAK_KEY, String(d.streak));
+        window.dispatchEvent(new CustomEvent("uw_streak_changed", { detail: { streak: d.streak } }));
+      }
+      if (d.lastStreakDate !== undefined) localStorage.setItem(STREAK_DATE_KEY, d.lastStreakDate || "");
       return d;
     }
   } catch(e) { console.warn("[UW Core] loadUserData failed:", e); }
@@ -229,10 +259,33 @@ async function updateLeaderboard() {
 async function syncData(payload) {
   if (!_authUser) return;
   try {
+    // ✅ FIX: Don't blindly write localStorage streak/XP to Firestore
+    // Only write streak/XP if localStorage is populated (i.e. not empty/zero from new device)
+    const localXP     = getXP();
+    const localStreak = getStreak();
+    const localDate   = localStorage.getItem(STREAK_DATE_KEY) || "";
+
+    // Read current Firestore values to avoid overwriting with stale localStorage
+    let fsStreak = localStreak, fsXP = localXP, fsDate = localDate;
+    try {
+      const snap = await getDoc(doc(db, "users", _authUser.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        // Use Firestore value if localStorage is 0/empty (new device scenario)
+        if (!localStreak && d.streak) fsStreak = d.streak;
+        if (!localXP    && d.xp)     fsXP     = d.xp;
+        if (!localDate  && d.lastStreakDate) fsDate = d.lastStreakDate;
+        // Sync back to localStorage
+        localStorage.setItem(STREAK_KEY,      String(fsStreak));
+        localStorage.setItem(XP_KEY,          String(fsXP));
+        localStorage.setItem(STREAK_DATE_KEY, fsDate);
+      }
+    } catch(e) {}
+
     const base = {
-      xp:             getXP(),
-      streak:         getStreak(),
-      lastStreakDate: localStorage.getItem(STREAK_DATE_KEY) || ""
+      xp:             fsXP,
+      streak:         fsStreak,
+      lastStreakDate: fsDate
     };
     await setDoc(
       doc(db, "users", _authUser.uid),

@@ -96,7 +96,8 @@ function markSeen(type, id) {
 
 const CURRENT_USER  = localStorage.getItem("userName")  || null;
 const CURRENT_EMAIL = localStorage.getItem("userEmail") || null;
-const CURRENT_UID   = localStorage.getItem("userUID")   || localStorage.getItem("uwUid") || null;
+const CURRENT_UID   = localStorage.getItem("userUID") || localStorage.getItem("uwUid") || null;
+// NOTE: Never fall back to userName — it's a display name, not a Firebase UID
 
 const unsubs = {
   announcements : null,
@@ -1286,9 +1287,9 @@ async function initPresence() {
     });
   }
   if (!uid) uid = localStorage.getItem("uwUid")
-                || localStorage.getItem("userId")
-                || localStorage.getItem("userName")
+                || localStorage.getItem("userUID")
                 || null;
+  // ✅ NEVER use userName as uid — displayName != Firebase UID
   if (!uid) return;
 
   // ── FIX: timer.html — script.js owns users/{displayName} doc completely.
@@ -1367,7 +1368,7 @@ window._uwTrackVideoComplete = async function() {
       window.UW.onReady(user => { uid = user?.uid || null; resolve(); });
     });
   }
-  if (!uid) uid = localStorage.getItem("uwUid") || localStorage.getItem("userId") || null;
+  if (!uid) uid = localStorage.getItem("uwUid") || localStorage.getItem("userUID") || null;
   if (!uid) return;
 
   try {
@@ -1418,7 +1419,7 @@ window._uwTrackPlaylistWatch = async function(minutes) {
       window.UW.onReady(user => { uid = user?.uid || null; resolve(); });
     });
   }
-  if (!uid) uid = localStorage.getItem("uwUid") || localStorage.getItem("userId") || null;
+  if (!uid) uid = localStorage.getItem("uwUid") || localStorage.getItem("userUID") || null;
   if (!uid) return;
 
   try {

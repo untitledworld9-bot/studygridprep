@@ -396,6 +396,7 @@ async function handleUser(user){
   localStorage.setItem("userName",  name);
   localStorage.setItem("userEmail", email);
   localStorage.setItem("userUID",   uid);
+  localStorage.setItem("uwUid",     uid);
 
   const userRef  = doc(db, "users", uid);
   const existing = await getDoc(userRef);

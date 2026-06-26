@@ -37,7 +37,49 @@
   new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
-<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
+<style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }
+/* ── Custom Toast ── */
+#sgpToast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--text); border-radius: 14px; padding: 12px 20px;
+  font-size: 13px; font-weight: 600; z-index: 99999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  opacity: 0; transition: all 0.25s ease; pointer-events: none;
+  white-space: nowrap; max-width: 88vw; text-align: center;
+}
+#sgpToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#sgpToast.error { border-color: rgba(239,68,68,0.4); color: #EF4444; }
+#sgpToast.success { border-color: rgba(16,185,129,0.4); color: #10B981; }
+
+/* ── Custom Confirm Modal ── */
+#sgpConfirm {
+  position: fixed; inset: 0; z-index: 999999;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+#sgpConfirm.show { display: flex; }
+#sgpConfirmBox {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 22px; padding: 28px 24px 20px; max-width: 320px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  animation: confirmSlideUp 0.22s cubic-bezier(0.34,1.4,0.64,1);
+}
+@keyframes confirmSlideUp {
+  from { opacity:0; transform: scale(0.92) translateY(20px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+#sgpConfirmTitle { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+#sgpConfirmMsg { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 24px; }
+.sgp-confirm-btns { display: flex; gap: 10px; }
+.sgp-confirm-btns button {
+  flex: 1; padding: 12px; border-radius: 12px; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.sgp-btn-cancel { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border) !important; }
+.sgp-btn-ok     { background: linear-gradient(135deg,#5B5BF6,#7C3AED); color: #fff; }
+.sgp-btn-danger { background: rgba(239,68,68,0.1); color: #EF4444; border: 1.5px solid rgba(239,68,68,0.3) !important; }
+</style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -433,6 +475,54 @@ header{
 
 </div>
 
+<!-- Custom Toast -->
+<div id="sgpToast"></div>
+
+<!-- Custom Confirm Modal -->
+<div id="sgpConfirm">
+  <div id="sgpConfirmBox">
+    <div id="sgpConfirmTitle">Are you sure?</div>
+    <div id="sgpConfirmMsg"></div>
+    <div class="sgp-confirm-btns">
+      <button class="sgp-btn-cancel" id="sgpConfirmNo">Keep</button>
+      <button class="sgp-btn-danger" id="sgpConfirmYes">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Custom Toast ──
+function sgpToast(msg, type='info', duration=3000) {
+  const el = document.getElementById('sgpToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'show' + (type !== 'info' ? ' ' + type : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, duration);
+}
+
+// ── Custom Confirm ──
+function sgpConfirm(msg, title, onOk, btnLabel='Confirm', danger=true) {
+  const overlay = document.getElementById('sgpConfirm');
+  const titleEl = document.getElementById('sgpConfirmTitle');
+  const msgEl   = document.getElementById('sgpConfirmMsg');
+  const yesBtn  = document.getElementById('sgpConfirmYes');
+  const noBtn   = document.getElementById('sgpConfirmNo');
+  if (!overlay) { if(onOk) onOk(); return; }
+  titleEl.textContent = title || 'Are you sure?';
+  msgEl.textContent   = msg;
+  yesBtn.textContent  = btnLabel;
+  yesBtn.className    = danger ? 'sgp-btn-danger' : 'sgp-btn-ok';
+  overlay.classList.add('show');
+  const close = () => overlay.classList.remove('show');
+  yesBtn.onclick = () => { close(); if(onOk) onOk(); };
+  noBtn.onclick  = close;
+  overlay.onclick = (e) => { if(e.target === overlay) close(); };
+}
+window.sgpToast   = sgpToast;
+window.sgpConfirm = sgpConfirm;
+</script>
+
 <script src="theme.js"></script>
 
 <style>
@@ -719,12 +809,11 @@ window.closePaymentSheet = function(){
 window.submitPayment = async function(){
   const txnId = (document.getElementById('txnInput').value || '').trim();
   if (!txnId) {
-    alert('Please enter your Transaction ID');
+    sgpToast('Please enter your Transaction ID', 'error'); document.getElementById('txnInput')?.focus(); return;
     return;
   }
   if (!screenshotFile) {
-    alert('Please upload your payment screenshot — it is required for verification.');
-    // Highlight upload area
+    sgpToast('Please upload your payment screenshot', 'error');
     const uploadArea = document.getElementById('uploadArea');
     if (uploadArea) {
       uploadArea.style.borderColor = '#EF4444';
@@ -770,7 +859,7 @@ window.submitPayment = async function(){
 
   } catch(err) {
     console.error('Submit payment error:', err);
-    alert('Something went wrong. Please try again.');
+    sgpToast('Something went wrong. Please try again.', 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Payment';
@@ -779,12 +868,19 @@ window.submitPayment = async function(){
 
 // ── Cancel pending payment ──
 window.cancelPending = async function(){
-  if (!confirm('Cancel your payment request? You can submit again anytime.')) return;
-  const userId = getUserId();
-  await cancelPendingPayment(userId);
-  // Re-render
-  const { getLocalSubscriptionState } = await import('./subscription.js');
-  renderStateFull({ ...getLocalSubscriptionState(), payPending: false });
+  sgpConfirm(
+    'You can submit a new payment request anytime.',
+    'Cancel Payment Request?',
+    async () => {
+      const userId = getUserId();
+      await cancelPendingPayment(userId);
+      const { getLocalSubscriptionState } = await import('./subscription.js');
+      renderStateFull({ ...getLocalSubscriptionState(), payPending: false });
+      sgpToast('Payment request cancelled', 'info');
+    },
+    'Yes, Cancel',
+    true
+  );
 };
 
 // ── Full render (subscription + pending state) ──
