@@ -402,7 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dotCls = s.includes("focus") ? "s-focus" : s === "online" ? "s-online" : "s-offline";
       const h = Math.floor((u.focusTime||0)/60), m = (u.focusTime||0)%60;
       const timeStr = h>0 ? `${h}h ${m}m` : `${m}m`;
-      const xp = u.weeklyXP||0;
+      const xp = _lbXpCache[u.id] || u.weeklyXP || 0;
       const displayName = u.name||u.displayName||"User";
 
       const card = document.createElement("div");
@@ -458,6 +458,19 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch(e) {}
   }
   loadLbXpCache();
+
+  // Refresh LB cache after XP is synced so panel shows updated values
+  async function _syncTimerLeaderboardAndRefresh(focusMinsDelta, xpDelta) {
+    await _syncTimerLeaderboard(focusMinsDelta, xpDelta);
+    // Update local cache immediately so UI reflects new XP without waiting for Firestore snapshot
+    if (xpDelta > 0 && _timerUid) {
+      _lbXpCache[_timerUid] = (_lbXpCache[_timerUid] || 0) + xpDelta;
+      if (socialSheet?.classList.contains("open")) {
+        renderPanelLeaderboard();
+        renderPanelUsers();
+      }
+    }
+  }
 
   function renderPanelLeaderboard() {
     const board = qs("leaderboard");
@@ -709,7 +722,7 @@ document.addEventListener("DOMContentLoaded", () => {
               if (elapsed % 120 === 0 && elapsed > 0 && isRunning) {
                 savedXP++;  // FIX-XP: track awarded XP
                 await updateDoc(userDocRef(),{weeklyXP:increment(1)});
-                await _syncTimerLeaderboard(0, 1);
+                await _syncTimerLeaderboardAndRefresh(0, 1);
               }
             }
             else { finishTimer(); }
@@ -727,7 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (seconds % 120 === 0 && isRunning) {
               savedXP++;  // FIX-XP: track awarded XP
               await updateDoc(userDocRef(),{weeklyXP:increment(1)});
-              await _syncTimerLeaderboard(0, 1);
+              await _syncTimerLeaderboardAndRefresh(0, 1);
             }
           }
         }, 1000);
@@ -779,12 +792,17 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDoc(userDocRef(),{
         status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
       }).catch(()=>{});
-      const unsavedXP = Math.floor(unsavedMins / 2);
+      const totalXPEarned = Math.floor(totalMins / 2);
+      const unsavedXP = Math.max(0, totalXPEarned - savedXP);
+      if (unsavedXP > 0) {
+        updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP)}).catch(()=>{});
+      }
       _syncTimerLeaderboard(unsavedMins, unsavedXP).catch(()=>{});
     } else if (_timerUid) {
       updateDoc(userDocRef(),{status:"Online", lastActive:Date.now()}).catch(()=>{});
     }
     savedMinutes = 0;
+    savedXP      = 0;  // reset so next session starts clean
     clearTimerState();
     if (startBtn) startBtn.style.display = "block";
     if (stopBtn)  stopBtn.style.display  = "none";
