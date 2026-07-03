@@ -885,6 +885,10 @@ window.cancelPending = async function(){
 
 // ── Full render (subscription + pending state) ──
 window.renderStateFull = function(state){
+  // Remember the latest known state so handleCtaClick() always decides
+  // trial-vs-monthly from the actual current data, not a stale cache.
+  window._sgpLastState = state;
+
   const ctaBtn       = document.getElementById('ctaBtn');
   const proCard      = document.getElementById('proPlanCard');
   const proBadge     = document.getElementById('proPlanBadge');
@@ -970,9 +974,11 @@ window.renderStateFull = function(state){
 window.handleCtaClick = function(){
   const ctaBtn = document.getElementById('ctaBtn');
   if (ctaBtn.disabled) return;
-  // Detect which plan to show
-  const localTrialUsed = localStorage.getItem('sgp_trialUsed') === 'true';
-  openPaymentSheet(localTrialUsed ? 'monthly' : 'trial');
+  // Decide plan from the actual last-rendered state (always fresh —
+  // updated on every renderStateFull call, including the live listener),
+  // not a separate localStorage cache that could go stale.
+  const trialUsed = !!(window._sgpLastState && window._sgpLastState.trialUsed);
+  openPaymentSheet(trialUsed ? 'monthly' : 'trial');
 };
 
 // ── Init: load sub state + payment pending state ──
@@ -994,8 +1000,6 @@ async function init(){
       payPending:     full.payPending,
       payPendingPlan: full.payPendingPlan
     });
-    // Cache trialUsed in localStorage for CTA logic
-    if (full.trialUsed) localStorage.setItem('sgp_trialUsed', 'true');
   });
 
   // Live listener — activates UI immediately when admin approves
