@@ -34,7 +34,8 @@ const LS_KEYS = {
   USER_ID:       'sgp_userId',
   IS_SUB:        'isSubscribed',
   TRIAL_EXPIRY:  'trialExpiry',
-  FREE_USED:     'freeMockUsed'
+  FREE_USED:     'freeMockUsed',
+  TRIAL_USED:    'sgp_trialUsed'
 };
 
 const USERS_COLL = 'users';
@@ -83,19 +84,24 @@ export function getLocalSubscriptionState() {
   const isSubscribed = localStorage.getItem(LS_KEYS.IS_SUB) === 'true';
   const trialExpiry  = parseInt(localStorage.getItem(LS_KEYS.TRIAL_EXPIRY) || '0', 10) || null;
   const freeMockUsed = localStorage.getItem(LS_KEYS.FREE_USED) === 'true';
-  return applyExpiryLocal({ isSubscribed, trialExpiry, freeMockUsed });
+  const trialUsed    = localStorage.getItem(LS_KEYS.TRIAL_USED) === 'true';
+  return applyExpiryLocal({ isSubscribed, trialExpiry, freeMockUsed, trialUsed });
 }
 
 function writeLocal(state) {
   localStorage.setItem(LS_KEYS.IS_SUB,       state.isSubscribed ? 'true' : 'false');
   localStorage.setItem(LS_KEYS.TRIAL_EXPIRY, state.trialExpiry ? String(state.trialExpiry) : '');
   localStorage.setItem(LS_KEYS.FREE_USED,    state.freeMockUsed ? 'true' : 'false');
+  if (state.trialUsed) localStorage.setItem(LS_KEYS.TRIAL_USED, 'true');
 }
 
-// Auto-expire trial locally (instant, no network needed)
+// Auto-expire trial locally (instant, no network needed).
+// Once a trial expires it is permanently marked "used" — the ₹1 trial
+// is one-time-only; after this the UI must offer the ₹49 monthly plan.
 function applyExpiryLocal(state) {
   if (state.isSubscribed && state.trialExpiry && Date.now() > state.trialExpiry) {
     state.isSubscribed = false;
+    state.trialUsed = true;
     writeLocal(state);
   }
   return state;
@@ -105,15 +111,27 @@ function applyExpiryLocal(state) {
 //  FIRESTORE — source of truth
 // ------------------------------------------------------------
 
+// Migration-safe trialUsed check: if the flag was never set (old users,
+// pre-fix), but a trialExpiry exists and has already passed, that user
+// has already consumed their one-time trial — treat it as used.
+function deriveTrialUsed(data) {
+  if (data.trialUsed) return true;
+  if (data.trialExpiry && Date.now() > data.trialExpiry) return true;
+  return false;
+}
+
 async function readRemote(userId) {
   const ref  = doc(db, USERS_COLL, userId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   const data = snap.data();
   return {
-    isSubscribed: !!data.isSubscribed,
-    trialExpiry:  data.trialExpiry || null,
-    freeMockUsed: !!data.freeMockUsed
+    isSubscribed:   !!data.isSubscribed,
+    trialExpiry:    data.trialExpiry || null,
+    freeMockUsed:   !!data.freeMockUsed,
+    trialUsed:      deriveTrialUsed(data),
+    payPending:     !!data.payPending,
+    payPendingPlan: data.payPendingPlan || null
   };
 }
 
@@ -125,11 +143,13 @@ async function writeRemote(userId, partialState) {
   }, { merge: true });
 }
 
-// Apply expiry remotely too, so Firestore never lingers as "subscribed"
+// Apply expiry remotely too, so Firestore never lingers as "subscribed".
+// Also self-heals the trialUsed flag so the ₹1 trial never re-appears.
 async function applyExpiryRemote(userId, state) {
   if (state.isSubscribed && state.trialExpiry && Date.now() > state.trialExpiry) {
     state.isSubscribed = false;
-    try { await writeRemote(userId, { isSubscribed: false }); } catch (_) {}
+    state.trialUsed = true;
+    try { await writeRemote(userId, { isSubscribed: false, trialUsed: true }); } catch (_) {}
   }
   return state;
 }
@@ -216,7 +236,7 @@ export function watchSubscription(onUpdate) {
       isSubscribed: !!data.isSubscribed,
       trialExpiry:  data.trialExpiry || null,
       freeMockUsed: !!data.freeMockUsed,
-      trialUsed:    !!data.trialUsed,
+      trialUsed:    deriveTrialUsed(data),
       plan:         data.plan || null,
       payPending:   !!data.payPending
     });
@@ -258,14 +278,24 @@ function sendProActivationNotification() {
 // ------------------------------------------------------------
 
 /**
- * Activates the ₹1 / 7-day trial for this user.
- * ONLY called internally after payment is verified in Firestore.
+ * Activates Pro access for this user — either the one-time ₹1 / 7-day
+ * trial, or the ₹49 / 30-day monthly plan.
+ * ONLY called internally after payment is verified/approved.
  * Never called directly from a URL param check.
+ *
+ * @param {number} [days] - override duration; defaults to 7 for 'trial', 30 for 'monthly'
+ * @param {'trial'|'monthly'} [plan] - which plan is being activated
  */
-export async function activateTrial(days = 7) {
+export async function activateTrial(days, plan = 'trial') {
   const userId = getUserId();
-  const trialExpiry = Date.now() + days * 24 * 60 * 60 * 1000;
+  const finalDays = days || (plan === 'monthly' ? 30 : 7);
+  const trialExpiry = Date.now() + finalDays * 24 * 60 * 60 * 1000;
   const state = { isSubscribed: true, trialExpiry };
+
+  // The ₹1 trial is one-time-only. Mark it used the moment it's
+  // activated (not just when it expires) so it can never be granted
+  // again — the next cycle for this user must be the ₹49 monthly plan.
+  if (plan === 'trial') state.trialUsed = true;
 
   // 1. Write local immediately (instant UI)
   writeLocal({ ...getLocalSubscriptionState(), ...state });
@@ -273,7 +303,8 @@ export async function activateTrial(days = 7) {
   // 2. Write to Firestore (source of truth — awaited)
   await writeRemote(userId, {
     ...state,
-    planName:    'trial_7day',
+    plan,
+    planName:    plan === 'monthly' ? 'monthly_30day' : 'trial_7day',
     activatedAt: Date.now()
   });
 
@@ -343,7 +374,8 @@ export async function verifyAndActivate(onStatus) {
         // Webhook has written the verified flag
         if (data.paymentVerified === true) {
           notify('Payment confirmed — activating Pro…');
-          await activateTrial(7);
+          const approvedPlan = data.payPendingPlan === 'monthly' ? 'monthly' : 'trial';
+          await activateTrial(approvedPlan === 'monthly' ? 30 : 7, approvedPlan);
           // Clear the pending flag so it doesn't re-trigger
           try {
             await writeRemote(userId, { paymentVerified: false });
