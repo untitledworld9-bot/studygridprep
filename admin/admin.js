@@ -518,10 +518,13 @@ function listenSubscriptions() {
           return true;
         });
 
-      // Auto-revoke expired subscriptions in Firestore
+      // Auto-revoke expired subscriptions in Firestore.
+      // Also lock in trialUsed so this user is never shown the ₹1 trial
+      // again — the one-time trial window has now closed.
       toExpire.forEach(uid => {
         updateDoc(doc(db, COLL.USERS, uid), {
-          isSubscribed: false
+          isSubscribed: false,
+          trialUsed:    true
         }).catch(e => console.warn('Auto-expire failed for', uid, e));
       });
 
@@ -610,6 +613,7 @@ window.toggleSubFromTable = async (uid, uname, enable) => {
         isSubscribed: true,
         trialExpiry:  expiry,
         subExpiry:    expiry,
+        trialUsed:    true, // any granted access counts as the one-time trial used
         subGrantedBy: 'admin',
         subGrantedAt: Date.now()
       });
@@ -619,6 +623,7 @@ window.toggleSubFromTable = async (uid, uname, enable) => {
         isSubscribed: false,
         trialExpiry:  0,
         subExpiry:    0,
+        trialUsed:    true, // keep marked used even though expiry field is cleared
         subRevokedAt: Date.now(),
         subGrantedBy: 'admin'
       });
@@ -707,6 +712,7 @@ window.grantSubscription = async () => {
       isSubscribed: true,
       trialExpiry:  expiry,
       subExpiry:    expiry,
+      trialUsed:    true, // any granted access counts as the one-time trial used
       subGrantedBy: 'admin',
       subGrantedAt: Date.now(),
       subDays:      days
@@ -732,6 +738,7 @@ window.revokeSubscription = async () => {
       isSubscribed: false,
       trialExpiry:  0,
       subExpiry:    0,
+      trialUsed:    true, // keep marked used even though expiry field is cleared
       subRevokedAt: Date.now()
     });
     toast('🚫 Subscription revoked', 'error');
