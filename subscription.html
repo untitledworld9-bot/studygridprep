@@ -971,13 +971,42 @@ window.renderStateFull = function(state){
 };
 
 // ── CTA click → open payment sheet ──
-window.handleCtaClick = function(){
+// Always re-check the authoritative Firestore state right before opening
+// the sheet — never trust cached/local data here. On a slow connection
+// the locally-rendered state can lag behind, which previously could show
+// the ₹1 trial QR to a user who has already used their trial.
+window.handleCtaClick = async function(){
   const ctaBtn = document.getElementById('ctaBtn');
   if (ctaBtn.disabled) return;
-  // Decide plan from the actual last-rendered state (always fresh —
-  // updated on every renderStateFull call, including the live listener),
-  // not a separate localStorage cache that could go stale.
-  const trialUsed = !!(window._sgpLastState && window._sgpLastState.trialUsed);
+
+  const originalHtml = ctaBtn.innerHTML;
+  ctaBtn.disabled = true;
+  ctaBtn.innerHTML = '<span class="spinner-dot"></span> Checking…';
+
+  let trialUsed = !!(window._sgpLastState && window._sgpLastState.trialUsed);
+  try {
+    const userId = getUserId();
+    const fresh = await getPaymentStatus(userId);
+    trialUsed = !!fresh.trialUsed;
+    // If subscription/pending state changed while we were checking,
+    // re-render instead of opening a now-stale payment sheet.
+    if (fresh.isSubscribed || fresh.payPending) {
+      renderStateFull({
+        isSubscribed:   fresh.isSubscribed,
+        trialExpiry:    fresh.trialExpiry,
+        trialUsed:      fresh.trialUsed,
+        payPending:     fresh.payPending,
+        payPendingPlan: fresh.payPendingPlan
+      });
+      return;
+    }
+  } catch (e) {
+    console.warn('Could not verify latest plan status, using last known state:', e);
+  } finally {
+    ctaBtn.disabled = false;
+    ctaBtn.innerHTML = originalHtml;
+  }
+
   openPaymentSheet(trialUsed ? 'monthly' : 'trial');
 };
 
