@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0f2027" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 
 <!-- AUTH GATE -->
 <script>
@@ -30,7 +30,7 @@
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
     var m = document.createElement('meta'); m.name='theme-color';
-    m.content = isDark ? '#0f2027' : '#ffffff';
+    m.content = isDark ? '#0D1120' : '#ffffff';
     document.head.appendChild(m);
   }
   _utc();
