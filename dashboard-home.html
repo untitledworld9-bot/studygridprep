@@ -3280,16 +3280,30 @@ onAuthStateChanged(auth, async user => {
   let streakHistory=data.streakHistory||[];
 
   const hadStreakBefore = streak > 0;
+  // ✅ FIX: agar streak aaj hi ban chuki hai (playlist/todo/dashboard kisi se bhi),
+  // to lastActiveDate chahe stale ho (e.g. todo.html se streak update hone par
+  // lastActiveDate touch nahi hota tha), streak kabhi break nahi honi chahiye —
+  // lastStreakDate hi asli source of truth hai ki streak aaj earn hui ya nahi.
+  const streakDoneToday = (lastStreakDate === today);
   // missedDay: lastStreakDate set tha, aaj nahi, kal bhi nahi → streak break
   const missedDay = lastStreakDate && lastStreakDate !== today && lastStreakDate !== yesterday;
   // Also check if user was active but didn't complete streak (lastActive was before yesterday)
   const missedActive = lastActive && lastActive !== today && lastActive !== yesterday;
 
   if(lastActive!==today){
-    if(lastActive===yesterday) {
+    if(streakDoneToday){
+      // Streak already earned today (possibly via playlist.html/todo.html) —
+      // just resync lastActiveDate, never break a streak that's valid today.
+      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
+    } else if(lastActive===yesterday) {
       // consecutive — don't increment here; only increment on daily goal completion
+      // ✅ FIX: still refresh lastActiveDate so it never goes stale across sessions
+      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
     } else if((missedDay || missedActive) && hadStreakBefore){
-      // Broke streak — reset
+      // Broke streak — reset. (The streakDoneToday check above already
+      // guards against the false-positive where streak was legitimately
+      // earned today but lastActiveDate happened to be stale — so this OR
+      // stays intentionally broad to still correctly catch genuine gaps.)
       streak = 0;
       await updateDoc(userRef,{streak:0, lastActiveDate:today}).catch(()=>{});
       localStorage.setItem("uw_streak","0");

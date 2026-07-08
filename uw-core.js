@@ -92,12 +92,14 @@ function getStreak() {
 }
 
 async function updateStreak() {
-  const today     = new Date().toDateString();
+  const today    = new Date().toDateString();
+  const todayISO = new Date().toISOString().slice(0, 10);
 
   // ✅ FIX: Always read from Firestore first — localStorage may be stale on new device
   // This prevents streak reset when user logs in on a new device
   let firestoreStreak   = 0;
   let firestoreLastDate = "";
+  let firestoreHistory  = [];
   try {
     if (_authUser) {
       const snap = await getDoc(doc(db, "users", _authUser.uid));
@@ -105,6 +107,7 @@ async function updateStreak() {
         const d = snap.data();
         firestoreStreak   = d.streak || 0;
         firestoreLastDate = d.lastStreakDate || "";
+        firestoreHistory  = d.streakHistory || [];
         // Sync localStorage from Firestore so it's always fresh
         localStorage.setItem(STREAK_KEY,      String(firestoreStreak));
         localStorage.setItem(STREAK_DATE_KEY, firestoreLastDate);
@@ -116,8 +119,13 @@ async function updateStreak() {
   const last  = firestoreLastDate || localStorage.getItem(STREAK_DATE_KEY) || "";
   let   count = firestoreStreak   || parseInt(localStorage.getItem(STREAK_KEY) || "0", 10);
 
-  // Already counted today — return current streak, no update needed
-  if (last === today) return count;
+  // Already counted today — return current streak, no update needed.
+  // ✅ FIX: still refresh lastActiveDate so other pages (dashboard) don't see a
+  // stale "presence" date and wrongly think the streak is broken.
+  if (last === today) {
+    _saveUser({ lastActiveDate: today }).catch(() => {});
+    return count;
+  }
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -134,8 +142,22 @@ async function updateStreak() {
   localStorage.setItem(STREAK_KEY,      String(count));
   localStorage.setItem(STREAK_DATE_KEY, today);
 
+  // ✅ FIX: keep streakHistory in sync too — dashboard's week-popup and daily
+  // streak popup both read this array, so without it they looked "stuck".
+  const updatedHistory = firestoreHistory.includes(todayISO)
+    ? firestoreHistory
+    : [...firestoreHistory, todayISO].slice(-90);
+
   window.dispatchEvent(new CustomEvent("uw_streak_changed", { detail: { streak: count } }));
-  await _saveUser({ streak: count, lastStreakDate: today });
+  // ✅ FIX: also write lastActiveDate so dashboard-home.html's break-detection
+  // (which cross-checks lastActiveDate) never sees stale presence data and
+  // incorrectly resets a streak that was legitimately earned today.
+  await _saveUser({
+    streak: count,
+    lastStreakDate: today,
+    lastActiveDate: today,
+    streakHistory: updatedHistory
+  });
   await _syncLeaderboard();
   return count;
 }

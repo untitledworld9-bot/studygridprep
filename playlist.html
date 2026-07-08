@@ -17,8 +17,17 @@
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
-  var m=document.querySelector('meta[name="theme-color"]');
-  if(m) m.content = (theme==='dark') ? '#0a1628' : '#ffffff';
+  // ✅ FIX: previously only the FIRST theme-color meta tag was updated, and its
+  // media="(prefers-color-scheme: ...)" attribute was left in place — so the
+  // status bar color actually shown depended on the PHONE's system light/dark
+  // setting, not the app's actual chosen theme, causing a mismatched/washed-out
+  // status bar. Now (matching dashboard-home.html) BOTH meta tags are updated
+  // and their media attribute is removed so the status bar always tracks the
+  // real in-app theme.
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = (theme === 'dark') ? '#0a1628' : '#ffffff';
+  });
 })();
 </script>
 
@@ -899,6 +908,124 @@ input::placeholder { color: var(--text3); }
   animation: ai-lock-glow 2.5s ease-in-out infinite;
 }
 .ai-chat-trigger-btn.ai-locked .ai-trigger-label { color: #F59E0B; }
+
+/* ── Report Issue — icon button + modal ── */
+.notes-header-actions{ display:flex; align-items:center; gap:8px; }
+.report-issue-btn{
+  display:flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:50%;
+  background:var(--surface2); border:1.5px solid var(--border);
+  color:var(--text2); cursor:pointer; transition:var(--t); flex-shrink:0;
+}
+.report-issue-btn:active{ transform:scale(0.9); }
+.report-issue-btn:hover{ border-color:var(--accent); color:var(--accent); }
+
+.report-issue-overlay{
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.78); backdrop-filter:blur(12px);
+  z-index:999999; display:none; align-items:center; justify-content:center;
+  padding:20px;
+}
+.report-issue-box{
+  background:var(--surface);
+  width:100%; max-width:380px; padding:28px 22px;
+  border-radius:28px; text-align:left; position:relative;
+  box-shadow:0 24px 64px rgba(0,0,0,0.45);
+  animation:popUpAnimRI 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  border:1px solid var(--border);
+  overflow:hidden; max-height:88vh; overflow-y:auto;
+}
+[data-theme="dark"] .report-issue-box{
+  background:linear-gradient(160deg,#111A2E,#141E30);
+  border-color:rgba(91,91,246,0.2);
+}
+[data-theme="light"] .report-issue-box{ background:#fff; }
+.report-issue-box::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:linear-gradient(90deg,#5B5BF6,#7C3AED,#F43F5E);
+}
+@keyframes popUpAnimRI{ 0%{ transform:scale(0.82) translateY(20px); opacity:0; } 100%{ transform:scale(1) translateY(0); opacity:1; } }
+.close-report-issue{
+  position:absolute; top:16px; right:16px;
+  width:32px; height:32px; border-radius:50%;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text2); font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:0.2s;
+}
+.close-report-issue:active{ transform:scale(0.9); }
+.report-issue-header{ text-align:center; margin-bottom:18px; }
+.report-issue-header .ri-icon-wrap{
+  width:52px; height:52px; border-radius:16px; margin:0 auto 12px;
+  background:rgba(91,91,246,0.12); display:flex; align-items:center; justify-content:center;
+  color:var(--accent);
+}
+.report-issue-header h3{ color:var(--text); margin-bottom:5px; font-size:19px; font-weight:800; letter-spacing:-0.2px; }
+.report-issue-header p{ color:var(--text2); font-size:12.5px; }
+.ri-label{ font-size:12.5px; font-weight:700; color:var(--text2); margin:14px 0 8px; text-transform:uppercase; letter-spacing:0.3px; }
+.ri-category-list{ display:flex; flex-direction:column; gap:8px; }
+.ri-category-item{
+  display:flex; align-items:center; gap:11px;
+  padding:12px 13px; border-radius:14px;
+  border:1.5px solid var(--border); background:var(--surface2);
+  cursor:pointer; transition:var(--t);
+}
+.ri-category-item:active{ transform:scale(0.98); }
+.ri-category-item.selected{
+  border-color:var(--accent); background:rgba(91,91,246,0.08);
+}
+.ri-category-icon{
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface); color:var(--text2); transition:var(--t);
+}
+.ri-category-item.selected .ri-category-icon{ background:var(--accent); color:#fff; }
+.ri-category-name{ flex:1; font-size:13.5px; font-weight:600; color:var(--text); }
+.ri-category-check{
+  width:20px; height:20px; border-radius:50%; border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:var(--t);
+}
+.ri-category-item.selected .ri-category-check{ background:var(--accent); border-color:var(--accent); color:#fff; }
+#reportIssueDetails{
+  width:100%; padding:13px 15px; border-radius:14px;
+  border:1.5px solid var(--border); background:var(--surface2);
+  color:var(--text); font-size:13px; resize:none; outline:none;
+  margin-top:4px; font-family:'Poppins',sans-serif; transition:0.2s;
+}
+#reportIssueDetails:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,91,246,0.1); }
+.submit-report-btn{
+  width:100%; padding:14px; margin-top:18px;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+  color:#fff; border:none; border-radius:50px;
+  font-weight:700; font-size:15px; cursor:pointer; transition:var(--t);
+  box-shadow:0 6px 20px rgba(91,91,246,0.35);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.submit-report-btn:active{ transform:scale(0.97); }
+.submit-report-btn:disabled{ background:var(--surface2); color:var(--text3); cursor:not-allowed; box-shadow:none; }
+.submit-report-btn.ri-submitting{
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED); color:#fff; opacity:0.9; cursor:wait;
+}
+.ri-spinner{
+  width:15px; height:15px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;
+  animation:riSpin 0.7s linear infinite; display:inline-block;
+}
+@keyframes riSpin{ to{ transform:rotate(360deg); } }
+.ri-status-text{ font-size:13px; font-weight:600; color:var(--text2); text-align:center; margin-top:10px; min-height:18px; }
+
+/* Animated success state */
+.ri-success-wrap{ padding:20px 4px 4px; text-align:center; }
+.ri-success-check{
+  width:64px; height:64px; border-radius:50%; margin:0 auto;
+  background:#10B981; display:flex; align-items:center; justify-content:center;
+  animation:riCheckPop 0.45s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 8px 24px rgba(16,185,129,0.4);
+}
+@keyframes riCheckPop{
+  0%{ transform:scale(0); opacity:0; }
+  60%{ transform:scale(1.15); opacity:1; }
+  100%{ transform:scale(1); }
+}
 @keyframes ai-lock-glow {
   0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
   50%      { box-shadow: 0 0 10px 2px rgba(245,158,11,0.25); }
@@ -2264,42 +2391,168 @@ playVideo(next.id,null);
 
 }
 
-let startX=0;
+/* ✅ FIX: swipe-to-change-video was listening on the WHOLE document, even when
+   the player was closed and regardless of vertical scroll/mistouch — so a
+   stray corner-touch while scrolling the playlist, or tapping a button near
+   an edge, could silently swap the currently loaded video. Now scoped to the
+   video area only, gated on the player actually being open, ignores touches
+   that start on a button/control, and requires a clearly horizontal gesture
+   (guards against diagonal drags / vertical scrolls being misread). */
+let startX = 0, startY = 0, _swipeStartTarget = null;
 
-document.addEventListener("touchstart",(e)=>{
-
-startX = e.touches[0].clientX;
-
-});
-
-document.addEventListener("touchend",(e)=>{
-
-if (focusLocked) return; // 🔒 Swipe blocked during focus lock
-
-let endX = e.changedTouches[0].clientX;
-
-if(startX-endX > 80){
-
-playNext();
-
+function _isSwipeBlockedTarget(el) {
+  return !!(el && el.closest && el.closest(
+    'button, .ai-chat-trigger-btn, .close-player-btn, .focus-lock-btn, ' +
+    '#notesSectionBody, textarea, input, #aiChatModal, .report-issue-btn, ' +
+    '#reportIssueModal'
+  ));
 }
 
-if(endX-startX > 80){
+const _swipeZone = document.getElementById("playerVideoContainer");
 
-let index = videos.findIndex(v=>v.id===currentVideo);
+if (_swipeZone) {
+  _swipeZone.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    _swipeStartTarget = e.target;
+  }, { passive: true });
 
-if(index>0){
+  _swipeZone.addEventListener("touchend", (e) => {
+    if (focusLocked) return; // 🔒 Swipe blocked during focus lock
 
-playVideo(videos[index-1].id,null);
+    // Player must actually be open
+    const overlay = document.getElementById("playerOverlay");
+    if (!overlay || getComputedStyle(overlay).display === "none") return;
 
+    // Ignore swipes that started on a button/control (prevents mistouch triggers)
+    if (_isSwipeBlockedTarget(_swipeStartTarget)) return;
+
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+
+    // Must be a clearly horizontal swipe — not a scroll, drag, or light mistouch
+    if (Math.abs(deltaX) < 90) return;
+    if (Math.abs(deltaY) > Math.abs(deltaX) * 0.5) return;
+
+    if (deltaX < 0) {
+      playNext();
+    } else {
+      let index = videos.findIndex(v => v.id === currentVideo);
+      if (index > 0) {
+        playVideo(videos[index - 1].id, null);
+      }
+    }
+  }, { passive: true });
 }
-
-}
-
-});
 
 function goHome(){
 window.location.href="dashboard-home.html";
+}
+
+/* ══════════════════════════════════════════
+   🚩 REPORT ISSUE MODAL
+══════════════════════════════════════════ */
+// Uses FormSubmit.co (AJAX endpoint) — same service used elsewhere in the app.
+// ⚠️ One-time setup: the FIRST report ever sent will trigger a confirmation
+// email from FormSubmit to ayushgupt640@gmail.com — click "Activate Form" in
+// that email once, and every report after that lands directly in the inbox.
+const REPORT_ISSUE_TO_EMAIL = "ayushgupt640@gmail.com";
+const REPORT_FORMSUBMIT_URL = "https://formsubmit.co/ajax/" + REPORT_ISSUE_TO_EMAIL;
+
+let _selectedReportCategory = "";
+
+function openReportIssueModal() {
+  const overlay = document.getElementById("reportIssueOverlay");
+  if (!overlay) return;
+  // Reset state every time it opens
+  _selectedReportCategory = "";
+  document.querySelectorAll("#riCategoryList .ri-category-item").forEach(el => el.classList.remove("selected"));
+  const details = document.getElementById("reportIssueDetails");
+  if (details) details.value = "";
+  const statusEl = document.getElementById("riStatusText");
+  if (statusEl) statusEl.textContent = "";
+  const submitBtn = document.getElementById("submitReportBtn");
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = ""; submitBtn.style.pointerEvents = ""; }
+  overlay.style.display = "flex";
+}
+
+function closeReportIssueModal() {
+  const overlay = document.getElementById("reportIssueOverlay");
+  if (overlay) overlay.style.display = "none";
+}
+
+function selectReportCategory(el) {
+  document.querySelectorAll("#riCategoryList .ri-category-item").forEach(item => item.classList.remove("selected"));
+  el.classList.add("selected");
+  _selectedReportCategory = el.getAttribute("data-cat");
+  const submitBtn = document.getElementById("submitReportBtn");
+  if (submitBtn) submitBtn.disabled = false;
+}
+
+async function submitReportIssue() {
+  const statusEl  = document.getElementById("riStatusText");
+  const submitBtn = document.getElementById("submitReportBtn");
+  if (!_selectedReportCategory) {
+    if (statusEl) { statusEl.textContent = "Please select an issue type."; statusEl.style.color = "var(--red, #EF4444)"; }
+    return;
+  }
+
+  const details    = (document.getElementById("reportIssueDetails")?.value || "").trim();
+  const user       = window.auth && window.auth.currentUser;
+  const videoTitle = (window.currentVideoTitle || document.querySelector(".player-title")?.textContent || "N/A");
+
+  // Animated "submitting" state on the button itself
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.classList.add("ri-submitting");
+    submitBtn.innerHTML = `<span class="ri-spinner"></span> Submitting...`;
+  }
+  if (statusEl) { statusEl.textContent = ""; }
+
+  const formData = new FormData();
+  formData.append("Issue Category", _selectedReportCategory);
+  formData.append("Details", details || "(no additional details provided)");
+  formData.append("Reported By", (user && (user.displayName || user.email)) || "Anonymous");
+  formData.append("User Email", (user && user.email) || "N/A");
+  formData.append("Video Context", videoTitle);
+  formData.append("Page", "playlist.html");
+  formData.append("_subject", "🚩 New Issue Report — " + _selectedReportCategory);
+  formData.append("_captcha", "false");
+  formData.append("_template", "table");
+
+  try {
+    const res = await fetch(REPORT_FORMSUBMIT_URL, {
+      method: "POST",
+      headers: { "Accept": "application/json" },
+      body: formData
+    });
+    if (!res.ok) throw new Error("Network response was not ok");
+
+    // ✅ Animated success state — same warm confirmation feel as Rate Us
+    const box = document.querySelector(".report-issue-box");
+    if (box) {
+      box.innerHTML = `
+        <button class="close-report-issue" onclick="closeReportIssueModal()">✕</button>
+        <div class="ri-success-wrap">
+          <div class="ri-success-check">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3 style="color:var(--text);margin:16px 0 8px;font-size:19px;font-weight:800;">Issue Submitted! 🎉</h3>
+          <p style="color:var(--text2);font-size:13px;">Thanks for reporting — we'll look into it soon.</p>
+        </div>`;
+      setTimeout(closeReportIssueModal, 1800);
+    }
+  } catch (e) {
+    console.warn("[Report Issue] send failed:", e);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("ri-submitting");
+      submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Report`;
+    }
+    if (statusEl) { statusEl.textContent = "Couldn't send — check your connection and try again."; statusEl.style.color = "var(--red, #EF4444)"; }
+  }
 }
 
 /* ══════════════════════════════════════════
@@ -2561,6 +2814,12 @@ document.addEventListener('DOMContentLoaded', updateAIBtnState);
 window.addEventListener('storage', e => {
   if (e.key === 'isSubscribed' || e.key === 'trialExpiry') updateAIBtnState();
 });
+// ✅ FIX: expose on window (both names) so the live Firestore subscription
+// watcher (further below) can actually find and call it. Previously it called
+// window._updateAIBtnState() which never existed, so the AI button only ever
+// refreshed on a full page reload — not live like the dashboard sidebar does.
+window.updateAIBtnState  = updateAIBtnState;
+window._updateAIBtnState = updateAIBtnState;
 
 function openAIChat() {
     const modal = document.getElementById("aiChatModal");
@@ -3005,6 +3264,14 @@ window.updateVideoTitle = function(id, newTitle) {
     <div class="notes-section">
         <div class="notes-header-row">
             <h3 id="notesToggleBtn" onclick="toggleNotesSection()" style="cursor:pointer; user-select:none;">📝 My Notes</h3>
+            <div class="notes-header-actions">
+            <button class="report-issue-btn" id="reportIssueBtn" onclick="openReportIssueModal()" title="Report an issue">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="11"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+            </button>
             <button class="ai-chat-trigger-btn" id="aiTriggerBtn" onclick="handleAIBtnClick()" title="Ask AI — Pro Feature">
                 <span class="ai-trigger-dot" id="aiTriggerDot"></span>
                 <svg id="aiTriggerIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3019,12 +3286,74 @@ window.updateVideoTitle = function(id, newTitle) {
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
             </button>
+            </div>
         </div>
         <p class="notes-hint">Auto-saved to your phone. Tap notes to open/hide.</p>
         <div id="notesSectionBody" style="display:flex;flex-direction:column;flex-grow:1;">
             <textarea id="videoNotes" placeholder="Type your important points here..." oninput="saveNotes()"></textarea>
         </div>
     </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     🚩 REPORT ISSUE MODAL
+═══════════════════════════════════════════════ -->
+<div class="report-issue-overlay" id="reportIssueOverlay" onclick="if(event.target===this) closeReportIssueModal()">
+  <div class="report-issue-box">
+    <button class="close-report-issue" onclick="closeReportIssueModal()">✕</button>
+    <div class="report-issue-header">
+      <div class="ri-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="11"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </div>
+      <h3>Report an Issue</h3>
+      <p>Help us fix it fast — tell us what's wrong</p>
+    </div>
+
+    <div class="ri-label">What's the issue?</div>
+    <div class="ri-category-list" id="riCategoryList">
+      <div class="ri-category-item" data-cat="Video Player Issue" onclick="selectReportCategory(this)">
+        <div class="ri-category-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </div>
+        <div class="ri-category-name">Video Player Issue</div>
+        <div class="ri-category-check"></div>
+      </div>
+      <div class="ri-category-item" data-cat="Ask AI Issue" onclick="selectReportCategory(this)">
+        <div class="ri-category-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73A2 2 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>
+        </div>
+        <div class="ri-category-name">Ask AI Issue</div>
+        <div class="ri-category-check"></div>
+      </div>
+      <div class="ri-category-item" data-cat="AI Quiz Issue" onclick="selectReportCategory(this)">
+        <div class="ri-category-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="ri-category-name">AI Quiz Issue</div>
+        <div class="ri-category-check"></div>
+      </div>
+      <div class="ri-category-item" data-cat="Other Issue" onclick="selectReportCategory(this)">
+        <div class="ri-category-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="ri-category-name">Other Issue</div>
+        <div class="ri-category-check"></div>
+      </div>
+    </div>
+
+    <div class="ri-label">Details <span style="text-transform:none;font-weight:500;">(optional)</span></div>
+    <textarea id="reportIssueDetails" rows="3" placeholder="Describe what happened..."></textarea>
+
+    <button class="submit-report-btn" id="submitReportBtn" disabled onclick="submitReportIssue()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Submit Report
+    </button>
+    <div class="ri-status-text" id="riStatusText"></div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════
