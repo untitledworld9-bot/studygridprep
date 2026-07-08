@@ -8,16 +8,6 @@
 <link rel="icon" href="/icon-192.png">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
-  <script>
-    (function(){
-      const saved = localStorage.getItem('theme');
-      const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDark = saved === 'dark' || ((!saved || saved === 'system') && sysDark);
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if(meta) meta.content = isDark ? '#0D1120' : '#ffffff';
-    })();
-  </script>
-
 <!-- ✅ AUTH GUARD -->
 <script>
 (function(){
@@ -33,8 +23,18 @@
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  // ✅ FIX: "system" is a MODE, not an actual theme — must be resolved to the
+  // real dark/light value, otherwise data-theme="system" gets set literally
+  // (matches no CSS rule) causing an unstable look on refresh/navigation.
+  var theme = (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
   document.documentElement.setAttribute("data-theme", theme);
+  // ✅ FIX: sync BOTH theme-color metas (not just the first) and remove their
+  // media attribute so the status bar always matches the resolved app theme
+  // instead of depending on the phone's own system light/dark setting.
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = theme === "dark" ? "#0D1120" : "#ffffff";
+  });
 })();
 </script>
 

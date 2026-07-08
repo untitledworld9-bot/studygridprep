@@ -206,9 +206,22 @@ export function initSubscriptionSync(onUpdate) {
  * activation on another device reflects here without a refresh.
  * Returns the unsubscribe function.
  */
-function _fireProActivationNotification(plan) {
+function _fireProActivationNotification(plan, trialExpiry) {
   try {
-    const label = plan === 'trial' ? '7-day trial' : '30-day plan';
+    // ✅ FIX: previously this trusted the `plan` string field on the
+    // Firestore user doc, which may be stale or never set correctly by the
+    // admin approval flow — causing the notification to always say
+    // "7-day trial" even when a ₹49/30-day monthly plan had just been
+    // approved (e.g. approved on a different device than where the trial
+    // had earlier expired). Now the label is derived from the actual
+    // trialExpiry duration, which is a hard fact regardless of how the
+    // approval was written.
+    let label = plan === 'monthly' ? '30-day monthly plan' : '7-day trial';
+    if (trialExpiry) {
+      const daysGranted = Math.round((trialExpiry - Date.now()) / 86400000);
+      if (daysGranted > 14)      label = '30-day monthly plan';
+      else if (daysGranted > 0)  label = '7-day trial';
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification('🎉 Pro Activated — Study Grid Prep', {
@@ -244,7 +257,7 @@ export function watchSubscription(onUpdate) {
 
     // Fire PWA notification when subscription just became active
     if (!_prevIsSubscribed && state.isSubscribed) {
-      _fireProActivationNotification(data.plan || 'trial');
+      _fireProActivationNotification(data.plan || 'trial', state.trialExpiry);
     }
     _prevIsSubscribed = state.isSubscribed;
     if (typeof onUpdate === 'function') onUpdate(state, { source: 'remote-live' });
@@ -257,11 +270,12 @@ export function watchSubscription(onUpdate) {
 //  PWA NOTIFICATION — shown on Pro activation (focus.html pattern)
 // ------------------------------------------------------------
 
-function sendProActivationNotification() {
+function sendProActivationNotification(plan, days) {
   if ('serviceWorker' in navigator) {
+    const label = plan === 'monthly' ? `${days || 30}-day monthly plan` : `${days || 7}-day trial`;
     navigator.serviceWorker.ready.then(reg => {
       reg.showNotification('Study Grid Prep Pro', {
-        body: 'Pro Plan activated! All mock tests are now unlocked.',
+        body: `Your ${label} is now active! All mock tests are unlocked.`,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         vibrate: [200, 100, 200, 100, 200],
@@ -309,7 +323,7 @@ export async function activateTrial(days, plan = 'trial') {
   });
 
   // 3. Fire PWA notification
-  sendProActivationNotification();
+  sendProActivationNotification(plan, finalDays);
 
   return state;
 }

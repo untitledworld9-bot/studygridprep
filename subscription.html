@@ -25,7 +25,11 @@
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.setAttribute("data-theme", saved || (systemDark ? "dark" : "light"));
+  // ✅ FIX: "system" is a MODE, not an actual theme — resolve it to real
+  // dark/light first, otherwise data-theme="system" gets set literally
+  // (matches no CSS rule), causing an unstable look on refresh/navigation.
+  var theme = (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  document.documentElement.setAttribute("data-theme", theme);
   function _utc(){
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
@@ -362,6 +366,116 @@ header{
   width:100%;
   padding:24px 20px 40px;
 }
+
+/* ══════════════════ FAQ SECTION ══════════════════ */
+.faq-section{ width:100%; max-width:440px; margin-top:36px; position:relative; z-index:1; }
+.faq-section-hdr{ text-align:center; margin-bottom:18px; }
+.faq-section-hdr h2{ font-size:20px; font-weight:800; color:var(--text); letter-spacing:-0.3px; margin-bottom:4px; }
+.faq-section-hdr p{ font-size:12.5px; color:var(--text2); }
+.faq-list{ display:flex; flex-direction:column; gap:10px; }
+.faq-item{
+  background:var(--surface); border:1.5px solid var(--border); border-radius:16px;
+  overflow:hidden; transition:border-color 0.2s;
+}
+.faq-item.open{ border-color:rgba(91,91,246,0.35); }
+.faq-q{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:15px 16px; background:none; border:none; cursor:pointer; text-align:left;
+  font-family:'Poppins',sans-serif; font-size:13.5px; font-weight:600; color:var(--text);
+}
+.faq-chevron{ color:var(--text3); flex-shrink:0; transition:transform 0.25s ease; font-size:13px; }
+.faq-item.open .faq-chevron{ transform:rotate(180deg); color:var(--accent); }
+.faq-a{ max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+.faq-item.open .faq-a{ max-height:400px; }
+.faq-a p, .faq-a ul{ padding:0 16px 16px; font-size:12.5px; line-height:1.65; color:var(--text2); }
+.faq-a ul{ padding-left:32px; list-style:disc; }
+.faq-a strong{ color:var(--text); }
+
+/* ══════════════════ SUPPORT / REFUND BOX ══════════════════ */
+.support-box{
+  width:100%; max-width:440px; margin-top:28px; position:relative; z-index:1;
+  background:var(--surface); border:1.5px solid var(--border); border-radius:20px;
+  padding:22px 18px;
+}
+[data-theme="dark"] .support-box{ background:linear-gradient(160deg,#111A2E,#141E30); }
+.support-box-hdr{ display:flex; align-items:flex-start; gap:12px; margin-bottom:18px; }
+.support-icon{
+  width:38px; height:38px; border-radius:12px; flex-shrink:0;
+  background:rgba(91,91,246,0.12); color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.support-box-hdr h3{ font-size:14.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.35; }
+.support-box-hdr p{ font-size:11.5px; color:var(--text2); }
+.req-star{ color:var(--red); }
+.support-box .ri-label{ font-size:12px; font-weight:700; color:var(--text2); margin:14px 0 8px; text-transform:uppercase; letter-spacing:0.3px; }
+.support-box .ri-category-list{ display:flex; flex-direction:column; gap:8px; }
+.support-box .ri-category-item{
+  display:flex; align-items:center; gap:11px;
+  padding:12px 13px; border-radius:14px;
+  border:1.5px solid var(--border); background:var(--bg, transparent);
+  cursor:pointer; transition:0.2s;
+}
+.support-box .ri-category-item:active{ transform:scale(0.98); }
+.support-box .ri-category-item.selected{ border-color:var(--accent); background:rgba(91,91,246,0.08); }
+.support-box .ri-category-icon{
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface); color:var(--text2); transition:0.2s;
+}
+.support-box .ri-category-item.selected .ri-category-icon{ background:var(--accent); color:#fff; }
+.support-box .ri-category-name{ flex:1; font-size:13px; font-weight:600; color:var(--text); }
+.support-box .ri-category-sub{ font-size:10.5px; color:var(--text3); margin-top:1px; }
+.support-box .ri-category-check{
+  width:20px; height:20px; border-radius:50%; border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s;
+}
+.support-box .ri-category-item.selected .ri-category-check{ background:var(--accent); border-color:var(--accent); color:#fff; }
+#subIssueDetails{
+  width:100%; padding:13px 15px; border-radius:14px;
+  border:1.5px solid var(--border); background:transparent;
+  color:var(--text); font-size:13px; resize:none; outline:none;
+  margin-top:4px; font-family:'Poppins',sans-serif; transition:0.2s;
+}
+#subIssueDetails:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,91,246,0.1); }
+#subIssueDetails.field-error, .ri-category-list.field-error .ri-category-item{ border-color:var(--red) !important; }
+.submit-report-btn{
+  width:100%; padding:14px; margin-top:18px;
+  background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+  color:#fff; border:none; border-radius:50px;
+  font-weight:700; font-size:14.5px; cursor:pointer; transition:0.2s;
+  box-shadow:0 6px 20px rgba(91,91,246,0.3);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.submit-report-btn:active{ transform:scale(0.97); }
+.submit-report-btn.ri-submitting{ opacity:0.85; cursor:wait; }
+.ri-spinner{
+  width:14px; height:14px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;
+  animation:riSpin 0.7s linear infinite; display:inline-block;
+}
+@keyframes riSpin{ to{ transform:rotate(360deg); } }
+.ri-status-text{ font-size:12.5px; font-weight:600; color:var(--text2); text-align:center; margin-top:10px; min-height:16px; }
+
+/* Issue ID ticket stack */
+.issue-id-stack{ display:flex; flex-direction:column; gap:8px; margin-top:16px; }
+.issue-id-card{
+  border:1.5px dashed var(--border); border-radius:14px; padding:11px 13px;
+  animation:ticketPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  background:rgba(91,91,246,0.04);
+}
+@keyframes ticketPop{ 0%{ transform:scale(0.9) translateY(-6px); opacity:0; } 100%{ transform:scale(1) translateY(0); opacity:1; } }
+.issue-id-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.issue-id-badge{
+  font-family:'Poppins',sans-serif; font-size:12px; font-weight:800; color:var(--accent);
+  letter-spacing:0.3px;
+}
+.issue-id-time{ font-size:10.5px; color:var(--text3); font-weight:600; }
+.issue-id-bottom{ display:flex; align-items:center; justify-content:space-between; margin-top:5px; }
+.issue-id-cat{ font-size:11.5px; color:var(--text2); font-weight:600; }
+.issue-id-status{
+  font-size:10px; font-weight:700; padding:2px 9px; border-radius:20px;
+  background:rgba(245,158,11,0.12); color:var(--gold);
+}
 </style>
 </head>
 <body>
@@ -472,6 +586,126 @@ header{
   </button>
 
   <p class="footer-line" id="footerLine">Cancel anytime. No questions asked.</p>
+
+  <!-- ═══════════════════ FAQ ═══════════════════ -->
+  <div class="faq-section">
+    <div class="faq-section-hdr">
+      <h2>Frequently Asked Questions</h2>
+      <p>Everything you need to know before you go Pro</p>
+    </div>
+    <div class="faq-list" id="faqList">
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span>What do I get with the Pro Plan?</span>
+          <i class="fa-solid fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-a">
+          <p>Pro gives you <strong>full access to the entire platform</strong> — nothing is held back:</p>
+          <ul>
+            <li>All Mock Tests unlocked — JEE, NEET, CUET & Board PYQs, unlimited attempts</li>
+            <li>Full AI-powered Mock Analysis after every test (weak areas, time-management insights, tips)</li>
+            <li><strong>Ask AI</strong> — doubt-solving right beside your Study Playlist videos</li>
+            <li><strong>Chat with AI</strong> — full conversations for deeper concept explanations</li>
+            <li><strong>AI Quiz</strong> — instantly generate a timed quiz from any video</li>
+            <li>Priority AI support for any study-related help</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span>What's the refund policy?</span>
+          <i class="fa-solid fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-a">
+          <p>Only the <strong>₹49 Monthly Plan</strong> is refundable, and only if requested <strong>within 24 hours</strong> of payment. The ₹1 trial is a token activation amount and is non-refundable.</p>
+          <p>To request a refund, scroll down to the box below, select <strong>"Refund Request"</strong>, describe your reason, and submit — we'll get back to you.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span>How do I make the payment?</span>
+          <i class="fa-solid fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-a">
+          <p>Payment is simple and manual via UPI:</p>
+          <ul>
+            <li>Tap your plan (₹1 Trial or ₹49 Monthly) to open the payment sheet</li>
+            <li>Scan the QR code or pay using the UPI ID shown, via any UPI app</li>
+            <li>Enter your <strong>Transaction ID</strong> and upload a <strong>screenshot</strong> of the payment</li>
+            <li>Tap <strong>Submit Payment</strong> — your plan shows "Under Review"</li>
+            <li>Once verified (usually a few hours), Pro activates automatically — live, no refresh needed</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span>What if my payment verification gets rejected?</span>
+          <i class="fa-solid fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-a">
+          <p>First, try submitting a <strong>fresh payment request</strong> — double-check your Transaction ID and screenshot are correct and clearly visible.</p>
+          <p>If it still doesn't get verified, scroll down, select <strong>"Payment Verification Issue"</strong>, describe the problem, and submit — or email us directly at <strong>support@studygridprep.online</strong>.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════ PAYMENT / REFUND SUPPORT BOX ═══════════════════ -->
+  <div class="support-box">
+    <div class="support-box-hdr">
+      <div class="support-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="11"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </div>
+      <div>
+        <h3>Issue regarding payment verification or refund?</h3>
+        <p>Select what's wrong and we'll sort it out fast</p>
+      </div>
+    </div>
+
+    <div class="ri-label">What's the issue? <span class="req-star">*</span></div>
+    <div class="ri-category-list" id="subIssueCategoryList">
+      <div class="ri-category-item" data-cat="Payment Verification Issue" onclick="selectSubIssueCategory(this)">
+        <div class="ri-category-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div>
+          <div class="ri-category-name">Payment Verification Issue</div>
+          <div class="ri-category-sub">Paid but plan not activated yet</div>
+        </div>
+        <div class="ri-category-check"></div>
+      </div>
+      <div class="ri-category-item" data-cat="Refund Request" onclick="selectSubIssueCategory(this)">
+        <div class="ri-category-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </div>
+        <div>
+          <div class="ri-category-name">Refund Request</div>
+          <div class="ri-category-sub">₹49 plan only, within 24 hours</div>
+        </div>
+        <div class="ri-category-check"></div>
+      </div>
+    </div>
+
+    <div class="ri-label">Describe the problem <span class="req-star">*</span></div>
+    <textarea id="subIssueDetails" rows="3" placeholder="Explain what happened — transaction ID, when you paid, etc." oninput="this.classList.remove('field-error')"></textarea>
+
+    <button class="submit-report-btn" id="submitSubIssueBtn" onclick="submitSubIssue()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Submit Issue
+    </button>
+    <div class="ri-status-text" id="subIssueStatus"></div>
+
+    <div class="issue-id-stack" id="issueIdStack"></div>
+  </div>
 
 </div>
 
@@ -738,6 +972,17 @@ if ('Notification' in window && Notification.permission === 'default') {
 window.selectPlan = function(plan){
   document.getElementById('freePlanCard').classList.toggle('active', plan === 'free');
   document.getElementById('proPlanCard').classList.toggle('active', plan === 'pro');
+  // ✅ FIX: previously tapping the Pro Plan card only visually highlighted
+  // it — only the separate bottom CTA button actually started checkout.
+  // Now tapping the card (whichever plan it's currently showing — ₹1 trial
+  // or ₹49 monthly) starts the exact same verified checkout flow as the
+  // button, matching how real edtech apps let you tap the card itself.
+  if (plan === 'pro') {
+    const ctaBtn = document.getElementById('ctaBtn');
+    if (ctaBtn && !ctaBtn.disabled) {
+      handleCtaClick();
+    }
+  }
 };
 
 // ── Cloudinary config — same as admin-media.html ──
@@ -1011,6 +1256,154 @@ window.handleCtaClick = async function(){
 };
 
 // ── Init: load sub state + payment pending state ──
+// ═══════════════════ FAQ ═══════════════════
+window.toggleFaq = function(btn){
+  const item = btn.closest('.faq-item');
+  const wasOpen = item.classList.contains('open');
+  // Accordion feel — close others when opening a new one
+  document.querySelectorAll('#faqList .faq-item').forEach(el => el.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+};
+
+// ═══════════════════ PAYMENT / REFUND SUPPORT BOX ═══════════════════
+const SUB_ISSUE_TO_EMAIL     = 'ayushgupt640@gmail.com';
+const SUB_ISSUE_FORMSUBMIT   = 'https://formsubmit.co/ajax/' + SUB_ISSUE_TO_EMAIL;
+const SUB_ISSUES_LS_KEY      = 'sgp_supportIssues';
+
+let _selectedSubIssueCategory = '';
+
+window.selectSubIssueCategory = function(el){
+  document.querySelectorAll('#subIssueCategoryList .ri-category-item').forEach(item => item.classList.remove('selected'));
+  el.classList.add('selected');
+  _selectedSubIssueCategory = el.getAttribute('data-cat');
+  document.getElementById('subIssueCategoryList').classList.remove('field-error');
+};
+
+function _genIssueId(){
+  const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+  return 'SGP-' + rand;
+}
+
+function _loadSubIssues(){
+  try { return JSON.parse(localStorage.getItem(SUB_ISSUES_LS_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+function _saveSubIssues(list){
+  try { localStorage.setItem(SUB_ISSUES_LS_KEY, JSON.stringify(list.slice(0, 20))); } catch(e){}
+}
+
+function _renderIssueCard(issue, prepend){
+  const stack = document.getElementById('issueIdStack');
+  if (!stack) return;
+  const card = document.createElement('div');
+  card.className = 'issue-id-card';
+  card.innerHTML = `
+    <div class="issue-id-top">
+      <span class="issue-id-badge">#${issue.id}</span>
+      <span class="issue-id-time">${issue.timeLabel}</span>
+    </div>
+    <div class="issue-id-bottom">
+      <span class="issue-id-cat">${issue.category}</span>
+      <span class="issue-id-status">Under Review</span>
+    </div>`;
+  if (prepend && stack.firstChild) stack.insertBefore(card, stack.firstChild);
+  else stack.appendChild(card);
+}
+
+// Render any previously-submitted issues on page load (persisted ticket history)
+function _renderSavedIssues(){
+  const list = _loadSubIssues();
+  list.forEach(issue => _renderIssueCard(issue, false));
+}
+
+window.submitSubIssue = async function(){
+  const statusEl    = document.getElementById('subIssueStatus');
+  const submitBtn   = document.getElementById('submitSubIssueBtn');
+  const detailsEl   = document.getElementById('subIssueDetails');
+  const categoryList = document.getElementById('subIssueCategoryList');
+
+  const details = (detailsEl.value || '').trim();
+  let hasError = false;
+
+  if (!_selectedSubIssueCategory) {
+    categoryList.classList.add('field-error');
+    hasError = true;
+  }
+  if (!details) {
+    detailsEl.classList.add('field-error');
+    hasError = true;
+  } else {
+    detailsEl.classList.remove('field-error');
+  }
+  if (hasError) {
+    statusEl.textContent = 'Please select an issue type and describe the problem.';
+    statusEl.style.color = 'var(--red)';
+    return;
+  }
+
+  const issueId = _genIssueId();
+  const user     = auth.currentUser;
+  const userId   = getUserId();
+  const state    = window._sgpLastState || {};
+
+  submitBtn.disabled = true;
+  submitBtn.classList.add('ri-submitting');
+  submitBtn.innerHTML = `<span class="ri-spinner"></span> Submitting...`;
+  statusEl.textContent = '';
+
+  const formData = new FormData();
+  formData.append('Issue ID', issueId);
+  formData.append('Issue Category', _selectedSubIssueCategory);
+  formData.append('Problem Description', details);
+  formData.append('User Name', (user && (user.displayName || user.email)) || localStorage.getItem('userName') || 'Anonymous');
+  formData.append('User Email', (user && user.email) || localStorage.getItem('userEmail') || 'N/A');
+  formData.append('User ID', userId);
+  formData.append('Current Plan Status', state.isSubscribed ? 'Subscribed (Active)' : (state.payPending ? 'Payment Pending' : 'Not Subscribed'));
+  formData.append('Page', 'subscription.html');
+  formData.append('_subject', '💳 ' + _selectedSubIssueCategory + ' — ' + issueId);
+  formData.append('_captcha', 'false');
+  formData.append('_template', 'table');
+
+  try {
+    const res = await fetch(SUB_ISSUE_FORMSUBMIT, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: formData
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+
+    // Save + render the ticket — user can submit as many times as they need
+    const issue = {
+      id: issueId,
+      category: _selectedSubIssueCategory,
+      timeLabel: 'Just now'
+    };
+    const list = _loadSubIssues();
+    list.unshift(issue);
+    _saveSubIssues(list);
+    _renderIssueCard(issue, true);
+
+    // Reset form for next submission
+    document.querySelectorAll('#subIssueCategoryList .ri-category-item').forEach(item => item.classList.remove('selected'));
+    _selectedSubIssueCategory = '';
+    detailsEl.value = '';
+
+    statusEl.textContent = 'Issue submitted! We\'ll get back to you soon.';
+    statusEl.style.color = 'var(--green)';
+    setTimeout(() => { if (statusEl.textContent.includes('submitted')) statusEl.textContent = ''; }, 4000);
+  } catch(e) {
+    console.warn('[Support Issue] send failed:', e);
+    statusEl.textContent = "Couldn't send — check your connection and try again.";
+    statusEl.style.color = 'var(--red)';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('ri-submitting');
+    submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Issue`;
+  }
+};
+
+_renderSavedIssues();
+
 async function init(){
   // Fast local render first
   const { getLocalSubscriptionState } = await import('./subscription.js');

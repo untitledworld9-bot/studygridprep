@@ -23,7 +23,12 @@
 (function(){
   const saved=localStorage.getItem("theme");
   const systemDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme=saved?saved:(systemDark?"dark":"light");
+  // ✅ FIX: "system" is a MODE the user picked, not an actual theme value.
+  // Previously if saved==="system", the ternary treated it as truthy and set
+  // data-theme="system" literally — which matches no CSS rule, so the page
+  // rendered with default/fallback styling until later JS corrected it. That
+  // caused the visible "unstable" flip on every refresh/page navigation.
+  const theme=(!saved || saved==="system") ? (systemDark?"dark":"light") : saved;
   document.documentElement.setAttribute("data-theme",theme);
 })();
 </script>
@@ -2308,6 +2313,16 @@ window.setThemeMode = function(mode){
 (function(){
   const saved = localStorage.getItem("theme") || "system";
   _updateThemePills(saved);
+  // ✅ FIX: previously this only updated the pill highlight UI — it never
+  // re-applied the resolved theme, so "system" mode could visibly mismatch
+  // between the head's early-init (before this script ran) and now. Applying
+  // it here too keeps data-theme + meta theme-color consistently correct.
+  if(saved === "system"){
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    _applyTheme(systemDark ? "dark" : "light");
+  } else {
+    _applyTheme(saved);
+  }
   // Listen for system changes when in system mode
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener("change", e=>{
     if((localStorage.getItem("theme")||"system") === "system"){
@@ -2828,23 +2843,39 @@ window.submitAppFeedback=async function(){
 };
 
 // ─── LOGOUT ───
-// ── Sidebar plan badge update ──
+// ── Sidebar plan badge update — LIVE via Firestore ──
+function _renderSidebarPlanBadge(activeSub){
+  const badge = document.getElementById('sidebarPlanBadge');
+  if(!badge) return;
+  if(activeSub){
+    badge.className = 'sidebar-plan-badge pro';
+    badge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h20v2H2zm2-4l5-9 5 4 3-6 5 11H4z"/></svg> Pro Plan`;
+  } else {
+    badge.className = 'sidebar-plan-badge free';
+    badge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg> Free Plan`;
+  }
+}
 (function(){
+  // Fast local paint first — zero delay, no flash
   try {
     const isSubscribed = localStorage.getItem('isSubscribed') === 'true';
     const trialExpiry  = parseInt(localStorage.getItem('trialExpiry') || '0');
     const activeSub    = isSubscribed && (!trialExpiry || Date.now() < trialExpiry);
-    const badge = document.getElementById('sidebarPlanBadge');
-    if(badge){
-      if(activeSub){
-        badge.className = 'sidebar-plan-badge pro';
-        badge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h20v2H2zm2-4l5-9 5 4 3-6 5 11H4z"/></svg> Pro Plan`;
-      } else {
-        badge.className = 'sidebar-plan-badge free';
-        badge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg> Free Plan`;
-      }
-    }
+    _renderSidebarPlanBadge(activeSub);
   } catch(e){}
+
+  // ✅ FIX: previously this badge only ever read localStorage ONCE at page
+  // load — if an admin approved a payment while the user was sitting on the
+  // dashboard (or it got approved while they were on another device), the
+  // sidebar stayed stuck on "Free Plan" until a manual refresh. Now it
+  // live-watches Firestore, same pattern used to fix the playlist.html Ask
+  // AI button.
+  import('./subscription.js').then(({ watchSubscription }) => {
+    watchSubscription((state) => {
+      const activeSub = state.isSubscribed && (!state.trialExpiry || Date.now() < state.trialExpiry);
+      _renderSidebarPlanBadge(activeSub);
+    });
+  }).catch(()=>{});
 })();
 
 window.logout=async function(){
