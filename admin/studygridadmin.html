@@ -859,6 +859,9 @@
     <button class="nav-btn" onclick="showSection('watchtime')" data-section="watchtime">
       <span class="nav-icon">📺</span><span>Watch Time</span>
     </button>
+    <button class="nav-btn" onclick="showSection('focustimer')" data-section="focustimer">
+      <span class="nav-icon">⏱️</span><span>Focus Timer</span>
+    </button>
 
     <div class="nav-section-label">Content</div>
     <button class="nav-btn" onclick="showSection('messages')" data-section="messages">
@@ -1001,7 +1004,7 @@
     <!-- Charts -->
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-title">📈 User Growth (Last 7 Days)</div>
+        <div class="chart-title">📈 Total Users (Last 7 Days)</div>
         <div class="chart-container">
           <canvas id="growthChart"></canvas>
         </div>
@@ -2250,6 +2253,82 @@
         <div class="empty-state">
           <div class="empty-state-icon">📺</div>
           <div class="empty-state-text">Loading watch time data…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── FOCUS TIMER ─────────── -->
+  <section id="focustimer" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">⏱️ Focus Timer</div>
+        <div class="section-subtitle">Platform-wide focus session totals & who's focusing right now — live updates</div>
+      </div>
+      <div class="live-dot">Live</div>
+    </div>
+
+    <!-- Summary strip -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <div class="stat-card violet" style="flex:1;min-width:160px;cursor:default;">
+        <div class="stat-icon">🧠</div>
+        <div class="stat-label">Full Focused Session</div>
+        <div class="stat-value" id="ftFullSession">—</div>
+        <div class="stat-delta">All-time, all users combined</div>
+      </div>
+      <div class="stat-card cyan" style="flex:1;min-width:160px;cursor:default;">
+        <div class="stat-icon">📅</div>
+        <div class="stat-label">Today Focus</div>
+        <div class="stat-value" id="ftTodayFocus">—</div>
+        <div class="stat-delta">All users, today only</div>
+      </div>
+      <div class="stat-card amber" style="flex:1;min-width:160px;cursor:default;">
+        <div class="stat-icon">🧘</div>
+        <div class="stat-label">Focusing Right Now</div>
+        <div class="stat-value" id="ftFocusingCount">0</div>
+        <div class="stat-delta">Live count</div>
+      </div>
+    </div>
+
+    <!-- Range filter box -->
+    <div style="
+      margin-bottom:20px;
+      background:linear-gradient(135deg,rgba(0,229,160,0.07) 0%,rgba(124,92,252,0.07) 100%);
+      border:1px solid rgba(0,229,160,0.2);border-radius:16px;padding:18px 20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;color:var(--text-secondary);">⏱ Period:</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="setFocusFilter('today')" data-ft="today" class="ft-btn ef-btn ef-active">Today</button>
+          <button onclick="setFocusFilter('3d')"    data-ft="3d"    class="ft-btn ef-btn">3 Days</button>
+          <button onclick="setFocusFilter('7d')"    data-ft="7d"    class="ft-btn ef-btn">1 Week</button>
+          <button onclick="setFocusFilter('14d')"   data-ft="14d"   class="ft-btn ef-btn">14 Days</button>
+          <button onclick="setFocusFilter('30d')"   data-ft="30d"   class="ft-btn ef-btn">1 Month</button>
+          <button onclick="setFocusFilter('180d')"  data-ft="180d"  class="ft-btn ef-btn">6 Months</button>
+          <button onclick="setFocusFilter('365d')"  data-ft="365d"  class="ft-btn ef-btn">1 Year</button>
+        </div>
+      </div>
+      <div style="background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.25);border-radius:12px;padding:14px 16px;display:inline-block;">
+        <div style="font-size:11px;font-weight:600;color:var(--accent-violet);margin-bottom:4px;">
+          Total Focus — <span id="ftRangeLabel">Today</span>
+        </div>
+        <div style="font-size:24px;font-weight:800;color:var(--text-primary);" id="ftRangeFocus">—</div>
+      </div>
+    </div>
+
+    <!-- Currently focusing -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🧘 Currently Focusing</div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="ftSearch" placeholder="Search by name or email…"
+                 oninput="filterFocusingNow()" />
+        </div>
+      </div>
+      <div id="ftFocusingNow" style="display:flex;flex-direction:column;gap:8px;padding:4px 0;">
+        <div class="empty-state">
+          <div class="empty-state-icon">🧘</div>
+          <div class="empty-state-text">Loading focus data…</div>
         </div>
       </div>
     </div>

@@ -359,7 +359,7 @@ function initCharts() {
     data: {
       labels,
       datasets: [{
-        label: "New Users",
+        label: "Total Users",
         data: [0, 0, 0, 0, 0, 0, 0],
         borderColor: "#00e0ff",
         backgroundColor: growthGrad,
@@ -418,65 +418,70 @@ function initCharts() {
  */
 async function loadDailyStats() {
   try {
-    const labels      = STATE.charts.growth.data.labels;
-    const growthData  = [];
-    const focusData   = [];
-    let   hasAnyData  = false;
-
-    // Build date keys for last 7 days
+    // Build date keys for last 7 days ("YYYY-MM-DD")
     const dateKeys = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
-      return d.toISOString().split("T")[0]; // "YYYY-MM-DD"
+      return d.toISOString().split("T")[0];
     });
+    const todayKey = dateKeys[dateKeys.length - 1];
+
+    // Live numbers for TODAY — computed directly from STATE.allUsers so the
+    // chart reacts instantly whenever a user is added/removed, without
+    // waiting on any Firestore field (createdAt) that was never being written.
+    const liveTotalUsers = STATE.allUsers.length;
+    const liveFocusToday = STATE.allUsers.reduce(
+      (s, u) => s + (u.focusTime || 0), 0
+    );
+
+    const growthData = [];
+    const focusData  = [];
 
     for (const key of dateKeys) {
+      if (key === todayKey) {
+        growthData.push(liveTotalUsers);
+        focusData.push(liveFocusToday);
+        continue;
+      }
       try {
         const snap = await getDoc(doc(db, COLL.ANALYTICS, key));
         if (snap.exists()) {
           const data = snap.data();
-          growthData.push(data.newUsers     || 0);
-          focusData.push (data.focusMinutes || 0);
-          if ((data.newUsers || 0) > 0 || (data.focusMinutes || 0) > 0) hasAnyData = true;
+          growthData.push(typeof data.totalUsers === "number" ? data.totalUsers : null);
+          focusData.push(typeof data.focusMinutes === "number" ? data.focusMinutes : null);
         } else {
-          growthData.push(0);
-          focusData.push(0);
+          growthData.push(null);
+          focusData.push(null);
         }
       } catch {
-        growthData.push(0);
-        focusData.push(0);
+        growthData.push(null);
+        focusData.push(null);
       }
     }
 
-    // If no analytics docs at all → derive user growth from STATE.allUsers.createdAt
-    if (!hasAnyData && STATE.allUsers.length > 0) {
-      const now = Date.now();
-      for (let i = 0; i < 7; i++) {
-        const dayStart = now - (6 - i) * 86400000;
-        const dayEnd   = dayStart + 86400000;
-        const cnt = STATE.allUsers.filter(u => {
-          const raw = u.createdAt || u.joinedAt || 0;
-          const t = raw?.toMillis ? raw.toMillis() : (typeof raw === "number" ? raw : 0);
-          return t >= dayStart && t < dayEnd;
-        }).length;
-        growthData[i] = cnt;
-
-        const focMin = STATE.allUsers
-          .filter(u => {
-            const raw = u.lastActive || u.lastSeen || 0;
-            // Handle Firestore Timestamp objects
-            const t = raw?.toMillis ? raw.toMillis() : (typeof raw === "number" ? raw : 0);
-            return t >= dayStart && t < dayEnd;
-          })
-          .reduce((s, u) => s + (u.focusTime || u.totalFocusTime || 0), 0);
-        focusData[i] = focMin;
+    // Fill in any missing historical days (no snapshot existed yet) with the
+    // nearest earlier known value so the line doesn't misleadingly drop to 0.
+    const fillGaps = arr => {
+      let last = 0;
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === null) arr[i] = last;
+        else last = arr[i];
       }
-    }
+    };
+    fillGaps(growthData);
+    fillGaps(focusData);
 
     STATE.charts.growth.data.datasets[0].data = growthData;
     STATE.charts.focus.data.datasets[0].data  = focusData;
     STATE.charts.growth.update();
     STATE.charts.focus.update();
+
+    // Persist today's snapshot so future days have real history to show.
+    setDoc(doc(db, COLL.ANALYTICS, todayKey), {
+      totalUsers:    liveTotalUsers,
+      focusMinutes:  liveFocusToday,
+      updatedAt:     Date.now()
+    }, { merge: true }).catch(() => {});
   } catch (err) {
     console.warn("Could not load analytics:", err);
   }
@@ -605,6 +610,7 @@ window.filterSubTable = () => renderSubTable();
 /** Toggle subscription on/off from table row */
 window.toggleSubFromTable = async (uid, uname, enable) => {
   if (!uid) return;
+  const u = STATE.allUsers.find(x => x.id === uid) || {};
   try {
     if (enable) {
       // Re-enable with 30 days default
@@ -618,6 +624,8 @@ window.toggleSubFromTable = async (uid, uname, enable) => {
         subGrantedAt: Date.now()
       });
       toast(`✅ Subscription enabled for ${uname}`);
+      notifyUserInApp(u.email, uname, '🎉 Pro Activated — Study Grid Prep',
+        'Your subscription is now active! All mock tests are unlocked. 🔓', '🎉');
     } else {
       await updateDoc(doc(db, COLL.USERS, uid), {
         isSubscribed: false,
@@ -628,6 +636,8 @@ window.toggleSubFromTable = async (uid, uname, enable) => {
         subGrantedBy: 'admin'
       });
       toast(`🚫 Subscription revoked for ${uname}`, 'error');
+      notifyUserInApp(u.email, uname, '🚫 Subscription Revoked — Study Grid Prep',
+        'Your Pro subscription has been revoked by the admin. Contact support if you think this is a mistake.', '🚫');
     }
   } catch(e) {
     console.error(e);
@@ -706,6 +716,7 @@ window.grantSubscription = async () => {
 
   const expiry = Date.now() + days * 86400000;
   const validDate = new Date(expiry).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+  const u = STATE.allUsers.find(x => x.id === uid) || {};
 
   try {
     await updateDoc(doc(db, COLL.USERS, uid), {
@@ -718,6 +729,8 @@ window.grantSubscription = async () => {
       subDays:      days
     });
     toast(`✅ ${days}-day subscription granted! Valid till ${validDate}`);
+    notifyUserInApp(u.email, u.name, '🎉 Pro Activated — Study Grid Prep',
+      `Your ${days}-day plan is now active! All mock tests are unlocked. 🔓`, '🎉');
     clearSelectedSubUser();
     document.getElementById('subDaysInput').value = '';
     document.querySelectorAll('.sub-days-pill').forEach(b => b.classList.remove('active'));
@@ -732,6 +745,7 @@ window.revokeSubscription = async () => {
   if (!uid) { toast('Please select a user first', 'error'); return; }
 
   if (!confirm('Revoke this user\'s subscription?')) return;
+  const u = STATE.allUsers.find(x => x.id === uid) || {};
 
   try {
     await updateDoc(doc(db, COLL.USERS, uid), {
@@ -742,6 +756,8 @@ window.revokeSubscription = async () => {
       subRevokedAt: Date.now()
     });
     toast('🚫 Subscription revoked', 'error');
+    notifyUserInApp(u.email, u.name, '🚫 Subscription Revoked — Study Grid Prep',
+      'Your Pro subscription has been revoked by the admin. Contact support if you think this is a mistake.', '🚫');
     clearSelectedSubUser();
   } catch(e) {
     console.error(e);
@@ -766,6 +782,31 @@ const EMAILJS_CONFIG = {
   templateApprove:    'template_n3zhhjk',          // ← EmailJS Dashboard → Email Templates
   templateReject:     'template_reject'            // ← EmailJS Dashboard → Email Templates
 };
+
+// Fire an in-app push notification to one user (via the same Firestore
+// "notifications" queue the manual broadcast panel uses). Targets by email
+// first (exact match against localStorage userEmail on the client), falling
+// back to name if no email is known.
+async function notifyUserInApp(targetEmail, targetName, title, body, icon = "🔔") {
+  const target = targetEmail || targetName;
+  if (!target) return;
+  try {
+    await addDoc(collection(db, COLL.NOTIFICATIONS), {
+      target,
+      user:   target,
+      title,
+      body,
+      icon,
+      image:  null,
+      platform: "both",
+      read:   false,
+      time:   Date.now(),
+      sentAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.warn("[Auto-notify] Failed:", err);
+  }
+}
 
 // EmailJS lazy-load + send helper
 async function sendPaymentEmail(templateId, params) {
@@ -877,6 +918,15 @@ function renderPaymentRequests() {
         onmouseover="this.style.background='rgba(255,79,106,0.2)'"
         onmouseout="this.style.background='rgba(255,79,106,0.1)'">
         ❌ Reject
+      </button>
+      <button onclick="mailRejectPayment('${escHtml(p.id)}')" title="Open pre-filled rejection email" style="
+        background:rgba(255,255,255,0.05);color:var(--text-secondary);
+        border:1px solid var(--border);border-radius:8px;
+        padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;
+        transition:.2s;font-family:var(--font-body);margin-left:6px;"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+        onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        📧 Mail
       </button>
     ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIcon} ${p.status}</span>`;
 
@@ -1000,6 +1050,15 @@ window.approvePayment = async (paymentId) => {
     toast(`✅ Approved — ${p.plan === 'trial' ? '7-day trial' : '30-day plan'} activated for ${userName || userId}`);
     updateEarningSummary();
 
+    // Auto in-app notification — "Pro Activated" 🎉
+    const planLabelShort = p.plan === 'trial' ? '7-day trial' : '30-day plan';
+    notifyUserInApp(
+      userEmail, userName,
+      '🎉 Pro Activated — Study Grid Prep',
+      `Your ${planLabelShort} is now active! All mock tests are unlocked. 🔓`,
+      '🎉'
+    );
+
     // Send approval email
     if (userEmail) {
       const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹49 Monthly (30 Days)';
@@ -1053,6 +1112,14 @@ window.rejectPayment = async (paymentId) => {
 
     toast(`❌ Payment rejected for ${userName || userId}`, 'error');
 
+    // Auto in-app notification — "Payment Rejected" ❌
+    notifyUserInApp(
+      userEmail, userName,
+      '❌ Payment Not Received — Study Grid Prep',
+      'Your payment could not be verified, so your subscription request has been rejected. Please try again or contact support if you believe this is a mistake.',
+      '❌'
+    );
+
     // Send rejection email
     if (userEmail) {
       await sendPaymentEmail(EMAILJS_CONFIG.templateReject, {
@@ -1064,6 +1131,37 @@ window.rejectPayment = async (paymentId) => {
     console.error('Reject payment error:', err);
     toast('Failed to reject payment', 'error');
   }
+};
+
+/** Open the user's mail app with a pre-filled professional rejection email.
+ *  Manual fallback since automated EmailJS rejection template isn't
+ *  reliably configured — admin just has to hit Send. */
+window.mailRejectPayment = (paymentId) => {
+  const p = STATE.allPayments.find(x => x.id === paymentId);
+  if (!p) return;
+
+  const toEmail  = p.email || '';
+  if (!toEmail) { toast('No email found for this payment', 'error'); return; }
+
+  const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹49 Monthly (30 Days)';
+  const subject = 'Payment Not Received - Study Grid Prep';
+  const body =
+`Hello ${p.name || 'Student'},
+
+We're sorry to inform you that your payment could not be verified.
+
+Transaction ID: ${p.txnId || '—'}
+Plan: ${planLabel}
+Amount: ₹${p.amount || '—'}
+
+Your payment request has been rejected. If you believe this is a mistake or you have already made the payment, please reply to this email with your payment screenshot, or try submitting the payment request again.
+
+Regards,
+Study Grid Prep Team
+studygridprep.online`;
+
+  const mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(mailtoUrl, '_blank');
 };
 
 function listenUsers() {
@@ -1115,6 +1213,7 @@ function listenUsers() {
       renderLeaderboardSection();
       renderPerformanceSection(STATE.allUsers);
       renderWatchTimeSection(STATE.allUsers);   // ← Watch Time section
+      renderFocusTimerSection();                // ← Focus Timer section
       // Refresh charts with real user data after users load
       loadDailyStats();
       // Populate maintenance exclude user dropdown
@@ -3743,6 +3842,121 @@ function formatWatchTime(mins) {
 
 /** Filter watch time on search input */
 window.filterWatchTime = () => renderWatchTimeSection(STATE.allUsers);
+
+// ============================================================
+//  FOCUS TIMER SECTION
+//  Full Focused Session (lifetime, accumulated via totalFocusTime) +
+//  Today Focus (live, from focusTime which resets daily in script.js) +
+//  a day-range summary built from the "analytics" daily snapshots +
+//  a live list of users currently focusing right now.
+// ============================================================
+
+let _focusFilterDays  = 1;
+let _focusFilterLabel = 'Today';
+
+/** Called from listenUsers() after STATE.allUsers updates */
+function renderFocusTimerSection() {
+  if (!$("ftFullSession")) return; // section not on this page yet
+  updateFocusTimerStats();
+  renderFocusingNowList();
+}
+
+window.setFocusFilter = (key) => {
+  const map = { today: 1, '3d': 3, '7d': 7, '14d': 14, '30d': 30, '180d': 180, '365d': 365 };
+  const labels = { today: 'Today', '3d': '3 Days', '7d': '1 Week', '14d': '14 Days', '30d': '1 Month', '180d': '6 Months', '365d': '1 Year' };
+  _focusFilterDays  = map[key] ?? 1;
+  _focusFilterLabel = labels[key] ?? 'Today';
+  document.querySelectorAll('.ft-btn').forEach(b => b.classList.toggle('ef-active', b.dataset.ft === key));
+  updateFocusTimerStats();
+};
+
+/** Compute & render the two summary cards + range card */
+async function updateFocusTimerStats() {
+  const todayFocusMin    = STATE.allUsers.reduce((s, u) => s + (u.focusTime || 0), 0);
+  const lifetimeFocusMin = STATE.allUsers.reduce((s, u) => s + (u.totalFocusTime || 0) + (u.focusTime || 0), 0);
+
+  if ($("ftFullSession")) animateStat($("ftFullSession"), formatWatchTime(lifetimeFocusMin));
+  if ($("ftTodayFocus"))  animateStat($("ftTodayFocus"),  formatWatchTime(todayFocusMin));
+
+  // Range total — today counted live, earlier days pulled from daily
+  // "analytics" snapshots (these build up going forward day by day).
+  let rangeTotal = todayFocusMin;
+  if (_focusFilterDays > 1) {
+    try {
+      const snap     = await getDocs(collection(db, COLL.ANALYTICS));
+      const todayKey = new Date().toISOString().split("T")[0];
+      const cutoff   = new Date();
+      cutoff.setDate(cutoff.getDate() - (_focusFilterDays - 1));
+      const cutoffKey = cutoff.toISOString().split("T")[0];
+      snap.forEach(d => {
+        if (d.id === todayKey) return; // already counted live above
+        if (d.id >= cutoffKey && d.id <= todayKey) {
+          rangeTotal += (d.data().focusMinutes || 0);
+        }
+      });
+    } catch (e) {
+      console.warn("[FocusTimer] range fetch failed:", e);
+    }
+  }
+  if ($("ftRangeFocus")) animateStat($("ftRangeFocus"), formatWatchTime(rangeTotal));
+  if ($("ftRangeLabel")) $("ftRangeLabel").textContent = _focusFilterLabel;
+}
+
+/** Live list of users currently in a focus session, newest-active first */
+function renderFocusingNowList() {
+  const container = $("ftFocusingNow");
+  if (!container) return;
+
+  const q       = ($("ftSearch")?.value || "").toLowerCase().trim();
+  const now     = Date.now();
+  const STALE_MS = 5 * 60 * 1000;
+
+  const list = STATE.allUsers.filter(u => {
+    const s = (u.status || "").toLowerCase();
+    if (!s.includes("focus")) return false;
+    const ts = u.lastActive || u.lastSeen || 0;
+    if (ts && (now - ts) > STALE_MS) return false;
+    if (q && !(u.name || "").toLowerCase().includes(q) && !(u.email || "").toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => (b.lastActive || b.lastSeen || 0) - (a.lastActive || a.lastSeen || 0));
+
+  if ($("ftFocusingCount")) $("ftFocusingCount").textContent = list.length;
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">🧘</div>
+      <div class="empty-state-text">No one is focusing right now</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(u => {
+    const name    = escHtml(u.name || u.displayName || "—");
+    const email   = escHtml(u.email || u.id || "");
+    const initial = (u.name || u.email || "?")[0].toUpperCase();
+    const mins    = u.focusTime || 0;
+    return `<div style="
+      display:flex;align-items:center;gap:12px;
+      background:var(--bg-card);border:1px solid rgba(0,229,160,0.2);
+      border-radius:var(--radius-md);padding:12px 14px;">
+      <div style="
+        width:36px;height:36px;border-radius:50%;flex-shrink:0;
+        background:linear-gradient(135deg,#00e5a0,#00b8d4);
+        display:flex;align-items:center;justify-content:center;
+        font-size:14px;font-weight:800;color:#fff;">${initial}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+        <div style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${email}</div>
+      </div>
+      <span style="
+        background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);
+        color:#00e5a0;border-radius:99px;padding:3px 12px;font-size:11px;
+        font-weight:700;white-space:nowrap;">🧠 ${formatWatchTime(mins)} today</span>
+    </div>`;
+  }).join("");
+}
+
+window.filterFocusingNow = () => renderFocusingNowList();
 
 // ============================================================
 //  OFFERS SECTION
