@@ -9,7 +9,10 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- Fonts non-blocking hain ab: agar fonts.googleapis.com slow/unreachable ho
+     to bhi page turant render hoga (fallback font ke saath), hang nahi hoga -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="game.css">
 
 <!-- index.js — admin broadcasts, notifications, announcements,
@@ -364,8 +367,11 @@ window.addEventListener('uw_auth_ready',()=>{
 })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<!-- Eruda debug console hata diya — production mein CDN slow/blocked hone par
+     poora page hang ho sakta tha. Debug ke liye console mein manually paste karo:
+     var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda';
+     document.body.appendChild(s);s.onload=()=>eruda.init(); -->
+
 
 </body>
 </html>

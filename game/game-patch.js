@@ -34,32 +34,40 @@ let _limit2      = null;
 let _serverTS2   = null;
 let _fbUser2     = null;
 
-// Bootstrap Firebase for patch (same import, harmless duplicate)
-(async () => {
-  try {
-    const fb = await import('../firebase.js');
-    _db2 = fb.db;
-    _addDoc2     = fb.addDoc;
-    _setDoc2     = fb.setDoc;
-    _doc2        = fb.doc;
-    _deleteDoc2  = fb.deleteDoc;
-    _collection2 = fb.collection;
-    _onSnapshot2 = fb.onSnapshot;
-    _query2      = fb.query;
-    _orderBy2    = fb.orderBy;
-    _limit2      = fb.limit;
-    _serverTS2   = fb.serverTimestamp;
-    fb.onAuthStateChanged(fb.auth, user => {
-      _fbUser2 = user;
-      if (user) {
-        // Start listening for admin broadcasts
-        listenAdminBroadcasts(user);
-        // Load leaderboard on start screen
-        loadLeaderboardData();
-      }
-    });
-  } catch(e) { console.warn('[GamePatch] Firebase unavailable'); }
-})();
+/* ─── REUSE SHARED FIREBASE (game.js ne already set kiya hai) ───────
+   Pehle ye file apna alag firebase.js import karti thi aur apna
+   alag onAuthStateChanged listener banati thi — ab wo duplicate
+   hata diya, sirf window._frFB (game.js se) reuse karte hain. */
+let _addDoc2     = null;
+let _setDoc2     = null;
+let _doc2        = null;
+let _deleteDoc2  = null;
+let _collection2 = null;
+let _db2         = null;
+let _onSnapshot2 = null;
+let _query2      = null;
+let _orderBy2    = null;
+let _limit2      = null;
+let _serverTS2   = null;
+let _fbUser2     = null;
+
+function _wireFromSharedFB(user){
+  const fb = window._frFB;
+  if(!fb) return;
+  _db2=fb.db; _addDoc2=fb.addDoc; _setDoc2=fb.setDoc; _doc2=fb.doc;
+  _deleteDoc2=fb.deleteDoc; _collection2=fb.collection; _onSnapshot2=fb.onSnapshot;
+  _query2=fb.query; _orderBy2=fb.orderBy; _limit2=fb.limit; _serverTS2=fb.serverTimestamp;
+  _fbUser2 = user || fb.user;
+  if(_fbUser2){
+    listenAdminBroadcasts(_fbUser2);
+    loadLeaderboardData();
+  }
+}
+
+// Agar game.js ka auth already ready ho chuka hai (race condition me),
+// turant wire kar do; warna event ka wait karo — dono case cover.
+if(window._frFB) _wireFromSharedFB(window._frFB.user);
+window.addEventListener('fr_firebase_ready', e => _wireFromSharedFB(e.detail?.user));
 
 /* ─── SESSION CREATE ────────────────────────────────────────────── */
 async function createLiveSession() {
