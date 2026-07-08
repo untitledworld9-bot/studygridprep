@@ -38,18 +38,6 @@ let _fbUser2     = null;
    Pehle ye file apna alag firebase.js import karti thi aur apna
    alag onAuthStateChanged listener banati thi — ab wo duplicate
    hata diya, sirf window._frFB (game.js se) reuse karte hain. */
-let _addDoc2     = null;
-let _setDoc2     = null;
-let _doc2        = null;
-let _deleteDoc2  = null;
-let _collection2 = null;
-let _db2         = null;
-let _onSnapshot2 = null;
-let _query2      = null;
-let _orderBy2    = null;
-let _limit2      = null;
-let _serverTS2   = null;
-let _fbUser2     = null;
 
 function _wireFromSharedFB(user){
   const fb = window._frFB;
