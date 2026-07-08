@@ -530,7 +530,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const snap  = await getDoc(uRef);
 
     if (snap.exists() && snap.data().lastActiveDate !== today) {
-      await setDoc(uRef,{focusTime:0,lastActiveDate:today,lastActive:Date.now()},{merge:true});
+      const prevFocus = snap.data().focusTime || 0;
+      await setDoc(uRef,{
+        focusTime: 0,
+        totalFocusTime: increment(prevFocus), // carry yesterday's minutes into lifetime total before reset
+        lastActiveDate: today,
+        lastActive: Date.now()
+      },{merge:true});
     }
     await setDoc(uRef,{
       name:        currentUser,
