@@ -24,6 +24,24 @@
   window.addEventListener('unhandledrejection', function(e){
     show('❌ PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
   });
+  // CSP violations don't throw normal JS errors — catch them separately.
+  // If inline onclick="" is blocked by a server security header, THIS is what will fire.
+  document.addEventListener('securitypolicyviolation', function(e){
+    show('🚫 BLOCKED BY SECURITY POLICY (CSP): ' + e.violatedDirective + '\n' + e.blockedURI + '\nThis means inline onclick handlers may be silently blocked by a server header.');
+  });
+  // Live tap counter — proves whether touches are even reaching the browser/JS at all.
+  document.addEventListener('DOMContentLoaded', function(){
+    var tapBadge = document.createElement('div');
+    tapBadge.id = '_frTapBadge';
+    tapBadge.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:999999;background:rgba(0,0,50,.85);'
+      + 'color:#7fd7ff;font:10px monospace;padding:4px 8px;border-radius:4px;';
+    tapBadge.textContent = 'Taps: 0';
+    document.body.appendChild(tapBadge);
+    var n = 0;
+    document.addEventListener('pointerdown', function(e){
+      n++; tapBadge.textContent = 'Taps: ' + n + ' (last: ' + (e.target.tagName||'?') + (e.target.className?'.'+String(e.target.className).split(' ')[0]:'') + ')';
+    }, true);
+  });
   window._frBootOK = function(){
     var b = document.createElement('div');
     b.style.cssText='position:fixed;bottom:8px;left:8px;z-index:999999;background:rgba(0,50,0,.85);'
