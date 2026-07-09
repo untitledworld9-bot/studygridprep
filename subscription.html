@@ -1376,16 +1376,24 @@ function _watchMyIssues(){
   // userId was available at that moment, which may now be stale.
   if (_issuesUnsub) { _issuesUnsub(); _issuesUnsub = null; }
   const userId = getUserId();
+  // ✅ REAL ROOT CAUSE: where('userId','==',...) + orderBy('createdAt') on a
+  // DIFFERENT field needs a Firestore composite index. Without that index
+  // created in the console, this query fails with "failed-precondition" —
+  // silently, since we only console.warn the error — and the ticket list
+  // stays empty forever, on every device, every time. Dropping the
+  // Firestore-side orderBy avoids needing that index at all; we sort the
+  // (small, per-user) result set client-side instead — same fix pattern
+  // already used for the admin users list (see listenUsers()).
   const q = query(
     collection(db, SUPPORT_ISSUES_COLL),
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    where('userId', '==', userId)
   );
   _issuesUnsub = onSnapshot(q, snap => {
     stack.innerHTML = '';
-    snap.docs.forEach(d => {
-      stack.appendChild(_renderIssueCard({ id: d.id, ...d.data() }));
-    });
+    const docs = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    docs.forEach(issue => stack.appendChild(_renderIssueCard(issue)));
   }, err => console.warn('[My Issues] listener error:', err));
 }
 
