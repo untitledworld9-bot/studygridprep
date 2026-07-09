@@ -36,6 +36,7 @@ const USER_KEYS = [
   "isSubscribed",
   "trialExpiry",
   "freeMockUsed",
+  "sgp_lastNotifiedActivation", // notification dedup marker — per-user, not per-device
   // Test/mock related
   "lastTestResult",
   "selectedTestId",

@@ -97,7 +97,7 @@ function writeLocal(state) {
 
 // Auto-expire trial locally (instant, no network needed).
 // Once a trial expires it is permanently marked "used" — the ₹1 trial
-// is one-time-only; after this the UI must offer the ₹49 monthly plan.
+// is one-time-only; after this the UI must offer the ₹29 monthly plan.
 function applyExpiryLocal(state) {
   if (state.isSubscribed && state.trialExpiry && Date.now() > state.trialExpiry) {
     state.isSubscribed = false;
@@ -136,6 +136,17 @@ async function readRemote(userId) {
 }
 
 async function writeRemote(userId, partialState) {
+  // ✅ FIX: previously this would create/write a Firestore doc for ANY
+  // userId — including the locally-generated fallback ID used before login
+  // resolves (e.g. a visitor browsing before signing in). That doc had no
+  // email/name attached, so it could never be merged with the person's real
+  // account doc once they logged in — it just sat there forever as a
+  // duplicate "ghost" entry in the admin panel's user list. Now writes are
+  // skipped entirely unless userId is the actual logged-in Firebase UID;
+  // local state (already saved via writeLocal) is enough until then.
+  if (!auth?.currentUser?.uid || userId !== auth.currentUser.uid) {
+    return;
+  }
   const ref = doc(db, USERS_COLL, userId);
   await setDoc(ref, {
     ...partialState,
@@ -206,16 +217,24 @@ export function initSubscriptionSync(onUpdate) {
  * activation on another device reflects here without a refresh.
  * Returns the unsubscribe function.
  */
+const NOTIFIED_KEY = 'sgp_lastNotifiedActivation';
+
 function _fireProActivationNotification(plan, trialExpiry) {
   try {
-    // ✅ FIX: previously this trusted the `plan` string field on the
-    // Firestore user doc, which may be stale or never set correctly by the
-    // admin approval flow — causing the notification to always say
-    // "7-day trial" even when a ₹49/30-day monthly plan had just been
-    // approved (e.g. approved on a different device than where the trial
-    // had earlier expired). Now the label is derived from the actual
-    // trialExpiry duration, which is a hard fact regardless of how the
-    // approval was written.
+    // ✅ FIX: previously this could re-fire the SAME "Pro Activated"
+    // notification every time ANY page called watchSubscription() (e.g.
+    // dashboard-home.html on every load) — because `_prevIsSubscribed` is
+    // only tracked in-memory per listener, so a fresh listener has no idea
+    // whether this activation was already announced. Now a marker is kept
+    // in localStorage (keyed to the actual trialExpiry, a hard fact) so the
+    // notification only ever fires ONCE per real activation, no matter how
+    // many times/pages re-attach a listener.
+    const marker = String(trialExpiry || plan || '');
+    if (marker && localStorage.getItem(NOTIFIED_KEY) === marker) return;
+    if (marker) localStorage.setItem(NOTIFIED_KEY, marker);
+
+    // Derive the display label from the actual trialExpiry duration (hard
+    // fact) rather than trusting a possibly-stale/missing `plan` string.
     let label = plan === 'monthly' ? '30-day monthly plan' : '7-day trial';
     if (trialExpiry) {
       const daysGranted = Math.round((trialExpiry - Date.now()) / 86400000);
@@ -238,7 +257,18 @@ function _fireProActivationNotification(plan, trialExpiry) {
   } catch(e) {}
 }
 
-export function watchSubscription(onUpdate) {
+/**
+ * Live-listens to Firestore for this user's subscription doc.
+ * @param {Function} onUpdate - called with (state, meta) on every update
+ * @param {Object} [opts]
+ * @param {boolean} [opts.silent] - if true, never fires the OS "Pro
+ *   Activated" notification — use this on pages (like the dashboard) that
+ *   just need live UI state, not the celebratory notification. Only
+ *   subscription.html (where the user is actively watching for approval)
+ *   should omit this / pass silent:false.
+ */
+export function watchSubscription(onUpdate, opts = {}) {
+  const silent = !!opts.silent;
   const userId = getUserId();
   const ref = doc(db, USERS_COLL, userId);
   let _prevIsSubscribed = getLocalSubscriptionState().isSubscribed;
@@ -256,7 +286,7 @@ export function watchSubscription(onUpdate) {
     writeLocal(state);
 
     // Fire PWA notification when subscription just became active
-    if (!_prevIsSubscribed && state.isSubscribed) {
+    if (!silent && !_prevIsSubscribed && state.isSubscribed) {
       _fireProActivationNotification(data.plan || 'trial', state.trialExpiry);
     }
     _prevIsSubscribed = state.isSubscribed;
@@ -293,7 +323,7 @@ function sendProActivationNotification(plan, days) {
 
 /**
  * Activates Pro access for this user — either the one-time ₹1 / 7-day
- * trial, or the ₹49 / 30-day monthly plan.
+ * trial, or the ₹29 / 30-day monthly plan.
  * ONLY called internally after payment is verified/approved.
  * Never called directly from a URL param check.
  *
@@ -308,7 +338,7 @@ export async function activateTrial(days, plan = 'trial') {
 
   // The ₹1 trial is one-time-only. Mark it used the moment it's
   // activated (not just when it expires) so it can never be granted
-  // again — the next cycle for this user must be the ₹49 monthly plan.
+  // again — the next cycle for this user must be the ₹29 monthly plan.
   if (plan === 'trial') state.trialUsed = true;
 
   // 1. Write local immediately (instant UI)
@@ -494,7 +524,7 @@ const PAYMENTS_COLL = 'payments';
  *   txnId    - string
  *   screenshot - base64 data-url string
  *   plan     - 'trial' | 'monthly'
- *   amount   - number (1 or 49)
+ *   amount   - number (1 or 29)
  */
 export async function submitPaymentRequest({ userId, name, email, txnId, screenshot, plan, amount }) {
   if (!userId || !txnId) throw new Error('userId and txnId are required');
