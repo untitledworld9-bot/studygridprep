@@ -46,7 +46,7 @@
 </style>
 </head>
 <body>
-<div style="position:fixed;top:0;left:0;right:0;z-index:999999;background:#ff0;color:#000;text-align:center;font:bold 14px monospace;padding:6px;">STANDALONE BUILD TEST v1 — NO INTERNET NEEDED</div>
+<div style="position:fixed;top:0;left:0;right:0;z-index:999999;background:#ff0;color:#000;text-align:center;font:bold 14px monospace;padding:6px;">STANDALONE BUILD TEST v2 — TOUCH FIX</div>
 
 
 <!-- index.js announcement container -->
@@ -383,7 +383,7 @@ window.addEventListener('uw_auth_ready',()=>{
 window.addEventListener('load', function(){
   var b=document.createElement('div');
   b.style.cssText='position:fixed;bottom:8px;left:8px;z-index:999999;background:rgba(0,50,0,.85);color:#7fff7f;font:10px monospace;padding:4px 8px;border-radius:4px;';
-  b.textContent='v1 loaded OK — tap PLAY NOW';
+  b.textContent='v2 loaded OK — tap PLAY NOW';
   document.body.appendChild(b);
 });
 document.addEventListener('pointerdown', function(e){

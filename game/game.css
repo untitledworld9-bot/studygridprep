@@ -21,7 +21,12 @@ html,body{
   background:var(--bg);
   font-family:'Rajdhani','Orbitron',sans-serif;
   color:var(--text);-webkit-font-smoothing:antialiased;
-  user-select:none;-webkit-user-select:none;touch-action:none;
+  user-select:none;-webkit-user-select:none;
+  /* touch-action:none tha pehle — Android Chrome ke kai versions mein ye
+     pure page ka tap/click hi silently block kar deta hai. manipulation
+     use karo — swipe gestures ke liye JS listener already kaam karta hai,
+     bas double-tap-zoom disable rehta hai aur click turant fire hota hai. */
+  touch-action:manipulation;
 }
 
 #bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
@@ -496,3 +501,5 @@ html,body{
 /* ═══════════════════ TRANSITIONS ═══════════════════ */
 .screen-exit{animation:scrExit .28s ease forwards!important;}
 @keyframes scrExit{to{opacity:0;transform:scale(.95);}}
+
+button,.btn-play,.btn-home,.toggle-btn,.control-hint,a{touch-action:manipulation!important;}
