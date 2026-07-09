@@ -245,7 +245,13 @@ function resize(){
 window.addEventListener('resize',resize);resize();
 
 // ─── BACKGROUND ──────────────────────────────────────────────────
-const STARS=Array.from({length:160},()=>({
+// ── PERFORMANCE FIX: kam stars, cached gradients, throttled framerate.
+// Pehle: 160 stars + fresh gradient har frame + hex-grid + emoji rain, 60fps,
+// non-stop chalte the (game start hone se pehle bhi) — mid-range phone pe
+// isse CPU itna busy ho jaata tha ki taps tak respond nahi karte the ("stuck").
+const _isLowEnd = (navigator.hardwareConcurrency||4) <= 4 || /Android/i.test(navigator.userAgent);
+const STAR_COUNT = _isLowEnd ? 45 : 90;
+const STARS=Array.from({length:STAR_COUNT},()=>({
   x:Math.random()*2000,y:Math.random()*1200,
   r:Math.random()*2+.2,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,
   a:Math.random()*.7+.1,h:160+Math.random()*90,twinkle:Math.random()*Math.PI*2,
@@ -255,51 +261,50 @@ const NEBULA=[
   {x:W*.8,y:H*.6,r:250,color:'rgba(180,0,255,0.04)'},
   {x:W*.5,y:H*.1,r:180,color:'rgba(0,200,255,0.03)'},
 ];
+// Nebula gradients cached ONCE instead of recreated every single frame (was expensive)
+const NEBULA_GRADS = NEBULA.map(n=>{
+  const gr=bgCtx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+  gr.addColorStop(0,n.color);gr.addColorStop(1,'transparent');
+  return gr;
+});
 let bgF=0,bgPulseGlobal=0;
+const BG_SKIP = _isLowEnd ? 2 : 1; // low-end phones: render bg every 2nd frame only
 
 function renderBg(){
-  bgF++;bgPulseGlobal=Math.sin(bgF*.02)*.5+.5;
-  // Deep space
-  bgCtx.fillStyle='#000008';bgCtx.fillRect(0,0,W,H);
+  bgF++;
+  if(bgF % BG_SKIP === 0){
+    bgPulseGlobal=Math.sin(bgF*.02)*.5+.5;
+    bgCtx.fillStyle='#000008';bgCtx.fillRect(0,0,W,H);
 
-  // Nebula clouds
-  NEBULA.forEach(n=>{
-    const gr=bgCtx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r+Math.sin(bgF*.008)*30);
-    gr.addColorStop(0,n.color);gr.addColorStop(1,'transparent');
-    bgCtx.fillStyle=gr;bgCtx.fillRect(0,0,W,H);
-  });
+    NEBULA_GRADS.forEach(gr=>{ bgCtx.fillStyle=gr; bgCtx.fillRect(0,0,W,H); });
 
-  // Stars with twinkle
-  STARS.forEach(s=>{
-    s.x+=s.vx;s.y+=s.vy;
-    if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
-    s.twinkle+=.04;
-    const a=s.a+Math.sin(s.twinkle)*.2;
-    bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    bgCtx.fillStyle=`hsla(${s.h},100%,90%,${Math.max(0,a)})`;bgCtx.fill();
-    // Star glow for brighter ones
-    if(s.r>1.2){
-      bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r*2.5,0,Math.PI*2);
-      bgCtx.fillStyle=`hsla(${s.h},100%,90%,${a*.15})`;bgCtx.fill();
+    STARS.forEach(s=>{
+      s.x+=s.vx;s.y+=s.vy;
+      if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
+      s.twinkle+=.04;
+      const a=s.a+Math.sin(s.twinkle)*.2;
+      bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      bgCtx.fillStyle=`hsla(${s.h},100%,90%,${Math.max(0,a)})`;bgCtx.fill();
+    });
+
+    if(!_isLowEnd){
+      // Hex grid + digital rain skipped entirely on low-end phones (biggest CPU hogs)
+      bgCtx.save();bgCtx.strokeStyle=`rgba(0,245,255,${.025+bgPulseGlobal*.015})`;bgCtx.lineWidth=.8;
+      const hxOff=(bgF*.6)%60;
+      for(let y=-30+hxOff;y<H+30;y+=52){for(let x=-30;x<W+30;x+=60){drawHex(bgCtx,x,y,28);}}
+      bgCtx.stroke();bgCtx.restore();
+
+      bgCtx.font='11px monospace';bgCtx.textAlign='center';
+      const rainChars='⚡📚🧠🔬⭐💡🎯';
+      for(let i=0;i<15;i++){
+        const rx=((i*137+bgF*1.2)%W);
+        const ry=((i*73+bgF*(1+i*.1))%H);
+        bgCtx.fillStyle=`rgba(0,255,136,${.04+bgPulseGlobal*.03})`;
+        bgCtx.fillText(rainChars[Math.floor(bgF/10+i)%rainChars.length],rx,ry);
+      }
+      bgCtx.textAlign='left';
     }
-  });
-
-  // Moving hex grid
-  bgCtx.save();bgCtx.strokeStyle=`rgba(0,245,255,${.025+bgPulseGlobal*.015})`;bgCtx.lineWidth=.8;
-  const hxOff=(bgF*.6)%60;
-  for(let y=-30+hxOff;y<H+30;y+=52){for(let x=-30;x<W+30;x+=60){drawHex(bgCtx,x,y,28);}}
-  bgCtx.stroke();bgCtx.restore();
-
-  // Digital rain (study symbols)
-  bgCtx.font='11px monospace';bgCtx.textAlign='center';
-  const rainChars='⚡📚🧠🔬⭐💡🎯';
-  for(let i=0;i<15;i++){
-    const rx=((i*137+bgF*1.2)%W);
-    const ry=((i*73+bgF*(1+i*.1))%H);
-    bgCtx.fillStyle=`rgba(0,255,136,${.04+bgPulseGlobal*.03})`;
-    bgCtx.fillText(rainChars[Math.floor(bgF/10+i)%rainChars.length],rx,ry);
   }
-  bgCtx.textAlign='left';
   requestAnimationFrame(renderBg);
 }
 function drawHex(c,x,y,r){const a=Math.PI/3;c.moveTo(x+r,y);for(let i=1;i<6;i++)c.lineTo(x+r*Math.cos(a*i),y+r*Math.sin(a*i));c.closePath();}
