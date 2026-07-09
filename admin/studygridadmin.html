@@ -802,6 +802,20 @@
       background:rgba(124,92,252,0.15);border-color:var(--accent-violet);
       color:var(--accent-violet);
     }
+    /* Pro Plan Purchased — live counter on/off switch */
+    .pro-counter-switch{ position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; cursor:pointer; }
+    .pro-counter-switch input{ opacity:0; width:0; height:0; }
+    .pro-counter-slider{
+      position:absolute; inset:0; background:var(--border);
+      border-radius:26px; transition:.25s;
+    }
+    .pro-counter-slider::before{
+      content:""; position:absolute; width:20px; height:20px; left:3px; bottom:3px;
+      background:#fff; border-radius:50%; transition:.25s;
+      box-shadow:0 1px 3px rgba(0,0,0,0.3);
+    }
+    .pro-counter-switch input:checked + .pro-counter-slider{ background:#00e5a0; }
+    .pro-counter-switch input:checked + .pro-counter-slider::before{ transform:translateX(20px); }
   </style>
 </head>
 <body>
@@ -1206,6 +1220,21 @@
       <div class="live-dot">Live</div>
     </div>
 
+    <!-- Live "Pro Plan Purchased" counter toggle — controls the box shown
+         on subscription.html below the Start Plan button -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      background:linear-gradient(135deg,rgba(124,92,252,0.08),rgba(0,229,160,0.06));
+      border:1px solid rgba(124,92,252,0.2);border-radius:14px;padding:14px 18px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);">🔴 Pro Plan Purchased — Live Count</div>
+        <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">Show the live unique-purchase counter on the subscription page</div>
+      </div>
+      <label class="pro-counter-switch">
+        <input type="checkbox" id="proCounterToggle" checked onchange="toggleProCounterVisibility(this.checked)">
+        <span class="pro-counter-slider"></span>
+      </label>
+    </div>
+
     <!-- Filter + Stats row -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
       <div style="display:flex;gap:8px;">
@@ -1274,6 +1303,12 @@
           <div style="font-size:11px;font-weight:600;color:var(--accent-violet);margin-bottom:6px;">💰 Total Earned</div>
           <div style="font-size:26px;font-weight:900;color:var(--text-primary);">₹<span id="earnTotal">0</span></div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earnTotalCount">0</span> approved payments</div>
+        </div>
+        <!-- Unique Pro Users (all-time, not period-filtered — same figure shown live on subscription.html) -->
+        <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.22);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:600;color:#00e5a0;margin-bottom:6px;">👥 Unique Pro Users</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text-primary);"><span id="proUniqueUsersCount">0</span></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Trial + Monthly · all-time, unique</div>
         </div>
       </div>
     </div>

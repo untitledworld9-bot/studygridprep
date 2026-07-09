@@ -36,6 +36,7 @@ import {
   orderBy,
   limit,
   where,
+  increment,
   serverTimestamp,
   Timestamp
 } from "../firebase.js";
@@ -312,6 +313,7 @@ function initAdminPanel(user) {
   listenOffers();      // Offers Section
   listenPayments();    // Payment Requests (manual UPI)
   listenIssues();      // Payment/Refund Support Issues
+  listenProCounter();  // Live "Pro Plan Purchased" unique-user counter
 }
 
 // ============================================================
@@ -1027,6 +1029,41 @@ function updateEarningSummary() {
   set('earnTotalCount', inPeriod.length);
 }
 
+// ============================================================
+//  LIVE "PRO PLAN PURCHASED" UNIQUE-USER COUNTER
+//  (shown on subscription.html below the Start Plan button)
+// ============================================================
+
+/** Live-listens stats/proPurchasedCount — updates the admin dashboard's
+ *  "Unique Pro Users" card + keeps the on/off toggle switch in sync. */
+function listenProCounter() {
+  const unsub = onSnapshot(doc(db, 'stats', 'proPurchasedCount'), snap => {
+    const data    = snap.exists() ? snap.data() : { count: 0, visible: true };
+    const count   = data.count   ?? 0;
+    const visible = data.visible !== false; // default ON if field missing
+
+    const countEl = document.getElementById('proUniqueUsersCount');
+    if (countEl) countEl.textContent = count.toLocaleString('en-IN');
+
+    const toggle = document.getElementById('proCounterToggle');
+    if (toggle) toggle.checked = visible;
+  }, err => console.warn('[Pro counter] listener error:', err));
+  STATE.unsubscribers.push(unsub);
+}
+
+/** Admin flips the on/off switch above Payment Requests — controls whether
+ *  the live counter box shows on subscription.html. Doesn't touch the count
+ *  itself, just its visibility. */
+window.toggleProCounterVisibility = async (checked) => {
+  try {
+    await setDoc(doc(db, 'stats', 'proPurchasedCount'), { visible: checked }, { merge: true });
+    toast(checked ? '✅ Live counter shown on subscription page' : '🚫 Live counter hidden from subscription page');
+  } catch (err) {
+    console.error('Toggle Pro counter error:', err);
+    toast('Failed to update counter visibility', 'error');
+  }
+};
+
 /** Approve a payment — update user + payment doc + send email */
 window.approvePayment = async (paymentId) => {
   const p = STATE.allPayments.find(x => x.id === paymentId);
@@ -1074,6 +1111,27 @@ window.approvePayment = async (paymentId) => {
 
     toast(`✅ Approved — ${p.plan === 'trial' ? '7-day trial' : '30-day plan'} activated for ${userName || userId}`);
     updateEarningSummary();
+
+    // ✅ Live "Pro Plan Purchased" counter (shown on subscription.html) —
+    // counts UNIQUE users only. A doc in proPurchasedUsers/{userId} acts as
+    // a "have we ever counted this user" flag — so renewals / trial→monthly
+    // upgrades for the same user never double-count the stat.
+    try {
+      const uniqueRef = doc(db, 'proPurchasedUsers', userId);
+      const uniqueSnap = await getDoc(uniqueRef);
+      if (!uniqueSnap.exists()) {
+        await setDoc(uniqueRef, {
+          userId, userEmail, userName,
+          firstPlan: p.plan,
+          firstApprovedAt: Date.now()
+        });
+        await setDoc(doc(db, 'stats', 'proPurchasedCount'), {
+          count: increment(1)
+        }, { merge: true });
+      }
+    } catch (e) {
+      console.warn('[Pro counter] Failed to update unique-purchase stat:', e);
+    }
 
     // Auto in-app notification — "Pro Activated" 🎉
     const planLabelShort = p.plan === 'trial' ? '7-day trial' : '30-day plan';
