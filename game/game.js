@@ -4,29 +4,9 @@
    ══════════════════════════════════════════════════════════════ */
 'use strict';
 
-// ─── FIREBASE (SINGLE SHARED BOOTSTRAP — game-patch.js isi ko reuse karta hai) ───
+// ─── FIREBASE DISABLED for standalone test build — pure localStorage only, zero network calls ───
 let _db=null,_auth=null,_setDoc=null,_doc=null,_getDoc=null,_serverTimestamp=null,_firebaseUser=null;
-(async()=>{
-  try{
-    const fb=await import('../firebase.js');
-    _db=fb.db;_auth=fb.auth;_setDoc=fb.setDoc;_doc=fb.doc;_getDoc=fb.getDoc;_serverTimestamp=fb.serverTimestamp;
-    // Sab kuch window pe expose karo — koi aur script (game-patch.js) dobara
-    // import karke naya auth listener ya connection nahi banayega
-    window._frFB = {
-      db:_db, auth:fb.auth, setDoc:fb.setDoc, doc:fb.doc, getDoc:fb.getDoc,
-      serverTimestamp:fb.serverTimestamp, addDoc:fb.addDoc, deleteDoc:fb.deleteDoc,
-      collection:fb.collection, onSnapshot:fb.onSnapshot, query:fb.query,
-      orderBy:fb.orderBy, limit:fb.limit, user:null
-    };
-    fb.onAuthStateChanged(fb.auth,user=>{
-      _firebaseUser=user;
-      window._frFB.user=user;
-      if(user)loadCloudProfile(user);
-      // Baaki scripts ko batao ki auth ready hai (ek hi baar fire hota hai)
-      window.dispatchEvent(new CustomEvent('fr_firebase_ready',{detail:{user}}));
-    });
-  }catch(e){console.warn('[FR] offline');}
-})();
+console.log('[FR] Standalone mode — Firebase disabled intentionally for this test build.');
 
 // ─── SETTINGS ───────────────────────────────────────────────────
 const Settings={sound:localStorage.getItem('fr_sound')!=='off',vibrate:localStorage.getItem('fr_vibrate')!=='off',toggle(k){this[k]=!this[k];localStorage.setItem('fr_'+k,this[k]?'on':'off');}};
