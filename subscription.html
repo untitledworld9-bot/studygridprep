@@ -620,7 +620,7 @@ header{
     <span class="plc-text"><strong id="plcCount">0</strong> students went Pro so far</span>
   </div>
 
-  <p class="footer-line" id="footerLine">Cancel anytime. No questions asked.</p>
+  <p class="footer-line" id="footerLine">Secure payments. Fast verification.</p>
 
   <!-- ═══════════════════ FAQ ═══════════════════ -->
   <div class="faq-section">
@@ -940,7 +940,7 @@ window.sgpConfirm = sgpConfirm;
     <div class="pay-title" id="paySheetTitle">₹1 Trial — Pay via UPI</div>
     <div class="pay-sub">Scan the QR to pay · then submit your Transaction ID and upload the payment screenshot</div>
 
-    <!-- QR + UPI ID — set dynamically by openPaymentSheet() from PAYMENT_CONFIG -->
+    <!-- QR — set dynamically by openPaymentSheet() from PAYMENT_CONFIG -->
     <div class="qr-wrap">
       <div class="qr-row">
         <button class="qr-side-btn qr-download-btn" onclick="downloadQrImage()" title="Download QR">
@@ -1353,7 +1353,7 @@ window.renderStateFull = function(state){
   }
   ctaBtn.classList.remove('done');
   ctaBtn.disabled   = false;
-  footerLine.textContent = 'Cancel anytime. No questions asked.';
+  footerLine.textContent = 'Secure payments. Fast verification.';
 };
 
 // ── CTA click → open payment sheet ──
