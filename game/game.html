@@ -2,26 +2,48 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>TAP TEST</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Focus Runner — Step 1</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:#0a0a1a;color:#fff;font-family:sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+    padding:20px;
+  }
+  h1{color:#00f5ff;font-size:42px;margin-bottom:8px;}
+  p{color:#888;margin-bottom:30px;}
+  button{
+    font-size:24px;padding:22px 60px;background:#00f5ff;color:#000;
+    border:none;border-radius:50px;font-weight:bold;
+  }
+  #gameScreen{display:none;}
+  #gameScreen.show{display:flex;flex-direction:column;align-items:center;}
+</style>
 </head>
-<body style="margin:0;padding:40px 20px;background:#000;color:#fff;font-family:sans-serif;text-align:center;">
+<body>
 
-<h1 style="color:yellow;">MINIMAL TEST — v4</h1>
-<p>Agar ye bhi kaam nahi karta, to 100% server/deployment ka issue hai.</p>
+<div id="startScreen">
+  <h1>FOCUS RUNNER</h1>
+  <p>Step 1 test build</p>
+  <button id="playBtn">PLAY NOW</button>
+</div>
 
-<button id="btn" style="font-size:28px;padding:30px 50px;background:#0f0;color:#000;border:none;border-radius:12px;margin-top:30px;">
-TAP ME
-</button>
-
-<h2 id="result" style="margin-top:40px;color:#0ff;">Taps: 0</h2>
+<div id="gameScreen">
+  <h1 style="color:#0f0;">GAME STARTED! ✓</h1>
+  <p>Agar ye dikh raha hai, matlab tap + screen switch dono kaam kar rahe hain.</p>
+  <button id="backBtn" style="background:#f44;">BACK</button>
+</div>
 
 <script>
-var n = 0;
-document.getElementById('btn').addEventListener('click', function(){
-  n++;
-  document.getElementById('result').textContent = 'Taps: ' + n;
-  document.body.style.background = (n % 2 === 0) ? '#000' : '#300';
+document.getElementById('playBtn').addEventListener('click', function(){
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameScreen').classList.add('show');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  document.getElementById('gameScreen').classList.remove('show');
+  document.getElementById('startScreen').style.display = 'flex';
 });
 </script>
 
