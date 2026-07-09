@@ -1377,7 +1377,7 @@ window.markIssueReviewed = async (issueId) => {
       i.userEmail,
       i.userName,
       '✅ Issue Resolved — Study Grid Prep',
-      `Aapka issue #${i.issueId || i.id} review ho gaya hai aur resolve kar diya gaya hai. Check out kariye!` + (note ? ` Note: ${note}` : ''),
+      `Your issue #${i.issueId || i.id} has been reviewed and resolved. Please check the app for details.` + (note ? ` Note from support: ${note}` : ''),
       '✅',
       24 * 60 * 60 * 1000 // expires in 24 hours
     );
@@ -2616,23 +2616,33 @@ function escHtml(str) {
   ─────────────────────────────────────────────────────────────
   PASTE THIS CODE IN YOUR PWA's main app JavaScript file.
   It handles live reading of admin broadcasts.
+
+  ⚠️ NOTE: every query below deliberately avoids combining a
+  where() with an orderBy() on a DIFFERENT field. That combo
+  needs a Firestore composite index — if that index is missing,
+  the query fails silently (onSnapshot's error callback fires,
+  nothing shows on screen, no visible error to the user). This
+  bit us on subscription.html's ticket list, so all listeners
+  below sort the small result set client-side instead.
   ─────────────────────────────────────────────────────────────
 
-  import { db, collection, doc, onSnapshot, query, where, orderBy, limit, updateDoc } from "./firebase.js";
+  import { db, collection, doc, deleteDoc, onSnapshot, query, where, limit, updateDoc } from "./firebase.js";
 
   // ── 1. Announcement listener (shows banner at top of PWA)
   let lastAnnouncementId = null;
   onSnapshot(
     query(collection(db, "announcements"),
           where("active","==",true),
-          orderBy("time","desc"),
-          limit(1)),
+          limit(5)),
     snap => {
       if (snap.empty) return;
-      const a = snap.docs[0];
+      // Sort client-side (no orderBy → no composite index needed)
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.time || 0) - (a.time || 0));
+      const a = docs[0];
       if (a.id === lastAnnouncementId) return; // already shown
       lastAnnouncementId = a.id;
-      showAnnouncementBanner(a.data());
+      showAnnouncementBanner(a);
     }
   );
 
@@ -2648,29 +2658,38 @@ function escHtml(str) {
   onSnapshot(
     query(collection(db, "promotions"),
           where("active","==",true),
-          orderBy("time","desc"),
-          limit(1)),
+          limit(5)),
     snap => {
       if (snap.empty) return;
-      const p = snap.docs[0];
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.time || 0) - (a.time || 0));
+      const p = docs[0];
       if (p.id === lastPromoId) return;
       lastPromoId = p.id;
-      showPromotion(p.data());
+      showPromotion(p);
     }
   );
 
   // ── 4. Personal notification listener (for logged-in user)
+  // Also auto-deletes any notification whose expiresAt has passed
+  // (e.g. the 24-hour "issue resolved" alert) so it never lingers.
   const currentUser = auth.currentUser;
   if (currentUser) {
     onSnapshot(
       query(collection(db, "notifications"),
             where("target","in",["all", currentUser.displayName || currentUser.uid]),
-            where("read","==",false),
-            orderBy("time","desc"),
-            limit(10)),
+            limit(20)),
       snap => {
+        const now = Date.now();
         snap.docs.forEach(d => {
-          showInAppNotification(d.data());
+          const data = d.data();
+          // Expired (past its 24h window, or whatever expiresAt was set to) → clean up, don't show
+          if (data.expiresAt && data.expiresAt < now) {
+            deleteDoc(d.ref).catch(() => {});
+            return;
+          }
+          if (data.read) return; // already shown once
+          showInAppNotification(data);
           updateDoc(d.ref, { read: true }); // mark as read
         });
       }
