@@ -612,6 +612,13 @@ header{
     <i class="fa-solid fa-bolt"></i> Start ₹1 Trial — 7 Days Pro Access
   </button>
 
+  <!-- Live "Pro Plan Purchased" counter — admin can toggle this on/off from
+       the admin panel; collapses cleanly (no leftover gap) when hidden -->
+  <div class="pro-live-counter collapsed" id="proLiveCounter">
+    <span class="plc-dot"></span>
+    <span class="plc-text"><strong id="plcCount">0</strong> students went Pro so far 🎓</span>
+  </div>
+
   <p class="footer-line" id="footerLine">Cancel anytime. No questions asked.</p>
 
   <!-- ═══════════════════ FAQ ═══════════════════ -->
@@ -818,7 +825,27 @@ window.sgpConfirm = sgpConfirm;
   background:var(--surface2); border:1px solid var(--border);
   border-radius:16px; padding:20px; margin-bottom:16px; gap:12px;
 }
-.qr-wrap img{ width:160px; height:160px; border-radius:12px; background:#fff; }
+.qr-row{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; }
+.qr-row img{ width:160px; height:160px; border-radius:12px; background:#fff; flex-shrink:0; }
+/* Side buttons — download (left) & share-to-UPI-apps (right) */
+.qr-side-btn{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; border:none; cursor:pointer; border-radius:14px;
+  padding:10px 6px; width:52px; flex-shrink:0;
+  font-family:'Poppins',sans-serif;
+  transition:transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.qr-side-btn i{ font-size:15px; }
+.qr-side-btn span{ font-size:8px; font-weight:700; line-height:1.15; text-align:center; }
+.qr-download-btn{ background:var(--surface); border:1.5px solid var(--border); color:var(--text2); }
+.qr-download-btn:hover{ border-color:var(--accent); color:var(--accent); background:rgba(91,91,246,0.06); }
+.qr-download-btn:active{ transform:scale(0.92); }
+.qr-share-btn{
+  background:linear-gradient(135deg,#10b981,#059669); color:#fff;
+  box-shadow:0 4px 14px rgba(16,185,129,0.32);
+}
+.qr-share-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(16,185,129,0.45); }
+.qr-share-btn:active{ transform:scale(0.92); }
 .upi-id-row{
   display:flex; align-items:center; gap:8px;
   background:var(--bg); border:1px solid var(--border);
@@ -888,6 +915,33 @@ window.sgpConfirm = sgpConfirm;
 }
 .pending-banner-title{ font-size:14px; font-weight:700; color:var(--text); }
 .pending-banner-sub{ font-size:12px; color:var(--text2); margin-top:2px; font-weight:500; }
+
+/* Live "Pro Plan Purchased" counter — edtech style: indigo/green gradient
+   with a pulsing "live" dot. Collapses to zero height (no leftover gap)
+   when the admin toggles it off, and expands back smoothly when on. */
+.pro-live-counter{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-top:10px; padding:10px 16px;
+  background:linear-gradient(135deg, rgba(91,91,246,0.09), rgba(16,185,129,0.07));
+  border:1px solid rgba(91,91,246,0.2); border-radius:14px;
+  max-height:60px; opacity:1; overflow:hidden;
+  transition:max-height 0.35s ease, opacity 0.3s ease, margin-top 0.35s ease,
+             padding-top 0.35s ease, padding-bottom 0.35s ease, border-width 0.35s ease;
+}
+.pro-live-counter.collapsed{
+  max-height:0; opacity:0; margin-top:0; padding-top:0; padding-bottom:0; border-width:0;
+}
+.plc-dot{
+  width:8px; height:8px; border-radius:50%; background:var(--green);
+  flex-shrink:0; animation:plcPulse 1.6s infinite;
+}
+@keyframes plcPulse{
+  0%{ box-shadow:0 0 0 0 rgba(16,185,129,0.55); }
+  70%{ box-shadow:0 0 0 8px rgba(16,185,129,0); }
+  100%{ box-shadow:0 0 0 0 rgba(16,185,129,0); }
+}
+.plc-text{ font-size:12.5px; font-weight:600; color:var(--text2); }
+.plc-text strong{ color:var(--accent); font-weight:800; }
 </style>
 
 <!-- PAYMENT OVERLAY SHEET -->
@@ -899,7 +953,17 @@ window.sgpConfirm = sgpConfirm;
 
     <!-- QR + UPI ID — set dynamically by openPaymentSheet() from PAYMENT_CONFIG -->
     <div class="qr-wrap">
-      <img id="payQrImg" src="" alt="UPI QR Code" style="background:#fff;" />
+      <div class="qr-row">
+        <button class="qr-side-btn qr-download-btn" onclick="downloadQrImage()" title="Download QR">
+          <i class="fa-solid fa-download"></i>
+          <span>Download</span>
+        </button>
+        <img id="payQrImg" src="" alt="UPI QR Code" style="background:#fff;" />
+        <button class="qr-side-btn qr-share-btn" onclick="shareQrToUpiApps()" title="Share to UPI apps">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>Share to UPI</span>
+        </button>
+      </div>
       <div class="upi-id-row">
         <span class="upi-id-text" id="upiIdText">—</span>
         <button class="copy-btn" onclick="copyUpiId()">Copy</button>
@@ -1067,6 +1131,66 @@ window.copyUpiId = function(){
       btn.textContent = 'Copied!';
       setTimeout(() => btn.textContent = 'Copy', 2000);
     });
+};
+
+// ── Download QR image (left side button) ──
+window.downloadQrImage = async function(){
+  const imgUrl = document.getElementById('payQrImg').src;
+  if (!imgUrl) return;
+  try {
+    const resp = await fetch(imgUrl);
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'studygridprep-upi-qr.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  } catch (err) {
+    // CORS-blocked or offline — fall back to opening the image so the user
+    // can long-press → save it themselves.
+    console.warn('[QR Download] fetch failed, opening image directly:', err);
+    window.open(imgUrl, '_blank');
+  }
+};
+
+// ── Share QR to any UPI-capable app (right side button) ──
+// Uses the native Web Share API with a file attachment — this makes the OS
+// show its real share sheet (GPay / PhonePe / Paytm / WhatsApp / etc, each
+// with its own icon + name), same as long-press → Share on the image, just
+// one tap away instead of two.
+window.shareQrToUpiApps = async function(){
+  const imgUrl = document.getElementById('payQrImg').src;
+  if (!imgUrl) return;
+  try {
+    const resp = await fetch(imgUrl);
+    const blob = await resp.blob();
+    const file = new File([blob], 'studygridprep-upi-qr.png', { type: blob.type || 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Study Grid Prep — UPI QR',
+        text:  `Scan this QR to pay via any UPI app · UPI ID: ${document.getElementById('upiIdText').textContent.trim()}`
+      });
+    } else if (navigator.share) {
+      // File sharing unsupported on this browser — share text + link instead
+      await navigator.share({
+        title: 'Study Grid Prep — UPI QR',
+        text:  `Pay via UPI ID: ${document.getElementById('upiIdText').textContent.trim()}`,
+        url:   imgUrl
+      });
+    } else {
+      // No Web Share API at all — open the QR so the user can long-press → Share
+      window.open(imgUrl, '_blank');
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') { // user cancelling the share sheet isn't an error
+      console.warn('[QR Share] failed:', err);
+      window.open(imgUrl, '_blank');
+    }
+  }
 };
 
 // ── Open/close payment sheet ──
@@ -1497,6 +1621,23 @@ window.submitSubIssue = async function(){
 // kabhi nahi). Ab hum auth state confirm hone ka wait karte hain, aur uid
 // change hone par bhi listener ko dobara sahi id ke saath subscribe karte hain.
 auth.onAuthStateChanged(() => { _watchMyIssues(); });
+
+// ── Live "Pro Plan Purchased" counter — reads stats/proPurchasedCount ──
+// (written by admin.js on each unique-user approval). The `visible` field
+// is flipped by the admin's on/off switch; we animate the box open/closed
+// so the page never leaves a dead gap either way.
+function _watchProCounter(){
+  const box   = document.getElementById('proLiveCounter');
+  const count = document.getElementById('plcCount');
+  if (!box || !count) return;
+  onSnapshot(doc(db, 'stats', 'proPurchasedCount'), snap => {
+    const data    = snap.exists() ? snap.data() : { count: 0, visible: true };
+    count.textContent = (data.count || 0).toLocaleString('en-IN');
+    const visible = data.visible !== false; // default ON if field missing
+    box.classList.toggle('collapsed', !visible);
+  }, err => console.warn('[Pro counter] listener error:', err));
+}
+_watchProCounter();
 
 async function init(){
   // Fast local render first
