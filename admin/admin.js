@@ -70,7 +70,8 @@ const COLL = {
   MAINTENANCE:   "maintenance",
   OFFERS:        "offers",
   SUBSCRIPTIONS: "subscriptions",
-  PAYMENTS:      "payments"
+  PAYMENTS:      "payments",
+  SUPPORT_ISSUES: "supportIssues"
 };
 
 // ============================================================
@@ -88,7 +89,8 @@ const STATE = {
   promoType:   "popup",
   onlineUsersList: [], // live online users for modal
   leaderboardData: [], // dedicated leaderboard collection data
-  allPayments: []      // payment requests from users
+  allPayments: [],     // payment requests from users
+  allIssues: []        // payment/refund support issues from users
 };
 
 // ============================================================
@@ -309,6 +311,7 @@ function initAdminPanel(user) {
   listenPerformance(); // User Performance Analysis
   listenOffers();      // Offers Section
   listenPayments();    // Payment Requests (manual UPI)
+  listenIssues();      // Payment/Refund Support Issues
 }
 
 // ============================================================
@@ -987,7 +990,11 @@ function updateEarningSummary() {
   });
 
   const trial  = inPeriod.filter(p => p.plan === 'trial'   || p.amount == 1);
-  const monthly = inPeriod.filter(p => p.plan === 'monthly' || (p.amount != 1 && p.amount >= 49));
+  // ✅ Price changed ₹49 → ₹29: widen the fallback amount-heuristic so both
+  // legacy ₹49 records already in Firestore AND new ₹29 records are still
+  // correctly counted as the monthly plan (the explicit p.plan==='monthly'
+  // check already covers most cases; this is just the historical fallback).
+  const monthly = inPeriod.filter(p => p.plan === 'monthly' || (p.amount != 1 && p.amount >= 29));
 
   const earn1   = trial.reduce((s, p)   => s + (Number(p.amount) || 0), 0);
   const earn49  = monthly.reduce((s, p) => s + (Number(p.amount) || 0), 0);
@@ -1061,7 +1068,7 @@ window.approvePayment = async (paymentId) => {
 
     // Send approval email
     if (userEmail) {
-      const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹49 Monthly (30 Days)';
+      const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹29 Monthly (30 Days)';
       const expDate   = new Date(expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
       await sendPaymentEmail(EMAILJS_CONFIG.templateApprove, {
         to_name:   userName || 'Student',
@@ -1143,7 +1150,7 @@ window.mailRejectPayment = (paymentId) => {
   const toEmail  = p.email || '';
   if (!toEmail) { toast('No email found for this payment', 'error'); return; }
 
-  const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹49 Monthly (30 Days)';
+  const planLabel = p.plan === 'trial' ? '₹1 Trial (7 Days)' : '₹29 Monthly (30 Days)';
   const subject = 'Payment Not Received - Study Grid Prep';
   const body =
 `Hello ${p.name || 'Student'},
@@ -1164,6 +1171,194 @@ studygridprep.online`;
   window.open(mailtoUrl, '_blank');
 };
 
+// ============================================================
+//  PAYMENT / REFUND SUPPORT ISSUES
+//  (submitted from subscription.html's support box)
+// ============================================================
+
+function listenIssues() {
+  const q = query(
+    collection(db, COLL.SUPPORT_ISSUES),
+    orderBy('createdAt', 'desc'),
+    limit(200)
+  );
+  const unsub = onSnapshot(q, snap => {
+    STATE.allIssues = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Update badge on sidebar nav — count of not-yet-reviewed issues
+    const pending = STATE.allIssues.filter(i => i.status !== 'resolved').length;
+    const badge = document.getElementById('issuesBadge');
+    if (badge) {
+      badge.textContent = pending;
+      badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+    }
+
+    renderIssues();
+  }, err => console.warn('[Issues]', err));
+  STATE.unsubscribers.push(unsub);
+}
+
+/** Render support issues as a sequential card list, with search + status filter */
+function renderIssues() {
+  const container = document.getElementById('issuesListContainer');
+  if (!container) return;
+
+  const searchTerm = (document.getElementById('issueSearchInput')?.value || '').trim().toLowerCase();
+  const filter      = document.getElementById('issueFilterSelect')?.value || 'pending';
+
+  let rows = STATE.allIssues;
+
+  if (filter !== 'all') {
+    rows = rows.filter(i => filter === 'pending' ? i.status !== 'resolved' : i.status === 'resolved');
+  }
+  if (searchTerm) {
+    rows = rows.filter(i =>
+      (i.userName  || '').toLowerCase().includes(searchTerm) ||
+      (i.userEmail || '').toLowerCase().includes(searchTerm) ||
+      (i.issueId   || i.id || '').toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Update stat counts (unfiltered totals)
+  const pendCount = STATE.allIssues.filter(i => i.status !== 'resolved').length;
+  const resvCount = STATE.allIssues.filter(i => i.status === 'resolved').length;
+  const pcEl = document.getElementById('issuePendingCount');
+  const rcEl = document.getElementById('issueResolvedCount');
+  if (pcEl) pcEl.textContent = pendCount;
+  if (rcEl) rcEl.textContent = resvCount;
+
+  if (!rows.length) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">No issues found</div>`;
+    return;
+  }
+
+  container.innerHTML = rows.map(i => {
+    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : '—';
+    const resolved   = i.status === 'resolved';
+    const catColor   = i.category === 'Refund Request' ? 'var(--accent-violet)' : 'var(--accent-cyan)';
+    const catIcon    = i.category === 'Refund Request' ? '↩️' : '💳';
+
+    return `<div onclick="openIssueDetail('${escHtml(i.id)}')" style="
+        background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+        padding:15px 16px;cursor:pointer;transition:.18s;margin-bottom:10px;
+        display:flex;align-items:center;gap:14px;"
+        onmouseover="this.style.borderColor='var(--accent-cyan)'"
+        onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#5B5BF6,#7C3AED);
+        display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0;">
+        ${(i.userName || i.userEmail || '?')[0].toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:800;color:var(--accent-cyan);">#${escHtml(i.issueId || i.id)}</span>
+          <span style="font-size:11px;font-weight:700;color:${catColor};">${catIcon} ${escHtml(i.category || '—')}</span>
+        </div>
+        <div style="font-weight:600;font-size:13px;margin-top:3px;">${escHtml(i.userName || '—')} <span style="color:var(--text-muted);font-weight:400;">· ${escHtml(i.userEmail || '—')}</span></div>
+        <div style="font-size:11.5px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${escHtml(i.problem || '')}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:6px;">${date}</div>
+        <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;
+          background:${resolved ? 'rgba(0,229,160,0.12)' : 'rgba(255,184,48,0.12)'};
+          color:${resolved ? 'var(--accent-green)' : 'var(--accent-amber)'};">
+          ${resolved ? '✅ Resolved' : '⏳ Pending'}
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.filterIssues = () => renderIssues();
+window.searchIssues  = () => renderIssues();
+
+/** Open the detail popup for one issue */
+window.openIssueDetail = (issueId) => {
+  const i = STATE.allIssues.find(x => x.id === issueId);
+  if (!i) return;
+
+  const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  }) : '—';
+  const resolved = i.status === 'resolved';
+
+  document.getElementById('issueDetailTitle').textContent = `#${i.issueId || i.id}`;
+  document.getElementById('issueDetailBody').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;
+          background:${resolved ? 'rgba(0,229,160,0.12)' : 'rgba(255,184,48,0.12)'};
+          color:${resolved ? 'var(--accent-green)' : 'var(--accent-amber)'};">
+          ${resolved ? '✅ Resolved' : '⏳ Pending Review'}
+        </span>
+        <span style="font-size:11px;color:var(--text-muted);">Submitted ${date}</span>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:4px;">Category</div>
+        <div style="font-size:14px;font-weight:600;">${escHtml(i.category || '—')}</div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:4px;">User</div>
+        <div style="font-size:14px;font-weight:600;">${escHtml(i.userName || '—')}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${escHtml(i.userEmail || '—')}</div>
+        <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px;">UID: ${escHtml(i.userId || '—')}</div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:4px;">Current Plan Status</div>
+        <div style="font-size:13px;">${escHtml(i.currentPlanStatus || '—')}</div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:4px;">Problem Description</div>
+        <div style="font-size:13.5px;line-height:1.6;background:var(--bg-input);border:1px solid var(--border);
+          border-radius:10px;padding:12px 14px;white-space:pre-wrap;">${escHtml(i.problem || '—')}</div>
+      </div>
+      ${resolved ? `
+      <div>
+        <div class="form-label" style="margin-bottom:4px;color:var(--accent-green);">Admin Note (visible to user)</div>
+        <div style="font-size:13px;line-height:1.6;background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.25);
+          border-radius:10px;padding:12px 14px;">${escHtml(i.adminNote || '(no note added)')}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Reviewed by ${escHtml(i.reviewedBy || 'admin')} · ${i.reviewedAt ? new Date(i.reviewedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}</div>
+      </div>` : `
+      <div>
+        <div class="form-label" style="margin-bottom:4px;">Add a note (optional, visible to user once marked reviewed)</div>
+        <textarea id="issueAdminNoteInput" class="form-textarea" placeholder="e.g. Refund processed to your original payment method within 3-5 days." style="min-height:70px;"></textarea>
+      </div>`}
+    </div>`;
+
+  const footer = document.getElementById('issueDetailFooter');
+  footer.innerHTML = resolved
+    ? `<button class="btn btn-outline" onclick="closeIssueModal()">Close</button>`
+    : `<button class="btn btn-outline" onclick="closeIssueModal()">Close</button>
+       <button class="btn btn-primary" onclick="markIssueReviewed('${escHtml(i.id)}')">✅ Mark Reviewed</button>`;
+
+  document.getElementById('issueDetailModal').classList.add('open');
+};
+
+window.closeIssueModal = () => {
+  document.getElementById('issueDetailModal').classList.remove('open');
+};
+
+window.markIssueReviewed = async (issueId) => {
+  const i = STATE.allIssues.find(x => x.id === issueId);
+  if (!i) return;
+  const note = document.getElementById('issueAdminNoteInput')?.value.trim() || '';
+
+  try {
+    await updateDoc(doc(db, COLL.SUPPORT_ISSUES, issueId), {
+      status:     'resolved',
+      adminNote:  note,
+      reviewedAt: Date.now(),
+      reviewedBy: auth.currentUser?.email || 'admin'
+    });
+    toast(`✅ Issue #${i.issueId || i.id} marked reviewed`);
+    closeIssueModal();
+  } catch (err) {
+    console.error(err);
+    toast('Failed to update issue', 'error');
+  }
+};
+
 function listenUsers() {
   // ✅ FIX: orderBy("lastActive") Firestore pe nahi — client-side sort karo.
   // Reason: agar kisi doc mein lastActive field missing ho (purane name-keyed docs)
@@ -1173,7 +1368,21 @@ function listenUsers() {
     snap => {
       // Step 1: Deduplicate by doc ID
       const seenId = new Map();
-      snap.docs.forEach(d => { seenId.set(d.id, { id: d.id, ...d.data() }); });
+      snap.docs.forEach(d => {
+        const data = d.data();
+        // ✅ FIX: skip orphan "ghost" docs — these were created by an older
+        // subscription.js bug that wrote a Firestore doc for a visitor's
+        // locally-generated fallback ID (format "u_...") BEFORE they ever
+        // logged in, so the doc has no email/name and can never be a real
+        // account. That bug is now fixed at the source, but any old ghost
+        // docs already sitting in Firestore would otherwise still clutter
+        // the admin panel as noise "duplicate" users.
+        const looksLikeGhost = /^u_/.test(d.id)
+          && !(data.email || "").trim()
+          && !(data.name || data.userName || data.displayName || "").trim();
+        if (looksLikeGhost) return;
+        seenId.set(d.id, { id: d.id, ...data });
+      });
       let users = [...seenId.values()];
 
       // Step 2: FIX-DUP — Dedup by email (primary) — keeps uid-keyed doc over name-keyed

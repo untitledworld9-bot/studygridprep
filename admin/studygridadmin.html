@@ -853,6 +853,10 @@
       <span class="nav-icon">💳</span><span>Payment Requests</span>
       <span class="nav-badge" id="paymentRequestsBadge" style="background:rgba(0,229,160,0.15);color:#00e5a0;border:1px solid rgba(0,229,160,0.3);display:none;">0</span>
     </button>
+    <button class="nav-btn" onclick="showSection('issues')" data-section="issues">
+      <span class="nav-icon">🚩</span><span>Issues</span>
+      <span class="nav-badge" id="issuesBadge" style="background:rgba(255,79,106,0.15);color:var(--accent-red);border:1px solid rgba(255,79,106,0.3);display:none;">0</span>
+    </button>
     <button class="nav-btn" onclick="showSection('performance')" data-section="performance">
       <span class="nav-icon">📊</span><span>User Performance</span>
     </button>
@@ -1259,9 +1263,9 @@
           <div style="font-size:22px;font-weight:800;color:var(--text-primary);">₹<span id="earn1Rupee">0</span></div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earn1Count">0</span> payments</div>
         </div>
-        <!-- ₹49 Plan earnings -->
+        <!-- ₹29 Plan earnings -->
         <div style="background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.22);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:var(--accent-amber);margin-bottom:6px;">₹49 Monthly</div>
+          <div style="font-size:11px;font-weight:600;color:var(--accent-amber);margin-bottom:6px;">₹29 Monthly</div>
           <div style="font-size:22px;font-weight:800;color:var(--text-primary);">₹<span id="earn49Rupee">0</span></div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earn49Count">0</span> payments</div>
         </div>
@@ -1314,6 +1318,62 @@
       </div>
     </div>
   </section>
+
+  <!-- ─────────── PAYMENT / REFUND ISSUES ─────────── -->
+  <section id="issues" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Payment & Refund Issues</div>
+        <div class="section-subtitle">Issues submitted from the subscription page's support box</div>
+      </div>
+      <div class="live-dot">Live</div>
+    </div>
+
+    <!-- Search + Filter + Stats row -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:220px;max-width:340px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;">🔍</span>
+        <input type="text" id="issueSearchInput" oninput="searchIssues()" placeholder="Search by name or email…" style="
+          width:100%;padding:10px 14px 10px 34px;border-radius:10px;font-size:13px;
+          background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);
+          font-family:var(--font-body);outline:none;" />
+      </div>
+      <select id="issueFilterSelect" onchange="filterIssues()" style="
+        padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;
+        background:var(--bg-card);border:1px solid var(--border);
+        color:var(--text-primary);cursor:pointer;font-family:var(--font-body);">
+        <option value="pending">⏳ Pending</option>
+        <option value="resolved">✅ Resolved</option>
+        <option value="all">All Issues</option>
+      </select>
+      <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:rgba(255,184,48,0.1);border:1px solid rgba(255,184,48,0.25);border-radius:10px;
+          padding:7px 14px;font-size:12px;font-weight:700;color:var(--accent-amber);">
+          ⏳ <span id="issuePendingCount">0</span> Pending
+        </div>
+        <div style="background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);border-radius:10px;
+          padding:7px 14px;font-size:12px;font-weight:700;color:#00e5a0;">
+          ✅ <span id="issueResolvedCount">0</span> Resolved
+        </div>
+      </div>
+    </div>
+
+    <!-- Sequential card list -->
+    <div id="issuesListContainer">
+      <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</div>
+    </div>
+  </section>
+
+  <!-- Issue Detail Modal -->
+  <div class="modal-overlay" id="issueDetailModal">
+    <div class="modal-box" style="max-width:520px;width:95%;">
+      <div class="modal-title" id="issueDetailTitle">Issue Details</div>
+      <div id="issueDetailBody" style="max-height:60vh;overflow-y:auto;margin-bottom:20px;"></div>
+      <div class="modal-footer" id="issueDetailFooter">
+        <button class="btn btn-outline" onclick="closeIssueModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ─────────── CHAT LOGS ─────────── -->
   <section id="messages" class="section">
