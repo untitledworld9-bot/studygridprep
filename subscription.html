@@ -668,7 +668,7 @@ header{
           <p>Payment is simple and manual via UPI:</p>
           <ul>
             <li>Tap your plan (₹1 Trial or ₹29 Monthly) to open the payment sheet</li>
-            <li>Scan the QR code or pay using the UPI ID shown, via any UPI app</li>
+            <li>Scan the QR code with any UPI app to pay</li>
             <li>Enter your <strong>Transaction ID</strong> and upload a <strong>screenshot</strong> of the payment</li>
             <li>Tap <strong>Submit Payment</strong> — your plan shows "Under Review"</li>
             <li>Once verified (usually a few hours), Pro activates automatically — live, no refresh needed</li>
@@ -938,7 +938,7 @@ window.sgpConfirm = sgpConfirm;
   <div class="pay-sheet" id="paySheet">
     <div class="pay-handle"></div>
     <div class="pay-title" id="paySheetTitle">₹1 Trial — Pay via UPI</div>
-    <div class="pay-sub">Scan QR or copy UPI ID · then submit your Transaction ID</div>
+    <div class="pay-sub">Scan the QR to pay · then submit your Transaction ID and upload the payment screenshot</div>
 
     <!-- QR + UPI ID — set dynamically by openPaymentSheet() from PAYMENT_CONFIG -->
     <div class="qr-wrap">
@@ -1147,7 +1147,7 @@ window.shareQrToUpiApps = async function(){
       await navigator.share({
         files: [file],
         title: 'Study Grid Prep — UPI QR',
-        text:  `Scan this QR to pay via any UPI app · UPI ID: ${PAYMENT_CONFIG.upiId}`
+        text:  `Scan this QR to pay via any UPI app`
       });
     } else if (navigator.share) {
       // File sharing unsupported on this browser — share text + link instead
