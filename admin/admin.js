@@ -790,7 +790,7 @@ const EMAILJS_CONFIG = {
 // "notifications" queue the manual broadcast panel uses). Targets by email
 // first (exact match against localStorage userEmail on the client), falling
 // back to name if no email is known.
-async function notifyUserInApp(targetEmail, targetName, title, body, icon = "🔔") {
+async function notifyUserInApp(targetEmail, targetName, title, body, icon = "🔔", expiresInMs = null) {
   const target = targetEmail || targetName;
   if (!target) return;
   try {
@@ -804,10 +804,28 @@ async function notifyUserInApp(targetEmail, targetName, title, body, icon = "�
       platform: "both",
       read:   false,
       time:   Date.now(),
+      // ✅ Agar expiresInMs diya gaya hai (e.g. 24 hours), to yeh notification
+      // us waqt ke baad khud-ba-khud clean ho jaata hai — see cleanupExpiredNotifications()
+      expiresAt: expiresInMs ? Date.now() + expiresInMs : null,
       sentAt: serverTimestamp()
     });
   } catch (err) {
     console.warn("[Auto-notify] Failed:", err);
+  }
+}
+
+// ✅ Deletes any "notifications" doc whose expiresAt has passed. Called
+// whenever the admin panel's notification listener fires (i.e. every time
+// the admin panel is open), so expired notifications (like the 24-hour
+// "issue resolved" alert) get swept away without needing a backend cron job.
+async function cleanupExpiredNotifications(docs) {
+  const now = Date.now();
+  for (const d of docs) {
+    const data = d.data ? d.data() : d;
+    const ref  = d.ref  || doc(db, COLL.NOTIFICATIONS, d.id);
+    if (data.expiresAt && data.expiresAt < now) {
+      try { await deleteDoc(ref); } catch (e) { /* best-effort */ }
+    }
   }
 }
 
@@ -1351,6 +1369,19 @@ window.markIssueReviewed = async (issueId) => {
       reviewedAt: Date.now(),
       reviewedBy: auth.currentUser?.email || 'admin'
     });
+
+    // ✅ Auto in-app push notification — user ko turant pata chal jaaye ki
+    // unka issue resolve ho gaya hai. Yeh 24 hours baad khud delete ho jaata
+    // hai (expiresAt field via cleanupExpiredNotifications).
+    notifyUserInApp(
+      i.userEmail,
+      i.userName,
+      '✅ Issue Resolved — Study Grid Prep',
+      `Aapka issue #${i.issueId || i.id} review ho gaya hai aur resolve kar diya gaya hai. Check out kariye!` + (note ? ` Note: ${note}` : ''),
+      '✅',
+      24 * 60 * 60 * 1000 // expires in 24 hours
+    );
+
     toast(`✅ Issue #${i.issueId || i.id} marked reviewed`);
     closeIssueModal();
   } catch (err) {
@@ -2377,7 +2408,10 @@ window.toggleVpUserField = () => {
 function listenNotifications() {
   const unsub = onSnapshot(
     query(collection(db, COLL.NOTIFICATIONS), orderBy("time", "desc"), limit(30)),
-    snap => renderNotificationHistory(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+    snap => {
+      renderNotificationHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      cleanupExpiredNotifications(snap.docs); // ✅ sweep any expired (e.g. 24h) notifications
+    },
     err => console.error("Notifications listener error:", err)
   );
   STATE.unsubscribers.push(unsub);
