@@ -16,6 +16,16 @@
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = saved ? saved : (systemDark ? "dark" : "light");
     document.documentElement.setAttribute("data-theme", theme);
+
+window.matchMedia("(prefers-color-scheme: dark)")
+.addEventListener("change", function(e){
+  if(localStorage.getItem("theme") === "system"){
+    document.documentElement.setAttribute(
+      "data-theme",
+      e.matches ? "dark" : "light"
+    );
+  }
+});
     // ✅ FIX: previously only the FIRST theme-color meta was updated and its
     // media="(prefers-color-scheme: ...)" attribute was left in place, so the
     // status bar shown depended on the PHONE's system light/dark setting
