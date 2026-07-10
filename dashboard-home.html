@@ -21,26 +21,26 @@
 
 <script>
 (function(){
-  const saved=localStorage.getItem("theme");
-  const systemDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  // ✅ FIX: "system" is a MODE the user picked, not an actual theme value.
-  // Previously if saved==="system", the ternary treated it as truthy and set
-  // data-theme="system" literally — which matches no CSS rule, so the page
-  // rendered with default/fallback styling until later JS corrected it. That
-  // caused the visible "unstable" flip on every refresh/page navigation.
-  const theme=(!saved || saved==="system") ? (systemDark?"dark":"light") : saved;
-  document.documentElement.setAttribute("data-theme",theme);
-})();
+  const saved = localStorage.getItem("theme");
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-window.matchMedia("(prefers-color-scheme: dark)")
-.addEventListener("change", function(e){
-  if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
-  }
-});
+  const theme =
+    (!saved || saved === "system")
+      ? (systemDark ? "dark" : "light")
+      : saved;
+
+  document.documentElement.setAttribute("data-theme", theme);
+
+  window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      document.documentElement.setAttribute(
+        "data-theme",
+        e.matches ? "dark" : "light"
+      );
+    }
+  });
+})();
 </script>
 
 <style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
