@@ -929,6 +929,9 @@
     <button class="nav-btn" onclick="showSection('mockpublish')" data-section="mockpublish">
       <span class="nav-icon">📝</span><span>Mock Publish</span>
     </button>
+    <button class="nav-btn" onclick="showSection('content')" data-section="content">
+      <i class="fa-solid fa-pen-nib"></i> <span>Content Studio</span>
+    </button>
   </div>
 
   <div class="sidebar-footer">
@@ -2284,6 +2287,217 @@
     </div>
   </div>
   </section>
+
+  <section id="content" class="section">
+
+    <div class="section-header">
+      <div>
+        <div class="section-title">Content Studio</div>
+        <div class="section-subtitle">Blog, Notes, Guides & more — one editor, publish to any domain</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" id="csListBtn" onclick="csShowList()">
+          <i class="fa-solid fa-list"></i> All Content
+        </button>
+        <button class="btn btn-primary" onclick="csNewContent()">
+          <i class="fa-solid fa-plus"></i> New Content
+        </button>
+      </div>
+    </div>
+
+    <!-- ── LIST VIEW ── -->
+    <div id="csListView">
+      <div class="form-panel">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-select" id="csFilterType" onchange="csRenderList()">
+              <option value="">All Types</option>
+              <option value="blog">Blog</option>
+              <option value="notes">Study Notes</option>
+              <option value="formulaSheet">Formula Sheet</option>
+              <option value="news">News</option>
+              <option value="examUpdate">Exam Update</option>
+              <option value="collegeArticle">College Article</option>
+              <option value="careerGuide">Career Guide</option>
+              <option value="landingPage">Landing Page</option>
+              <option value="featurePage">Feature Page</option>
+              <option value="staticPage">Static Page</option>
+              <option value="faq">FAQ Page</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="csFilterStatus" onchange="csRenderList()">
+              <option value="">All</option>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="scheduled">Scheduled</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2;">
+            <label class="form-label">Search</label>
+            <input class="form-input" id="csSearch" placeholder="Search by title or slug…" oninput="csRenderList()" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-panel">
+        <div id="csTableWrap">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="empty-state-text">No content yet — click "New Content" to create the first piece.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EDITOR VIEW ── -->
+    <div id="csEditorView" style="display:none;">
+      <div class="cs-editor-grid">
+
+        <!-- LEFT: form + block editor -->
+        <div class="cs-editor-left">
+
+          <div class="form-panel">
+            <div class="form-panel-title">Details</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Content Type</label>
+                <select class="form-select" id="csType">
+                  <option value="blog">Blog</option>
+                  <option value="notes">Study Notes</option>
+                  <option value="formulaSheet">Formula Sheet</option>
+                  <option value="news">News</option>
+                  <option value="examUpdate">Exam Update</option>
+                  <option value="collegeArticle">College Article</option>
+                  <option value="careerGuide">Career Guide</option>
+                  <option value="landingPage">Landing Page</option>
+                  <option value="featurePage">Feature Page</option>
+                  <option value="staticPage">Static Page</option>
+                  <option value="faq">FAQ Page</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="csStatus">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="scheduled">Scheduled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="csTitle" placeholder="JEE Main 2027 Complete Preparation Guide" oninput="csOnTitleInput()" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Slug</label>
+              <input class="form-input" id="csSlug" placeholder="jee-main-2027-preparation-guide" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <input class="form-input" id="csCategory" placeholder="jee" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tags (comma separated)</label>
+                <input class="form-input" id="csTags" placeholder="jee-main, 2027, syllabus" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Publish To</label>
+              <div style="display:flex;gap:16px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+                  <input type="checkbox" id="csDestOnline" checked /> studygridprep.online
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+                  <input type="checkbox" id="csDestInfo" /> studygridprep.info
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-panel">
+            <div class="form-panel-title">SEO <span class="pill">Auto-fillable</span></div>
+            <div class="form-group">
+              <label class="form-label">Meta Title</label>
+              <input class="form-input" id="csMetaTitle" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Meta Description</label>
+              <textarea class="form-textarea" id="csMetaDesc" rows="2" maxlength="160"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Keywords (comma separated)</label>
+              <input class="form-input" id="csKeywords" />
+            </div>
+            <button class="btn btn-outline" onclick="csAutoFillSeo()">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fill from content
+            </button>
+          </div>
+
+          <div class="form-panel">
+            <div class="form-panel-title">Content Blocks</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('heading')">+ Heading</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('paragraph')">+ Paragraph</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('tip')">+ Tip Box</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('image')">+ Image</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('table')">+ Table</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('faq')">+ FAQ Block</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('cta')">+ CTA Block</button>
+            </div>
+            <div id="csBlockList"></div>
+          </div>
+
+          <div style="display:flex;gap:12px;">
+            <button class="btn btn-primary" onclick="csSaveContent('draft')">
+              <i class="fa-solid fa-floppy-disk"></i> Save Draft
+            </button>
+            <button class="btn btn-primary" onclick="csSaveContent('published')" style="background:var(--success);">
+              <i class="fa-solid fa-circle-check"></i> Publish
+            </button>
+            <button class="btn btn-outline" onclick="csShowList()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: live preview -->
+        <div class="cs-editor-right">
+          <div class="form-panel-title" style="padding:0 0 10px;">Live Preview</div>
+          <div class="cs-preview-frame-wrap">
+            <iframe id="csPreviewFrame" class="cs-preview-frame"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <style>
+  /* Content Studio — additive styles, don't touch anything else */
+  .cs-editor-grid { display: grid; grid-template-columns: 1fr 480px; gap: 20px; align-items: start; }
+  .cs-editor-right { position: sticky; top: 20px; }
+  .cs-preview-frame-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; height: 720px; background: #fff; }
+  .cs-preview-frame { width: 100%; height: 100%; border: none; }
+  .cs-block-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; background: var(--bg-soft); }
+  .cs-block-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cs-block-type-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary); }
+  .cs-block-actions { display: flex; gap: 6px; }
+  .cs-block-actions button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 4px 6px; border-radius: 6px; }
+  .cs-block-actions button:hover { background: var(--bg-muted); color: var(--text-primary); }
+  .btn-sm { padding: 6px 12px; font-size: 12.5px; }
+  @media (max-width: 1100px) {
+    .cs-editor-grid { grid-template-columns: 1fr; }
+    .cs-editor-right { position: static; }
+    .cs-preview-frame-wrap { height: 480px; }
+  }
+  </style>
 
 </main>
   <section id="performance" class="section">
