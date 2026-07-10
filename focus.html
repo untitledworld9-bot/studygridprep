@@ -17,23 +17,44 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <!-- THEME DETECTION -->
+<!-- THEME DETECTION -->
 <script>
 (function(){
   var saved = localStorage.getItem("theme");
-  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  var theme =
+    (!saved || saved === "system")
+      ? (systemDark ? "dark" : "light")
+      : saved;
+
   document.documentElement.setAttribute("data-theme", theme);
-  
+
   function syncThemeColor(){
     var isDark = document.documentElement.getAttribute("data-theme") === "dark";
     var metas = document.querySelectorAll("meta[name='theme-color']");
-    metas.forEach(function(m){ 
-      m.removeAttribute("media"); 
-      m.content = isDark ? "#0D1120" : "#ffffff"; 
+    metas.forEach(function(m){
+      m.removeAttribute("media");
+      m.content = isDark ? "#0D1120" : "#ffffff";
     });
   }
+
   syncThemeColor();
-  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+  window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      document.documentElement.setAttribute(
+        "data-theme",
+        e.matches ? "dark" : "light"
+      );
+    }
+  });
+
+  new MutationObserver(syncThemeColor).observe(document.documentElement,{
+    attributes:true,
+    attributeFilter:["data-theme"]
+  });
 })();
 </script>
 <style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
