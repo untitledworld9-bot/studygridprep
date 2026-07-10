@@ -3,48 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Focus Runner — Step 1</title>
+<title>Focus Runner — Step 2</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    background:#0a0a1a;color:#fff;font-family:sans-serif;
-    min-height:100vh;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;
-    padding:20px;
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;touch-action:manipulation;}
+  body{font-family:sans-serif;color:#fff;}
+  #startScreen{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:20px;z-index:5;
   }
-  h1{color:#00f5ff;font-size:42px;margin-bottom:8px;}
+  h1{color:#00f5ff;font-size:40px;margin-bottom:8px;}
   p{color:#888;margin-bottom:30px;}
-  button{
-    font-size:24px;padding:22px 60px;background:#00f5ff;color:#000;
-    border:none;border-radius:50px;font-weight:bold;
+  button{font-size:22px;padding:20px 50px;background:#00f5ff;color:#000;border:none;border-radius:50px;font-weight:bold;}
+  #gameWrap{position:fixed;inset:0;display:none;}
+  #gameWrap.show{display:block;}
+  canvas{display:block;background:#111;}
+  #hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;
+    font-size:18px;font-weight:bold;color:#0ff;z-index:6;}
+  #controls{position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:16px;z-index:6;}
+  #controls button{font-size:16px;padding:14px 22px;border-radius:12px;background:#222;color:#0ff;border:2px solid #0ff;}
+  #gameOverScreen{
+    position:fixed;inset:0;display:none;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;background:rgba(0,0,0,.9);z-index:20;
   }
-  #gameScreen{display:none;}
-  #gameScreen.show{display:flex;flex-direction:column;align-items:center;}
+  #gameOverScreen.show{display:flex;}
 </style>
 </head>
 <body>
 
 <div id="startScreen">
   <h1>FOCUS RUNNER</h1>
-  <p>Step 1 test build</p>
+  <p>Step 2 — core gameplay test</p>
   <button id="playBtn">PLAY NOW</button>
 </div>
 
-<div id="gameScreen">
-  <h1 style="color:#0f0;">GAME STARTED! ✓</h1>
-  <p>Agar ye dikh raha hai, matlab tap + screen switch dono kaam kar rahe hain.</p>
-  <button id="backBtn" style="background:#f44;">BACK</button>
+<div id="gameWrap">
+  <div id="hud"><span id="scoreTxt">Score: 0</span><span id="liveTxt">❤️❤️❤️</span></div>
+  <canvas id="c"></canvas>
+  <div id="controls">
+    <button id="leftBtn">◀ LEFT</button>
+    <button id="jumpBtn">▲ JUMP</button>
+    <button id="rightBtn">RIGHT ▶</button>
+  </div>
+</div>
+
+<div id="gameOverScreen">
+  <h1 style="color:#f44;">GAME OVER</h1>
+  <p id="finalScore" style="color:#fff;font-size:20px;margin:14px 0 26px;">Score: 0</p>
+  <button id="retryBtn">RETRY</button>
 </div>
 
 <script>
-document.getElementById('playBtn').addEventListener('click', function(){
-  document.getElementById('startScreen').style.display = 'none';
-  document.getElementById('gameScreen').classList.add('show');
+'use strict';
+var startScreen = document.getElementById('startScreen');
+var gameWrap = document.getElementById('gameWrap');
+var gameOverScreen = document.getElementById('gameOverScreen');
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var scoreTxt = document.getElementById('scoreTxt');
+var liveTxt = document.getElementById('liveTxt');
+var finalScore = document.getElementById('finalScore');
+
+var W, H, laneW;
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  laneW = W / 3;
+}
+window.addEventListener('resize', resize);
+
+var G = null;
+function newGame(){
+  return {
+    lane: 1, targetX: 0, playerY: 0, jumping:false, jumpV:0,
+    obstacles: [], speed: 6, score: 0, lives: 3, running: true, frame:0
+  };
+}
+
+function laneX(lane){ return lane*laneW + laneW/2; }
+
+function spawnObstacle(){
+  var lane = Math.floor(Math.random()*3);
+  G.obstacles.push({lane:lane, y:-40, w:50, h:50});
+}
+
+function update(){
+  G.frame++;
+  if(G.frame % Math.max(20, 50 - Math.floor(G.score/5)) === 0) spawnObstacle();
+
+  G.obstacles.forEach(function(o){ o.y += G.speed; });
+  G.obstacles = G.obstacles.filter(function(o){ return o.y < H+60; });
+
+  // jump physics
+  if(G.jumping){
+    G.playerY += G.jumpV;
+    G.jumpV += 1.1;
+    if(G.playerY >= 0){ G.playerY = 0; G.jumping = false; G.jumpV = 0; }
+  }
+
+  // collision (only if not jumping high enough)
+  var px = laneX(G.lane), py = H-120+G.playerY;
+  G.obstacles.forEach(function(o){
+    if(o.hit) return;
+    var ox = laneX(o.lane);
+    var closeY = Math.abs(o.y - py) < 45;
+    var closeX = Math.abs(ox - px) < 45;
+    var jumpedOver = G.playerY < -60;
+    if(closeY && closeX && !jumpedOver){
+      o.hit = true;
+      G.lives--;
+      liveTxt.textContent = '❤️'.repeat(Math.max(0,G.lives));
+      if(G.lives <= 0){ endGame(); }
+    }
+  });
+
+  G.score += 1;
+  scoreTxt.textContent = 'Score: ' + Math.floor(G.score/5);
+  G.speed = 6 + G.score/300;
+}
+
+function draw(){
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0,0,W,H);
+
+  // lane dividers
+  ctx.strokeStyle = '#333';
+  ctx.beginPath();
+  ctx.moveTo(laneW,0); ctx.lineTo(laneW,H);
+  ctx.moveTo(laneW*2,0); ctx.lineTo(laneW*2,H);
+  ctx.stroke();
+
+  // obstacles
+  ctx.fillStyle = '#f44';
+  G.obstacles.forEach(function(o){
+    ctx.fillRect(laneX(o.lane)-25, o.y-25, 50, 50);
+  });
+
+  // player
+  var px = laneX(G.lane), py = H-120+G.playerY;
+  ctx.fillStyle = '#0ff';
+  ctx.fillRect(px-25, py-25, 50, 50);
+}
+
+function loop(){
+  if(!G || !G.running) return;
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function startGame(){
+  resize();
+  G = newGame();
+  startScreen.style.display = 'none';
+  gameOverScreen.classList.remove('show');
+  gameWrap.classList.add('show');
+  scoreTxt.textContent = 'Score: 0';
+  liveTxt.textContent = '❤️❤️❤️';
+  requestAnimationFrame(loop);
+}
+
+function endGame(){
+  G.running = false;
+  gameWrap.classList.remove('show');
+  finalScore.textContent = 'Score: ' + Math.floor(G.score/5);
+  gameOverScreen.classList.add('show');
+}
+
+document.getElementById('playBtn').addEventListener('click', startGame);
+document.getElementById('retryBtn').addEventListener('click', startGame);
+document.getElementById('leftBtn').addEventListener('click', function(){
+  if(G && G.running && G.lane>0) G.lane--;
 });
-document.getElementById('backBtn').addEventListener('click', function(){
-  document.getElementById('gameScreen').classList.remove('show');
-  document.getElementById('startScreen').style.display = 'flex';
+document.getElementById('rightBtn').addEventListener('click', function(){
+  if(G && G.running && G.lane<2) G.lane++;
 });
+document.getElementById('jumpBtn').addEventListener('click', function(){
+  if(G && G.running && !G.jumping){ G.jumping = true; G.jumpV = -18; }
+});
+
+resize();
 </script>
 
 </body>
