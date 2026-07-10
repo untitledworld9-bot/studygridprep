@@ -428,6 +428,7 @@ window.csUpdateFaqItem = csUpdateFaqItem;
 window.csAddFaqItem = csAddFaqItem;
 window.csAutoFillSeo = csAutoFillSeo;
 window.csRenderList = csRenderList;
+window.csSaveContent = csSaveContent;
 
 // Call this once from your existing DOMContentLoaded / auth-success handler
 window.initContentStudio = csLoadContent;
