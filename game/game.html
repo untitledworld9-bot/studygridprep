@@ -1,189 +1,396 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<script>
+(function(){
+  var box = document.createElement('div');
+  box.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;z-index:999999;'
+    + 'background:#3d0000;color:#ffcccc;font:11px/1.5 monospace;padding:10px;'
+    + 'max-height:40vh;overflow:auto;white-space:pre-wrap;word-break:break-word;'
+    + 'border-bottom:3px solid #ff3b3b;';
+  document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(box); });
+  function show(msg){ box.style.display='block'; box.textContent += (box.textContent?'\n\n':'') + msg; }
+  window.addEventListener('error', function(e){ show('JS ERROR: ' + e.message + ' @ ' + (e.filename||'?') + ':' + (e.lineno||'?')); });
+  window.addEventListener('unhandledrejection', function(e){ show('PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : e.reason)); });
+})();
+</script>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Focus Runner — Step 2</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>Focus Runner ⚡</title>
+<link rel="icon" href="/icon-192.png">
+<meta name="theme-color" content="#000008">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts non-blocking hain ab: agar fonts.googleapis.com slow/unreachable ho
+     to bhi page turant render hoga (fallback font ke saath), hang nahi hoga -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="game.css">
+
+<!-- index.js — admin broadcasts, notifications, announcements,
+     promotions, video promos, maintenance — sab yahan se aata hai -->
+<script type="module">
+window.addEventListener('load', async()=>{
+  try{ await import('../index.js'); }catch(e){ console.warn('[index.js]',e.message); }
+});
+</script>
+
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;touch-action:manipulation;}
-  body{font-family:sans-serif;color:#fff;}
-  #startScreen{
-    position:fixed;inset:0;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;padding:20px;z-index:5;
-  }
-  h1{color:#00f5ff;font-size:40px;margin-bottom:8px;}
-  p{color:#888;margin-bottom:30px;}
-  button{font-size:22px;padding:20px 50px;background:#00f5ff;color:#000;border:none;border-radius:50px;font-weight:bold;}
-  #gameWrap{position:fixed;inset:0;display:none;}
-  #gameWrap.show{display:block;}
-  canvas{display:block;background:#111;}
-  #hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;
-    font-size:18px;font-weight:bold;color:#0ff;z-index:6;}
-  #controls{position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:16px;z-index:6;}
-  #controls button{font-size:16px;padding:14px 22px;border-radius:12px;background:#222;color:#0ff;border:2px solid #0ff;}
-  #gameOverScreen{
-    position:fixed;inset:0;display:none;flex-direction:column;align-items:center;
-    justify-content:center;text-align:center;background:rgba(0,0,0,.9);z-index:20;
-  }
-  #gameOverScreen.show{display:flex;}
+/* Announcement container — game screen ke andar top par,
+   index.js isko automatically fill karta hai */
+#announcement-container{
+  position:fixed;
+  top:max(80px,env(safe-area-inset-top,80px));
+  left:10px;right:10px;
+  z-index:8000;
+  display:flex;flex-direction:column;gap:7px;
+  pointer-events:none;
+}
+#announcement-container>*{
+  pointer-events:all;
+  font-family:'Rajdhani',sans-serif!important;
+  border-radius:14px!important;
+}
 </style>
 </head>
 <body>
 
-<div id="startScreen">
-  <h1>FOCUS RUNNER</h1>
-  <p>Step 2 — core gameplay test</p>
-  <button id="playBtn">PLAY NOW</button>
-</div>
+<!-- index.js announcement container -->
+<div id="announcement-container"></div>
 
-<div id="gameWrap">
-  <div id="hud"><span id="scoreTxt">Score: 0</span><span id="liveTxt">❤️❤️❤️</span></div>
-  <canvas id="c"></canvas>
-  <div id="controls">
-    <button id="leftBtn">◀ LEFT</button>
-    <button id="jumpBtn">▲ JUMP</button>
-    <button id="rightBtn">RIGHT ▶</button>
+<!-- BG CANVAS -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- ═══════════════════ START SCREEN ═══════════════════ -->
+<div id="startScreen" class="screen active">
+  <button class="back-btn" onclick="goBack()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+
+  <div class="start-logo">
+    <div class="logo-icon">
+      <span class="logo-bolt">⚡</span>
+      <div class="logo-ring"></div>
+      <div class="logo-ring"></div>
+      <div class="logo-ring"></div>
+    </div>
+    <h1 class="game-title">FOCUS<br><span>RUNNER</span></h1>
+    <p class="game-subtitle">Train Your Brain. Outrun Distraction.</p>
+  </div>
+
+  <div id="previewRank" class="rank-badge-start">🏅 Beginner</div>
+
+  <div class="stats-preview">
+    <div class="stat-chip"><span class="stat-label">BEST</span><span class="stat-val" id="previewBest">0</span></div>
+    <div class="stat-chip"><span class="stat-label">COINS</span><span class="stat-val" id="previewCoins">0</span></div>
+    <div class="stat-chip"><span class="stat-label">DIST</span><span class="stat-val" id="previewDist">0m</span></div>
+    <div class="stat-chip"><span class="stat-label">XP</span><span class="stat-val xp-cyan" id="previewXP">0</span></div>
+  </div>
+
+  <button class="btn-play" onclick="startGame()">
+    <span class="btn-play-inner">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      PLAY NOW
+    </span>
+    <div class="btn-shine"></div>
+  </button>
+
+  <div class="how-to-play">
+    <div class="control-hint"><span class="ctrl-icon">👈👉</span><span>Lane Change</span></div>
+    <div class="control-hint"><span class="ctrl-icon">👆</span><span>Jump</span></div>
+    <div class="control-hint"><span class="ctrl-icon">👇</span><span>Slide</span></div>
+    <div class="control-hint"><span class="ctrl-icon">🧲</span><span>Magnet</span></div>
+  </div>
+
+  <div class="settings-row">
+    <button class="setting-toggle" id="soundToggle" onclick="toggleSound()"><span id="soundIcon">🔊</span> Sound</button>
+    <button class="setting-toggle" id="vibeToggle" onclick="toggleVibe()"><span id="vibeIcon">📳</span> Vibrate</button>
   </div>
 </div>
 
-<div id="gameOverScreen">
-  <h1 style="color:#f44;">GAME OVER</h1>
-  <p id="finalScore" style="color:#fff;font-size:20px;margin:14px 0 26px;">Score: 0</p>
-  <button id="retryBtn">RETRY</button>
+<!-- ═══════════════════ GAME SCREEN ═══════════════════ -->
+<div id="gameScreen" class="screen">
+  <div class="hud">
+    <div class="hud-left">
+      <div class="lives-row">
+        <span class="life-dot" id="life1">❤️</span>
+        <span class="life-dot" id="life2">❤️</span>
+        <span class="life-dot" id="life3">❤️</span>
+      </div>
+      <div class="hud-dist"><span id="hudDist">0m</span></div>
+    </div>
+    <div class="hud-center">
+      <div class="score-display">
+        <div class="score-label">SCORE</div>
+        <div class="score-val" id="hudScore">0</div>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="combo-display">
+        <span id="comboVal">x1</span>
+        <span class="combo-label">COMBO</span>
+      </div>
+      <div class="coin-display"><span>💰</span><span id="hudCoins">0</span></div>
+    </div>
+  </div>
+
+  <div class="powerup-row" id="powerupRow"></div>
+
+  <div class="speed-bar-wrap">
+    <div class="speed-bar-fill" id="speedBar"></div>
+    <span class="speed-label" id="speedLabel">SPEED 1</span>
+  </div>
+
+  <canvas id="gameCanvas"></canvas>
+  <div class="shield-overlay" id="shieldOverlay"></div>
+  <div class="combo-flash" id="comboFlash"></div>
 </div>
 
+<!-- ═══════════════════ QUESTION OVERLAY ═══════════════════ -->
+<div id="questionOverlay" class="screen">
+  <div class="q-container">
+    <div class="q-badge">⚡ QUICK BOOST CHALLENGE</div>
+    <div class="q-timer-bar"><div class="q-timer-fill" id="qTimerFill"></div></div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-options" id="qOptions"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ GAME OVER ═══════════════════ -->
+<div id="gameOverScreen" class="screen">
+  <div class="over-glow"></div>
+  <div class="over-content">
+    <div class="over-title" id="overTitle">GAME OVER</div>
+    <div class="over-subtitle" id="overSubtitle">Distraction wins… this time.</div>
+    <div class="over-stats">
+      <div class="over-stat"><span class="over-stat-icon">🏆</span><span class="over-stat-label">SCORE</span><span class="over-stat-val" id="overScore">0</span></div>
+      <div class="over-stat"><span class="over-stat-icon">📏</span><span class="over-stat-label">DISTANCE</span><span class="over-stat-val" id="overDist">0m</span></div>
+      <div class="over-stat"><span class="over-stat-icon">💰</span><span class="over-stat-label">COINS</span><span class="over-stat-val" id="overCoins">0</span></div>
+      <div class="over-stat"><span class="over-stat-icon">🔥</span><span class="over-stat-label">COMBO</span><span class="over-stat-val" id="overCombo">x0</span></div>
+    </div>
+    <div class="over-xp-section">
+      <div class="over-xp-row">
+        <span class="over-xp-earned" id="overXP">+0 XP</span>
+        <span class="over-rank-label" id="overRank">🏅 Beginner</span>
+      </div>
+      <div class="over-rank-track"><div class="over-rank-fill" id="overRankFill" style="width:0%"></div></div>
+      <div class="over-rank-text" id="overRankLabel">0 / 200 XP → Focused</div>
+    </div>
+    <div class="best-score-banner"><span>⚡ BEST: </span><span id="overBest">0</span></div>
+    <div class="new-record-badge" id="newRecordBadge" style="display:none">🎉 NEW RECORD!</div>
+    <button class="btn-restart" onclick="restartGame()">
+      <span>PLAY AGAIN</span><div class="btn-shine"></div>
+    </button>
+    <button class="btn-home" onclick="goBack()">← MENU</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ TUTORIAL ═══════════════════ -->
+<div id="tutorialOverlay" class="tut-overlay">
+  <div class="tut-box">
+    <div class="tut-icon" id="tutIcon">👆</div>
+    <div class="tut-title" id="tutTitle">JUMP</div>
+    <div class="tut-text" id="tutText">Swipe up to jump</div>
+    <div class="tut-dots" id="tutDots"></div>
+    <button class="tut-btn" id="tutBtn">NEXT →</button>
+    <button class="tut-skip" onclick="document.getElementById('tutorialOverlay').classList.remove('show');localStorage.setItem('fr_tutorial_done','1')">Skip Tutorial</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ ACHIEVEMENT BOX ═══════════════════ -->
+<div id="achievementBox" class="ach-box">
+  <div class="ach-left"><div class="ach-icon" id="achIcon">🚀</div></div>
+  <div class="ach-right">
+    <div class="ach-tag">ACHIEVEMENT UNLOCKED</div>
+    <div class="ach-name" id="achName">First Step</div>
+    <div class="ach-desc" id="achDesc">Complete your first run</div>
+    <div class="ach-xp" id="achXP">+25 XP</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RANK UP BOX ═══════════════════ -->
+<div id="rankUpBox" class="rankup-box">
+  <div class="rankup-glow"></div>
+  <div class="rankup-icon" id="rankUpIcon">⚡</div>
+  <div class="rankup-label">RANK UP!</div>
+  <div class="rankup-name" id="rankUpName">ELITE</div>
+</div>
+
+<!-- FLOATING SCORES -->
+<div id="floatingScores"></div>
+
+<!-- ═══════ BOTTOM NAV ═══════ -->
+<style>
+/* ── BOTTOM NAV (Start Screen only — hidden during gameplay) ── */
+:root{ --nav-h:68px; }
+
+#gameBottomNav{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:500;
+  height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  background:rgba(0,0,8,.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,245,255,.1);
+  display:flex;
+  align-items:stretch;
+  /* Only visible on start screen */
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(100%);
+  transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.2,.64,1);
+}
+#gameBottomNav.nav-visible{
+  opacity:1;
+  pointer-events:all;
+  transform:translateY(0);
+}
+
+.g-nav-item{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;
+  cursor:pointer;
+  text-decoration:none;
+  color:rgba(224,234,255,.35);
+  transition:color .2s;
+  padding:8px 4px;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.g-nav-item.g-active{ color:#00f5ff; }
+.g-nav-item.g-active::before{
+  content:'';
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:28px;height:2px;border-radius:0 0 3px 3px;
+  background:linear-gradient(90deg,#00f5ff,#bf00ff);
+}
+.g-nav-item:hover{ color:rgba(0,245,255,.7); }
+
+/* SVG icons — crisp stroke-based, no emoji */
+.g-nav-item svg{
+  width:22px;height:22px;
+  stroke-width:1.7;
+  fill:none;stroke:currentColor;
+  stroke-linecap:round;stroke-linejoin:round;
+  flex-shrink:0;
+}
+.g-nav-label{
+  font-size:9px;
+  font-family:'Orbitron',sans-serif;
+  letter-spacing:.8px;
+  line-height:1;
+}
+
+/* Push start screen content up so nav doesn't overlap */
+#startScreen.nav-push{
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px);
+}
+</style>
+
+<nav id="gameBottomNav">
+  <!-- HOME → dashboard-home.html (one level up from /game/) -->
+  <a class="g-nav-item" href="../dashboard-home.html" id="gNavHome">
+    <svg viewBox="0 0 24 24">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
+      <polyline points="9 21 9 12 15 12 15 21"/>
+    </svg>
+    <span class="g-nav-label">HOME</span>
+  </a>
+
+  <!-- GAME → active -->
+  <a class="g-nav-item g-active" href="game.html" id="gNavGame">
+    <!-- Joystick / controller icon -->
+    <svg viewBox="0 0 24 24">
+      <rect x="2" y="7" width="20" height="14" rx="5" ry="5"/>
+      <line x1="9" y1="12" x2="9" y2="16"/><line x1="7" y1="14" x2="11" y2="14"/>
+      <circle cx="15.5" cy="13" r=".8" fill="currentColor" stroke="none"/>
+      <circle cx="17.5" cy="15" r=".8" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="g-nav-label">PLAY</span>
+  </a>
+
+  <!-- LEADERBOARD -->
+  <a class="g-nav-item" href="gameleaderboard.html" id="gNavLB">
+    <!-- Bar chart / trophy icon -->
+    <svg viewBox="0 0 24 24">
+      <rect x="18" y="3" width="4" height="18" rx="1"/>
+      <rect x="10" y="8" width="4" height="13" rx="1"/>
+      <rect x="2" y="13" width="4" height="8" rx="1"/>
+    </svg>
+    <span class="g-nav-label">RANKING</span>
+  </a>
+</nav>
+
+<!-- ═══════ SCRIPTS — order matters ═══════ -->
+<script src="game.js"></script>
+<!-- game-patch.js (live leaderboard/broadcast/session) is build mein nahi hai —
+     ye alag step mein add hoga jab cloud/live system layer karenge -->
 <script>
-'use strict';
-var startScreen = document.getElementById('startScreen');
-var gameWrap = document.getElementById('gameWrap');
-var gameOverScreen = document.getElementById('gameOverScreen');
-var canvas = document.getElementById('c');
-var ctx = canvas.getContext('2d');
-var scoreTxt = document.getElementById('scoreTxt');
-var liveTxt = document.getElementById('liveTxt');
-var finalScore = document.getElementById('finalScore');
+window._frBootOK = true;
+console.log('[FR] Full-feature build loaded (no live/cloud system yet).');
+</script>
+<script>
+// Power-up HUD chips
+setInterval(()=>{
+  if(typeof G==='undefined'||!G.running)return;
+  const row=document.getElementById('powerupRow');if(!row)return;
+  let c='';
+  if(G.boost)  c+=`<div class="pu-chip boost">⚡ BOOST</div>`;
+  if(G.shield) c+=`<div class="pu-chip shield">🛡️ SHIELD</div>`;
+  if(G.magnet) c+=`<div class="pu-chip magnet">🧲 MAGNET</div>`;
+  if(G.slowmo) c+=`<div class="pu-chip slowmo">🌀 SLOW-MO</div>`;
+  if(row.innerHTML!==c)row.innerHTML=c;
+},200);
 
-var W, H, laneW;
-function resize(){
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-  laneW = W / 3;
-}
-window.addEventListener('resize', resize);
+// Tell index.js presence system we are on game page
+window.addEventListener('uw_auth_ready',()=>{
+  window._uwPresence?.update?.('game.html');
+});
 
-var G = null;
-function newGame(){
-  return {
-    lane: 1, targetX: 0, playerY: 0, jumping:false, jumpV:0,
-    obstacles: [], speed: 6, score: 0, lives: 3, running: true, frame:0
-  };
-}
+/* ─── BOTTOM NAV: show only on start screen ───────────────────── */
+(function initGameNav(){
+  const nav       = document.getElementById('gameBottomNav');
+  const startScr  = document.getElementById('startScreen');
+  if(!nav) return;
 
-function laneX(lane){ return lane*laneW + laneW/2; }
-
-function spawnObstacle(){
-  var lane = Math.floor(Math.random()*3);
-  G.obstacles.push({lane:lane, y:-40, w:50, h:50});
-}
-
-function update(){
-  G.frame++;
-  if(G.frame % Math.max(20, 50 - Math.floor(G.score/5)) === 0) spawnObstacle();
-
-  G.obstacles.forEach(function(o){ o.y += G.speed; });
-  G.obstacles = G.obstacles.filter(function(o){ return o.y < H+60; });
-
-  // jump physics
-  if(G.jumping){
-    G.playerY += G.jumpV;
-    G.jumpV += 1.1;
-    if(G.playerY >= 0){ G.playerY = 0; G.jumping = false; G.jumpV = 0; }
+  // Show nav & push start screen up when start screen is active
+  function syncNav(){
+    const onStart = startScr?.classList.contains('active');
+    if(onStart){
+      nav.classList.add('nav-visible');
+      startScr.classList.add('nav-push');
+    } else {
+      nav.classList.remove('nav-visible');
+      startScr?.classList.remove('nav-push');
+    }
   }
 
-  // collision (only if not jumping high enough)
-  var px = laneX(G.lane), py = H-120+G.playerY;
-  G.obstacles.forEach(function(o){
-    if(o.hit) return;
-    var ox = laneX(o.lane);
-    var closeY = Math.abs(o.y - py) < 45;
-    var closeX = Math.abs(ox - px) < 45;
-    var jumpedOver = G.playerY < -60;
-    if(closeY && closeX && !jumpedOver){
-      o.hit = true;
-      G.lives--;
-      liveTxt.textContent = '❤️'.repeat(Math.max(0,G.lives));
-      if(G.lives <= 0){ endGame(); }
-    }
-  });
+  // Observe class changes on startScreen
+  const obs = new MutationObserver(syncNav);
+  if(startScr) obs.observe(startScr,{attributes:true,attributeFilter:['class']});
 
-  G.score += 1;
-  scoreTxt.textContent = 'Score: ' + Math.floor(G.score/5);
-  G.speed = 6 + G.score/300;
-}
+  // Initial check
+  syncNav();
 
-function draw(){
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0,0,W,H);
-
-  // lane dividers
-  ctx.strokeStyle = '#333';
-  ctx.beginPath();
-  ctx.moveTo(laneW,0); ctx.lineTo(laneW,H);
-  ctx.moveTo(laneW*2,0); ctx.lineTo(laneW*2,H);
-  ctx.stroke();
-
-  // obstacles
-  ctx.fillStyle = '#f44';
-  G.obstacles.forEach(function(o){
-    ctx.fillRect(laneX(o.lane)-25, o.y-25, 50, 50);
-  });
-
-  // player
-  var px = laneX(G.lane), py = H-120+G.playerY;
-  ctx.fillStyle = '#0ff';
-  ctx.fillRect(px-25, py-25, 50, 50);
-}
-
-function loop(){
-  if(!G || !G.running) return;
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-function startGame(){
-  resize();
-  G = newGame();
-  startScreen.style.display = 'none';
-  gameOverScreen.classList.remove('show');
-  gameWrap.classList.add('show');
-  scoreTxt.textContent = 'Score: 0';
-  liveTxt.textContent = '❤️❤️❤️';
-  requestAnimationFrame(loop);
-}
-
-function endGame(){
-  G.running = false;
-  gameWrap.classList.remove('show');
-  finalScore.textContent = 'Score: ' + Math.floor(G.score/5);
-  gameOverScreen.classList.add('show');
-}
-
-document.getElementById('playBtn').addEventListener('click', startGame);
-document.getElementById('retryBtn').addEventListener('click', startGame);
-document.getElementById('leftBtn').addEventListener('click', function(){
-  if(G && G.running && G.lane>0) G.lane--;
-});
-document.getElementById('rightBtn').addEventListener('click', function(){
-  if(G && G.running && G.lane<2) G.lane++;
-});
-document.getElementById('jumpBtn').addEventListener('click', function(){
-  if(G && G.running && !G.jumping){ G.jumping = true; G.jumpV = -18; }
-});
-
-resize();
+  // Also re-sync when goBack is called (returns to start screen)
+  const _origGoBackNav = window.goBack;
+  window.goBack = function(){
+    _origGoBackNav?.apply(this,arguments);
+    setTimeout(syncNav, 80);
+  };
+})();
 </script>
+
+<!-- Eruda debug console hata diya — production mein CDN slow/blocked hone par
+     poora page hang ho sakta tha. Debug ke liye console mein manually paste karo:
+     var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda';
+     document.body.appendChild(s);s.onload=()=>eruda.init(); -->
+
 
 </body>
 </html>
