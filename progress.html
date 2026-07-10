@@ -22,8 +22,23 @@
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
+
+  var theme =
+    (!saved || saved === "system")
+      ? (systemDark ? "dark" : "light")
+      : saved;
+
   document.documentElement.setAttribute("data-theme", theme);
+
+  window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      document.documentElement.setAttribute(
+        "data-theme",
+        e.matches ? "dark" : "light"
+      );
+    }
+  });
 })();
 </script>
 <style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
