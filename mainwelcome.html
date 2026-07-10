@@ -22,6 +22,16 @@
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
 })();
+
+window.matchMedia("(prefers-color-scheme: dark)")
+.addEventListener("change", function(e){
+  if(localStorage.getItem("theme") === "system"){
+    document.documentElement.setAttribute(
+      "data-theme",
+      e.matches ? "dark" : "light"
+    );
+  }
+});
 </script>
 
 <!-- ✅ FLASH PREVENTION -->
