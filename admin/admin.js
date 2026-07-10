@@ -256,6 +256,7 @@ window.verifyAdmin = async () => {
     // ── Step 5: ✅ All checks passed — hide gate, launch panel
     $("authGate").style.display = "none";
     initAdminPanel(user);
+    if (typeof window.initContentStudio === "function") window.initContentStudio();
 
   } catch (err) {
     console.error("Admin auth error:", err);
