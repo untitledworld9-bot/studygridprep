@@ -1,0 +1,279 @@
+/* ═══════════════════════════════════════════════════════════
+   STUDY GRID PREP — CANONICAL DESIGN SYSTEM
+   Extracted & verified from: index.html, index-1.html,
+   jee-preparation-2027.html, cuet-preparation-guide.html
+   Tokens confirmed IDENTICAL across all 4 pages — this file
+   is the single source of truth going forward.
+   Use for: any new content page, editor-generated output,
+   and as the design-language reference for the AI Content Studio.
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── TOKENS ── */
+:root {
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --primary-hover: #4338CA;
+  --accent: #06B6D4;
+  --accent-light: #ECFEFF;
+  --teal: #0D9488;
+  --teal-light: #F0FDFA;
+  --orange: #EA580C;
+  --orange-light: #FFF7ED;
+  --violet: #7C3AED;
+  --violet-light: #F5F3FF;
+  --rose: #E11D48;
+  --rose-light: #FFF1F2;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --success: #10B981;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --bg: #FFFFFF;
+  --bg-soft: #F8FAFC;
+  --bg-muted: #F1F5F9;
+  --border: #E2E8F0;
+  --border-soft: #F1F5F9;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-md: 0 10px 24px -4px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 24px 40px -8px rgba(0,0,0,0.1);
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  --font: 'Outfit', sans-serif;       /* display / headings */
+  --font-body: 'DM Sans', sans-serif; /* body text */
+}
+
+html { background: var(--bg); scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ═══════════════════════════════════════════════
+   1. NAVBAR — identical markup/CSS on every page
+   ═══════════════════════════════════════════════
+   Markup:
+   <nav class="navbar">
+     <a href="/" class="nav-brand">
+       <img src="/icon-192.png" class="nav-logo" alt="Study Grid Prep">
+       <span class="nav-name">Study Grid Prep</span>
+     </a>
+     <div class="nav-right">
+       <div class="nav-cta-desktop">
+         <a href="login.html" class="btn-ghost">Login</a>
+         <a href="login.html" class="btn-primary-nav">Get Started →</a>
+       </div>
+       <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+         <span></span><span></span><span></span>
+       </button>
+     </div>
+   </nav>
+   NOTE (.info domain): login/CTA hrefs point cross-domain to
+   https://studygridprep.online/login.html since .info has no app backend. */
+.navbar {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0 5%; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo { width: 34px; height: 34px; border-radius: 9px; object-fit: cover; }
+.nav-name { font-family: var(--font); font-weight: 800; font-size: 16px; color: var(--text-primary); letter-spacing: -0.4px; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.hamburger { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 40px; height: 40px; border: none; background: transparent; cursor: pointer; border-radius: 10px; gap: 5px; transition: background var(--transition); padding: 6px; }
+.hamburger:hover { background: var(--bg-muted); }
+.hamburger span { display: block; height: 2px; border-radius: 2px; background: var(--text-primary); transition: all 0.35s cubic-bezier(0.4,0,0.2,1); transform-origin: center; }
+.hamburger span:nth-child(1) { width: 22px; }
+.hamburger span:nth-child(2) { width: 16px; }
+.hamburger span:nth-child(3) { width: 22px; }
+.hamburger.open span:nth-child(1) { width: 20px; transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(3) { width: 20px; transform: translateY(-7px) rotate(-45deg); }
+.mobile-menu { position: fixed; top: 64px; left: 0; right: 0; background: rgba(255,255,255,0.97); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); z-index: 190; padding: 0 5%; overflow: hidden; max-height: 0; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease; opacity: 0; }
+.mobile-menu.open { max-height: 400px; opacity: 1; }
+.mobile-menu-inner { padding: 20px 0 28px; display: flex; flex-direction: column; gap: 4px; }
+.mob-link { display: block; padding: 14px 16px; font-family: var(--font); font-weight: 600; font-size: 16px; color: var(--text-primary); text-decoration: none; border-radius: var(--radius); transition: background var(--transition), color var(--transition); }
+.mob-link:hover, .mob-link.active { background: var(--primary-light); color: var(--primary); }
+.mob-btn { display: block; margin-top: 12px; padding: 14px 16px; background: var(--primary); color: white; font-family: var(--font); font-weight: 700; font-size: 16px; text-align: center; text-decoration: none; border-radius: var(--radius); transition: background var(--transition); }
+.mob-btn:hover { background: var(--primary-hover); }
+.nav-cta-desktop { display: flex; align-items: center; gap: 10px; }
+
+/* ═══════════════════════════════════════════════
+   2. BUTTONS — reuse these exact classes everywhere
+   ═══════════════════════════════════════════════ */
+.btn-ghost { font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); transition: var(--transition); }
+.btn-ghost:hover { background: var(--bg-muted); color: var(--text-primary); }
+.btn-primary-nav { display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white; font-family: var(--font); font-weight: 700; font-size: 14px; padding: 9px 18px; border-radius: var(--radius); text-decoration: none; border: none; cursor: pointer; transition: var(--transition); }
+.btn-primary-nav:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-primary-nav:active { transform: scale(0.97); }
+.article-cta { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font); font-weight: 800; font-size: 15px; padding: 14px 28px; border-radius: var(--radius-lg); text-decoration: none; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+.article-cta:hover { transform: translateY(-2px); }
+.article-cta:active { transform: scale(0.97); }
+.btn-cta-white { display: inline-flex; align-items: center; gap: 8px; background: white; font-family: var(--font); font-weight: 800; font-size: 15px; padding: 14px 28px; border-radius: var(--radius-lg); text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.18); position: relative; z-index: 1; }
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.22); }
+.btn-cta-white:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════════════
+   3. SECTION HEADER — use for every section title
+   (eyebrow / title / sub) across the whole site
+   ═══════════════════════════════════════════════
+   Markup:
+   <div class="section-header">
+     <span class="section-eyebrow">Eyebrow Label</span>
+     <h2 class="section-title">Section Title</h2>
+     <p class="section-sub">One-line supporting text.</p>
+   </div> */
+.section { padding: 72px 5%; max-width: 1100px; margin: 0 auto; }
+.section-header { text-align: center; margin-bottom: 44px; }
+.section-eyebrow { display: inline-block; font-family: var(--font); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 10px; }
+.section-title { font-family: var(--font); font-size: clamp(24px, 4vw, 36px); font-weight: 800; letter-spacing: -0.8px; color: var(--text-primary); margin-bottom: 12px; line-height: 1.15; }
+.section-sub { font-size: 15px; color: var(--text-secondary); max-width: 480px; margin: 0 auto; line-height: 1.65; }
+
+/* ═══════════════════════════════════════════════
+   4. ARTICLE / CONTENT PAGE COMPONENTS
+   Use these for every blog / notes / guide page so
+   AI Content Studio output always matches this shape.
+   ═══════════════════════════════════════════════ */
+.article-hero { padding: 64px 5% 52px; text-align: center; position: relative; overflow: hidden; animation: fadeUp 0.55s ease forwards; }
+.article-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 120% 60% at 50% -5%, rgba(99,102,241,0.11) 0%, rgba(6,182,212,0.06) 50%, transparent 70%), radial-gradient(ellipse 60% 40% at 10% 80%, rgba(124,58,237,0.06) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 90% 90%, rgba(6,182,212,0.05) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+.article-hero > * { position: relative; z-index: 1; }
+.article-breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+.article-breadcrumb a { color: var(--primary); text-decoration: none; font-weight: 500; transition: color var(--transition); }
+.article-breadcrumb a:hover { color: var(--primary-hover); }
+.article-breadcrumb span { margin: 0 6px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 50px; margin-bottom: 20px; border: 1px solid rgba(79,70,229,0.18); letter-spacing: 0.3px; text-transform: uppercase; animation: fadeUp 0.55s ease 0.05s both; }
+.article-hero h1 { font-family: var(--font); font-size: clamp(30px, 5.5vw, 48px); font-weight: 900; letter-spacing: -1.5px; color: var(--text-primary); margin-bottom: 16px; line-height: 1.08; animation: fadeUp 0.55s ease 0.1s both; }
+.article-hero h1 .grad { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 60%, var(--teal) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.article-hero p { font-size: clamp(15px, 2vw, 17px); color: var(--text-secondary); max-width: 540px; margin: 0 auto 32px; line-height: 1.68; animation: fadeUp 0.55s ease 0.15s both; }
+
+.article-body { max-width: 800px; margin: 0 auto; padding: 56px 5% 72px; }
+.article-body h2 { font-family: var(--font); font-size: clamp(21px, 3vw, 27px); font-weight: 800; color: var(--text-primary); margin: 48px 0 16px; letter-spacing: -0.5px; line-height: 1.2; }
+.article-body h2:first-child { margin-top: 0; }
+.article-body h3 { font-family: var(--font); font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 32px 0 12px; }
+.article-body p { font-size: 15.5px; color: var(--text-secondary); line-height: 1.78; margin-bottom: 16px; }
+.article-body ul, .article-body ol { padding-left: 22px; margin-bottom: 20px; }
+.article-body li { font-size: 15.5px; color: var(--text-secondary); line-height: 1.78; margin-bottom: 8px; }
+.article-body strong { color: var(--text-primary); font-weight: 600; }
+
+.tip-box { display: flex; gap: 14px; align-items: flex-start; border-radius: var(--radius); padding: 18px 20px; margin: 28px 0; border: 1px solid; }
+.tip-box p { margin: 0; font-size: 14.5px; line-height: 1.7; }
+
+.article-cta-block { border-radius: var(--radius-xl); padding: 48px 36px; text-align: center; margin: 52px 0 0; position: relative; overflow: hidden; }
+.article-cta-block::before { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+.article-cta-block::after { content: ''; position: absolute; bottom: -80px; left: -40px; width: 240px; height: 240px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+.article-cta-block h3 { font-family: var(--font); font-size: clamp(20px, 3vw, 26px); font-weight: 800; color: white; margin-bottom: 10px; position: relative; z-index: 1; }
+.article-cta-block p { font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 24px; position: relative; z-index: 1; }
+
+.also-read { margin-top: 44px; padding-top: 36px; border-top: 1px solid var(--border); }
+.also-read-title { font-family: var(--font); font-weight: 700; font-size: 15px; color: var(--text-primary); margin-bottom: 14px; }
+.also-read-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.also-read-links a { font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 50px; text-decoration: none; transition: all var(--transition); border: 1px solid transparent; }
+.also-read-links a:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+/* ═══════════════════════════════════════════════
+   5. FAQ ACCORDION — identical everywhere.
+   Markup:
+   <div class="section faq-section" id="faq">
+     <div class="section-header">...</div>
+     <div class="faq-list">
+       <div class="faq-item">
+         <button class="faq-q" onclick="toggleFaq(this)">
+           Question text
+           <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+         </button>
+         <div class="faq-a"><p>Answer text</p></div>
+       </div>
+     </div>
+   </div> */
+.faq-section { padding-bottom: 80px; }
+.faq-list { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.faq-item { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow 0.22s ease; }
+.faq-item:hover { box-shadow: var(--shadow); }
+.faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--text-primary); line-height: 1.4; transition: color 0.2s; }
+.faq-q:hover { color: var(--primary); }
+.faq-icon { width: 18px; height: 18px; stroke: var(--text-muted); flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), stroke 0.2s; }
+.faq-item.open .faq-icon { transform: rotate(180deg); stroke: var(--primary); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.38s cubic-bezier(0.4,0,0.2,1), padding 0.3s ease; padding: 0 20px; }
+.faq-item.open .faq-a { max-height: 300px; padding: 0 20px 18px; }
+.faq-a p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* ═══════════════════════════════════════════════
+   6. DARK "FOLLOW US" BLOCK + FOOTER — identical everywhere
+   Markup:
+   <div class="dark-footer-block">
+     <div class="follow-section">...</div>
+     <footer>
+       <div class="footer-logo">Study Grid Prep</div>
+       <div class="footer-links">
+         <a href="about.html">About Us</a> ... (see domain note below)
+       </div>
+       <div class="footer-copy">© 2026 Study Grid Prep · Built for students, by students</div>
+     </footer>
+   </div>
+   DOMAIN NOTE:
+   .online (index.html)  → relative hrefs: about.html, contact.html...
+   .info   (index-1.html) → absolute cross-domain hrefs pointing to
+   https://studygridprep.online/about.html etc. (the .info site has
+   no login/app backend, so footer links always route back to .online). */
+.dark-footer-block { background: #0F172A; }
+.follow-section { padding: 72px 5% 56px; text-align: center; }
+.follow-title { font-family: var(--font); font-size: clamp(26px, 5vw, 40px); font-weight: 900; color: white; letter-spacing: -0.8px; margin-bottom: 10px; }
+.follow-sub { font-size: 15px; color: #94A3B8; margin-bottom: 40px; line-height: 1.6; }
+.social-grid { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.social-btn { display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 20px; background: #1E293B; border: 1px solid #334155; text-decoration: none; transition: all 0.28s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+.social-btn:hover { transform: translateY(-4px) scale(1.06); box-shadow: 0 12px 28px rgba(0,0,0,0.4); }
+.social-btn:active { transform: scale(0.92); }
+.social-btn img, .social-btn svg { width: 32px; height: 32px; object-fit: contain; transition: transform 0.25s ease; }
+.social-btn:hover img, .social-btn:hover svg { transform: scale(1.12); }
+.social-btn.yt { border-color: rgba(255,0,0,0.3); }
+.social-btn.yt:hover { background: #FF0000; border-color: #FF0000; box-shadow: 0 12px 28px rgba(255,0,0,0.3); }
+.social-btn.ig:hover { background: linear-gradient(135deg, #F58529, #DD2A7B, #8134AF, #515BD4); border-color: transparent; box-shadow: 0 12px 28px rgba(221,42,123,0.3); }
+.social-btn.tg:hover { background: #2AABEE; border-color: #2AABEE; box-shadow: 0 12px 28px rgba(42,171,238,0.3); }
+.social-btn.tw:hover { background: #111; border-color: #333; box-shadow: 0 12px 28px rgba(0,0,0,0.5); }
+.social-label { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.social-name { font-family: var(--font); font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.5px; margin-top: 2px; }
+
+footer { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 32px 5%; text-align: center; }
+.footer-logo { font-family: var(--font); font-weight: 900; font-size: 18px; color: #0F172A; letter-spacing: -0.5px; margin-bottom: 18px; }
+.footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-bottom: 14px; }
+.footer-links a { font-size: 13px; color: #475569; text-decoration: none; transition: color var(--transition); }
+.footer-links a:hover { color: #4F46E5; }
+.footer-copy { font-size: 12px; color: #94A3B8; }
+
+/* ═══════════════════════════════════════════════
+   7. ANIMATIONS + SCROLL REVEAL — identical everywhere
+   ═══════════════════════════════════════════════ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.4,0,0.2,1); }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ═══════════════════════════════════════════════
+   8. MOBILE
+   ═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .nav-cta-desktop { display: none; }
+  .article-hero { padding: 48px 5% 40px; }
+  .article-body { padding: 40px 5% 52px; }
+  .article-cta-block { padding: 36px 24px; }
+  .faq-q { font-size: 14px; padding: 16px 16px; }
+  .faq-a { padding: 0 16px; }
+  .faq-item.open .faq-a { padding: 0 16px 16px; }
+  .social-grid { gap: 12px; }
+  .social-btn { width: 60px; height: 60px; border-radius: 16px; }
+}
+@media (min-width: 641px) {
+  .hamburger { display: none; }
+  .mobile-menu { display: none; }
+}
