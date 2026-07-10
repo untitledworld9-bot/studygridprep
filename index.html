@@ -417,7 +417,7 @@ body {
 
 /* ===== HERO ===== */
 .hero {
-  padding: 28px 5% 32px;
+  padding: 10px 5% 32px;
   text-align: center;
   max-width: 760px;
   margin: 0 auto;
@@ -427,7 +427,7 @@ body {
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   background: var(--primary-light);
   color: var(--primary);
   font-family: var(--font);
@@ -435,10 +435,25 @@ body {
   font-weight: 700;
   padding: 6px 14px;
   border-radius: 50px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   border: 1px solid rgba(79,70,229,0.18);
   letter-spacing: 0.3px;
   text-transform: uppercase;
+}
+
+.hero-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  animation: badgePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.18); opacity: 0.7; }
 }
 
 .hero h1 {
@@ -2058,7 +2073,7 @@ footer {
 <div class="mobile-menu" id="mobileMenu">
   <div class="mobile-menu-inner">
     <a href="#features" class="mob-link" onclick="closeMenu()">Features</a>
-    <a href="#mock-tests" class="mob-link" onclick="closeMenu()">Mock Tests</a>
+    <a href="mock-home.html" class="mob-link" onclick="closeMenu()">Mock Tests</a>
     <a href="#how" class="mob-link" onclick="closeMenu()">How It Works</a>
     <a href="login.html" class="mob-link">Login</a>
     <a href="login.html" class="mob-btn">Sign Up Free →</a>
@@ -2112,7 +2127,7 @@ footer {
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">Trusted by 1,000+ Students 🚀</div>
+  <div class="hero-badge"><span class="hero-badge-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z" fill="var(--primary)"/></svg></span>Trusted by 500+ Students</div>
   <h1>Study Smarter.<br><span class="grad">Score Better.</span></h1>
   <p class="hero-sub">
     A distraction-free study platform with mock tests, focus timer, progress tracking and personalised playlists — everything in one place.
@@ -2240,7 +2255,7 @@ footer {
 <!-- STATS -->
 <div class="stats-bar reveal">
   <div class="stat-item">
-    <div class="stat-value" data-target="1000" data-prefix="1K">1K+</div>
+    <div class="stat-value" data-target="500" data-suffix="+">500+</div>
     <div class="stat-label">Active Students</div>
   </div>
   <div class="stat-divider"></div>
@@ -2260,143 +2275,322 @@ footer {
   </div>
 </div>
 
-<!-- MOCK TEST CARDS -->
-<div class="mock-section-wrap" id="mock-tests">
-  <div class="section" style="padding-bottom: 56px;">
-    <div class="section-header reveal">
-      <span class="section-eyebrow">Mock Tests</span>
-      <h2 class="section-title">Practice like the real exam</h2>
-      <p class="section-sub">Full-length and subject-wise mock tests with detailed analysis for every major exam.</p>
-    </div>
-
-    <div class="mock-cards-grid">
-
-      <!-- JEE Mock Card -->
-      <a href="mock-home.html" class="mock-card reveal">
-        <img
-          src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1776606792/egqmpo2mjwhvydw2vpcs.jpg"
-          alt="JEE Mock Tests"
-          class="mock-card-img"
-          loading="lazy"
-        >
-        <div class="mock-card-body">
-          <div class="mock-card-badge badge-jee">
-            <img src="/assets/jee.png" class="mock-card-logo" alt="JEE" onerror="this.style.display='none'">
-            JEE Main
-          </div>
-          <div class="mock-card-title">JEE Mock Tests</div>
-          <div class="mock-card-desc">Previous Year Full-length JEE Main mock tests with Physics, Chemistry & Maths. Track your rank and accuracy.</div>
-          <span class="mock-card-cta cta-jee">View Tests →</span>
-        </div>
-      </a>
-
-      <!-- CUET Mock Card -->
-      <a href="mock-select.html" class="mock-card reveal" style="transition-delay: 0.1s;">
-        <img
-          src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1777202478/lzxipky73tjlmdennaxy.jpg"
-          alt="CUET Mock Tests"
-          class="mock-card-img"
-          loading="lazy"
-        >
-        <div class="mock-card-body">
-          <div class="mock-card-badge badge-cuet">
-            <img src="/assets/cuet.png" class="mock-card-logo" alt="CUET" onerror="this.style.display='none'">
-            CUET UG
-          </div>
-          <div class="mock-card-title">CUET Mock Tests</div>
-          <div class="mock-card-desc">Subject-wise and previous year full mock tests for CUET UG. Choose your domain subjects and practice smarter.</div>
-          <span class="mock-card-cta cta-cuet">View Tests →</span>
-        </div>
-      </a>
-
-    </div>
-
-    <!-- AI Analysis Banner -->
-    <div class="ai-analysis-banner reveal" onclick="window.location.href='login.html'" style="cursor:pointer;">
-      <img
-        src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1777866998/eksqrlyeya4tthxfczin.png"
-        alt="AI Detailed Analysis"
-        class="ai-banner-img"
-        loading="eager"
-        fetchpriority="high"
-      >
-      <div class="ai-banner-text">
-        <div class="ai-banner-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:6px;flex-shrink:0;"><circle cx="12" cy="12" r="9" stroke="#8B5CF6" stroke-width="1.6" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="5" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="#8B5CF6"/><line x1="12" y1="3" x2="12" y2="7" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="12" x2="7" y2="12" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="17" y1="12" x2="21" y2="12" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/></svg>AI Detailed Analysis</div>
-        <div class="ai-banner-sub">Available in Mock Analysis &amp; Solutions Page — powered by AI</div>
-      </div>
-      <span class="ai-banner-badge">NEW ✦</span>
-    </div>
-
-  </div>
-</div>
-
-<!-- STUDY WITH AI SECTION -->
-<div class="section ai-section" id="ai-features">
+<!-- ═══ PREMIUM FEATURE SHOWCASE CAROUSEL ═══ -->
+<div class="section fsc-section" id="app-showcase">
   <div class="section-header reveal">
-    <span class="section-eyebrow" style="background: linear-gradient(135deg,#818CF8,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">AI Powered</span>
-    <h2 class="section-title">Study With AI Features ✨</h2>
-    <p class="section-sub">AI tools built right into your study flow — ask doubts, get explanations, create quizzes, all while you study.</p>
+    <span class="section-eyebrow">App Showcase</span>
+    <h2 class="section-title">See Study Grid Prep in action</h2>
+    <p class="section-sub">A quick look inside the app — swipe through and explore every tool.</p>
   </div>
 
-  <div class="ai-features-grid">
-
-    <!-- Ask AI -->
-    <div class="ai-feat-card reveal">
-      <div class="ai-feat-img-wrap">
-        <img src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1777966699/vd9wrwbfjhlmxxlfqb2a.jpg"
-          alt="Ask AI Feature" class="ai-feat-img" loading="lazy">
-      </div>
-      <div class="ai-feat-body">
-        <div class="ai-feat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8B5CF6" stroke-width="1.6" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="5" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="#8B5CF6"/><line x1="12" y1="3" x2="12" y2="7" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="12" x2="7" y2="12" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="17" y1="12" x2="21" y2="12" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </div>
-        <div class="ai-feat-title">Ask AI — While Watching</div>
-        <div class="ai-feat-desc">Right beside the video in Study Playlist. Tap and instantly ask doubts related to what you're watching — no switching apps.</div>
-        <div class="ai-feat-tags">
-          <span class="ai-tag">Study Playlist</span><span class="ai-tag">Instant Doubts</span>
-        </div>
-      </div>
+  <div class="fsc-wrap reveal">
+    <div class="fsc-viewport" id="fscViewport">
+      <div class="fsc-track" id="fscTrack"></div>
     </div>
 
-    <!-- Chat with AI -->
-    <div class="ai-feat-card reveal" style="transition-delay:0.1s">
-      <div class="ai-feat-img-wrap">
-        <img src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1777966168/verfbgykafddrkef38u5.jpg"
-          alt="Chat with AI" class="ai-feat-img" loading="lazy">
-      </div>
-      <div class="ai-feat-body">
-        <div class="ai-feat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="rgba(6,182,212,0.12)" stroke="#06B6D4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="ai-feat-title">Chat with AI</div>
-        <div class="ai-feat-desc">Ask anything about the video or any concept. Full conversation, clear explanations — available directly in the video page.</div>
-        <div class="ai-feat-tags">
-          <span class="ai-tag">Video Related</span><span class="ai-tag">Any Doubts</span>
-        </div>
-      </div>
-    </div>
+    <button class="fsc-nav fsc-prev" id="fscPrev" aria-label="Previous slide">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="fsc-nav fsc-next" id="fscNext" aria-label="Next slide">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
 
-    <!-- Create Quiz -->
-    <div class="ai-feat-card reveal" style="transition-delay:0.2s">
-      <div class="ai-feat-img-wrap">
-        <img src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1777966191/q37yeopfmjnnlf451bcp.jpg"
-          alt="Create Quiz with AI" class="ai-feat-img" loading="lazy">
-      </div>
-      <div class="ai-feat-body">
-        <div class="ai-feat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(16,185,129,0.1)" stroke="#10B981" stroke-width="1.6"/><polyline points="8,12 10.5,14.5 16,9" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="ai-feat-title">Create Quiz with AI</div>
-        <div class="ai-feat-desc">Generate a timed quiz from any video — pick number of questions, timer and marks. AI creates it instantly from the video content.</div>
-        <div class="ai-feat-tags">
-          <span class="ai-tag">AI Generated</span><span class="ai-tag">Any Video</span><span class="ai-tag">Timed Quiz</span>
-        </div>
-      </div>
-    </div>
-
+    <div class="fsc-dots" id="fscDots"></div>
   </div>
 </div>
+
+<style>
+  .fsc-section { padding-bottom: 24px; }
+
+  .fsc-wrap {
+    position: relative;
+    max-width: 900px;
+    margin: 40px auto 0;
+    padding: 0 56px;
+  }
+
+  .fsc-viewport {
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+  }
+
+  .fsc-track {
+    display: flex;
+    will-change: transform;
+    transition: transform 0.55s cubic-bezier(0.65,0,0.35,1);
+  }
+  .fsc-track.no-transition { transition: none; }
+
+  .fsc-slide {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+
+  .fsc-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    margin: 4px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fsc-img-box {
+    position: relative;
+    width: 100%;
+    height: 460px;
+    background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 18px;
+  }
+
+  .fsc-img-box img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .fsc-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-family: var(--font);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(4px);
+  }
+
+  .fsc-body {
+    padding: 28px 30px 30px;
+  }
+
+  .fsc-title {
+    font-family: var(--font);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .fsc-desc {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  .fsc-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font);
+    font-weight: 600;
+    font-size: 14.5px;
+    color: #fff;
+    background: var(--primary);
+    padding: 11px 22px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  .fsc-cta:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+  .fsc-nav {
+    position: absolute;
+    top: calc(50% - 26px);
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 3;
+  }
+  .fsc-nav:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .fsc-prev { left: 0; }
+  .fsc-next { right: 0; }
+
+  .fsc-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .fsc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .fsc-dot.active { width: 24px; background: var(--primary); }
+
+  @media (max-width: 640px) {
+    .fsc-wrap { padding: 0 8px; margin-top: 28px; }
+    .fsc-nav { display: none; }
+    .fsc-img-box { height: 360px; padding: 12px; }
+    .fsc-body { padding: 22px 20px 24px; }
+    .fsc-title { font-size: 19px; }
+    .fsc-desc { font-size: 14px; }
+  }
+</style>
+
+<script>
+(function() {
+  var fscData = [
+    { badge: "Dashboard", color: "#4F46E5", title: "Home", desc: "Your entire study dashboard in one place — streaks, XP, daily goal and everything at a glance.", cta: "Explore Dashboard", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656552/h6csvm6aqdauedpfpvo9.png" },
+    { badge: "Study Playlist", color: "#E11D48", title: "My Study Playlist", desc: "Organise YouTube videos subject-wise and study completely distraction-free.", cta: "Open Playlist", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656643/ow64fx5ueuoptjlfmupz.png" },
+    { badge: "Smart Player", color: "#06B6D4", title: "Interactive Player, Notes & Ask AI", desc: "Take notes while you watch and clear doubts instantly with Ask AI — all on one screen.", cta: "Try Now", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656689/aqux85c0qstoogmr8mw9.png" },
+    { badge: "AI Powered", color: "#7C3AED", title: "AI Assistant", desc: "Your personal AI tutor for every topic — solve doubts and understand concepts, 24/7.", cta: "Chat with AI", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656751/evsqplzzzxjon9m5rs71.png" },
+    { badge: "AI Quiz", color: "#0D9488", title: "AI Quiz Generator", desc: "Instantly generate a timed quiz from any video — set your own questions, timer and marks.", cta: "Generate Quiz", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656826/nt8sw478yiupsnkydaf7.png" },
+    { badge: "Mock Tests", color: "#4F46E5", title: "Mock Tests", desc: "Full-length mock tests for JEE, NEET, CUET and Boards with detailed AI analysis.", cta: "View Tests", link: "mock-home.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656869/zyaeesvkrsdxiytym2pa.png" },
+    { badge: "Focus Timer", color: "#0D9488", title: "Focus Timer — Live Focus", desc: "Build daily study consistency with Pomodoro-based focus sessions.", cta: "Start Focusing", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783656909/sdefyuahphq9hs4cl4of.png" },
+    { badge: "Group Study", color: "#EA580C", title: "Live Focus With Friends", desc: "Join live study rooms with your friends and keep each other motivated.", cta: "Join a Room", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783657156/zyxedvdpyrxospe7mepv.jpg" },
+    { badge: "Community", color: "#D97706", title: "Live Leaderboard, Waves & Chats", desc: "Wave 👋 to friends, chat, and track the real-time leaderboard inside study rooms.", cta: "See Leaderboard", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783657211/fwkeajt6ocudunjwrbz2.png" },
+    { badge: "Study Rooms", color: "#7C3AED", title: "Study Rooms", desc: "Study alongside real students — never feel alone, stay focused together.", cta: "Explore Rooms", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783657258/clby19x2rzdbtyrsw8ug.png" },
+    { badge: "Productivity", color: "#4F46E5", title: "To-Do List", desc: "Plan your day, get reminders, and track your task completion rate.", cta: "Plan Your Day", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783657284/lefpjiqrsnjgncpyuolv.png" },
+    { badge: "Analytics", color: "#D97706", title: "Weekly Analysis", desc: "View your weekly study hours, XP growth and progress in one clean chart.", cta: "View Analysis", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783657313/byg3rg9zdpkyefsqybnw.png" },
+    { badge: "Leaderboard", color: "#E11D48", title: "Leaderboards", desc: "Rank nationwide, earn badges, and compare your progress with others.", cta: "Check Rank", link: "login.html", img: "https://res.cloudinary.com/dm9hqkipf/image/upload/v1783657337/aorjub4wmhybq78yinxz.jpg" }
+  ];
+
+  var track = document.getElementById('fscTrack');
+  var dotsWrap = document.getElementById('fscDots');
+  var viewport = document.getElementById('fscViewport');
+  var n = fscData.length;
+
+  function slideHTML(item, eager) {
+    return '' +
+      '<div class="fsc-slide">' +
+        '<div class="fsc-card">' +
+          '<div class="fsc-img-box">' +
+            '<span class="fsc-badge" style="background:' + item.color + '">' + item.badge + '</span>' +
+            '<img src="' + item.img + '" alt="' + item.title + '" loading="' + (eager ? 'eager' : 'lazy') + '" ' + (eager ? 'fetchpriority="high"' : '') + '>' +
+          '</div>' +
+          '<div class="fsc-body">' +
+            '<div class="fsc-title">' + item.title + '</div>' +
+            '<div class="fsc-desc">' + item.desc + '</div>' +
+            '<a href="' + item.link + '" class="fsc-cta">' + item.cta + ' →</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // Build track with clones for infinite loop: [last, ...real, first]
+  var html = slideHTML(fscData[n - 1], false);
+  fscData.forEach(function(item, i) { html += slideHTML(item, i === 0); });
+  html += slideHTML(fscData[0], false);
+  track.innerHTML = html;
+
+  fscData.forEach(function(_, i) {
+    var dot = document.createElement('div');
+    dot.className = 'fsc-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', function() { goTo(i + 1, true); });
+    dotsWrap.appendChild(dot);
+  });
+  var dots = dotsWrap.querySelectorAll('.fsc-dot');
+
+  var index = 1; // start on first real slide
+  var slideCount = n + 2;
+  var autoplayTimer = null;
+  var isAnimating = false;
+
+  function setTransform(withTransition) {
+    if (!withTransition) track.classList.add('no-transition');
+    else track.classList.remove('no-transition');
+    track.style.transform = 'translateX(-' + (index * 100) + '%)';
+  }
+
+  function updateDots() {
+    var real = (index - 1 + n) % n;
+    dots.forEach(function(d, i) { d.classList.toggle('active', i === real); });
+  }
+
+  function preloadNext() {
+    var nextReal = ((index) % n); // upcoming real index
+    var img = new Image();
+    img.src = fscData[nextReal].img;
+  }
+
+  function goTo(newIndex, userTriggered) {
+    if (isAnimating) return;
+    isAnimating = true;
+    index = newIndex;
+    setTransform(true);
+    updateDots();
+    preloadNext();
+    if (userTriggered) restartAutoplay();
+  }
+
+  track.addEventListener('transitionend', function() {
+    isAnimating = false;
+    if (index === 0) { index = n; setTransform(false); updateDots(); }
+    else if (index === slideCount - 1) { index = 1; setTransform(false); updateDots(); }
+  });
+
+  function next() { goTo(index + 1, false); }
+  function prev() { goTo(index - 1, false); }
+
+  document.getElementById('fscNext').addEventListener('click', function() { next(); restartAutoplay(); });
+  document.getElementById('fscPrev').addEventListener('click', function() { prev(); restartAutoplay(); });
+
+  function startAutoplay() { autoplayTimer = setInterval(next, 4500); }
+  function restartAutoplay() { clearInterval(autoplayTimer); startAutoplay(); }
+
+  // Touch swipe support
+  var startX = 0, currentX = 0, isDragging = false;
+  viewport.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+    clearInterval(autoplayTimer);
+  }, { passive: true });
+  viewport.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    currentX = e.touches[0].clientX;
+  }, { passive: true });
+  viewport.addEventListener('touchend', function() {
+    if (!isDragging) return;
+    isDragging = false;
+    var delta = currentX - startX;
+    if (Math.abs(delta) > 40) {
+      if (delta < 0) next(); else prev();
+    }
+    startX = 0; currentX = 0;
+    restartAutoplay();
+  });
+
+  // Pause on hover (desktop)
+  viewport.addEventListener('mouseenter', function() { clearInterval(autoplayTimer); });
+  viewport.addEventListener('mouseleave', function() { restartAutoplay(); });
+
+  setTransform(false);
+  updateDots();
+  preloadNext();
+  startAutoplay();
+})();
+</script>
+<!-- ═══ END FEATURE SHOWCASE CAROUSEL ═══ -->
 
 <!-- FEATURES -->
 <div class="section" id="features">
@@ -2488,6 +2682,8 @@ footer {
   </div>
 </div>
 
+
+
 <!-- HOW IT WORKS -->
 <div style="background: var(--bg-soft); padding: 72px 0; border-top: 1px solid var(--border);" id="how">
   <div class="section" style="padding-top: 0; padding-bottom: 0;">
@@ -2523,9 +2719,9 @@ footer {
     <p class="section-sub">Tailored mock tests and study plans for every major Indian competitive exam.</p>
   </div>
   <div class="exams-row">
-    <div class="exam-pill"><span class="exam-emoji"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><circle cx="12" cy="12" r="9" stroke="#4F46E5" stroke-width="1.8" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="4" fill="rgba(79,70,229,0.15)" stroke="#4F46E5" stroke-width="1.8"/><circle cx="12" cy="12" r="1.5" fill="#4F46E5"/></svg></span> JEE Main 2026</div>
-    <div class="exam-pill"><span class="exam-emoji"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span> NEET 2026</div>
-    <div class="exam-pill"><span class="exam-emoji"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><rect x="5" y="2" width="13" height="18" rx="2.5" fill="rgba(234,88,12,0.12)" stroke="#EA580C" stroke-width="1.8"/><line x1="8.5" y1="8" x2="15.5" y2="8" stroke="#EA580C" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="12" x2="15.5" y2="12" stroke="#EA580C" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="16" x2="12" y2="16" stroke="#EA580C" stroke-width="1.5" stroke-linecap="round"/></svg></span> CUET 2026</div>
+    <div class="exam-pill"><span class="exam-emoji"><img src="/assets/jee.png" alt="JEE" style="width:16px;height:16px;vertical-align:middle;object-fit:contain;" onerror="this.style.display='none'"></span> JEE Main 2026</div>
+    <div class="exam-pill"><span class="exam-emoji"><img src="/assets/jee.png" alt="NEET" style="width:16px;height:16px;vertical-align:middle;object-fit:contain;" onerror="this.style.display='none'"></span> NEET 2026</div>
+    <div class="exam-pill"><span class="exam-emoji"><img src="/assets/cuet.png" alt="CUET" style="width:16px;height:16px;vertical-align:middle;object-fit:contain;" onerror="this.style.display='none'"></span> CUET 2026</div>
     <div class="exam-pill"><span class="exam-emoji"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12v5c3 3 9 3 12 0v-5" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Board Exams</div>
   </div>
 </div>
@@ -2739,7 +2935,7 @@ jee preparation 2027, best jee preparation platform, neet preparation online fre
       </div>
 
       <div class="social-label">
-        <a href="https://t.me" target="_blank" rel="noopener" class="social-btn tg" aria-label="Telegram">
+        <a href="https://t.me/studygridprep" target="_blank" rel="noopener" class="social-btn tg" aria-label="Telegram">
           <svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px;">
             <circle cx="12" cy="12" r="12" fill="#2AABEE"/>
             <path d="M17.5 7L9.8 13.2 7 11.5 4.5 10.8 17.5 7Z" fill="white" opacity="0.5"/>
