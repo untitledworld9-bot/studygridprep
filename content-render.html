@@ -290,19 +290,20 @@ function renderContent(content) {
   `;
 }
 
-function renderNotFound() {
+function renderNotFound(reason = "") {
   document.getElementById("csRenderRoot").innerHTML = `
     <div style="padding:120px 5%;text-align:center;">
       <h1 style="font-family:var(--font);font-size:28px;margin-bottom:12px;">Page not found</h1>
       <p style="color:var(--text-secondary);margin-bottom:24px;">This content isn't available yet.</p>
       <a href="/" class="btn-primary-nav">Go Home</a>
+      ${reason ? `<div style="margin-top:40px;max-width:600px;margin-left:auto;margin-right:auto;padding:14px 18px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;text-align:left;font-family:monospace;font-size:12.5px;color:#991B1B;word-break:break-word;">DEBUG: ${reason}</div>` : ""}
     </div>
   `;
 }
 
 async function init() {
-  const { slug } = getTypeAndSlugFromPath();
-  if (!slug) { renderNotFound(); return; }
+  const { typeHint, slug } = getTypeAndSlugFromPath();
+  if (!slug) { renderNotFound("No slug found in URL path."); return; }
 
   try {
     const snap = await getDocs(query(
@@ -311,15 +312,21 @@ async function init() {
       where("status", "==", "published"),
       limit(1)
     ));
-    if (snap.empty) { renderNotFound(); return; }
+    if (snap.empty) {
+      renderNotFound(`No published content found with slug "${slug}" (searched path segment: "${typeHint}", domain: "${domain}"). Check the slug matches exactly and status is "published".`);
+      return;
+    }
 
     const content = snap.docs[0].data();
-    if (!(content.destinations || []).includes(domain)) { renderNotFound(); return; }
+    if (!(content.destinations || []).includes(domain)) {
+      renderNotFound(`Content found, but its destinations are [${(content.destinations || []).join(", ")}] — this domain ("${domain}") isn't included.`);
+      return;
+    }
 
     renderContent(content);
   } catch (e) {
     console.error("Content render error:", e);
-    renderNotFound();
+    renderNotFound(`${e.name}: ${e.message}`);
   }
 }
 
