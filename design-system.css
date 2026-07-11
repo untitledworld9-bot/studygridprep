@@ -260,7 +260,74 @@ footer { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 32px 5%; t
 .reveal.visible { opacity: 1; transform: none; }
 
 /* ═══════════════════════════════════════════════
-   8. MOBILE
+   9. CHATBOT WIDGET — identical on every page
+   (index.html, jee-preparation-2027.html, cuet-preparation-guide.html
+   all use this exact same widget). Missed in the first pass of this
+   file — added here so content-render.html and future pages match.
+   Markup + JS: see chatbot markup block in content-render.html /
+   design-system.js initChatbot().
+   ═══════════════════════════════════════════════ */
+.sgp-chat-btn { position: fixed; bottom: 36px; right: 24px; width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%); border: none; cursor: pointer; z-index: 9000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(79,70,229,0.38), 0 0 0 0 rgba(79,70,229,0.25); transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s ease; animation: chatPulse 3.2s ease-in-out infinite; will-change: transform; }
+.sgp-chat-btn:hover { transform: scale(1.1); box-shadow: 0 8px 28px rgba(79,70,229,0.48), 0 0 0 8px rgba(79,70,229,0.1); animation: none; }
+.sgp-chat-btn svg { width: 26px; height: 26px; color: white; transition: opacity 0.2s; }
+.sgp-chat-btn .icon-chat { opacity: 1; position: absolute; }
+.sgp-chat-btn .icon-close { opacity: 0; position: absolute; }
+.sgp-chat-btn.open .icon-chat { opacity: 0; }
+.sgp-chat-btn.open .icon-close { opacity: 1; }
+@keyframes chatPulse { 0%, 100% { box-shadow: 0 4px 20px rgba(79,70,229,0.38), 0 0 0 0 rgba(79,70,229,0.2); } 50% { box-shadow: 0 4px 20px rgba(79,70,229,0.38), 0 0 0 10px rgba(79,70,229,0); } }
+.sgp-notif { position: fixed; bottom: 108px; right: 24px; background: white; border: 1px solid rgba(79,70,229,0.15); border-radius: 18px 18px 4px 18px; padding: 10px 16px; font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--text-primary); box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 8999; max-width: 220px; opacity: 0; transform: translateY(8px) scale(0.95); transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none; line-height: 1.4; }
+.sgp-notif.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.sgp-notif::after { content: ''; position: absolute; bottom: -6px; right: 14px; width: 12px; height: 12px; background: white; border-right: 1px solid rgba(79,70,229,0.15); border-bottom: 1px solid rgba(79,70,229,0.15); transform: rotate(45deg); border-radius: 0 0 3px 0; }
+.sgp-chat-window { position: fixed; bottom: 108px; right: 24px; width: 400px; max-height: 580px; background: rgba(255,255,255,0.97); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid rgba(79,70,229,0.12); border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.14), 0 0 0 1px rgba(255,255,255,0.5) inset; z-index: 8998; display: flex; flex-direction: column; overflow: hidden; opacity: 0; transform: translateY(16px) scale(0.96); pointer-events: none; transition: opacity 0.28s cubic-bezier(0.4,0,0.2,1), transform 0.28s cubic-bezier(0.4,0,0.2,1); will-change: transform, opacity; }
+.sgp-chat-window.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+.sgp-chat-header { padding: 18px 20px 16px; background: linear-gradient(135deg, #4F46E5 0%, #0891B2 100%); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.sgp-chat-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.3); }
+.sgp-chat-header-info { flex: 1; }
+.sgp-chat-title { font-family: var(--font); font-size: 14px; font-weight: 700; color: white; letter-spacing: -0.2px; }
+.sgp-chat-status { font-size: 11px; color: rgba(255,255,255,0.75); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.sgp-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px rgba(52,211,153,0.8); animation: statusPulse 2s ease-in-out infinite; }
+@keyframes statusPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.sgp-messages { flex: 1; overflow-y: auto; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; scrollbar-color: rgba(79,70,229,0.15) transparent; }
+.sgp-messages::-webkit-scrollbar { width: 4px; }
+.sgp-messages::-webkit-scrollbar-thumb { background: rgba(79,70,229,0.2); border-radius: 4px; }
+.sgp-msg { display: flex; gap: 8px; align-items: flex-end; animation: msgIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity: 0; }
+@keyframes msgIn { from { opacity:0; transform: translateY(8px) scale(0.97); } to { opacity:1; transform: translateY(0) scale(1); } }
+.sgp-msg.bot { justify-content: flex-start; }
+.sgp-msg.user { justify-content: flex-end; }
+.sgp-msg-icon { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#4F46E5,#06B6D4); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.sgp-bubble { max-width: 78%; padding: 10px 14px; border-radius: 18px; font-family: var(--font-body); font-size: 13.5px; line-height: 1.55; word-break: break-word; }
+.sgp-msg.bot .sgp-bubble { background: #F1F5F9; color: var(--text-primary); border-radius: 4px 18px 18px 18px; }
+.sgp-msg.user .sgp-bubble { background: linear-gradient(135deg, #4F46E5 0%, #0891B2 100%); color: white; border-radius: 18px 18px 4px 18px; }
+.sgp-typing { display: flex; align-items: center; gap: 4px; padding: 10px 14px; background: #F1F5F9; border-radius: 4px 18px 18px 18px; width: fit-content; }
+.sgp-typing span { width: 6px; height: 6px; border-radius: 50%; background: #94A3B8; animation: typingDot 1.2s ease-in-out infinite; }
+.sgp-typing span:nth-child(2) { animation-delay: 0.2s; }
+.sgp-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot { 0%,60%,100% { transform: translateY(0); opacity:0.4; } 30% { transform: translateY(-5px); opacity:1; } }
+.sgp-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px; }
+.sgp-chip { padding: 7px 13px; border: 1.5px solid rgba(79,70,229,0.22); border-radius: 50px; font-family: var(--font-body); font-size: 12.5px; font-weight: 500; color: var(--primary); background: var(--primary-light); cursor: pointer; transition: all 0.18s ease; white-space: nowrap; }
+.sgp-chip:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.sgp-input-wrap { display: flex; align-items: center; gap: 8px; padding: 10px 16px 14px; border-top: 1px solid var(--border-soft); }
+.sgp-input { flex: 1; border: 1.5px solid var(--border); border-radius: 50px; padding: 9px 16px; font-family: var(--font-body); font-size: 13.5px; color: var(--text-primary); background: var(--bg-soft); outline: none; transition: border-color 0.18s; }
+.sgp-input:focus { border-color: rgba(79,70,229,0.4); }
+.sgp-send-btn { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#4F46E5,#06B6D4); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.18s ease, opacity 0.18s ease; }
+.sgp-send-btn:hover { transform: scale(1.08); }
+.sgp-send-btn:active { transform: scale(0.95); }
+.sgp-send-btn svg { width: 16px; height: 16px; color: white; }
+.sgp-email-form { background: #F8FAFF; border: 1px solid rgba(79,70,229,0.1); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; margin: 0 16px 10px; }
+.sgp-email-form input { border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 12px; font-family: var(--font-body); font-size: 13px; color: var(--text-primary); background: white; outline: none; transition: border-color 0.18s; }
+.sgp-email-form input:focus { border-color: rgba(79,70,229,0.4); }
+.sgp-email-form input::placeholder { color: var(--text-muted); }
+.sgp-form-submit { padding: 9px 16px; background: linear-gradient(135deg, #4F46E5, #06B6D4); color: white; font-family: var(--font); font-size: 13px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.18s, transform 0.18s; }
+.sgp-form-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+
+@media (max-width: 640px) {
+  .sgp-chat-window { width: calc(100vw - 20px); right: 10px; bottom: 96px; max-height: 62vh; border-radius: 20px; }
+  .sgp-chat-btn { right: 16px; bottom: 28px; }
+  .sgp-notif { right: 16px; bottom: 100px; max-width: 200px; }
+}
+
+/* ═══════════════════════════════════════════════
+   10. MOBILE (general — kept last so it wins the cascade)
    ═══════════════════════════════════════════════ */
 @media (max-width: 640px) {
   .nav-cta-desktop { display: none; }
