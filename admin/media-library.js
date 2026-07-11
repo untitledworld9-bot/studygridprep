@@ -2,7 +2,7 @@
  * ============================================================
  *  Study Grid Prep Admin Panel — media-library.js
  *  Upload, browse, search and delete images.
- *  Storage path: media/{timestamp}-{filename}
+ *  Upload backend: Cloudinary (unsigned upload — no server needed).
  *  Firestore metadata: media/{docId}
  *
  *  Import in studygridadmin.html:
@@ -11,10 +11,17 @@
  */
 
 import {
-  db, storage, collection, addDoc, doc, deleteDoc,
-  getDocs, query, orderBy, serverTimestamp,
-  ref, uploadBytesResumable, getDownloadURL, deleteObject
+  db, collection, addDoc, doc, deleteDoc, getDocs, query, orderBy, serverTimestamp
 } from "../firebase.js";
+
+// ════════════════════════════════════════════════════════════
+// CLOUDINARY CONFIG — fill these in from your Cloudinary dashboard
+// 1. Go to https://cloudinary.com/console → copy your "Cloud name"
+// 2. Settings → Upload → Upload presets → Add upload preset
+//    → Signing Mode: UNSIGNED → Save → copy its name
+// ════════════════════════════════════════════════════════════
+const CLOUDINARY_CLOUD_NAME = "kvyah2au";
+const CLOUDINARY_UPLOAD_PRESET = "wo1vdgbo";
 
 const $ = id => document.getElementById(id);
 function escHtml(str) {
@@ -63,7 +70,7 @@ function mlRender() {
   const folder = $("mlFolderFilter")?.value || "";
 
   let items = ML.allMedia.filter(m => {
-    if (search && !(m.alt || "").toLowerCase().includes(search) && !(m.storagePath || "").toLowerCase().includes(search)) return false;
+    if (search && !(m.alt || "").toLowerCase().includes(search) && !(m.publicId || "").toLowerCase().includes(search)) return false;
     if (folder && m.folder !== folder) return false;
     return true;
   });
@@ -84,8 +91,8 @@ function mlRender() {
       <div class="ml-card">
         <div class="ml-thumb" style="background-image:url('${escHtml(m.url)}')"></div>
         <div class="ml-meta">
-          <div class="ml-name" title="${escHtml(m.storagePath)}">${escHtml((m.storagePath || "").split("/").pop())}</div>
-          <div class="ml-size">${formatBytes(m.sizeBytes)}</div>
+          <div class="ml-name" title="${escHtml(m.publicId)}">${escHtml((m.publicId || "").split("/").pop())}</div>
+          <div class="ml-size">${formatBytes(m.sizeBytes)}${m.width ? ` · ${m.width}×${m.height}` : ""}</div>
         </div>
         <div class="ml-actions">
           <button class="btn btn-outline btn-sm" onclick="mlCopyUrl('${m.id}')"><i class="fa-solid fa-copy"></i> Copy URL</button>
@@ -97,9 +104,14 @@ function mlRender() {
 }
 
 // ============================================================
-//  UPLOAD
+//  UPLOAD — via Cloudinary unsigned upload (no backend needed)
 // ============================================================
 async function mlHandleUpload(fileList) {
+  if (CLOUDINARY_CLOUD_NAME === "YOUR_CLOUD_NAME") {
+    mlToast("Cloudinary not configured yet — set CLOUDINARY_CLOUD_NAME in media-library.js", "error");
+    return;
+  }
+
   const files = Array.from(fileList || []);
   if (!files.length) return;
 
@@ -111,43 +123,54 @@ async function mlHandleUpload(fileList) {
       mlToast(`Skipped ${file.name} — not an image`, "error");
       continue;
     }
-    const storagePath = `media/${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
-    const storageRef = ref(storage, storagePath);
-    const uploadTask = uploadBytesResumable(storageRef, file);
 
     const rowId = "ml-progress-" + Date.now() + Math.random().toString(36).slice(2);
     if (progressWrap) {
       progressWrap.insertAdjacentHTML("beforeend", `
         <div class="ml-progress-row" id="${rowId}">
           <span>${escHtml(file.name)}</span>
-          <div class="ml-progress-bar"><div class="ml-progress-fill" style="width:0%"></div></div>
+          <div class="ml-progress-bar"><div class="ml-progress-fill" style="width:30%"></div></div>
         </div>`);
     }
 
-    await new Promise((resolve, reject) => {
-      uploadTask.on("state_changed",
-        (snap) => {
-          const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-          const fill = document.querySelector(`#${rowId} .ml-progress-fill`);
-          if (fill) fill.style.width = pct + "%";
-        },
-        (err) => { mlToast(`Upload failed: ${file.name}`, "error"); reject(err); },
-        async () => {
-          try {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            await addDoc(collection(db, "media"), {
-              url, storagePath, folder,
-              alt: file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " "),
-              sizeBytes: file.size,
-              width: null, height: null,
-              uploadedAt: serverTimestamp()
-            });
-            document.getElementById(rowId)?.remove();
-            resolve();
-          } catch (e) { reject(e); }
-        }
-      );
-    }).catch(() => {});
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append("folder", `study-grid-prep/${folder}`);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData
+      });
+
+      const fill = document.querySelector(`#${rowId} .ml-progress-fill`);
+      if (fill) fill.style.width = "90%";
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error?.message || `Cloudinary upload failed (${res.status})`);
+      }
+
+      const data = await res.json();
+
+      await addDoc(collection(db, "media"), {
+        url: data.secure_url,
+        publicId: data.public_id,
+        folder,
+        alt: file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " "),
+        sizeBytes: data.bytes || file.size,
+        width: data.width || null,
+        height: data.height || null,
+        uploadedAt: serverTimestamp()
+      });
+
+      document.getElementById(rowId)?.remove();
+    } catch (e) {
+      console.error(e);
+      mlToast(`Upload failed: ${file.name} — ${e.message}`, "error");
+      document.getElementById(rowId)?.remove();
+    }
   }
 
   mlToast("Upload complete", "success");
@@ -161,17 +184,17 @@ function mlCopyUrl(id) {
     .catch(() => mlToast("Could not copy — long-press the URL manually", "error"));
 }
 
+// Note: this removes the entry from the Media Library list (Firestore).
+// The file itself stays in Cloudinary storage — deleting from Cloudinary
+// directly requires a signed API call (needs your API secret), which
+// isn't safe to do from the browser. Delete unused files periodically
+// from the Cloudinary dashboard if you want to reclaim storage space.
 async function mlDelete(id) {
   const m = ML.allMedia.find(x => x.id === id);
   if (!m) return;
-  if (!confirm(`Delete "${(m.storagePath || "").split("/").pop()}"? This removes it from Storage too.`)) return;
-  try {
-    await deleteObject(ref(storage, m.storagePath));
-  } catch (e) {
-    console.warn("Storage file already gone or inaccessible:", e.message);
-  }
+  if (!confirm(`Remove "${(m.publicId || "").split("/").pop()}" from the library? (The file stays in Cloudinary storage — delete it there too if you want it fully gone.)`)) return;
   await deleteDoc(doc(db, "media", id));
-  mlToast("Deleted", "success");
+  mlToast("Removed from library", "success");
   mlLoad();
 }
 
