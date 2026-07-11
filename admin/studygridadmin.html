@@ -2443,6 +2443,34 @@
           </div>
 
           <div class="form-panel">
+            <div class="form-panel-title">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Content Studio
+              <span class="pill">Gemini</span>
+            </div>
+            <div class="cs-ai-log" id="csAiLog"></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;">
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('continue')">Continue</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('improve')">Improve</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('rewrite')">Rewrite</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('expand')">Expand</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('shorten')">Shorten</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('seo')">SEO Optimize</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('grammar')">Fix Grammar</button>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <textarea class="form-textarea" id="csAiPrompt" rows="2" placeholder="e.g. Write a complete JEE Main 2027 preparation guide with syllabus, strategy and FAQs"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <button class="btn btn-primary" id="csAiSendBtn" onclick="csAiGenerate('generate')">
+                <i class="fa-solid fa-paper-plane"></i> Generate
+              </button>
+              <button class="btn btn-outline" id="csAiStopBtn" onclick="csAiStop()" disabled>
+                <i class="fa-solid fa-stop"></i> Stop
+              </button>
+            </div>
+          </div>
+
+          <div class="form-panel">
             <div class="form-panel-title">Content Blocks</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
               <button class="btn btn-outline btn-sm" onclick="csAddBlock('heading')">+ Heading</button>
@@ -2460,7 +2488,7 @@
             <button class="btn btn-primary" onclick="csSaveContent('draft')">
               <i class="fa-solid fa-floppy-disk"></i> Save Draft
             </button>
-            <button class="btn btn-primary" onclick="csSaveContent('published')" style="background:var(--success);">
+            <button class="btn btn-primary" onclick="csSaveContent('published')" style="background:var(--accent-green);">
               <i class="fa-solid fa-circle-check"></i> Publish
             </button>
             <button class="btn btn-outline" onclick="csShowList()">Cancel</button>
@@ -2486,13 +2514,19 @@
   .cs-editor-right { position: sticky; top: 20px; }
   .cs-preview-frame-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; height: 720px; background: #fff; }
   .cs-preview-frame { width: 100%; height: 100%; border: none; }
-  .cs-block-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; background: var(--bg-soft); }
+  .cs-block-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; background: var(--bg-card); }
   .cs-block-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .cs-block-type-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary); }
+  .cs-block-type-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-cyan); }
   .cs-block-actions { display: flex; gap: 6px; }
   .cs-block-actions button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 4px 6px; border-radius: 6px; }
-  .cs-block-actions button:hover { background: var(--bg-muted); color: var(--text-primary); }
+  .cs-block-actions button:hover { background: var(--bg-card-hover); color: var(--text-primary); }
   .btn-sm { padding: 6px 12px; font-size: 12.5px; }
+  .cs-ai-log { min-height: 60px; max-height: 180px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-family: 'DM Sans', monospace; font-size: 12.5px; color: var(--text-secondary); }
+  .cs-ai-line { padding: 3px 0; animation: fadeUp 0.3s ease; }
+  .cs-ai-prompt-echo { color: var(--accent-cyan); font-weight: 600; }
+  .cs-ai-stop { color: var(--accent-amber); }
+  .cs-ai-done { color: var(--accent-green); font-weight: 600; }
+  .cs-ai-error { color: #DC2626; }
   @media (max-width: 1100px) {
     .cs-editor-grid { grid-template-columns: 1fr; }
     .cs-editor-right { position: static; }

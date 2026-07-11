@@ -17,6 +17,14 @@ import {
 
 const COLL_CONTENT = "content";
 
+// ════════════════════════════════════════════════════════════
+// AI CONTENT STUDIO — Phase 4 config
+// Fill this in once your Gemini Cloudflare Worker is deployed.
+// See the JSON contract documented above csAiGenerate() below —
+// your worker must accept/return exactly that shape.
+// ════════════════════════════════════════════════════════════
+const AI_WORKER_URL = "https://YOUR-WORKER-SUBDOMAIN.workers.dev/generate-content"; // ← replace this
+
 // ── tiny local helpers (kept self-contained, no coupling to admin.js internals) ──
 const $ = id => document.getElementById(id);
 function escHtml(str) {
@@ -43,7 +51,9 @@ const CS = {
   allContent: [],
   blocks: [],
   editingId: null,
-  slugTouchedManually: false
+  slugTouchedManually: false,
+  aiGenerating: false,
+  aiAbort: null
 };
 
 // ============================================================
@@ -284,7 +294,151 @@ function csBlockFieldsHtml(b, i) {
 }
 
 // ============================================================
-//  SEO AUTO-FILL — simple heuristic, upgraded to real AI in Phase 4
+//  AI CONTENT STUDIO — Phase 4
+//
+//  CONTRACT with your Gemini Cloudflare Worker:
+//
+//  REQUEST  (POST, JSON body):
+//  {
+//    "prompt": "user's instruction, e.g. 'Write a JEE Main 2027 prep guide'",
+//    "contentType": "blog",              // current csType value
+//    "existingTitle": "current title or empty string",
+//    "existingBlocks": [ ...current CS.blocks... ],  // for edit/continue/rewrite requests
+//    "action": "generate"                // one of: generate | continue | improve | rewrite | expand | shorten | seo
+//  }
+//
+//  RESPONSE (JSON, single response — no streaming required):
+//  {
+//    "title": "Suggested page title",
+//    "slug": "suggested-slug",                       // optional, auto-slugified if absent
+//    "seo": {
+//      "metaTitle": "...", "metaDescription": "...", "keywords": ["...","..."]
+//    },
+//    "blocks": [
+//      { "type": "heading", "level": 2, "text": "..." },
+//      { "type": "paragraph", "text": "..." },
+//      { "type": "tip", "tone": "info", "text": "..." },
+//      { "type": "table", "csv": "Col A, Col B\nVal 1, Val 2" },
+//      { "type": "faq", "items": [{ "q": "...", "a": "..." }] },
+//      { "type": "cta", "text": "...", "buttonLabel": "...", "href": "..." }
+//    ]
+//  }
+//
+//  Your Gemini prompt on the worker side should be instructed to
+//  respond with ONLY this JSON — no markdown fences, no preamble —
+//  so it can be parsed directly with JSON.parse().
+// ============================================================
+
+function csAiLog(text, cls = "") {
+  const log = $("csAiLog");
+  if (!log) return;
+  const line = document.createElement("div");
+  line.className = "cs-ai-line " + cls;
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function csAiClearLog() {
+  const log = $("csAiLog");
+  if (log) log.innerHTML = "";
+}
+
+const CS_BLOCK_LABELS = {
+  heading: "Heading", paragraph: "Paragraph", tip: "Tip Box",
+  image: "Image", table: "Table", faq: "FAQ Section", cta: "Call-to-Action"
+};
+
+async function csAiRevealBlocks(newBlocks, { replace = false } = {}) {
+  if (replace) CS.blocks = [];
+  for (const block of newBlocks) {
+    if (CS.aiAbort?.signal.aborted) { csAiLog("Stopped by user.", "cs-ai-stop"); break; }
+    csAiLog(`Generating ${CS_BLOCK_LABELS[block.type] || block.type}…`);
+    await new Promise(r => setTimeout(r, 450)); // gives the "live build" feel
+    CS.blocks.push(block);
+    csRenderBlocks();
+    csRenderPreview();
+  }
+}
+
+async function csAiGenerate(action = "generate") {
+  if (CS.aiGenerating) { csToast("Already generating — press Stop first", "error"); return; }
+
+  const promptInput = $("csAiPrompt");
+  const prompt = promptInput ? promptInput.value.trim() : "";
+  if (action === "generate" && !prompt) { csToast("Type what you want the page to be about", "error"); return; }
+
+  if (AI_WORKER_URL.includes("YOUR-WORKER-SUBDOMAIN")) {
+    csToast("AI worker not configured yet — set AI_WORKER_URL in content-studio.js", "error");
+    return;
+  }
+
+  CS.aiGenerating = true;
+  CS.aiAbort = new AbortController();
+  $("csAiSendBtn")?.setAttribute("disabled", "true");
+  $("csAiStopBtn")?.removeAttribute("disabled");
+  csAiClearLog();
+  csAiLog(prompt ? `“${prompt}”` : `Running: ${action}`, "cs-ai-prompt-echo");
+
+  try {
+    const res = await fetch(AI_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: CS.aiAbort.signal,
+      body: JSON.stringify({
+        prompt,
+        action,
+        contentType: $("csType")?.value || "blog",
+        existingTitle: $("csTitle")?.value || "",
+        existingBlocks: CS.blocks
+      })
+    });
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    const data = await res.json();
+
+    if (data.title && (action === "generate" || !$("csTitle").value)) {
+      $("csTitle").value = data.title;
+      csOnTitleInput();
+    }
+    if (data.slug) { $("csSlug").value = data.slug; CS.slugTouchedManually = true; }
+    if (data.seo) {
+      if (data.seo.metaTitle) $("csMetaTitle").value = data.seo.metaTitle;
+      if (data.seo.metaDescription) $("csMetaDesc").value = data.seo.metaDescription;
+      if (data.seo.keywords) $("csKeywords").value = data.seo.keywords.join(", ");
+    }
+
+    const replaceBlocks = ["generate", "rewrite"].includes(action);
+    await csAiRevealBlocks(data.blocks || [], { replace: replaceBlocks });
+
+    if (!CS.aiAbort.signal.aborted) csAiLog("Done. Review and Save/Publish when ready.", "cs-ai-done");
+  } catch (e) {
+    if (e.name === "AbortError") {
+      csAiLog("Generation stopped.", "cs-ai-stop");
+    } else {
+      console.error(e);
+      csAiLog("Error talking to the AI worker — check the console.", "cs-ai-error");
+      csToast("AI generation failed", "error");
+    }
+  } finally {
+    CS.aiGenerating = false;
+    CS.aiAbort = null;
+    $("csAiSendBtn")?.removeAttribute("disabled");
+    $("csAiStopBtn")?.setAttribute("disabled", "true");
+  }
+}
+
+function csAiStop() {
+  if (CS.aiAbort) CS.aiAbort.abort();
+}
+
+// Quick-action buttons: Continue / Improve / Rewrite / Expand / Shorten / SEO Optimize / Fix Grammar
+function csAiQuickAction(action) {
+  csAiGenerate(action);
+}
+
+// ============================================================
+//  SEO AUTO-FILL — simple heuristic; the AI worker above also
+//  returns seo{} directly when it generates a page.
 // ============================================================
 function csAutoFillSeo() {
   const title = $("csTitle").value.trim();
@@ -429,6 +583,9 @@ window.csAddFaqItem = csAddFaqItem;
 window.csAutoFillSeo = csAutoFillSeo;
 window.csRenderList = csRenderList;
 window.csSaveContent = csSaveContent;
+window.csAiGenerate = csAiGenerate;
+window.csAiStop = csAiStop;
+window.csAiQuickAction = csAiQuickAction;
 
 // Call this once from your existing DOMContentLoaded / auth-success handler
 window.initContentStudio = csLoadContent;
