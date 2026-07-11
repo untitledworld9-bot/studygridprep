@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="csTitleTag">Study Grid Prep</title>
+<meta id="csMetaDesc" name="description" content="">
+<link id="csCanonical" rel="canonical" href="">
+<meta id="csRobots" name="robots" content="index,follow">
+
+<meta id="csOgTitle" property="og:title" content="">
+<meta id="csOgDesc" property="og:description" content="">
+<meta id="csOgType" property="og:type" content="article">
+<meta id="csOgUrl" property="og:url" content="">
+<meta id="csOgImage" property="og:image" content="">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta id="csTwTitle" name="twitter:title" content="">
+<meta id="csTwDesc" name="twitter:description" content="">
+
+<script id="csSchema" type="application/ld+json"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/design-system.css">
+</head>
+<body>
+
+<!-- ═══ NAVBAR (identical on every page) ═══ -->
+<nav class="navbar">
+  <a href="/" class="nav-brand">
+    <img src="/icon-192.png" class="nav-logo" alt="Study Grid Prep">
+    <span class="nav-name">Study Grid Prep</span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-cta-desktop">
+      <a href="/login.html" class="btn-ghost">Login</a>
+      <a href="/login.html" class="btn-primary-nav">Get Started →</a>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-inner">
+    <a href="/" class="mob-link">Home</a>
+    <a href="/login.html" class="mob-btn">Get Started</a>
+  </div>
+</div>
+
+<!-- ═══ CONTENT (filled by JS) ═══ -->
+<div id="csRenderRoot">
+  <div style="padding:120px 5%;text-align:center;color:var(--text-muted);font-family:var(--font-body);">
+    Loading…
+  </div>
+</div>
+
+<!-- ═══ SITEWIDE FAQ — identical on every page (filled by design-system.js) ═══ -->
+<div class="section faq-section">
+  <div class="section-header">
+    <span class="section-eyebrow">FAQ</span>
+    <h2 class="section-title">Got questions?</h2>
+    <p class="section-sub">Everything you need to know before you start.</p>
+  </div>
+  <div class="faq-list" id="siteFaqList"></div>
+</div>
+
+<!-- ═══ CHATBOT WIDGET — identical on every page ═══ -->
+<div class="sgp-notif" id="sgpNotif">💬 Need help with your prep?</div>
+<button class="sgp-chat-btn" id="sgpChatBtn" aria-label="Open Study Assistant">
+  <svg class="icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+  </svg>
+  <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+</button>
+<div class="sgp-chat-window" id="sgpWindow">
+  <div class="sgp-chat-header">
+    <div class="sgp-chat-avatar">🎓</div>
+    <div class="sgp-chat-header-info">
+      <div class="sgp-chat-title">Study Assistant AI</div>
+      <div class="sgp-chat-status"><div class="sgp-status-dot"></div>Online · Study Grid Prep</div>
+    </div>
+  </div>
+  <div class="sgp-messages" id="sgpMessages"></div>
+  <div class="sgp-chips" id="sgpChips"></div>
+  <div class="sgp-email-form" id="sgpEmailForm" style="display:none;" onclick="event.stopPropagation()">
+    <input type="text" id="sgpFormName" placeholder="Your name" maxlength="60">
+    <input type="email" id="sgpFormEmail" placeholder="Your email" maxlength="100">
+    <button class="sgp-form-submit" onclick="sgpSubmitEmail(event)">Send Query →</button>
+  </div>
+  <div class="sgp-input-wrap">
+    <input class="sgp-input" id="sgpInput" type="text" placeholder="Ask anything about the platform…" maxlength="300" autocomplete="off">
+    <button class="sgp-send-btn" onclick="sgpSend()" aria-label="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ FOLLOW + FOOTER (identical on every page, exact markup from index.html) ═══ -->
+<div class="dark-footer-block">
+  <div class="follow-section">
+    <div class="follow-title">Follow Us On</div>
+    <p class="follow-sub">Stay updated with the latest announcements, features, and platform news</p>
+    <div class="social-grid">
+
+      <div class="social-label">
+        <a href="www.youtube.com/@studygridprep" target="_blank" rel="noopener" class="social-btn yt" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="color:#FF0000; width:32px; height:32px;">
+            <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </a>
+        <span class="social-name">YouTube</span>
+      </div>
+
+      <div class="social-label">
+        <a href="https://instagram.com" target="_blank" rel="noopener" class="social-btn ig" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px;">
+            <defs>
+              <radialGradient id="ig1" cx="30%" cy="107%" r="150%">
+                <stop offset="0%" stop-color="#fdf497"/>
+                <stop offset="5%" stop-color="#fdf497"/>
+                <stop offset="45%" stop-color="#fd5949"/>
+                <stop offset="60%" stop-color="#d6249f"/>
+                <stop offset="90%" stop-color="#285AEB"/>
+              </radialGradient>
+            </defs>
+            <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#ig1)"/>
+            <circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.7" fill="none"/>
+            <circle cx="17.2" cy="6.8" r="1.2" fill="white"/>
+          </svg>
+        </a>
+        <span class="social-name">Instagram</span>
+      </div>
+
+      <div class="social-label">
+        <a href="https://t.me/studygridprep" target="_blank" rel="noopener" class="social-btn tg" aria-label="Telegram">
+          <svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px;">
+            <circle cx="12" cy="12" r="12" fill="#2AABEE"/>
+            <path d="M17.5 7L9.8 13.2 7 11.5 4.5 10.8 17.5 7Z" fill="white" opacity="0.5"/>
+            <path d="M9.8 13.2L10.6 17L12 14.5L17.5 7L9.8 13.2Z" fill="white"/>
+            <path d="M9.8 13.2L7 11.5L17.5 7L9.8 13.2Z" fill="white" opacity="0.7"/>
+          </svg>
+        </a>
+        <span class="social-name">Telegram</span>
+      </div>
+
+      <div class="social-label">
+        <a href="https://x.com" target="_blank" rel="noopener" class="social-btn tw" aria-label="X (Twitter)">
+          <svg viewBox="0 0 24 24" fill="white" style="width:26px;height:26px;">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.632L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/>
+          </svg>
+        </a>
+        <span class="social-name">X (Twitter)</span>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Study Grid Prep</div>
+    <div class="footer-links">
+      <a href="/about.html">About Us</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footer-copy">© 2026 Study Grid Prep · Built for students, by students</div>
+  </footer>
+</div>
+
+<script type="module">
+import { db, collection, query, where, getDocs, limit } from "/firebase.js";
+
+// ── domain detection: 'online' or 'info' ──
+const domain = location.hostname.includes("studygridprep.info") ? "info" : "online";
+
+// ── slug comes from the URL path via Cloudflare Pages _redirects,
+//    e.g. /blog/jee-main-2027-guide -> this page, path kept in the URL bar ──
+function getTypeAndSlugFromPath() {
+  const parts = location.pathname.split("/").filter(Boolean);
+  // supports /blog/slug, /notes/slug, /pyq/slug, /mock/slug, /college/slug, etc.
+  return { typeHint: parts[0] || "", slug: parts[1] || parts[0] || "" };
+}
+
+function escHtml(str) {
+  if (typeof str !== "string") return str ?? "";
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function blocksToHtml(blocks) {
+  return (blocks || []).map(b => {
+    switch (b.type) {
+      case "heading":
+        return `<h${b.level}>${escHtml(b.text)}</h${b.level}>`;
+      case "paragraph":
+        return `<p>${escHtml(b.text)}</p>`;
+      case "tip": {
+        const toneColor = { info: "var(--primary)", warning: "var(--amber)", success: "var(--teal)" }[b.tone] || "var(--primary)";
+        const toneBg = { info: "var(--primary-light)", warning: "var(--amber-light)", success: "var(--teal-light)" }[b.tone] || "var(--primary-light)";
+        return `<div class="tip-box" style="border-color:${toneColor};background:${toneBg};"><p>${escHtml(b.text)}</p></div>`;
+      }
+      case "image":
+        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:100%;border-radius:var(--radius);margin:20px 0;" loading="lazy" />`;
+      case "table": {
+        const rows = (b.csv || "").split("\n").filter(Boolean).map(r => r.split(",").map(c => c.trim()));
+        const [head, ...body] = rows;
+        return `<table style="width:100%;border-collapse:collapse;margin:20px 0;">
+          <thead><tr>${(head||[]).map(h=>`<th style="text-align:left;padding:8px;border-bottom:2px solid var(--border);font-family:var(--font);">${escHtml(h)}</th>`).join("")}</tr></thead>
+          <tbody>${body.map(r=>`<tr>${r.map(c=>`<td style="padding:8px;border-bottom:1px solid var(--border-soft);">${escHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table>`;
+      }
+      case "faq":
+        return `<div class="faq-list" style="margin:20px 0;">${(b.items||[]).map(it => `
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this)">
+              ${escHtml(it.q)}
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-a"><p>${escHtml(it.a)}</p></div>
+          </div>`).join("")}</div>`;
+      case "cta":
+        return `<div class="article-cta-block" style="background:linear-gradient(135deg,var(--primary),var(--accent));">
+          <h3>${escHtml(b.text)}</h3>
+          <a href="${escHtml(b.href)}" class="btn-cta-white" style="color:var(--primary);">${escHtml(b.buttonLabel)}</a>
+        </div>`;
+      default:
+        return "";
+    }
+  }).join("\n");
+}
+
+function setMeta(content) {
+  const seo = content.seo || {};
+  const title = seo.metaTitle || content.title;
+  const desc = seo.metaDescription || "";
+  const url = seo.canonicalUrl || location.href;
+
+  document.getElementById("csTitleTag").textContent = title + " | Study Grid Prep";
+  document.getElementById("csMetaDesc").setAttribute("content", desc);
+  document.getElementById("csCanonical").setAttribute("href", url);
+  document.getElementById("csRobots").setAttribute("content", seo.robots || "index,follow");
+  document.getElementById("csOgTitle").setAttribute("content", title);
+  document.getElementById("csOgDesc").setAttribute("content", desc);
+  document.getElementById("csOgUrl").setAttribute("content", url);
+  if (seo.ogImage) document.getElementById("csOgImage").setAttribute("content", seo.ogImage);
+  document.getElementById("csTwTitle").setAttribute("content", title);
+  document.getElementById("csTwDesc").setAttribute("content", desc);
+
+  // JSON-LD: Article + Breadcrumb + FAQ (if any faq blocks exist)
+  const faqBlocks = (content.data?.blocks || []).filter(b => b.type === "faq");
+  const schemas = [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": content.title,
+    "description": desc,
+    "author": { "@type": "Organization", "name": "Study Grid Prep" },
+    "publisher": { "@type": "Organization", "name": "Study Grid Prep" },
+    "mainEntityOfPage": url
+  }];
+  if (faqBlocks.length) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqBlocks.flatMap(b => (b.items||[]).map(it => ({
+        "@type": "Question",
+        "name": it.q,
+        "acceptedAnswer": { "@type": "Answer", "text": it.a }
+      })))
+    });
+  }
+  document.getElementById("csSchema").textContent = JSON.stringify(schemas.length === 1 ? schemas[0] : schemas);
+}
+
+function renderContent(content) {
+  setMeta(content);
+  const root = document.getElementById("csRenderRoot");
+  root.innerHTML = `
+    <div class="article-hero">
+      <div class="article-breadcrumb"><a href="/">Home</a><span>/</span>${escHtml(content.type || "")}</div>
+      <h1>${escHtml(content.title)}</h1>
+    </div>
+    <div class="article-body">
+      ${blocksToHtml(content.data?.blocks)}
+    </div>
+  `;
+}
+
+function renderNotFound() {
+  document.getElementById("csRenderRoot").innerHTML = `
+    <div style="padding:120px 5%;text-align:center;">
+      <h1 style="font-family:var(--font);font-size:28px;margin-bottom:12px;">Page not found</h1>
+      <p style="color:var(--text-secondary);margin-bottom:24px;">This content isn't available yet.</p>
+      <a href="/" class="btn-primary-nav">Go Home</a>
+    </div>
+  `;
+}
+
+async function init() {
+  const { slug } = getTypeAndSlugFromPath();
+  if (!slug) { renderNotFound(); return; }
+
+  try {
+    const snap = await getDocs(query(
+      collection(db, "content"),
+      where("slug", "==", slug),
+      where("status", "==", "published"),
+      limit(1)
+    ));
+    if (snap.empty) { renderNotFound(); return; }
+
+    const content = snap.docs[0].data();
+    if (!(content.destinations || []).includes(domain)) { renderNotFound(); return; }
+
+    renderContent(content);
+  } catch (e) {
+    console.error("Content render error:", e);
+    renderNotFound();
+  }
+}
+
+init();
+</script>
+<script src="/design-system.js"></script>
+<script>
+  // design-system.js is a plain (non-module) script, so it runs after
+  // the module above; renderSiteFaq/initChatbot are attached to window.
+  renderSiteFaq('siteFaqList');
+  initChatbot('💬 Need help with your prep?');
+</script>
+</body>
+</html>
