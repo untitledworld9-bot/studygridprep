@@ -19,11 +19,11 @@ const COLL_CONTENT = "content";
 
 // ════════════════════════════════════════════════════════════
 // AI CONTENT STUDIO — Phase 4 config
-// Fill this in once your Gemini Cloudflare Worker is deployed.
+// Fill this in once your AI Cloudflare Worker is deployed.
 // See the JSON contract documented above csAiGenerate() below —
 // your worker must accept/return exactly that shape.
 // ════════════════════════════════════════════════════════════
-const AI_WORKER_URL = "https://ai-analysis.untitledworld9.workers.dev";
+const AI_WORKER_URL = "https://sgp-content-ai.untitledworld9.workers.dev";
 
 // ── tiny local helpers (kept self-contained, no coupling to admin.js internals) ──
 const $ = id => document.getElementById(id);
@@ -296,7 +296,7 @@ function csBlockFieldsHtml(b, i) {
 // ============================================================
 //  AI CONTENT STUDIO — Phase 4
 //
-//  CONTRACT with your Gemini Cloudflare Worker:
+//  CONTRACT with your AI Cloudflare Worker:
 //
 //  REQUEST  (POST, JSON body):
 //  {
@@ -324,7 +324,7 @@ function csBlockFieldsHtml(b, i) {
 //    ]
 //  }
 //
-//  Your Gemini prompt on the worker side should be instructed to
+//  Your AI prompt on the worker side should be instructed to
 //  respond with ONLY this JSON — no markdown fences, no preamble —
 //  so it can be parsed directly with JSON.parse().
 // ============================================================
