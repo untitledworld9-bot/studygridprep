@@ -23,7 +23,7 @@ const COLL_CONTENT = "content";
 // See the JSON contract documented above csAiGenerate() below —
 // your worker must accept/return exactly that shape.
 // ════════════════════════════════════════════════════════════
-const AI_WORKER_URL = "https://YOUR-WORKER-SUBDOMAIN.workers.dev/generate-content"; // ← replace this
+const AI_WORKER_URL = "https://sgp-content-ai.untitledworld9.workers.dev"; // ← replace this
 
 // ── tiny local helpers (kept self-contained, no coupling to admin.js internals) ──
 const $ = id => document.getElementById(id);
