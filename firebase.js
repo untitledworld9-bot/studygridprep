@@ -29,10 +29,6 @@ import {
   getMessaging, getToken, onMessage
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
-import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject, uploadBytesResumable
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
 // ── Singleton init ──────────────────────────────────────────────────
 const _cfg = {
   apiKey:            "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
@@ -49,10 +45,9 @@ const db        = getFirestore(app);
 const auth      = getAuth(app);
 const provider  = new GoogleAuthProvider();
 const messaging = getMessaging(app);
-const storage   = getStorage(app);
 
 export {
-  db, auth, provider, messaging, storage,
+  db, auth, provider, messaging,
   getToken, onMessage,
   signInWithPopup, onAuthStateChanged, signOut,
   collection, addDoc, onSnapshot,
@@ -60,6 +55,5 @@ export {
   deleteDoc, query, orderBy, limit,
   getDocs, getDoc, where,
   serverTimestamp, Timestamp,
-  writeBatch, arrayUnion,
-  ref, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject
+  writeBatch, arrayUnion
 };
