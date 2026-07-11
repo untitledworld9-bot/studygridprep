@@ -257,6 +257,8 @@ window.verifyAdmin = async () => {
     $("authGate").style.display = "none";
     initAdminPanel(user);
     if (typeof window.initContentStudio === "function") window.initContentStudio();
+    if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
+    if (typeof window.initTaxonomy === "function") window.initTaxonomy();
 
   } catch (err) {
     console.error("Admin auth error:", err);

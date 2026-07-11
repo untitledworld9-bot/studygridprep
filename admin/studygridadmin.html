@@ -933,6 +933,12 @@
     <button class="nav-btn" onclick="showSection('content')" data-section="content">
       <i class="fa-solid fa-pen-nib"></i> <span>Content Studio</span>
     </button>
+    <button class="nav-btn" onclick="showSection('media')" data-section="media">
+      <i class="fa-solid fa-images"></i> <span>Media Library</span>
+    </button>
+    <button class="nav-btn" onclick="showSection('taxonomy')" data-section="taxonomy">
+      <i class="fa-solid fa-tags"></i> <span>Categories & Authors</span>
+    </button>
   </div>
 
   <div class="sidebar-footer">
@@ -2512,16 +2518,16 @@
   /* Content Studio — additive styles, don't touch anything else */
   .cs-editor-grid { display: grid; grid-template-columns: 1fr 480px; gap: 20px; align-items: start; }
   .cs-editor-right { position: sticky; top: 20px; }
-  .cs-preview-frame-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; height: 720px; background: #fff; }
+  .cs-preview-frame-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; height: 720px; background: #fff; }
   .cs-preview-frame { width: 100%; height: 100%; border: none; }
-  .cs-block-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; background: var(--bg-card); }
+  .cs-block-card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; background: var(--bg-card); }
   .cs-block-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .cs-block-type-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-cyan); }
   .cs-block-actions { display: flex; gap: 6px; }
   .cs-block-actions button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 4px 6px; border-radius: 6px; }
   .cs-block-actions button:hover { background: var(--bg-card-hover); color: var(--text-primary); }
   .btn-sm { padding: 6px 12px; font-size: 12.5px; }
-  .cs-ai-log { min-height: 60px; max-height: 180px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-family: 'DM Sans', monospace; font-size: 12.5px; color: var(--text-secondary); }
+  .cs-ai-log { min-height: 60px; max-height: 180px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; font-family: 'DM Sans', monospace; font-size: 12.5px; color: var(--text-secondary); }
   .cs-ai-line { padding: 3px 0; animation: fadeUp 0.3s ease; }
   .cs-ai-prompt-echo { color: var(--accent-cyan); font-weight: 600; }
   .cs-ai-stop { color: var(--accent-amber); }
@@ -2532,6 +2538,123 @@
     .cs-editor-right { position: static; }
     .cs-preview-frame-wrap { height: 480px; }
   }
+  </style>
+
+  <section id="media" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Media Library</div>
+        <div class="section-subtitle">Upload and manage images used across all content</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Upload</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Folder</label>
+          <input class="form-input" id="mlUploadFolder" placeholder="e.g. blog, notes, general" value="general" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Choose Images</label>
+          <input class="form-input" type="file" id="mlFileInput" accept="image/*" multiple onchange="mlHandleUpload(this.files)" />
+        </div>
+      </div>
+      <div id="mlUploadProgress"></div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-row">
+        <div class="form-group" style="flex:2;">
+          <label class="form-label">Search</label>
+          <input class="form-input" id="mlSearch" placeholder="Search by filename or alt text…" oninput="mlRender()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Folder</label>
+          <select class="form-select" id="mlFolderFilter" onchange="mlRender()">
+            <option value="">All Folders</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div id="mlGrid">
+        <div class="empty-state">
+          <div class="empty-state-icon"><i class="fa-solid fa-images"></i></div>
+          <div class="empty-state-text">No media yet — upload your first image above.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="taxonomy" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Categories & Authors</div>
+        <div class="section-subtitle">Manage the taxonomy used across Content Studio</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Categories</div>
+      <div id="txCategoryForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input class="form-input" id="txCategoryName" placeholder="JEE" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Slug</label>
+            <input class="form-input" id="txCategorySlug" placeholder="jee" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="txCategorySaveBtn" onclick="txSaveCategory()">
+            <i class="fa-solid fa-plus"></i> Add Category
+          </button>
+          <button class="btn btn-outline" onclick="txResetCategoryForm()">Clear</button>
+        </div>
+      </div>
+      <div id="txCategoryList" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Authors</div>
+      <div id="txAuthorForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input class="form-input" id="txAuthorName" placeholder="Ayush" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio (optional)</label>
+            <input class="form-input" id="txAuthorBio" placeholder="Founder, Study Grid Prep" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="txAuthorSaveBtn" onclick="txSaveAuthor()">
+            <i class="fa-solid fa-plus"></i> Add Author
+          </button>
+          <button class="btn btn-outline" onclick="txResetAuthorForm()">Clear</button>
+        </div>
+      </div>
+      <div id="txAuthorList" style="margin-top:16px;"></div>
+    </div>
+  </section>
+
+  <style>
+  .ml-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .ml-card { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-card); }
+  .ml-thumb { width: 100%; height: 120px; background-size: cover; background-position: center; background-color: var(--bg-card-hover); }
+  .ml-meta { padding: 8px 10px 0; }
+  .ml-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ml-size { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .ml-actions { display: flex; gap: 6px; padding: 8px 10px 10px; }
+  .ml-progress-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 12.5px; color: var(--text-secondary); }
+  .ml-progress-bar { flex: 1; height: 6px; background: var(--bg-card-hover); border-radius: 4px; overflow: hidden; }
+  .ml-progress-fill { height: 100%; background: var(--accent-cyan); transition: width 0.2s ease; }
+  .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; background: var(--bg-card); }
   </style>
 
 </main>
@@ -2920,6 +3043,8 @@
 ================================================================ -->
 <script type="module" src="/admin/admin.js"></script>
 <script type="module" src="/admin/content-studio.js"></script>
+<script type="module" src="/admin/media-library.js"></script>
+<script type="module" src="/admin/taxonomy.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>
