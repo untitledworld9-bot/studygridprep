@@ -279,10 +279,12 @@ function setMeta(content) {
 function renderContent(content) {
   setMeta(content);
   const root = document.getElementById("csRenderRoot");
+  const heroStyle = typeof window.heroAccentStyle === "function" ? window.heroAccentStyle(content.accentColor) : "";
   root.innerHTML = `
-    <div class="article-hero">
+    <div class="article-hero" style="${heroStyle}">
       <div class="article-breadcrumb"><a href="/">Home</a><span>/</span>${escHtml(content.type || "")}</div>
       <h1>${escHtml(content.title)}</h1>
+      ${content.authorName ? `<p style="font-size:13px;color:var(--text-muted);margin-top:-8px;">By ${escHtml(content.authorName)}</p>` : ""}
     </div>
     <div class="article-body">
       ${blocksToHtml(content.data?.blocks)}

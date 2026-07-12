@@ -71,6 +71,26 @@ function renderSiteFaq(containerId) {
 window.renderSiteFaq = renderSiteFaq;
 
 // ═══════════════════════════════════════════════
+// HERO ACCENT COLOR — maps a content's chosen accent
+// (from Content Studio) to the hero glow CSS variables.
+// Used by content-render.html and the Content Studio preview.
+// ═══════════════════════════════════════════════
+const SGP_ACCENT_MAP = {
+  primary: ["rgba(99,102,241,0.11)", "rgba(6,182,212,0.06)", "rgba(124,58,237,0.06)"],
+  accent:  ["rgba(6,182,212,0.13)",  "rgba(99,102,241,0.05)", "rgba(13,148,136,0.06)"],
+  teal:    ["rgba(13,148,136,0.13)", "rgba(6,182,212,0.05)",  "rgba(16,185,129,0.06)"],
+  violet:  ["rgba(124,58,237,0.13)", "rgba(99,102,241,0.06)", "rgba(225,29,72,0.05)"],
+  orange:  ["rgba(234,88,12,0.13)",  "rgba(217,119,6,0.06)",  "rgba(124,58,237,0.05)"],
+  rose:    ["rgba(225,29,72,0.13)",  "rgba(124,58,237,0.05)", "rgba(217,119,6,0.05)"],
+  amber:   ["rgba(217,119,6,0.13)",  "rgba(234,88,12,0.06)",  "rgba(124,58,237,0.05)"]
+};
+function heroAccentStyle(accentColor) {
+  const [g1, g2, g3] = SGP_ACCENT_MAP[accentColor] || SGP_ACCENT_MAP.primary;
+  return `--hero-glow-1:${g1};--hero-glow-2:${g2};--hero-glow-3:${g3};`;
+}
+window.heroAccentStyle = heroAccentStyle;
+
+// ═══════════════════════════════════════════════
 // CHATBOT WIDGET — identical logic/KB across every page.
 // Call initChatbot() once the chatbot markup (button + window,
 // see content-render.html for the exact markup) is in the DOM.
