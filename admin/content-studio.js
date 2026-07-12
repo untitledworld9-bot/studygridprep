@@ -59,6 +59,19 @@ const CS = {
 // ============================================================
 //  LIST VIEW
 // ============================================================
+async function csLoadAuthorsDropdown() {
+  const sel = $("csAuthor");
+  if (!sel) return;
+  try {
+    const snap = await getDocs(collection(db, "authors"));
+    const authors = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    sel.innerHTML = `<option value="">No author selected</option>` +
+      authors.map(a => `<option value="${a.id}" data-name="${escHtml(a.name || "")}">${escHtml(a.name || "Unnamed")}</option>`).join("");
+  } catch (e) {
+    console.warn("Could not load authors:", e.message);
+  }
+}
+
 async function csLoadContent() {
   try {
     const snap = await getDocs(query(collection(db, COLL_CONTENT), orderBy("updatedAt", "desc"), limit(200)));
@@ -137,6 +150,8 @@ function csNewContent() {
   $("csSlug").value = "";
   $("csCategory").value = "";
   $("csTags").value = "";
+  $("csAccentColor").value = "primary";
+  $("csAuthor").value = "";
   $("csDestOnline").checked = true;
   $("csDestInfo").checked = false;
   $("csMetaTitle").value = "";
@@ -163,6 +178,8 @@ async function csEditContent(id) {
   $("csSlug").value = c.slug || "";
   $("csCategory").value = c.category || "";
   $("csTags").value = (c.tags || []).join(", ");
+  $("csAccentColor").value = c.accentColor || "primary";
+  $("csAuthor").value = c.authorId || "";
   $("csDestOnline").checked = (c.destinations || []).includes("online");
   $("csDestInfo").checked = (c.destinations || []).includes("info");
   $("csMetaTitle").value = c.seo?.metaTitle || "";
@@ -505,12 +522,25 @@ function csRenderPreview() {
   const frame = $("csPreviewFrame");
   if (!frame) return;
   const title = $("csTitle")?.value || "Untitled";
+  const accentColor = $("csAccentColor")?.value || "primary";
+
+  const accentMap = {
+    primary: ["rgba(99,102,241,0.11)", "rgba(6,182,212,0.06)", "rgba(124,58,237,0.06)"],
+    accent:  ["rgba(6,182,212,0.13)",  "rgba(99,102,241,0.05)", "rgba(13,148,136,0.06)"],
+    teal:    ["rgba(13,148,136,0.13)", "rgba(6,182,212,0.05)",  "rgba(16,185,129,0.06)"],
+    violet:  ["rgba(124,58,237,0.13)", "rgba(99,102,241,0.06)", "rgba(225,29,72,0.05)"],
+    orange:  ["rgba(234,88,12,0.13)",  "rgba(217,119,6,0.06)",  "rgba(124,58,237,0.05)"],
+    rose:    ["rgba(225,29,72,0.13)",  "rgba(124,58,237,0.05)", "rgba(217,119,6,0.05)"],
+    amber:   ["rgba(217,119,6,0.13)",  "rgba(234,88,12,0.06)",  "rgba(124,58,237,0.05)"]
+  };
+  const [g1, g2, g3] = accentMap[accentColor] || accentMap.primary;
+  const heroStyle = `--hero-glow-1:${g1};--hero-glow-2:${g2};--hero-glow-3:${g3};`;
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/design-system.css">
     </head><body>
-      <div class="article-hero" style="padding:40px 5% 32px;">
+      <div class="article-hero" style="padding:40px 5% 32px;${heroStyle}">
         <h1>${escHtml(title)}</h1>
       </div>
       <div class="article-body">
@@ -542,6 +572,9 @@ async function csSaveContent(status) {
     destinations,
     category: $("csCategory").value.trim(),
     tags: $("csTags").value.split(",").map(t => t.trim()).filter(Boolean),
+    accentColor: $("csAccentColor").value || "primary",
+    authorId: $("csAuthor").value || null,
+    authorName: $("csAuthor").value ? $("csAuthor").selectedOptions[0]?.dataset.name || null : null,
     seo: {
       metaTitle: $("csMetaTitle").value.trim() || title,
       metaDescription: $("csMetaDesc").value.trim(),
@@ -592,4 +625,7 @@ window.csAiStop = csAiStop;
 window.csAiQuickAction = csAiQuickAction;
 
 // Call this once from your existing DOMContentLoaded / auth-success handler
-window.initContentStudio = csLoadContent;
+window.initContentStudio = function () {
+  csLoadAuthorsDropdown();
+  csLoadContent();
+};
