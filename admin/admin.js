@@ -259,6 +259,7 @@ window.verifyAdmin = async () => {
     if (typeof window.initContentStudio === "function") window.initContentStudio();
     if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
     if (typeof window.initTaxonomy === "function") window.initTaxonomy();
+    if (typeof window.initAppoint === "function") window.initAppoint();
 
   } catch (err) {
     console.error("Admin auth error:", err);
