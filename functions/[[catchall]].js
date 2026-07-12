@@ -21,21 +21,14 @@ export async function onRequest(context) {
 
   if (segments.length >= 1 && CONTENT_PREFIXES.includes(segments[0])) {
     const assetUrl = new URL("/content-render.html", url.origin);
-    const assetResponse = await context.env.ASSETS.fetch(new Request(assetUrl, context.request));
-
-    // Strip encoding/length headers — the fetched body is already decoded,
-    // but these headers (if copied as-is) tell the browser it's still
-    // gzip-compressed, which causes a blank/corrupted page.
-    const headers = new Headers(assetResponse.headers);
-    headers.delete("content-encoding");
-    headers.delete("content-length");
-
-    return new Response(assetResponse.body, {
-      status: 200,
-      headers
-    });
+    // Return the fetched Response object directly — no reconstruction,
+    // no header copying. This avoids content-encoding/length mismatches
+    // that cause a blank page. The browser's address bar still keeps
+    // the original /blog/slug URL since this is a Function response,
+    // not a redirect.
+    return context.env.ASSETS.fetch(assetUrl);
   }
 
   // Not a content path — let normal static asset serving handle it.
   return context.next();
-      }
+}
