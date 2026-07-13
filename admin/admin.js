@@ -47,17 +47,6 @@ import {
 //  CONSTANTS
 // ============================================================
 
-/** The secret admin access code shown on the auth gate */
-const ADMIN_CODE = "7905";
-
-/** Authorised admin email addresses (add more as needed) */
-const ADMIN_EMAILS = [
- "untitledworld9@gmail.com",
- "satwikd007@gmail.com",
- "ayushgupt640@gmail.com"
-  // Add additional admin emails here
-];
-
 /** Firestore collection names — centralised for easy renaming */
 const COLL = {
   USERS:         "users",
@@ -195,119 +184,57 @@ window.showSection = id => {
 //  AUTH GATE — code check + Firebase auth
 // ============================================================
 
-/**
- * Step 1: Verify the 4-digit admin access code.
- * Step 2: One-shot Firebase auth check via Promise wrapper.
- *
- * KEY FIX: onAuthStateChanged is wrapped in a Promise so it acts as
- * a single async read instead of a persistent listener. The unsub()
- * call ensures it tears down immediately after the first resolved value,
- * preventing memory leaks and duplicate initAdminPanel() calls.
- */
-window.verifyAdmin = async () => {
-  const code  = $("adminCodeInput").value.trim();
-  const errEl = $("authError");
-  const btn   = document.querySelector(".auth-btn");
+// ============================================================
+//  AUTH GATE — Google sign-in + persistent session check
+//  Access is enforced entirely by Firestore security rules
+//  (isAdmin() checking the account's email) — this client-side
+//  flow just drives the UI (loading → gate → app).
+// ============================================================
 
-  // ── Step 1: Code check (synchronous)
-  if (code !== ADMIN_CODE) {
-    errEl.textContent = "❌ Incorrect access code. Access denied.";
-    $("adminCodeInput").value = "";
-    $("adminCodeInput").focus();
+window.signInWithGoogleAdmin = async () => {
+  const errEl = $("authError");
+  const btn = document.querySelector(".auth-google-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Signing in…"; }
+  if (errEl) errEl.textContent = "";
+
+  try {
+    await signInWithPopup(auth, provider);
+    // onAuthStateChanged below picks up the result and launches the panel
+  } catch (err) {
+    console.error("Google admin sign-in error:", err);
+    if (errEl) errEl.textContent = "Sign-in failed: " + err.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Continue with Google"; }
+  }
+};
+
+// Persistent listener — runs once on page load AND stays active, so a
+// page refresh resumes the session automatically instead of asking to
+// log in again. This mirrors content-admin.html's session behaviour.
+onAuthStateChanged(auth, async (user) => {
+  const gate = $("authGate");
+  const loading = $("authLoading");
+  const errEl = $("authError");
+
+  if (!user) {
+    if (loading) loading.style.display = "none";
+    if (gate) gate.style.display = "flex";
     return;
   }
 
-  // ── Loading state so the user knows something is happening
-  btn.disabled    = true;
-  btn.textContent = "⏳ Verifying…";
-  errEl.textContent = "";
+  if (gate) gate.style.display = "none";
+  if (loading) loading.style.display = "flex";
 
-  try {
-    // ── Step 2: One-shot Firebase auth check
-    // Wrapping onAuthStateChanged in a Promise + instant unsub() makes it
-    // behave like a single async read. It resolves the moment the Firebase
-    // SDK has initialised auth state — even if that takes a few hundred ms.
-    const user = await new Promise((resolve, reject) => {
-      const unsub = onAuthStateChanged(
-        auth,
-        resolvedUser => {
-          unsub();          // ← teardown immediately; prevents persistent listener
-          resolve(resolvedUser);
-        },
-        err => {
-          unsub();
-          reject(err);
-        }
-      );
-    });
-
-    // ── Step 3: User must be signed in
-    if (!user) {
-      errEl.textContent = "⚠️ You must be signed in via Firebase to access this panel. Redirecting…";
-      setTimeout(() => (location.href = "/"), 2500);
-      return;
-    }
-
-    // ── Step 4: Email must be in the allowlist
-    if (!ADMIN_EMAILS.includes(user.email)) {
-      errEl.textContent = "⛔ Your account does not have admin privileges.";
-      setTimeout(() => signOut(auth).then(() => (location.href = "/")), 2500);
-      return;
-    }
-
-    // ── Step 5: ✅ All checks passed — hide gate, launch panel
-    $("authGate").style.display = "none";
-    initAdminPanel(user);
-    if (typeof window.initContentStudio === "function") window.initContentStudio();
-    if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
-    if (typeof window.initTaxonomy === "function") window.initTaxonomy();
-    if (typeof window.initAppoint === "function") window.initAppoint();
-
-  } catch (err) {
-    console.error("Admin auth error:", err);
-    errEl.textContent = "🔥 Firebase error: " + err.message;
-  } finally {
-    // Always restore button state on any failure path
-    btn.disabled    = false;
-    btn.textContent = "Enter Admin Panel";
-  }
-};
-
-/**
- * Alternative entry point: sign in with Google directly, without needing
- * an existing session from elsewhere. Runs the same allowlist check as
- * verifyAdmin() Step 3-5, but doesn't touch verifyAdmin() itself at all —
- * added separately to avoid any risk to the existing tested flow.
- */
-window.signInWithGoogleAdmin = async () => {
-  const errEl = $("authError");
-  const googleBtn = document.querySelector(".auth-google-btn");
-  if (googleBtn) { googleBtn.disabled = true; googleBtn.textContent = "Signing in…"; }
-  errEl.textContent = "";
-
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    if (!ADMIN_EMAILS.includes(user.email)) {
-      errEl.textContent = "⛔ Your account does not have admin privileges.";
-      await signOut(auth);
-      return;
-    }
-
-    $("authGate").style.display = "none";
-    initAdminPanel(user);
-    if (typeof window.initContentStudio === "function") window.initContentStudio();
-    if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
-    if (typeof window.initTaxonomy === "function") window.initTaxonomy();
-    if (typeof window.initAppoint === "function") window.initAppoint();
-  } catch (err) {
-    console.error("Google admin sign-in error:", err);
-    errEl.textContent = "Sign-in failed: " + err.message;
-  } finally {
-    if (googleBtn) { googleBtn.disabled = false; googleBtn.textContent = "Continue with Google"; }
-  }
-};
+  // No client-side email check — Firestore rules (isAdmin()) are the
+  // real gate. If this account isn't an admin, subsequent reads will
+  // simply fail/return empty rather than exposing real data.
+  if (loading) loading.style.display = "none";
+  initAdminPanel(user);
+  if (typeof window.initContentStudio === "function") window.initContentStudio();
+  if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
+  if (typeof window.initTaxonomy === "function") window.initTaxonomy();
+  if (typeof window.initAppoint === "function") window.initAppoint();
+});
 
 /** Logout and return to homepage */
 window.doLogout = async () => {
