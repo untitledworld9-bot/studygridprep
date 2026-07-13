@@ -72,6 +72,19 @@ async function csLoadAuthorsDropdown() {
   }
 }
 
+async function csLoadCategoriesDropdown() {
+  const sel = $("csCategory");
+  if (!sel) return;
+  try {
+    const snap = await getDocs(collection(db, "categories"));
+    const categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    sel.innerHTML = `<option value="">No category</option>` +
+      categories.map(c => `<option value="${c.slug || c.id}">${escHtml(c.name || c.slug || "Unnamed")}</option>`).join("");
+  } catch (e) {
+    console.warn("Could not load categories:", e.message);
+  }
+}
+
 async function csLoadContent() {
   try {
     const snap = await getDocs(query(collection(db, COLL_CONTENT), orderBy("updatedAt", "desc"), limit(200)));
@@ -215,7 +228,7 @@ function csBlockDefaults(type) {
     case "heading":   return { type, level: 2, text: "" };
     case "paragraph": return { type, text: "" };
     case "tip":       return { type, tone: "info", text: "" };
-    case "image":     return { type, url: "", alt: "" };
+    case "image":     return { type, url: "", alt: "", size: "full" };
     case "table":     return { type, csv: "Column A, Column B\nValue 1, Value 2" };
     case "faq":       return { type, items: [{ q: "", a: "" }] };
     case "cta":       return { type, text: "", href: "", buttonLabel: "Get Started" };
@@ -288,8 +301,14 @@ function csBlockFieldsHtml(b, i) {
         <textarea class="form-textarea" rows="2" placeholder="Tip text" oninput="csUpdateBlock(${i},'text',this.value)">${escHtml(b.text)}</textarea>`;
     case "image":
       return `
-        <input class="form-input" style="margin-bottom:8px;" placeholder="Image URL" value="${escHtml(b.url)}" oninput="csUpdateBlock(${i},'url',this.value)" />
-        <input class="form-input" placeholder="Alt text (for SEO)" value="${escHtml(b.alt)}" oninput="csUpdateBlock(${i},'alt',this.value)" />`;
+        <input class="form-input" style="margin-bottom:8px;" placeholder="Image URL (paste from Media Library)" value="${escHtml(b.url)}" oninput="csUpdateBlock(${i},'url',this.value)" />
+        <input class="form-input" style="margin-bottom:8px;" placeholder="Alt text (for SEO)" value="${escHtml(b.alt)}" oninput="csUpdateBlock(${i},'alt',this.value)" />
+        <select class="form-select" onchange="csUpdateBlock(${i},'size',this.value)">
+          <option value="small" ${b.size==="small"?"selected":""}>Small (40% width)</option>
+          <option value="medium" ${b.size==="medium"?"selected":""}>Medium (65% width)</option>
+          <option value="full" ${!b.size||b.size==="full"?"selected":""}>Full width</option>
+        </select>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Use the ↑ ↓ arrows above to move this image earlier or later in the page.</div>`;
     case "table":
       return `<textarea class="form-textarea" rows="4" placeholder="Row 1 Col A, Row 1 Col B" oninput="csUpdateBlock(${i},'csv',this.value)">${escHtml(b.csv)}</textarea>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">One row per line, comma-separated. First row = header.</div>`;
@@ -491,8 +510,11 @@ function csBlocksToHtml() {
         const toneBg = { info: "var(--primary-light)", warning: "var(--amber-light)", success: "var(--teal-light)" }[b.tone] || "var(--primary-light)";
         return `<div class="tip-box" style="border-color:${toneColor};background:${toneBg};"><p>${escHtml(b.text)}</p></div>`;
       }
-      case "image":
-        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:100%;border-radius:var(--radius);margin:20px 0;" />`;
+      case "image": {
+        const widthMap = { small: "40%", medium: "65%", full: "100%" };
+        const w = widthMap[b.size] || "100%";
+        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:${w};max-width:100%;border-radius:var(--radius);margin:20px auto;display:block;" />`;
+      }
       case "table": {
         const rows = (b.csv || "").split("\n").filter(Boolean).map(r => r.split(",").map(c => c.trim()));
         const [head, ...body] = rows;
@@ -629,5 +651,6 @@ window.csAiQuickAction = csAiQuickAction;
 // Call this once from your existing DOMContentLoaded / auth-success handler
 window.initContentStudio = function () {
   csLoadAuthorsDropdown();
+  csLoadCategoriesDropdown();
   csLoadContent();
 };
