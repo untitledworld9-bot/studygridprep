@@ -3,7 +3,7 @@
   "short_name": "SGP Admin",
   "id": "study-grid-admin-panel",
   "description": "Study Grid Prep Admin Control Panel",
-  "start_url": "/admin/studygridadmin.html",
+  "start_url": "/admin/SGPAdmin-main",
   "scope": "/admin/",
   "display": "standalone",
   "orientation": "portrait-primary",
