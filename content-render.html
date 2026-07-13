@@ -204,8 +204,11 @@ function blocksToHtml(blocks) {
         const toneBg = { info: "var(--primary-light)", warning: "var(--amber-light)", success: "var(--teal-light)" }[b.tone] || "var(--primary-light)";
         return `<div class="tip-box" style="border-color:${toneColor};background:${toneBg};"><p>${escHtml(b.text)}</p></div>`;
       }
-      case "image":
-        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:100%;border-radius:var(--radius);margin:20px 0;" loading="lazy" />`;
+      case "image": {
+        const widthMap = { small: "40%", medium: "65%", full: "100%" };
+        const w = widthMap[b.size] || "100%";
+        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:${w};max-width:100%;border-radius:var(--radius);margin:20px auto;display:block;" loading="lazy" />`;
+      }
       case "table": {
         const rows = (b.csv || "").split("\n").filter(Boolean).map(r => r.split(",").map(c => c.trim()));
         const [head, ...body] = rows;
