@@ -20,6 +20,8 @@
 // ── IMPORTANT: Adjust this import path to match your firebase.js location
 import {
   auth,
+  provider,
+  signInWithPopup,
   onAuthStateChanged,
   signOut,
   db,
@@ -268,6 +270,42 @@ window.verifyAdmin = async () => {
     // Always restore button state on any failure path
     btn.disabled    = false;
     btn.textContent = "Enter Admin Panel";
+  }
+};
+
+/**
+ * Alternative entry point: sign in with Google directly, without needing
+ * an existing session from elsewhere. Runs the same allowlist check as
+ * verifyAdmin() Step 3-5, but doesn't touch verifyAdmin() itself at all —
+ * added separately to avoid any risk to the existing tested flow.
+ */
+window.signInWithGoogleAdmin = async () => {
+  const errEl = $("authError");
+  const googleBtn = document.querySelector(".auth-google-btn");
+  if (googleBtn) { googleBtn.disabled = true; googleBtn.textContent = "Signing in…"; }
+  errEl.textContent = "";
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    if (!ADMIN_EMAILS.includes(user.email)) {
+      errEl.textContent = "⛔ Your account does not have admin privileges.";
+      await signOut(auth);
+      return;
+    }
+
+    $("authGate").style.display = "none";
+    initAdminPanel(user);
+    if (typeof window.initContentStudio === "function") window.initContentStudio();
+    if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
+    if (typeof window.initTaxonomy === "function") window.initTaxonomy();
+    if (typeof window.initAppoint === "function") window.initAppoint();
+  } catch (err) {
+    console.error("Google admin sign-in error:", err);
+    errEl.textContent = "Sign-in failed: " + err.message;
+  } finally {
+    if (googleBtn) { googleBtn.disabled = false; googleBtn.textContent = "Continue with Google"; }
   }
 };
 

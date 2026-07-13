@@ -11,7 +11,7 @@
  */
 
 import {
-  db, collection, addDoc, doc, updateDoc, deleteDoc,
+  db, auth, collection, addDoc, doc, updateDoc, deleteDoc,
   getDocs, getDoc, query, orderBy, limit, serverTimestamp
 } from "../firebase.js";
 
@@ -590,6 +590,8 @@ async function csSaveContent(status) {
       csToast(status === "published" ? "Published" : "Draft saved", "success");
     } else {
       payload.createdAt = serverTimestamp();
+      payload.createdByEmail = auth.currentUser?.email || null;
+      payload.createdByName = auth.currentUser?.displayName || auth.currentUser?.email || null;
       const ref = await addDoc(collection(db, COLL_CONTENT), payload);
       CS.editingId = ref.id;
       csToast(status === "published" ? "Published" : "Draft saved", "success");
