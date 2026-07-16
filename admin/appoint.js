@@ -1,20 +1,26 @@
 /**
  * ============================================================
  *  Study Grid Prep Admin Panel — appoint.js
- *  Appoint / revoke access to the separate content-admin.html panel.
- *  Writes editors/{email} docs — matched by Google account email
- *  when the appointee signs in to content-admin.html.
+ *  Appoint / revoke access to the separate sub-admin.html panel,
+ *  and review each sub-admin's activity (logins + actions).
+ *  Writes subAdmins/{email} docs — matched by Google account email
+ *  when the appointee signs in to sub-admin.html.
  *
- *  Import in studygridadmin.html:
+ *  Activity data (activityLogs collection) auto-prunes anything
+ *  older than 30 days on load, and can be manually cleared by a
+ *  custom day-range from this panel.
+ *
+ *  Import in SGPAdmin-main.html:
  *    <script type="module" src="appoint.js"></script>
  * ============================================================
  */
 
 import {
-  db, collection, doc, setDoc, deleteDoc, getDocs, serverTimestamp
+  db, collection, doc, setDoc, deleteDoc, getDocs, query, where, orderBy, serverTimestamp
 } from "../firebase.js";
 
 const AP = { expandedEmail: null };
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 const $ = id => document.getElementById(id);
 function escHtml(str) {
@@ -25,20 +31,78 @@ function apToast(message, type = "info") {
   if (typeof window.toast === "function") { window.toast(message, type); return; }
   console.log(`[${type}]`, message);
 }
+function timeAgo(ms) {
+  const diff = Date.now() - ms;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+const ACTION_LABELS = {
+  login: { icon: "fa-right-to-bracket", label: "Logged in" },
+  content_create: { icon: "fa-plus", label: "Created content" },
+  content_update: { icon: "fa-pen", label: "Updated content" },
+  media_upload: { icon: "fa-image", label: "Uploaded media" },
+  report_sent: { icon: "fa-flag", label: "Sent report" }
+};
 
+// ============================================================
+//  AUTO-PRUNE — delete any activity log older than 30 days,
+//  runs quietly once whenever this section loads.
+// ============================================================
+async function apAutoPruneOldActivity() {
+  try {
+    const cutoff = new Date(Date.now() - THIRTY_DAYS_MS);
+    const snap = await getDocs(query(collection(db, "activityLogs"), where("timestamp", "<", cutoff)));
+    if (snap.empty) return;
+    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "activityLogs", d.id))));
+    console.log(`Auto-pruned ${snap.docs.length} activity log(s) older than 30 days`);
+  } catch (e) {
+    console.warn("Auto-prune skipped:", e.message);
+  }
+}
+
+// ============================================================
+//  MANUAL DELETE — admin picks how many days of data to wipe
+// ============================================================
+async function apDeleteOldActivity() {
+  const days = parseInt($("apDeleteDays")?.value, 10);
+  if (!days || days < 1) { apToast("Enter a valid number of days", "error"); return; }
+  if (!confirm(`Delete all activity data older than ${days} day(s)? This can't be undone.`)) return;
+
+  try {
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const snap = await getDocs(query(collection(db, "activityLogs"), where("timestamp", "<", cutoff)));
+    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "activityLogs", d.id))));
+    apToast(`Deleted ${snap.docs.length} activity record(s)`, "success");
+    apLoadList();
+  } catch (e) {
+    console.error(e);
+    apToast("Delete failed — check Firestore rules", "error");
+  }
+}
+
+// ============================================================
+//  LOAD + RENDER
+// ============================================================
 async function apLoadList() {
   const wrap = $("apList");
   if (!wrap) return;
 
-  const [editorsSnap, contentSnap] = await Promise.all([
-    getDocs(collection(db, "editors")),
-    getDocs(collection(db, "content"))
+  await apAutoPruneOldActivity();
+
+  const [subAdminsSnap, activitySnap] = await Promise.all([
+    getDocs(collection(db, "subAdmins")),
+    getDocs(query(collection(db, "activityLogs"), orderBy("timestamp", "desc")))
   ]);
 
-  const editors = editorsSnap.docs.map(d => ({ email: d.id, ...d.data() }));
-  const allContent = contentSnap.docs.map(d => d.data());
+  const subAdmins = subAdminsSnap.docs.map(d => ({ email: d.id, ...d.data() }));
+  const allActivity = activitySnap.docs.map(d => d.data());
 
-  if (!editors.length) {
+  if (!subAdmins.length) {
     wrap.innerHTML = `<div class="empty-state">
       <div class="empty-state-icon"><i class="fa-solid fa-user-group"></i></div>
       <div class="empty-state-text">No one appointed yet.</div>
@@ -46,49 +110,47 @@ async function apLoadList() {
     return;
   }
 
-  wrap.innerHTML = editors.map(e => {
-    const theirContent = allContent.filter(c => c.createdByEmail === e.email);
-    const total = theirContent.length;
-    const isOpen = AP.expandedEmail === e.email;
+  wrap.innerHTML = subAdmins.map(sa => {
+    const theirActivity = allActivity.filter(a => a.email === sa.email);
+    const total = theirActivity.length;
+    const lastEvent = theirActivity[0]; // already sorted desc
+    const lastLoginEvent = theirActivity.find(a => a.action === "login");
+    const isOpen = AP.expandedEmail === sa.email;
 
-    // breakdown by type
-    const byType = {};
-    theirContent.forEach(c => { byType[c.type || "unknown"] = (byType[c.type || "unknown"] || 0) + 1; });
-    const typeChips = Object.entries(byType).map(([t, n]) => `<span class="pill" style="margin-right:6px;">${escHtml(t)} · ${n}</span>`).join("");
-
-    const detailRows = theirContent.map(c => `
-      <tr>
-        <td>${escHtml(c.title || "(untitled)")}</td>
-        <td>${escHtml(c.type || "-")}</td>
-        <td>${escHtml(c.category || "-")}</td>
-        <td><span class="badge badge-${c.status === "published" ? "green" : "gray"}">${escHtml(c.status || "draft")}</span></td>
-      </tr>
-    `).join("");
+    const activityRows = theirActivity.map(a => {
+      const meta = ACTION_LABELS[a.action] || { icon: "fa-circle", label: a.action };
+      const ts = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : null;
+      return `
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border-soft, var(--border));">
+          <i class="fa-solid ${meta.icon}" style="color:var(--accent-cyan);width:16px;margin-top:2px;"></i>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">${escHtml(meta.label)}</div>
+            ${a.details ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${escHtml(a.details)}</div>` : ""}
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;">${ts ? timeAgo(ts) : ""}</div>
+        </div>
+      `;
+    }).join("");
 
     return `
-      <div class="tx-row" style="flex-direction:column;align-items:stretch;cursor:pointer;" onclick="apToggleExpand('${escHtml(e.email)}')">
+      <div class="tx-row" style="flex-direction:column;align-items:stretch;cursor:pointer;" onclick="apToggleExpand('${escHtml(sa.email)}')">
         <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
           <div>
-            <strong>${escHtml(e.name || "Unnamed")}</strong>
-            <div style="color:var(--text-muted);font-size:12px;margin-top:2px;">${escHtml(e.email)}</div>
+            <strong>${escHtml(sa.name || "Unnamed")}</strong>
+            <div style="color:var(--text-muted);font-size:12px;margin-top:2px;">${escHtml(sa.email)}</div>
+            ${lastLoginEvent?.timestamp?.seconds ? `<div style="color:var(--text-muted);font-size:11px;margin-top:2px;"><i class="fa-solid fa-right-to-bracket"></i> Last login ${timeAgo(lastLoginEvent.timestamp.seconds * 1000)}</div>` : `<div style="color:var(--text-muted);font-size:11px;margin-top:2px;">Never logged in yet</div>`}
           </div>
           <div style="display:flex;align-items:center;gap:12px;">
-            <span class="pill">${total} piece${total === 1 ? "" : "s"}</span>
-            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); apRevoke('${escHtml(e.email)}')">
+            <span class="pill">${total} event${total === 1 ? "" : "s"} · 30d</span>
+            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); apRevoke('${escHtml(sa.email)}')">
               <i class="fa-solid fa-user-xmark"></i> Revoke
             </button>
             <i class="fa-solid fa-chevron-${isOpen ? "up" : "down"}" style="color:var(--text-muted);"></i>
           </div>
         </div>
         ${isOpen ? `
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);" onclick="event.stopPropagation()">
-            ${total === 0 ? `<div style="color:var(--text-muted);font-size:13px;">No content created yet.</div>` : `
-              <div style="margin-bottom:12px;">${typeChips}</div>
-              <table class="admin-table">
-                <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Status</th></tr></thead>
-                <tbody>${detailRows}</tbody>
-              </table>
-            `}
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);max-height:360px;overflow-y:auto;" onclick="event.stopPropagation()">
+            ${total === 0 ? `<div style="color:var(--text-muted);font-size:13px;">No activity in the last 30 days.</div>` : activityRows}
           </div>
         ` : ""}
       </div>
@@ -113,12 +175,12 @@ async function apAppoint() {
   }
 
   try {
-    await setDoc(doc(db, "editors", email), {
+    await setDoc(doc(db, "subAdmins", email), {
       name,
       email,
       appointedAt: serverTimestamp()
     });
-    apToast(`${name} appointed — they can now log in to Content Admin`, "success");
+    apToast(`${name} appointed — they can now log in to Sub-Admin panel`, "success");
     $("apName").value = "";
     $("apEmail").value = "";
     apLoadList();
@@ -129,12 +191,13 @@ async function apAppoint() {
 }
 
 async function apRevoke(email) {
-  if (!confirm(`Revoke Content Admin access for ${email}?`)) return;
-  await deleteDoc(doc(db, "editors", email));
+  if (!confirm(`Revoke Sub-Admin access for ${email}?`)) return;
+  await deleteDoc(doc(db, "subAdmins", email));
   apToast("Access revoked", "success");
   apLoadList();
 }
 
 window.apAppoint = apAppoint;
 window.apRevoke = apRevoke;
+window.apDeleteOldActivity = apDeleteOldActivity;
 window.initAppoint = apLoadList;

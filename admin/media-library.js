@@ -13,6 +13,7 @@
 import {
   db, collection, addDoc, doc, deleteDoc, getDocs, query, orderBy, serverTimestamp
 } from "../firebase.js";
+import { sgpLogActivity } from "../activity-log.js";
 
 // ════════════════════════════════════════════════════════════
 // CLOUDINARY CONFIG — fill these in from your Cloudinary dashboard
@@ -174,6 +175,7 @@ async function mlHandleUpload(fileList) {
   }
 
   mlToast("Upload complete", "success");
+  sgpLogActivity("media_upload", `Uploaded ${files.length} image(s) to folder "${folder}"`);
   mlLoad();
 }
 

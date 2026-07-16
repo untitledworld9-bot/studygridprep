@@ -211,7 +211,14 @@ window.signInWithGoogleAdmin = async () => {
 // Persistent listener — runs once on page load AND stays active, so a
 // page refresh resumes the session automatically instead of asking to
 // log in again. This mirrors content-admin.html's session behaviour.
+//
+// Pages that need their own role check BEFORE launching (e.g. sub-admin.html
+// checking the subAdmins collection) should set
+// `window.SGP_SKIP_AUTOLAUNCH = true` in an inline <script> BEFORE this
+// file loads, and call initAdminPanel(user) etc. themselves once verified.
 onAuthStateChanged(auth, async (user) => {
+  if (window.SGP_SKIP_AUTOLAUNCH) return;
+
   const gate = $("authGate");
   const loading = $("authLoading");
   const errEl = $("authError");
@@ -236,6 +243,10 @@ onAuthStateChanged(auth, async (user) => {
   if (typeof window.initAppoint === "function") window.initAppoint();
 });
 
+// Exposed so pages like sub-admin.html (with their own role check) can
+// call the same panel launcher instead of duplicating this logic.
+window.initAdminPanel = initAdminPanel;
+
 /** Logout and return to homepage */
 window.doLogout = async () => {
   const yes = await confirmModal("Logout", "Are you sure you want to sign out of the admin panel?");
@@ -255,6 +266,7 @@ window.doLogout = async () => {
  * and renders the admin profile in the sidebar.
  */
 function initAdminPanel(user) {
+  window.__adminPanelUser = user;
   // Sidebar admin profile
   const initials = (user.displayName || user.email || "A").charAt(0).toUpperCase();
   $("adminAvatarSidebar").textContent  = initials;
@@ -884,8 +896,8 @@ function renderPaymentRequests() {
       : p.status === 'rejected' ? 'var(--accent-red)'
       : 'var(--accent-amber)';
 
-    const statusIcon  = p.status === 'approved' ? '✅'
-      : p.status === 'rejected' ? '❌' : '⏳';
+    const statusIconHtml  = p.status === 'approved' ? '<i class="fa-solid fa-circle-check"></i>'
+      : p.status === 'rejected' ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-solid fa-clock"></i>';
 
     const ssHtml = p.screenshot
       ? `<img src="${escHtml(p.screenshot)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;cursor:pointer;border:1px solid var(--border);"
@@ -900,7 +912,7 @@ function renderPaymentRequests() {
         transition:.2s;font-family:var(--font-body);"
         onmouseover="this.style.background='rgba(0,229,160,0.22)'"
         onmouseout="this.style.background='rgba(0,229,160,0.12)'">
-        ✅ Approve
+        <i class="fa-solid fa-circle-check"></i> Approve
       </button>
       <button onclick="rejectPayment('${escHtml(p.id)}')" style="
         background:rgba(255,79,106,0.1);color:var(--accent-red);
@@ -909,7 +921,7 @@ function renderPaymentRequests() {
         transition:.2s;font-family:var(--font-body);margin-left:6px;"
         onmouseover="this.style.background='rgba(255,79,106,0.2)'"
         onmouseout="this.style.background='rgba(255,79,106,0.1)'">
-        ❌ Reject
+        <i class="fa-solid fa-circle-xmark"></i> Reject
       </button>
       <button onclick="mailRejectPayment('${escHtml(p.id)}')" title="Open pre-filled rejection email" style="
         background:rgba(255,255,255,0.05);color:var(--text-secondary);
@@ -918,9 +930,9 @@ function renderPaymentRequests() {
         transition:.2s;font-family:var(--font-body);margin-left:6px;"
         onmouseover="this.style.background='rgba(255,255,255,0.1)'"
         onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        📧 Mail
+        <i class="fa-solid fa-envelope"></i> Mail
       </button>
-    ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIcon} ${p.status}</span>`;
+    ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIconHtml} ${p.status}</span>`;
 
     return `<tr>
       <td>
@@ -1650,32 +1662,32 @@ function renderUserTable() {
             background:rgba(0,224,255,.1);border:1px solid rgba(0,224,255,.2);
             color:var(--accent-cyan);border-radius:7px;padding:5px 9px;
             font-size:13px;cursor:pointer;transition:all .15s;
-          " onmouseover="this.style.background='rgba(0,224,255,.25)'" onmouseout="this.style.background='rgba(0,224,255,.1)'">🔔</button>
+          " onmouseover="this.style.background='rgba(0,224,255,.25)'" onmouseout="this.style.background='rgba(0,224,255,.1)'"><i class="fa-solid fa-bell"></i></button>
           <button title="Send Announcement" onclick="userQuickAction('announcement','${uid}','${uname}')" style="
             background:rgba(255,184,48,.1);border:1px solid rgba(255,184,48,.2);
             color:var(--accent-amber);border-radius:7px;padding:5px 9px;
             font-size:13px;cursor:pointer;transition:all .15s;
-          " onmouseover="this.style.background='rgba(255,184,48,.25)'" onmouseout="this.style.background='rgba(255,184,48,.1)'">📢</button>
+          " onmouseover="this.style.background='rgba(255,184,48,.25)'" onmouseout="this.style.background='rgba(255,184,48,.1)'"><i class="fa-solid fa-bullhorn"></i></button>
           <button title="Send Promotion" onclick="userQuickAction('promotions','${uid}','${uname}')" style="
             background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.2);
             color:var(--accent-violet);border-radius:7px;padding:5px 9px;
             font-size:13px;cursor:pointer;transition:all .15s;
-          " onmouseover="this.style.background='rgba(124,92,252,.25)'" onmouseout="this.style.background='rgba(124,92,252,.1)'">🎯</button>
+          " onmouseover="this.style.background='rgba(124,92,252,.25)'" onmouseout="this.style.background='rgba(124,92,252,.1)'"><i class="fa-solid fa-bullseye"></i></button>
           <button title="Send Video Promotion" onclick="userQuickAction('videopromo','${uid}','${uname}')" style="
             background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2);
             color:var(--accent-green);border-radius:7px;padding:5px 9px;
             font-size:13px;cursor:pointer;transition:all .15s;
-          " onmouseover="this.style.background='rgba(0,229,160,.25)'" onmouseout="this.style.background='rgba(0,229,160,.1)'">▶️</button>
+          " onmouseover="this.style.background='rgba(0,229,160,.25)'" onmouseout="this.style.background='rgba(0,229,160,.1)'"><i class="fa-solid fa-play"></i></button>
           <button title="Send Offer" onclick="sendOfferToUser('${uid}','${uname}')" style="
             background:rgba(255,184,48,.1);border:1px solid rgba(255,184,48,.25);
             color:var(--accent-amber);border-radius:7px;padding:5px 9px;
             font-size:13px;cursor:pointer;transition:all .15s;font-weight:600;
-          " onmouseover="this.style.background='rgba(255,184,48,.25)'" onmouseout="this.style.background='rgba(255,184,48,.1)'">🎁</button>
-<button title="Delete User" onclick="deleteUser('${uid}','${uname}')" style="
+          " onmouseover="this.style.background='rgba(255,184,48,.25)'" onmouseout="this.style.background='rgba(255,184,48,.1)'"><i class="fa-solid fa-gift"></i></button>
+${`<button title="Delete User" onclick="deleteUser('${uid}','${uname}')" style="
           background:rgba(255,79,106,.1);border:1px solid rgba(255,79,106,.25);
           color:var(--accent-red);border-radius:7px;padding:5px 9px;
           font-size:13px;cursor:pointer;transition:all .15s;font-weight:600;
-        " onmouseover="this.style.background='rgba(255,79,106,.25)'" onmouseout="this.style.background='rgba(255,79,106,.1)'">🗑️</button>
+        " onmouseover="this.style.background='rgba(255,79,106,.25)'" onmouseout="this.style.background='rgba(255,79,106,.1)'"><i class="fa-solid fa-trash"></i></button>`}
         </div>
       </td>
     </tr>`;
@@ -2065,7 +2077,7 @@ window.openSeenModal = async (collName, docId, label) => {
   const count = document.getElementById("seenByCount");
   if (!modal) return;
 
-  title.textContent = "👁 " + label + " — Seen By";
+  title.innerHTML = "<i class=\"fa-solid fa-eye\"></i> " + label + " — Seen By";
   count.textContent = "";
   list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Loading…</div>';
   modal.classList.add("open");
@@ -3154,6 +3166,90 @@ function adminGetLevel(xp) {
 }
 
 /** Switch between Full and Timer tabs */
+// ============================================================
+//  LEADERBOARD TIME RANGES — Today / This Week / All Time
+//
+//  IMPORTANT: XP is stored as a running cumulative total (no
+//  built-in daily history). To show "Today" / "This Week" we
+//  snapshot each user's current XP once per calendar day into
+//  leaderboardSnapshots/{YYYY-MM-DD}, then show the DELTA between
+//  the live value and that snapshot. This starts working from the
+//  day it's deployed onward — it can't reconstruct past history
+//  that was never snapshotted.
+// ============================================================
+let _lbRange = "all"; // 'today' | 'week' | 'all'
+const _lbSnapshotCache = {};
+
+function _todayKey() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+function _daysAgoKey(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+async function ensureTodaySnapshot() {
+  const key = _todayKey();
+  try {
+    const existing = await getDoc(doc(db, "leaderboardSnapshots", key));
+    if (existing.exists()) return;
+
+    const data = STATE.leaderboardData?.length ? STATE.leaderboardData : STATE.allUsers;
+    const snapshot = {};
+    data.forEach(u => {
+      snapshot[u.id] = {
+        xp: Number(u.xp ?? u.totalXP ?? u.points ?? 0),
+        timerXP: Number(u.timerXP || 0),
+        focusTime: Number(u.focusTime || u.totalFocusTime || u.timerMinutes || 0)
+      };
+    });
+    await setDoc(doc(db, "leaderboardSnapshots", key), { data: snapshot, capturedAt: serverTimestamp() });
+  } catch (e) {
+    console.warn("Leaderboard snapshot skipped:", e.message);
+  }
+}
+
+async function _getSnapshot(dateKey) {
+  if (_lbSnapshotCache[dateKey] !== undefined) return _lbSnapshotCache[dateKey];
+  try {
+    const snap = await getDoc(doc(db, "leaderboardSnapshots", dateKey));
+    _lbSnapshotCache[dateKey] = snap.exists() ? snap.data().data : null;
+  } catch (e) {
+    _lbSnapshotCache[dateKey] = null;
+  }
+  return _lbSnapshotCache[dateKey];
+}
+
+/** Returns { xp, timerXP, focusTime } deltas for the selected range, or live values if no baseline exists yet */
+async function computeLbDelta(uid, liveXp, liveTimerXP, liveFocusTime = 0) {
+  if (_lbRange === "all") return { xp: liveXp, timerXP: liveTimerXP, focusTime: liveFocusTime, noBaseline: false };
+
+  const key = _lbRange === "today" ? _todayKey() : _daysAgoKey(7);
+  const snapshot = await _getSnapshot(key);
+  if (!snapshot || !snapshot[uid]) return { xp: liveXp, timerXP: liveTimerXP, focusTime: liveFocusTime, noBaseline: true };
+
+  return {
+    xp: Math.max(0, liveXp - (snapshot[uid].xp || 0)),
+    timerXP: Math.max(0, liveTimerXP - (snapshot[uid].timerXP || 0)),
+    focusTime: Math.max(0, liveFocusTime - (snapshot[uid].focusTime || 0)),
+    noBaseline: false
+  };
+}
+
+window.setLbRange = async function (range) {
+  _lbRange = range;
+  ["lbRangeToday", "lbRangeWeek", "lbRangeAll"].forEach(id => {
+    const btn = $(id);
+    if (!btn) return;
+    const active = id === `lbRange${range[0].toUpperCase()}${range.slice(1)}`;
+    btn.style.background = active ? "rgba(0,224,255,0.15)" : "none";
+    btn.style.color = active ? "var(--accent-cyan)" : "var(--text-secondary)";
+  });
+  await ensureTodaySnapshot();
+  renderLeaderboardSection();
+};
+
 window.switchLbTab = function(tab) {
   _lbTab = tab;
 
@@ -3164,11 +3260,11 @@ window.switchLbTab = function(tab) {
   if (tab === "full") {
     if (btnFull)  { btnFull.style.background  = "rgba(0,224,255,0.1)"; btnFull.style.color  = "var(--accent-cyan)";      btnFull.style.borderColor  = "rgba(0,224,255,0.25)"; }
     if (btnTimer) { btnTimer.style.background = "none";                btnTimer.style.color = "var(--text-secondary)";   btnTimer.style.borderColor = "var(--border)"; }
-    if (title)    title.textContent = "🏆 Full Leaderboard — Combined XP (Playlist + Todo + Timer)";
+    if (title)    title.innerHTML = "<i class=\"fa-solid fa-trophy\"></i> Full Leaderboard — Combined XP (Playlist + Todo + Timer)";
   } else {
     if (btnTimer) { btnTimer.style.background = "rgba(124,92,252,0.12)"; btnTimer.style.color = "var(--accent-violet)"; btnTimer.style.borderColor = "rgba(124,92,252,0.3)"; }
     if (btnFull)  { btnFull.style.background  = "none";                  btnFull.style.color  = "var(--text-secondary)"; btnFull.style.borderColor  = "var(--border)"; }
-    if (title)    title.textContent = "⏱️ Timer Leaderboard — Ranked by Focus Time";
+    if (title)    title.innerHTML = '<i class="fa-solid fa-stopwatch"></i> Timer Leaderboard — Ranked by Focus Time';
   }
 
   renderLeaderboardSection();
@@ -3182,6 +3278,7 @@ function listenLeaderboard() {
     query(collection(db, "leaderboard"), orderBy("xp", "desc"), limit(100)),
     snap => {
       STATE.leaderboardData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      ensureTodaySnapshot();
       renderLeaderboardSection();
     },
     err => {
@@ -3192,7 +3289,7 @@ function listenLeaderboard() {
   STATE.unsubscribers.push(unsub);
 }
 
-function renderLeaderboardSection() {
+async function renderLeaderboardSection() {
   const container = $("leaderboardContainer");
   if (!container) return;
 
@@ -3203,57 +3300,66 @@ function renderLeaderboardSection() {
 
   if (!hasLbData && !STATE.allUsers.length) {
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">🏆</div>
+      <div class="empty-state-icon"><i class="fa-solid fa-trophy"></i></div>
       <div class="empty-state-text">No users yet</div>
     </div>`;
     return;
   }
 
   if (_lbTab === "timer") {
-    renderTimerLeaderboard(container);
+    await renderTimerLeaderboard(container);
   } else {
-    renderFullLeaderboard(container);
+    await renderFullLeaderboard(container);
   }
 }
 
 /** Full Leaderboard: sorted by COMBINED XP (playlist+todo from uw-core + timer from script.js) */
-function renderFullLeaderboard(container) {
+async function renderFullLeaderboard(container) {
   // Use leaderboard collection — combine xp (playlist+todo from uw-core.js)
   // + timerXP (focus from script.js) for COMBINED total ranking
   let users;
   if (STATE.leaderboardData && STATE.leaderboardData.length > 0) {
-    users = [...STATE.leaderboardData]
-      .map(lb => {
-        const u = STATE.allUsers.find(u => u.id === lb.id) || {};
-        const studyXP = Number(lb.xp || 0);          // playlist + todo XP
-        const timerXP = Number(lb.timerXP || 0);      // focus timer XP
-        const totalXP = studyXP + timerXP;            // COMBINED
-        return { ...u, ...lb, id: lb.id, studyXP, timerXP, totalXP };
-      })
-      .sort((a, b) => b.totalXP - a.totalXP)         // rank by combined
-      .slice(0, 100);
+    users = [...STATE.leaderboardData].map(lb => {
+      const u = STATE.allUsers.find(u => u.id === lb.id) || {};
+      const studyXP = Number(lb.xp || 0);
+      const timerXP = Number(lb.timerXP || 0);
+      return { ...u, ...lb, id: lb.id, liveStudyXP: studyXP, liveTimerXP: timerXP };
+    });
   } else {
-    users = [...STATE.allUsers]
-      .map(u => {
-        const studyXP = Number(u.xp ?? u.totalXP ?? u.points ?? 0);
-        const timerXP = Number(u.timerXP || 0);
-        return { ...u, studyXP, timerXP, totalXP: studyXP + timerXP };
-      })
-      .sort((a, b) => b.totalXP - a.totalXP)
-      .slice(0, 100);
+    users = [...STATE.allUsers].map(u => {
+      const studyXP = Number(u.xp ?? u.totalXP ?? u.points ?? 0);
+      const timerXP = Number(u.timerXP || 0);
+      return { ...u, liveStudyXP: studyXP, liveTimerXP: timerXP };
+    });
   }
+
+  let noBaselineCount = 0;
+  for (const u of users) {
+    const delta = await computeLbDelta(u.id, u.liveStudyXP, u.liveTimerXP);
+    u.studyXP = delta.xp;
+    u.timerXP = delta.timerXP;
+    u.totalXP = delta.xp + delta.timerXP;
+    if (delta.noBaseline) noBaselineCount++;
+  }
+  users = users.sort((a, b) => b.totalXP - a.totalXP).slice(0, 100);
 
   if (!users.length) {
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">🏆</div>
+      <div class="empty-state-icon"><i class="fa-solid fa-trophy"></i></div>
       <div class="empty-state-text">No users found</div>
     </div>`;
     return;
   }
 
-  const medals = ["🥇", "🥈", "🥉"];
+  const rangeBanner = _lbRange !== "all" && noBaselineCount > 0 ? `
+    <div style="padding:10px 16px;background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.25);
+      border-radius:8px;margin-bottom:14px;font-size:12.5px;color:var(--accent-amber);">
+      <i class="fa-solid fa-circle-info"></i> No baseline yet for ${noBaselineCount} user(s) in this range — showing their full total until enough days of data build up.
+    </div>` : "";
 
-  container.innerHTML = `
+  const medals = ['<i class="fa-solid fa-medal" style="color:#FFD700;"></i>', '<i class="fa-solid fa-medal" style="color:#C0C0C0;"></i>', '<i class="fa-solid fa-medal" style="color:#CD7F32;"></i>'];
+
+  container.innerHTML = rangeBanner + `
     <table style="width:100%;border-collapse:collapse;">
       <thead>
         <tr style="border-bottom:1px solid var(--border);">
@@ -3290,11 +3396,11 @@ function renderFullLeaderboard(container) {
                 </div>
               </div>
             </td>
-            <td style="padding:12px;font-family:var(--font-mono);color:var(--accent-amber);font-weight:700;">⚡ ${totalXP}</td>
+            <td style="padding:12px;font-family:var(--font-mono);color:var(--accent-amber);font-weight:700;"><i class="fa-solid fa-bolt"></i> ${totalXP}</td>
             <td style="padding:12px;">
               <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">
-                <div>📚 ${studyXP} study</div>
-                <div>⏱ ${timerXP} focus</div>
+                <div><i class="fa-solid fa-book"></i> ${studyXP} study</div>
+                <div><i class="fa-solid fa-stopwatch"></i> ${timerXP} focus</div>
               </div>
             </td>
             <td style="padding:12px;">
@@ -3315,7 +3421,7 @@ function renderFullLeaderboard(container) {
 }
 
 /** Timer Leaderboard: sorted by focusTime — shows ONLY timer XP (not combined XP) */
-function renderTimerLeaderboard(container) {
+async function renderTimerLeaderboard(container) {
   // Prefer leaderboard collection (has timerXP + focusTime written by script.js)
   // Fall back to allUsers if leaderboard collection has no focusTime data yet
   let source;
@@ -3325,25 +3431,39 @@ function renderTimerLeaderboard(container) {
     source = STATE.allUsers;
   }
 
-  const users = [...source]
-    .filter(u => (u.focusTime || u.totalFocusTime || u.timerMinutes || 0) > 0)
-    .sort((a, b) =>
-      (b.focusTime || b.totalFocusTime || b.timerMinutes || 0) -
-      (a.focusTime || a.totalFocusTime || a.timerMinutes || 0)
-    )
-    .slice(0, 100);
+  let users = [...source].map(u => ({
+    ...u,
+    liveFocusTime: Number(u.focusTime || u.totalFocusTime || u.timerMinutes || 0),
+    liveTimerXP: Number(u.weeklyTimerXP || u.timerXP || 0)
+  }));
+
+  let noBaselineCount = 0;
+  for (const u of users) {
+    const delta = await computeLbDelta(u.id, 0, u.liveTimerXP, u.liveFocusTime);
+    u.timerXP = delta.timerXP;
+    u.focusTime = delta.focusTime;
+    if (delta.noBaseline) noBaselineCount++;
+  }
+
+  users = users.filter(u => u.focusTime > 0).sort((a, b) => b.focusTime - a.focusTime).slice(0, 100);
 
   if (!users.length) {
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">⏱️</div>
-      <div class="empty-state-text">No focus sessions recorded yet</div>
+      <div class="empty-state-icon"><i class="fa-solid fa-stopwatch"></i></div>
+      <div class="empty-state-text">No focus sessions recorded ${_lbRange === "all" ? "yet" : "in this range yet"}</div>
     </div>`;
     return;
   }
 
-  const medals = ["🥇","🥈","🥉"];
+  const rangeBanner = _lbRange !== "all" && noBaselineCount > 0 ? `
+    <div style="padding:10px 16px;background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.25);
+      border-radius:8px;margin-bottom:14px;font-size:12.5px;color:var(--accent-amber);">
+      <i class="fa-solid fa-circle-info"></i> No baseline yet for ${noBaselineCount} user(s) in this range — showing their full total until enough days of data build up.
+    </div>` : "";
 
-  container.innerHTML = `
+  const medals = ['<i class="fa-solid fa-medal" style="color:#FFD700;"></i>', '<i class="fa-solid fa-medal" style="color:#C0C0C0;"></i>', '<i class="fa-solid fa-medal" style="color:#CD7F32;"></i>'];
+
+  container.innerHTML = rangeBanner + `
     <table style="width:100%;border-collapse:collapse;">
       <thead>
         <tr style="border-bottom:1px solid var(--border);">
@@ -3357,10 +3477,8 @@ function renderTimerLeaderboard(container) {
       </thead>
       <tbody>
         ${users.map((u, i) => {
-          const ft      = u.focusTime || u.totalFocusTime || u.timerMinutes || 0;
-          // Show weekly timer XP (matches what users see on leaderboard page — 2 min = 1 XP)
-          const timerXP = Number(u.weeklyTimerXP || u.timerXP || 0);
-          // Level from timerXP only (timer leaderboard context)
+          const ft      = u.focusTime || 0;
+          const timerXP = u.timerXP || 0;
           const level   = adminGetLevel(timerXP);
           const badge   = adminGetBadge(timerXP);
           const rank    = medals[i] || `#${i + 1}`;

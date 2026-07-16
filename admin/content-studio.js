@@ -14,6 +14,7 @@ import {
   db, auth, collection, addDoc, doc, updateDoc, deleteDoc,
   getDocs, getDoc, query, orderBy, limit, serverTimestamp
 } from "../firebase.js";
+import { sgpLogActivity } from "../activity-log.js";
 
 const COLL_CONTENT = "content";
 
@@ -610,6 +611,7 @@ async function csSaveContent(status) {
     if (CS.editingId) {
       await updateDoc(doc(db, COLL_CONTENT, CS.editingId), payload);
       csToast(status === "published" ? "Published" : "Draft saved", "success");
+      sgpLogActivity("content_update", `${status}: "${title}" (${payload.type})`);
     } else {
       payload.createdAt = serverTimestamp();
       payload.createdByEmail = auth.currentUser?.email || null;
@@ -617,6 +619,7 @@ async function csSaveContent(status) {
       const ref = await addDoc(collection(db, COLL_CONTENT), payload);
       CS.editingId = ref.id;
       csToast(status === "published" ? "Published" : "Draft saved", "success");
+      sgpLogActivity("content_create", `${status}: "${title}" (${payload.type})`);
     }
     csLoadContent();
     csShowList();
