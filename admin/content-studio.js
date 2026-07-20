@@ -123,9 +123,10 @@ function csRenderList() {
   }
 
   wrap.innerHTML = `
-    <table class="admin-table">
+    <div class="table-scroll">
+    <table class="admin-table" style="min-width:640px;">
       <thead><tr>
-        <th>Title</th><th>Type</th><th>Status</th><th>Destinations</th><th>Updated</th><th></th>
+        <th>Title</th><th>Type</th><th>Status</th><th>Destinations</th><th>Updated</th><th style="min-width:90px;">Actions</th>
       </tr></thead>
       <tbody>
         ${rows.map(c => `
@@ -135,14 +136,15 @@ function csRenderList() {
             <td><span class="badge badge-${c.status === "published" ? "green" : c.status === "scheduled" ? "amber" : "gray"}">${escHtml(c.status || "draft")}</span></td>
             <td>${(c.destinations || []).map(d => `<span class="pill">${escHtml(d)}</span>`).join(" ")}</td>
             <td>${c.updatedAt?.seconds ? new Date(c.updatedAt.seconds * 1000).toLocaleDateString() : "-"}</td>
-            <td style="display:flex;gap:8px;">
-              <button class="btn btn-outline btn-sm" onclick="csEditContent('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+            <td style="white-space:nowrap;">
+              <button class="btn btn-outline btn-sm" onclick="csEditContent('${c.id}')" style="margin-right:6px;"><i class="fa-solid fa-pen"></i></button>
               <button class="btn btn-outline btn-sm" onclick="csDeleteContent('${c.id}')"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
         `).join("")}
       </tbody>
-    </table>`;
+    </table>
+    </div>`;
 }
 
 // ============================================================

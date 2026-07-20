@@ -51,6 +51,38 @@
       --font-mono:     'DM Mono', monospace;
     }
 
+    /* ── LIGHT THEME — toggled via [data-theme="light"] on <html> ── */
+    [data-theme="light"] {
+      --bg-void:       #f1f5f9;
+      --bg-panel:      #ffffff;
+      --bg-card:       #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input:      #ffffff;
+      --border:        #e2e8f0;
+      --border-glow:   rgba(79,70,229,.15);
+
+      --accent-cyan:   #4F46E5;
+      --accent-violet: #7C3AED;
+      --accent-green:  #059669;
+      --accent-amber:  #D97706;
+      --accent-red:    #DC2626;
+
+      --text-primary:  #0f172a;
+      --text-secondary:#475569;
+      --text-muted:    #94a3b8;
+
+      --shadow-card:   0 4px 24px rgba(15,23,42,.08);
+      --shadow-glow:   0 0 24px rgba(79,70,229,.08);
+    }
+    html { transition: background-color .25s ease; }
+    body { transition: background-color .25s ease, color .25s ease; }
+
+    .theme-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 4px; }
+    .theme-toggle-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .theme-switch { position: relative; width: 42px; height: 24px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 99px; cursor: pointer; flex-shrink: 0; }
+    .theme-switch-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent-cyan); transition: transform .22s cubic-bezier(0.4,0,0.2,1); }
+    [data-theme="light"] .theme-switch-knob { transform: translateX(18px); }
+
     /* ============================================================  RESET  */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -818,6 +850,42 @@
     }
     .pro-counter-switch input:checked + .pro-counter-slider{ background:#00e5a0; }
     .pro-counter-switch input:checked + .pro-counter-slider::before{ transform:translateX(20px); }
+
+    /* ── Image modal (payment screenshots etc) — replaces window.open() ── */
+    #sgpImageModal { display: none; position: fixed; inset: 0; z-index: 99999; }
+    #sgpImageModal.open { display: block; }
+    .sgp-img-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.75); }
+    .sgp-img-modal-box {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      max-width: 92vw; max-height: 88vh; background: var(--bg-card, #111420);
+      border-radius: 14px; padding: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sgp-img-modal-box img { max-width: 88vw; max-height: 80vh; width: auto; height: auto; border-radius: 8px; display: block; }
+    .sgp-img-modal-close {
+      position: absolute; top: -14px; left: -14px; width: 34px; height: 34px;
+      border-radius: 50%; background: var(--accent-red, #ff4f6a); color: #fff;
+      border: 2px solid var(--bg-void, #07080d); font-size: 15px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 2;
+    }
+
+    /* ── Reports inbox (main-admin only, kept here for style parity) ── */
+    tr.sgp-reported-row { background: rgba(255,184,48,0.06) !important; }
+    tr.sgp-reported-row td:first-child { box-shadow: inset 3px 0 0 var(--accent-amber); }
+    .sgp-report-badge {
+      background: rgba(255,184,48,0.15); color: var(--accent-amber); border: 1px solid rgba(255,184,48,0.35);
+      border-radius: 7px; padding: 5px 9px; font-size: 12px; cursor: pointer; margin-left: 6px;
+      animation: sgpReportPulse 2s ease-in-out infinite;
+    }
+    @keyframes sgpReportPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+    .sgp-report-note-box {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: min(380px, 90vw); background: var(--bg-card, #111420);
+      border: 1px solid var(--border, rgba(255,255,255,.08)); border-radius: 14px;
+      padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .sgp-report-note-from { font-size: 12px; font-weight: 700; color: var(--accent-amber); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
+    .sgp-report-note-text { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -954,6 +1022,10 @@
   </div>
 
   <div class="sidebar-footer">
+    <div class="theme-toggle-row">
+      <span class="theme-toggle-label"><i class="fa-solid fa-moon"></i> Theme</span>
+      <div class="theme-switch" onclick="toggleSgpTheme()"><div class="theme-switch-knob"></div></div>
+    </div>
     <div class="admin-profile">
       <div class="admin-avatar" id="adminAvatarSidebar">A</div>
       <div>
@@ -1259,53 +1331,8 @@
     </div>
 
     <!-- Earning Summary Box -->
-    <div id="earningSummaryBox" style="
-      margin-bottom:20px;
-      background:linear-gradient(135deg,rgba(0,229,160,0.07) 0%,rgba(124,92,252,0.07) 100%);
-      border:1px solid rgba(0,229,160,0.2);border-radius:16px;padding:18px 20px;">
-
-      <!-- Time Filter -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-        <span style="font-size:12px;font-weight:700;color:var(--text-secondary);">⏱ Period:</span>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="earningFilterBtns">
-          <button onclick="setEarningFilter('1d')"   data-ef="1d"   class="ef-btn ef-active">1 Day</button>
-          <button onclick="setEarningFilter('7d')"   data-ef="7d"   class="ef-btn">1 Week</button>
-          <button onclick="setEarningFilter('15d')"  data-ef="15d"  class="ef-btn">15 Days</button>
-          <button onclick="setEarningFilter('30d')"  data-ef="30d"  class="ef-btn">1 Month</button>
-          <button onclick="setEarningFilter('365d')" data-ef="365d" class="ef-btn">1 Year</button>
-          <button onclick="setEarningFilter('730d')" data-ef="730d" class="ef-btn">2 Years</button>
-          <button onclick="setEarningFilter('all')"  data-ef="all"  class="ef-btn">All Time</button>
-        </div>
-      </div>
-
-      <!-- Earning Cards -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-        <!-- ₹1 Trial earnings -->
-        <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.22);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:#00e5a0;margin-bottom:6px;">₹1 Trial</div>
-          <div style="font-size:22px;font-weight:800;color:var(--text-primary);">₹<span id="earn1Rupee">0</span></div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earn1Count">0</span> payments</div>
-        </div>
-        <!-- ₹29 Plan earnings -->
-        <div style="background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.22);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:var(--accent-amber);margin-bottom:6px;">₹29 Monthly</div>
-          <div style="font-size:22px;font-weight:800;color:var(--text-primary);">₹<span id="earn49Rupee">0</span></div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earn49Count">0</span> payments</div>
-        </div>
-        <!-- Total -->
-        <div style="background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(91,91,246,0.12));border:1px solid rgba(124,92,252,0.3);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:var(--accent-violet);margin-bottom:6px;"><i class="fa-solid fa-sack-dollar"></i> Total Earned</div>
-          <div style="font-size:26px;font-weight:900;color:var(--text-primary);">₹<span id="earnTotal">0</span></div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><span id="earnTotalCount">0</span> approved payments</div>
-        </div>
-        <!-- Unique Pro Users (all-time, not period-filtered — same figure shown live on subscription.html) -->
-        <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.22);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:600;color:#00e5a0;margin-bottom:6px;"><i class="fa-solid fa-users"></i> Unique Pro Users</div>
-          <div style="font-size:22px;font-weight:800;color:var(--text-primary);"><span id="proUniqueUsersCount">0</span></div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Trial + Monthly · all-time, unique</div>
-        </div>
-      </div>
-    </div>
+    <!-- Earnings summary intentionally omitted for Sub-Admin — revenue
+         figures are main-admin-only. Approve/Reject still works normally. -->
 
     <!-- Table -->
     <div class="table-card">
@@ -3006,6 +3033,27 @@
     const m = document.getElementById("seenByModal");
     if (m) obs.observe(m, { attributes: true, attributeFilter: ["class"] });
   });
+})();
+</script>
+
+<script>
+// ── Light/Dark theme toggle — defaults to system preference,
+// remembers explicit user choice in localStorage from then on ──
+function toggleSgpTheme() {
+  const html = document.documentElement;
+  const isLight = html.getAttribute("data-theme") === "light";
+  const next = isLight ? "dark" : "light";
+  if (next === "light") html.setAttribute("data-theme", "light");
+  else html.removeAttribute("data-theme");
+  localStorage.setItem("sgp-admin-theme", next);
+}
+(function initSgpTheme() {
+  const saved = localStorage.getItem("sgp-admin-theme");
+  if (saved === "light") { document.documentElement.setAttribute("data-theme", "light"); return; }
+  if (saved === "dark") return;
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
 })();
 </script>
 

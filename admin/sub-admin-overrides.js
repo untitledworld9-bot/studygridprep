@@ -76,10 +76,75 @@ window.sendSubscriptionReport = async () => {
 };
 
 // Report button for a specific payment row
-window.reportPaymentToAdmin = async (paymentId, userLabel) => {
-  const note = prompt(`Note for admin about this payment (${userLabel}):`);
-  if (note === null) return; // cancelled
-  await fileReport({ type: "payment", targetLabel: userLabel, targetId: paymentId, note });
+window.reportPaymentToAdmin = (paymentId, userLabel) => {
+  openNoteModal(`Note for admin about this payment (${userLabel})`, async (note) => {
+    if (note == null) return; // cancelled
+    await fileReport({ type: "payment", targetLabel: userLabel, targetId: paymentId, note });
+  });
+};
+
+// ============================================================
+//  IN-APP NOTE MODAL — replaces the browser's native prompt(),
+//  which looked like a raw Chrome dialog and broke the flow's UI.
+// ============================================================
+function openNoteModal(title, onSubmit) {
+  let modal = document.getElementById("saNoteModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "saNoteModal";
+    modal.innerHTML = `
+      <div class="sa-note-modal-backdrop" onclick="closeNoteModal()"></div>
+      <div class="sa-note-modal-box">
+        <div class="sa-note-modal-title" id="saNoteModalTitle"></div>
+        <textarea class="sa-note-modal-textarea" id="saNoteModalInput" rows="4" placeholder="Type your note…"></textarea>
+        <div class="sa-note-modal-actions">
+          <button class="btn btn-outline" onclick="closeNoteModal()">Cancel</button>
+          <button class="btn btn-primary" id="saNoteModalSend">
+            <i class="fa-solid fa-paper-plane"></i> Send
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const styleTag = document.createElement("style");
+    styleTag.textContent = `
+      #saNoteModal { display:none; position:fixed; inset:0; z-index:99999; }
+      #saNoteModal.open { display:block; }
+      .sa-note-modal-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.6); }
+      .sa-note-modal-box {
+        position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+        width:min(420px, 90vw); background:var(--bg-card, #111420);
+        border:1px solid var(--border, rgba(255,255,255,.08)); border-radius:14px;
+        padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      }
+      .sa-note-modal-title { font-family:var(--font-display,inherit); font-weight:700; font-size:15px; color:var(--text-primary,#eef0ff); margin-bottom:14px; }
+      .sa-note-modal-textarea {
+        width:100%; padding:10px 12px; border-radius:10px; background:var(--bg-input,#0f1220);
+        border:1px solid var(--border,rgba(255,255,255,.08)); color:var(--text-primary,#eef0ff);
+        font-family:var(--font-body,inherit); font-size:13.5px; resize:vertical; outline:none;
+      }
+      .sa-note-modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:14px; }
+    `;
+    document.head.appendChild(styleTag);
+  }
+
+  document.getElementById("saNoteModalTitle").textContent = title;
+  const input = document.getElementById("saNoteModalInput");
+  input.value = "";
+  modal.classList.add("open");
+  setTimeout(() => input.focus(), 50);
+
+  const sendBtn = document.getElementById("saNoteModalSend");
+  sendBtn.onclick = () => {
+    const val = input.value;
+    closeNoteModal();
+    onSubmit(val);
+  };
+}
+window.closeNoteModal = function () {
+  const modal = document.getElementById("saNoteModal");
+  if (modal) modal.classList.remove("open");
 };
 
 // ============================================================

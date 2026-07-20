@@ -82,7 +82,8 @@ const STATE = {
   onlineUsersList: [], // live online users for modal
   leaderboardData: [], // dedicated leaderboard collection data
   allPayments: [],     // payment requests from users
-  allIssues: []        // payment/refund support issues from users
+  allIssues: [],       // payment/refund support issues from users
+  pendingReports: []   // unresolved sub-admin reports (main admin only)
 };
 
 // ============================================================
@@ -248,6 +249,37 @@ onAuthStateChanged(auth, async (user) => {
 window.initAdminPanel = initAdminPanel;
 
 /** Logout and return to homepage */
+// ============================================================
+//  IMAGE MODAL — in-page lightbox for payment screenshots etc.
+//  Fixes the earlier window.open() approach, which caused full
+//  navigation and broke the back button / session on mobile.
+// ============================================================
+window.openImageModal = function (url) {
+  let modal = document.getElementById("sgpImageModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "sgpImageModal";
+    modal.innerHTML = `
+      <div class="sgp-img-modal-backdrop" onclick="closeImageModal()"></div>
+      <div class="sgp-img-modal-box">
+        <button class="sgp-img-modal-close" onclick="closeImageModal()" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <img id="sgpImageModalImg" src="" alt="Screenshot" />
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  document.getElementById("sgpImageModalImg").src = url;
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+};
+window.closeImageModal = function () {
+  const modal = document.getElementById("sgpImageModal");
+  if (modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+};
+
 window.doLogout = async () => {
   const yes = await confirmModal("Logout", "Are you sure you want to sign out of the admin panel?");
   if (!yes) return;
@@ -265,6 +297,96 @@ window.doLogout = async () => {
  * Called after successful auth. Sets up all real-time listeners
  * and renders the admin profile in the sidebar.
  */
+// ============================================================
+//  REPORTS INBOX — sub-admin reports about subscriptions/payments
+//  show up as a highlighted row + tap-to-view note, right in the
+//  main admin's existing Subscriptions/Payment Requests tables.
+// ============================================================
+function listenReports() {
+  const unsub = onSnapshot(
+    query(collection(db, "reports"), orderBy("createdAt", "desc"), limit(200)),
+    snap => {
+      STATE.pendingReports = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => !r.resolved);
+      applyReportHighlights();
+    },
+    err => console.warn("[Reports]", err)
+  );
+  STATE.unsubscribers.push(unsub);
+}
+
+function applyReportHighlights() {
+  const reports = STATE.pendingReports || [];
+  if (!reports.length) return;
+
+  // Subscriptions table — matched by data-sub-uid
+  reports.filter(r => r.type === "subscription").forEach(r => {
+    const row = document.querySelector(`tr[data-sub-uid="${r.targetId}"]`);
+    if (!row) return;
+    row.classList.add("sgp-reported-row");
+    if (!row.querySelector(".sgp-report-badge")) {
+      const cell = row.querySelector("td:last-child") || row.lastElementChild;
+      if (cell) {
+        const badge = document.createElement("button");
+        badge.className = "sgp-report-badge";
+        badge.innerHTML = '<i class="fa-solid fa-flag"></i>';
+        badge.title = "View sub-admin's note";
+        badge.onclick = (e) => { e.stopPropagation(); showReportNote(r); };
+        cell.appendChild(badge);
+      }
+    }
+  });
+
+  // Payments table — matched by data-payment-id
+  reports.filter(r => r.type === "payment").forEach(r => {
+    const row = document.querySelector(`tr[data-payment-id="${r.targetId}"]`);
+    if (!row) return;
+    row.classList.add("sgp-reported-row");
+    if (!row.querySelector(".sgp-report-badge")) {
+      const cell = row.querySelector("td:last-child") || row.lastElementChild;
+      if (cell) {
+        const badge = document.createElement("button");
+        badge.className = "sgp-report-badge";
+        badge.innerHTML = '<i class="fa-solid fa-flag"></i>';
+        badge.title = "View sub-admin's note";
+        badge.onclick = (e) => { e.stopPropagation(); showReportNote(r); };
+        cell.appendChild(badge);
+      }
+    }
+  });
+}
+
+window.showReportNote = function (report) {
+  let modal = document.getElementById("sgpReportNoteModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "sgpReportNoteModal";
+    modal.innerHTML = `
+      <div class="sgp-img-modal-backdrop" onclick="closeReportNote()"></div>
+      <div class="sgp-report-note-box">
+        <button class="sgp-img-modal-close" onclick="closeReportNote()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <div class="sgp-report-note-from" id="sgpReportNoteFrom"></div>
+        <div class="sgp-report-note-text" id="sgpReportNoteText"></div>
+        <button class="btn btn-primary" id="sgpReportResolveBtn" style="margin-top:14px;">
+          <i class="fa-solid fa-check"></i> Mark Resolved
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  document.getElementById("sgpReportNoteFrom").textContent = `From ${report.reportedByName || report.reportedBy} — re: ${report.targetLabel || ""}`;
+  document.getElementById("sgpReportNoteText").textContent = report.note || "(no note)";
+  document.getElementById("sgpReportResolveBtn").onclick = async () => {
+    try {
+      await updateDoc(doc(db, "reports", report.id), { resolved: true, resolvedAt: serverTimestamp() });
+      closeReportNote();
+    } catch (e) { console.error(e); }
+  };
+  modal.classList.add("open");
+};
+window.closeReportNote = function () {
+  document.getElementById("sgpReportNoteModal")?.classList.remove("open");
+};
+
 function initAdminPanel(user) {
   window.__adminPanelUser = user;
   // Sidebar admin profile
@@ -295,6 +417,7 @@ function initAdminPanel(user) {
   listenPayments();    // Payment Requests (manual UPI)
   listenIssues();      // Payment/Refund Support Issues
   listenProCounter();  // Live "Pro Plan Purchased" unique-user counter
+  if (!window.IS_SUB_ADMIN) listenReports(); // Sub-admin reports inbox (main admin only)
 }
 
 // ============================================================
@@ -561,7 +684,25 @@ function renderSubTable() {
       : daysLeft <= 7  ? '#F59E0B'
       : '#10B981';
 
-    return `<tr>
+    const subActionCell = window.IS_SUB_ADMIN ? `
+        <span style="font-size:11px;font-weight:700;color:${isActive ? 'var(--accent-green)' : 'var(--accent-red)'};margin-right:8px;">
+          ${isActive ? "Active" : "Inactive"}
+        </span>
+        <button onclick="reportSubscriptionRow('${escHtml(u.id)}','${escHtml(u.name || u.email || u.id)}')" title="Send a note to the main admin about this subscription" style="
+          background:rgba(255,184,48,0.1);color:var(--accent-amber);
+          border:1px solid rgba(255,184,48,0.3);border-radius:8px;
+          padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer;">
+          <i class="fa-solid fa-flag"></i> Report
+        </button>
+      ` : `
+        <label class="sub-toggle-wrap" title="${isActive ? 'Click to revoke' : 'Revoked/Expired'}">
+          <input type="checkbox" class="sub-toggle-cb" ${isActive ? 'checked' : ''}
+            onchange="toggleSubFromTable('${escHtml(u.id)}', '${escHtml(u.name || u.email || u.id)}', this.checked)" />
+          <span class="sub-toggle-slider"></span>
+        </label>
+      `;
+
+    return `<tr data-sub-uid="${escHtml(u.id)}">
       <td>
         <div class="user-cell">
           <div class="user-avatar-sm" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
@@ -580,14 +721,11 @@ function renderSubTable() {
         </span>
       </td>
       <td>
-        <label class="sub-toggle-wrap" title="${isActive ? 'Click to revoke' : 'Revoked/Expired'}">
-          <input type="checkbox" class="sub-toggle-cb" ${isActive ? 'checked' : ''}
-            onchange="toggleSubFromTable('${escHtml(u.id)}', '${escHtml(u.name || u.email || u.id)}', this.checked)" />
-          <span class="sub-toggle-slider"></span>
-        </label>
+        ${subActionCell}
       </td>
     </tr>`;
   }).join('');
+  if (typeof applyReportHighlights === "function") applyReportHighlights();
 }
 
 /** Filter sub table on search */
@@ -901,7 +1039,7 @@ function renderPaymentRequests() {
 
     const ssHtml = p.screenshot
       ? `<img src="${escHtml(p.screenshot)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;cursor:pointer;border:1px solid var(--border);"
-           onclick="window.open('${escHtml(p.screenshot)}','_blank')" title="View Screenshot" />`
+           onclick="openImageModal('${escHtml(p.screenshot)}')" title="View Screenshot" />`
       : `<span style="font-size:11px;color:var(--text-muted);">No image</span>`;
 
     const actionBtns = p.status === 'pending' ? `
@@ -934,7 +1072,7 @@ function renderPaymentRequests() {
       </button>
     ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIconHtml} ${p.status}</span>`;
 
-    return `<tr>
+    return `<tr data-payment-id="${escHtml(p.id)}">
       <td>
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#5B5BF6,#7C3AED);
@@ -961,6 +1099,7 @@ function renderPaymentRequests() {
       <td>${actionBtns}</td>
     </tr>`;
   }).join('');
+  if (typeof applyReportHighlights === "function") applyReportHighlights();
 }
 
 window.filterPayments = () => renderPaymentRequests();
