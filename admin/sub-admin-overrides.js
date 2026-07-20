@@ -14,7 +14,7 @@
  * ============================================================
  */
 
-import { db, collection, addDoc, serverTimestamp } from "../firebase.js";
+import { db, collection, addDoc, serverTimestamp, query, where, limit, getDocs } from "../firebase.js";
 import { sgpLogActivity } from "../activity-log.js";
 
 function escHtml(str) {
@@ -66,10 +66,22 @@ window.sendSubscriptionReport = async () => {
     return;
   }
 
+  // targetId must be the Firestore uid, not the email — applyReportHighlights()
+  // in admin.js matches subscription reports against `tr[data-sub-uid="..."]`
+  // on the main admin's table. admin.js's STATE is module-scoped so we can't
+  // read STATE.selectedSubUID from here; look the uid up by email instead.
+  let uid = email;
+  try {
+    const snap = await getDocs(query(collection(db, "users"), where("email", "==", email), limit(1)));
+    if (!snap.empty) uid = snap.docs[0].id;
+  } catch (e) {
+    console.warn("Could not resolve uid for report, falling back to email", e);
+  }
+
   const ok = await fileReport({
     type: "subscription",
     targetLabel: `${name} (${email})`,
-    targetId: email,
+    targetId: uid,
     note: noteEl?.value
   });
   if (ok && noteEl) noteEl.value = "";
@@ -80,6 +92,17 @@ window.reportPaymentToAdmin = (paymentId, userLabel) => {
   openNoteModal(`Note for admin about this payment (${userLabel})`, async (note) => {
     if (note == null) return; // cancelled
     await fileReport({ type: "payment", targetLabel: userLabel, targetId: paymentId, note });
+  });
+};
+
+// Report button for a specific row in the Active Subscribers table
+// (admin.js renders this button but never defines the handler — wired here).
+// targetId MUST be the Firestore uid, since applyReportHighlights() in
+// admin.js matches subscription reports against `tr[data-sub-uid="..."]`.
+window.reportSubscriptionRow = (uid, userLabel) => {
+  openNoteModal(`Note for admin about this subscription (${userLabel})`, async (note) => {
+    if (note == null) return; // cancelled
+    await fileReport({ type: "subscription", targetLabel: userLabel, targetId: uid, note });
   });
 };
 
