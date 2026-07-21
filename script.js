@@ -294,11 +294,15 @@ document.addEventListener("DOMContentLoaded", () => {
   initRoomUI();
 
   // FIX-DUP: All Firestore user doc operations now use _timerUid (Firebase UID)
-  // Helper so we always use the UID-based doc path
   function userDocRef() {
     if (_timerUid) return doc(db, "users", _timerUid);
-    // Fallback to displayName only if UID not yet set (shouldn't happen in normal flow)
-    return doc(db, "users", currentUser);
+    // FIX-DUP-GUARD: no displayName fallback — writing to a doc keyed by
+    // display name instead of UID is exactly the old bug that caused
+    // duplicate users to show up in the admin panel's User Management.
+    // If this is ever hit, something tried to touch Firestore before auth
+    // resolved — fail loudly here rather than silently creating a
+    // wrongly-keyed duplicate document.
+    throw new Error("[Timer] userDocRef() called before auth resolved — no UID available yet.");
   }
 
   window.exitRoom = async () => {
@@ -380,6 +384,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let _allUsersCache = [];
 
+  // FIX-LIVE-LAG: for the current user while a session is running, compute
+  // focusTime/XP directly from the local session clock instead of only
+  // trusting the Firestore-synced `u.focusTime` / `_lbXpCache` value. The
+  // Firestore write already happens the instant a minute/2-minute boundary
+  // is crossed (see the tick loop), but there's still a small round-trip
+  // before the onSnapshot listener echoes it back — this closes that gap
+  // so the panel never visibly "lags" behind the live timer for yourself.
+  function _displayFocusTime(u) {
+    const base = u.focusTime || 0;
+    if (u.id === _timerUid && isRunning) {
+      const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
+      const pendingMins   = Math.floor(focusElapsed / 60) - savedMinutes;
+      return base + Math.max(0, pendingMins);
+    }
+    return base;
+  }
+  function _displayXP(u) {
+    const base = u.todayTimerXP || 0;
+    if (u.id === _timerUid && isRunning) {
+      const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
+      const pendingXP     = Math.floor(focusElapsed / 120) - savedXP;
+      return base + Math.max(0, pendingXP);
+    }
+    return base;
+  }
+
   function renderPanelUsers() {
     if (!userList) return;
     userList.innerHTML = "";
@@ -404,9 +434,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const s      = (u.status||"").toLowerCase();
       const isMe   = u.id === _timerUid; // FIX-DUP: compare by UID
       const dotCls = s.includes("focus") ? "s-focus" : s === "online" ? "s-online" : "s-offline";
-      const h = Math.floor((u.focusTime||0)/60), m = (u.focusTime||0)%60;
+      const liveFocusTime = _displayFocusTime(u);
+      const h = Math.floor(liveFocusTime/60), m = liveFocusTime%60;
       const timeStr = h>0 ? `${h}h ${m}m` : `${m}m`;
-      const xp = _lbXpCache[u.id] || u.weeklyXP || 0;
+      const xp = _displayXP(u);
       const displayName = u.name||u.displayName||"User";
 
       const card = document.createElement("div");
@@ -450,6 +481,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // FIX-LIVE-LAG: while the panel is open and a session is running, re-render
+  // every second so your own row/leaderboard position ticks in real time
+  // instead of only refreshing when a new Firestore snapshot happens to arrive.
+  setInterval(() => {
+    if (socialSheet?.classList.contains("open") && isRunning) {
+      renderPanelUsers();
+      renderPanelLeaderboard();
+    }
+  }, 1000);
+
   // Cache for leaderboard XP data from 'leaderboard' collection
   let _lbXpCache = {};
 
@@ -487,10 +528,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const sorted = [...source]
       .sort((a,b) => {
         // Sort by XP from leaderboard cache if available, else by focusTime
-        const bXP = _lbXpCache[b.id] || 0;
-        const aXP = _lbXpCache[a.id] || 0;
+        const bXP = _displayXP(b);
+        const aXP = _displayXP(a);
         if (bXP !== aXP) return bXP - aXP;
-        return (b.focusTime||0) - (a.focusTime||0);
+        return _displayFocusTime(b) - _displayFocusTime(a);
       })
       .slice(0,10);
     board.innerHTML = "";
@@ -499,9 +540,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     sorted.forEach((u,i) => {
-      const h = Math.floor((u.focusTime||0)/60), m = (u.focusTime||0)%60;
+      const liveFocusTime = _displayFocusTime(u);
+      const h = Math.floor(liveFocusTime/60), m = liveFocusTime%60;
       const timeStr = h>0 ? `${h}h ${m}m` : `${m}m`;
-      const xp = _lbXpCache[u.id] || 0;
+      const xp = _displayXP(u);
       const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
       const isMe  = u.id===_timerUid;
       const displayName = u.name||u.displayName||"User";
@@ -533,12 +575,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const uRef  = doc(db, "users", _timerUid);
     const snap  = await getDoc(uRef);
 
-    if (snap.exists() && snap.data().lastActiveDate !== today) {
+    if (snap.exists() && snap.data().lastFocusResetDate !== today) {
       const prevFocus = snap.data().focusTime || 0;
       await setDoc(uRef,{
         focusTime: 0,
+        todayTimerXP: 0,
         totalFocusTime: increment(prevFocus), // carry yesterday's minutes into lifetime total before reset
-        lastActiveDate: today,
+        lastFocusResetDate: today,
         lastActive: Date.now()
       },{merge:true});
     }
@@ -550,7 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
       status:      "Online",
       room:        roomId,
       lastActive:  Date.now(),
-      lastActiveDate: today,
+      lastFocusResetDate: today,
       lastActiveWeek: week,
       currentPage: "timer.html"
     },{merge:true});
@@ -615,7 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await updateDoc(uRef, { focusTime: increment(unsavedMins), lastActive: Date.now() }).catch(()=>{});
           }
           if (unsavedXP > 0) {
-            await updateDoc(uRef, { weeklyXP: increment(unsavedXP) }).catch(()=>{});
+            await updateDoc(uRef, { weeklyXP: increment(unsavedXP), todayTimerXP: increment(unsavedXP) }).catch(()=>{});
           }
           if (unsavedMins > 0 || unsavedXP > 0) {
             await _syncTimerLeaderboard(unsavedMins, unsavedXP).catch(()=>{});
@@ -794,7 +837,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (dueXP > savedXP) {
           const deltaXP = dueXP - savedXP;
           savedXP = dueXP;
-          await updateDoc(userDocRef(),{weeklyXP:increment(deltaXP)});
+          await updateDoc(userDocRef(),{weeklyXP:increment(deltaXP), todayTimerXP:increment(deltaXP)});
           await _syncTimerLeaderboardAndRefresh(0, deltaXP);
         }
       }, 1000);
@@ -816,7 +859,7 @@ document.addEventListener("DOMContentLoaded", () => {
           status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
         });
         if (unsavedXP > 0) {
-          await updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP)});
+          await updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)});
         }
         await _syncTimerLeaderboard(unsavedMins, unsavedXP);
       } else {
@@ -849,7 +892,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const totalXPEarned = Math.floor((initialSeconds - seconds) / 120);
       const unsavedXP = Math.max(0, totalXPEarned - savedXP);
       if (unsavedXP > 0) {
-        updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP)}).catch(()=>{});
+        updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)}).catch(()=>{});
       }
       _syncTimerLeaderboard(unsavedMins, unsavedXP).catch(()=>{});
     } else if (_timerUid) {

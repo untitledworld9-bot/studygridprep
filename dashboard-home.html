@@ -3041,12 +3041,13 @@ onAuthStateChanged(auth, user => {
       const todayStr = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
       const uRef = doc(db, "users", user.uid);
       const snap = await getDoc(uRef);
-      if (snap.exists() && snap.data().lastActiveDate !== todayStr) {
+      if (snap.exists() && snap.data().lastFocusResetDate !== todayStr) {
         const prevFocus = snap.data().focusTime || 0;
         await setDoc(uRef, {
           focusTime: 0,
+          todayTimerXP: 0,
           totalFocusTime: increment(prevFocus),
-          lastActiveDate: todayStr
+          lastFocusResetDate: todayStr
         }, { merge: true }).catch(()=>{});
       }
     } catch(e) {}

@@ -1853,6 +1853,14 @@ function loadTopRooms() {
       const r = u.room;
       if (!r || r === 'default') return;
 
+      // FIX-JOINED-COUNT: only count a user doc toward "joined" if it's been
+      // active reasonably recently. Without this, old orphaned duplicate
+      // docs (e.g. leftover from before users were keyed by UID) that still
+      // have a stale `room` field set would count forever, inflating the
+      // number beyond the real unique people actually in the room.
+      const presentRecently = u.lastActive && (Date.now() - u.lastActive) < 30 * 60 * 1000;
+      if (!presentRecently) return;
+
       if (!roomMap[r]) roomMap[r] = { totalJoined: 0, onlineCount: 0, name: r };
       roomMap[r].totalJoined++;
 
@@ -1945,6 +1953,10 @@ function loadRecentRooms() {
       const u = d.data();
       const r = u.room;
       if (!r || r === 'default') return;
+      // FIX-JOINED-COUNT: same recency guard as loadTopRooms — excludes
+      // stale/orphaned user docs from inflating the joined count.
+      const presentRecently = u.lastActive && (Date.now() - u.lastActive) < 30 * 60 * 1000;
+      if (!presentRecently) return;
       roomCount[r]  = (roomCount[r]  || 0) + 1;
       const s = (u.status || '').toLowerCase();
       const activeRecently = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
