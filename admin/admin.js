@@ -433,19 +433,19 @@ function initAdminPanel(user) {
  * analytics/dailyStats Firestore collection to populate live data.
  */
 // FIX-DAILY-RESET: a user's `focusTime` field is only meaningful as "today's
-// minutes" if it was actually touched today (lastActiveDate === today).
-// If they haven't opened the app today, focusTime still holds a stale value
-// from whenever they last used it — counting that as "today" is what made
-// the Focus Activity chart and Focus Timer cards repeat the same number
-// every single day instead of resetting. Must match the non-padded
-// "Y-M-D" format script.js writes via getTodayDate().
+// minutes" if it was actually reset today (lastFocusResetDate === today).
+// NOTE: this is deliberately its OWN field, separate from `lastActiveDate`
+// (which dashboard-home.html's unrelated streak feature also writes, in a
+// different date format) — mixing the two caused the focus-time day-check
+// to see a "new day" on almost every page load and wipe focusTime to 0
+// repeatedly. Must match the non-padded "Y-M-D" format script.js writes.
 function _todayDateKey() {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 }
 function todaysFocusMinutes(u) {
   if (!u) return 0;
-  return u.lastActiveDate === _todayDateKey() ? (u.focusTime || 0) : 0;
+  return u.lastFocusResetDate === _todayDateKey() ? (u.focusTime || 0) : 0;
 }
 
 function initCharts() {
@@ -3324,71 +3324,54 @@ function adminGetLevel(xp) {
 // ============================================================
 //  LEADERBOARD TIME RANGES — Today / This Week / All Time
 //
-//  IMPORTANT: XP is stored as a running cumulative total (no
-//  built-in daily history). To show "Today" / "This Week" we
-//  snapshot each user's current XP once per calendar day into
-//  leaderboardSnapshots/{YYYY-MM-DD}, then show the DELTA between
-//  the live value and that snapshot. This starts working from the
-//  day it's deployed onward — it can't reconstruct past history
-//  that was never snapshotted.
+//  FIX-RANGE-AUDIT: previously this snapshotted each user's cumulative XP
+//  once per day into leaderboardSnapshots/{date} and showed the delta from
+//  that snapshot. That was fragile in three ways: (1) it silently fell back
+//  to showing the full LIFETIME total whenever no snapshot existed for the
+//  exact reference day (e.g. admin didn't open the panel that day) — making
+//  "Today"/"This Week" look identical to "All Time" with no warning that
+//  mattered to the admin; (2) the snapshot key used UTC dates
+//  (toISOString) while every other date-keyed field in this app uses the
+//  local calendar day, so near midnight IST it could attribute a day's
+//  numbers to the wrong bucket; (3) the "today" baseline was only captured
+//  whenever an admin first happened to open the panel that day — usually
+//  well after midnight — so anything earned before that got excluded from
+//  "today" entirely.
+//
+//  Now it just reads the fields the app already keeps correctly scoped:
+//    - todayTimerXP / focusTime (guarded by lastFocusResetDate) → reset
+//      every night at midnight, maintained by script.js.
+//    - weeklyTimerXP / weeklyXP / weeklyFocusTime → reset every week,
+//      maintained by script.js + uw-core.js.
+//  No snapshot, no "no baseline yet" fallback, no drift — it's exactly as
+//  accurate as the live per-user data.
 // ============================================================
 let _lbRange = "all"; // 'today' | 'week' | 'all'
-const _lbSnapshotCache = {};
 
-function _todayKey() {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-}
-function _daysAgoKey(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
-}
-
-async function ensureTodaySnapshot() {
-  const key = _todayKey();
-  try {
-    const existing = await getDoc(doc(db, "leaderboardSnapshots", key));
-    if (existing.exists()) return;
-
-    const data = STATE.leaderboardData?.length ? STATE.leaderboardData : STATE.allUsers;
-    const snapshot = {};
-    data.forEach(u => {
-      snapshot[u.id] = {
-        xp: Number(u.xp ?? u.totalXP ?? u.points ?? 0),
-        timerXP: Number(u.timerXP || 0),
-        focusTime: Number(u.focusTime || u.totalFocusTime || u.timerMinutes || 0)
-      };
-    });
-    await setDoc(doc(db, "leaderboardSnapshots", key), { data: snapshot, capturedAt: serverTimestamp() });
-  } catch (e) {
-    console.warn("Leaderboard snapshot skipped:", e.message);
+/** Returns { xp, timerXP, focusTime, partial } for the selected admin range. */
+function computeLbRangeValues(u) {
+  if (_lbRange === "today") {
+    return {
+      xp: 0, // study (playlist/todo) XP has no daily granularity anywhere in the app yet
+      timerXP: Number(u.todayTimerXP || 0),
+      focusTime: Number(u._todayFocusMin || 0),
+      partial: true
+    };
   }
-}
-
-async function _getSnapshot(dateKey) {
-  if (_lbSnapshotCache[dateKey] !== undefined) return _lbSnapshotCache[dateKey];
-  try {
-    const snap = await getDoc(doc(db, "leaderboardSnapshots", dateKey));
-    _lbSnapshotCache[dateKey] = snap.exists() ? snap.data().data : null;
-  } catch (e) {
-    _lbSnapshotCache[dateKey] = null;
+  if (_lbRange === "week") {
+    return {
+      xp: Number(u.weeklyXP || 0),
+      timerXP: Number(u.weeklyTimerXP || 0),
+      focusTime: Number(u.weeklyFocusTime || 0),
+      partial: false
+    };
   }
-  return _lbSnapshotCache[dateKey];
-}
-
-/** Returns { xp, timerXP, focusTime } deltas for the selected range, or live values if no baseline exists yet */
-async function computeLbDelta(uid, liveXp, liveTimerXP, liveFocusTime = 0) {
-  if (_lbRange === "all") return { xp: liveXp, timerXP: liveTimerXP, focusTime: liveFocusTime, noBaseline: false };
-
-  const key = _lbRange === "today" ? _todayKey() : _daysAgoKey(7);
-  const snapshot = await _getSnapshot(key);
-  if (!snapshot || !snapshot[uid]) return { xp: liveXp, timerXP: liveTimerXP, focusTime: liveFocusTime, noBaseline: true };
-
+  // all
   return {
-    xp: Math.max(0, liveXp - (snapshot[uid].xp || 0)),
-    timerXP: Math.max(0, liveTimerXP - (snapshot[uid].timerXP || 0)),
-    focusTime: Math.max(0, liveFocusTime - (snapshot[uid].focusTime || 0)),
-    noBaseline: false
+    xp: Number(u.xp ?? u.totalXP ?? u.points ?? 0),
+    timerXP: Number(u.timerXP || 0),
+    focusTime: Number(u.focusTime || u.totalFocusTime || u.timerMinutes || 0),
+    partial: false
   };
 }
 
@@ -3401,7 +3384,6 @@ window.setLbRange = async function (range) {
     btn.style.background = active ? "rgba(0,224,255,0.15)" : "none";
     btn.style.color = active ? "var(--accent-cyan)" : "var(--text-secondary)";
   });
-  await ensureTodaySnapshot();
   renderLeaderboardSection();
 };
 
@@ -3433,7 +3415,6 @@ function listenLeaderboard() {
     query(collection(db, "leaderboard"), orderBy("xp", "desc"), limit(100)),
     snap => {
       STATE.leaderboardData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      ensureTodaySnapshot();
       renderLeaderboardSection();
     },
     err => {
@@ -3478,23 +3459,26 @@ async function renderFullLeaderboard(container) {
       const u = STATE.allUsers.find(u => u.id === lb.id) || {};
       const studyXP = Number(lb.xp || 0);
       const timerXP = Number(lb.timerXP || 0);
-      return { ...u, ...lb, id: lb.id, liveStudyXP: studyXP, liveTimerXP: timerXP };
+      // FIX-FIELD-COLLISION: compute today's focus minutes from the pure
+      // users-doc record BEFORE merging — `lb.focusTime` (cumulative) would
+      // otherwise silently overwrite `u.focusTime` (daily) after the spread.
+      return { ...u, ...lb, id: lb.id, liveStudyXP: studyXP, liveTimerXP: timerXP, _todayFocusMin: todaysFocusMinutes(u) };
     });
   } else {
     users = [...STATE.allUsers].map(u => {
       const studyXP = Number(u.xp ?? u.totalXP ?? u.points ?? 0);
       const timerXP = Number(u.timerXP || 0);
-      return { ...u, liveStudyXP: studyXP, liveTimerXP: timerXP };
+      return { ...u, liveStudyXP: studyXP, liveTimerXP: timerXP, _todayFocusMin: todaysFocusMinutes(u) };
     });
   }
 
-  let noBaselineCount = 0;
+  let partialCount = 0;
   for (const u of users) {
-    const delta = await computeLbDelta(u.id, u.liveStudyXP, u.liveTimerXP);
-    u.studyXP = delta.xp;
-    u.timerXP = delta.timerXP;
-    u.totalXP = delta.xp + delta.timerXP;
-    if (delta.noBaseline) noBaselineCount++;
+    const r = computeLbRangeValues(u);
+    u.studyXP = r.xp;
+    u.timerXP = r.timerXP;
+    u.totalXP = r.xp + r.timerXP;
+    if (r.partial) partialCount++;
   }
   users = users.sort((a, b) => b.totalXP - a.totalXP).slice(0, 100);
 
@@ -3506,10 +3490,10 @@ async function renderFullLeaderboard(container) {
     return;
   }
 
-  const rangeBanner = _lbRange !== "all" && noBaselineCount > 0 ? `
+  const rangeBanner = _lbRange === "today" && partialCount > 0 ? `
     <div style="padding:10px 16px;background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.25);
       border-radius:8px;margin-bottom:14px;font-size:12.5px;color:var(--accent-amber);">
-      <i class="fa-solid fa-circle-info"></i> No baseline yet for ${noBaselineCount} user(s) in this range — showing their full total until enough days of data build up.
+      <i class="fa-solid fa-circle-info"></i> "Today" shows focus-timer XP only — study (playlist/todo) XP isn't tracked per-day, only weekly and lifetime.
     </div>` : "";
 
   const medals = ['<i class="fa-solid fa-medal" style="color:#FFD700;"></i>', '<i class="fa-solid fa-medal" style="color:#C0C0C0;"></i>', '<i class="fa-solid fa-medal" style="color:#CD7F32;"></i>'];
@@ -3586,18 +3570,22 @@ async function renderTimerLeaderboard(container) {
     source = STATE.allUsers;
   }
 
-  let users = [...source].map(u => ({
-    ...u,
-    liveFocusTime: Number(u.focusTime || u.totalFocusTime || u.timerMinutes || 0),
-    liveTimerXP: Number(u.weeklyTimerXP || u.timerXP || 0)
-  }));
+  let users = [...source].map(u => {
+    const usersRec = source === STATE.leaderboardData
+      ? (STATE.allUsers.find(x => x.id === u.id) || {})
+      : u;
+    const lbRec = source === STATE.leaderboardData
+      ? u
+      : (STATE.leaderboardData?.find(x => x.id === u.id) || {});
+    return { ...usersRec, ...lbRec, id: u.id, _todayFocusMin: todaysFocusMinutes(usersRec) };
+  });
 
-  let noBaselineCount = 0;
+  let partialCount = 0;
   for (const u of users) {
-    const delta = await computeLbDelta(u.id, 0, u.liveTimerXP, u.liveFocusTime);
-    u.timerXP = delta.timerXP;
-    u.focusTime = delta.focusTime;
-    if (delta.noBaseline) noBaselineCount++;
+    const r = computeLbRangeValues(u);
+    u.timerXP = r.timerXP;
+    u.focusTime = r.focusTime;
+    if (r.partial) partialCount++;
   }
 
   users = users.filter(u => u.focusTime > 0).sort((a, b) => b.focusTime - a.focusTime).slice(0, 100);
@@ -3610,11 +3598,7 @@ async function renderTimerLeaderboard(container) {
     return;
   }
 
-  const rangeBanner = _lbRange !== "all" && noBaselineCount > 0 ? `
-    <div style="padding:10px 16px;background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.25);
-      border-radius:8px;margin-bottom:14px;font-size:12.5px;color:var(--accent-amber);">
-      <i class="fa-solid fa-circle-info"></i> No baseline yet for ${noBaselineCount} user(s) in this range — showing their full total until enough days of data build up.
-    </div>` : "";
+  const rangeBanner = "";
 
   const medals = ['<i class="fa-solid fa-medal" style="color:#FFD700;"></i>', '<i class="fa-solid fa-medal" style="color:#C0C0C0;"></i>', '<i class="fa-solid fa-medal" style="color:#CD7F32;"></i>'];
 
