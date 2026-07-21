@@ -65,23 +65,35 @@ function onReady(cb) {
 }
 
 /* ─────────────────────────────
+   WEEK KEY (must match script.js's getWeekNumber logic so both
+   timer XP and study XP roll over on the exact same week boundary)
+───────────────────────────── */
+function _getWeekKey() {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 4 - (d.getDay()||7));
+  const ys = new Date(d.getFullYear(),0,1);
+  return `${d.getFullYear()}-W${Math.ceil((((d-ys)/86400000)+1)/7)}`;
+}
+
+/* ─────────────────────────────
    XP
 ───────────────────────────── */
 function getXP() {
   return Math.max(0, parseInt(localStorage.getItem(XP_KEY) || "0", 10));
 }
 
-async function setXPAbsolute(v) {
+async function setXPAbsolute(v, deltaForWeekly) {
   v = Math.max(0, v);
   localStorage.setItem(XP_KEY, String(v));
   window.dispatchEvent(new CustomEvent("uw_xp_changed", { detail: { xp: v } }));
   await _saveUser({ xp: v });
-  await _syncLeaderboard();
+  await _syncLeaderboard(deltaForWeekly || 0);
   return v;
 }
 
 async function updateXP(amount) {
-  return setXPAbsolute(getXP() + amount);
+  return setXPAbsolute(getXP() + amount, amount);
 }
 
 /* ─────────────────────────────
@@ -243,19 +255,36 @@ async function _saveUser(partial) {
    combined (playlist/todo + timer) XP.
    Uses merge:true so script.js writes to timerXP/focusTime are preserved.
 ───────────────────────────── */
-async function _syncLeaderboard() {
+async function _syncLeaderboard(delta) {
   if (!_authUser) return;
+  delta = delta || 0;
   const playlistXP = getXP();
   const streak     = getStreak();
   const name       = _authUser.displayName || _authUser.email || "Anonymous";
+  const week       = _getWeekKey();
 
   try {
-    // Read existing timerXP to compute combined level
-    let timerXP = 0;
+    // Read existing timerXP + weekly study XP state to compute combined level
+    // and correctly roll over weeklyXP on a new week.
+    let timerXP  = 0;
+    let weeklyXP = 0;
+    let lastActiveWeekStudy = "";
     try {
       const lbSnap = await getDoc(doc(db, "leaderboard", _authUser.uid));
-      if (lbSnap.exists()) timerXP = lbSnap.data().timerXP || 0;
+      if (lbSnap.exists()) {
+        const d = lbSnap.data();
+        timerXP = d.timerXP || 0;
+        weeklyXP = d.weeklyXP || 0;
+        lastActiveWeekStudy = d.lastActiveWeekStudy || "";
+      }
     } catch(e) {}
+
+    // FIX-WEEKLY-STUDY-XP: weeklyXP (playlist/todo) now resets on a new week
+    // just like weeklyTimerXP already does for the focus timer, so
+    // mainleaderboard.html's "This Week" tab reflects real weekly activity
+    // instead of the lifetime total.
+    if (lastActiveWeekStudy !== week) weeklyXP = 0;
+    if (delta > 0) weeklyXP += delta;
 
     const totalXP = playlistXP + timerXP;
     const level   = getLevel(totalXP);
@@ -263,7 +292,9 @@ async function _syncLeaderboard() {
     // Write playlist/todo XP; merge:true preserves timerXP + focusTime written by script.js
     await setDoc(doc(db, "leaderboard", _authUser.uid), {
       name,
-      xp:        playlistXP,   // playlist + todo XP only
+      xp:        playlistXP,   // playlist + todo XP only (lifetime)
+      weeklyXP,                // playlist + todo XP (resets weekly)
+      lastActiveWeekStudy: week,
       streak,
       level,                   // level from combined total
       updatedAt: serverTimestamp()

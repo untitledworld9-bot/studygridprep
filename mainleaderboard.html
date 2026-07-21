@@ -732,17 +732,22 @@ window.matchMedia("(prefers-color-scheme: dark)")
         const myUid = currentUser?.uid;
         const entries = snap.docs.map((d) => {
           const data     = d.data();
-          const studyXP  = data.xp             || 0;
-          const timerXP  = data.timerXP        || 0;
-          const weeklyTimerXP = data.weeklyTimerXP || timerXP;
-          const weeklyTotal = studyXP + weeklyTimerXP;
+          // FIX-WEEKLY: use the real weekly fields with a plain 0 fallback —
+          // previously `data.weeklyTimerXP || timerXP` fell back to the
+          // lifetime timerXP whenever weeklyTimerXP was legitimately 0,
+          // which made "This Week" silently show all-time numbers.
+          // studyXP now also uses the weekly field (uw-core.js now tracks
+          // this) instead of the lifetime `xp` field.
+          const weeklyStudyXP = data.weeklyXP      || 0;
+          const weeklyTimerXP = data.weeklyTimerXP || 0;
+          const weeklyTotal   = weeklyStudyXP + weeklyTimerXP;
           return {
             uid:    d.id,
             name:   data.name || "Anonymous",
             xp:     weeklyTotal,
-            studyXP,
+            studyXP: weeklyStudyXP,
             timerXP: weeklyTimerXP,
-            focusTime: data.focusTime || 0,
+            focusTime: data.weeklyFocusTime || 0,
             streak: data.streak || 0
           };
         });

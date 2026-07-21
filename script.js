@@ -172,7 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearTimerState() {
     try { sessionStorage.removeItem(TIMER_KEY); } catch(e) {}
   }
-  restoreTimerState();
+  // NOTE: restoreTimerState() is intentionally NOT called anymore — the app no
+  // longer auto-resumes a running timer after reload/navigation (see the
+  // FIX-AUTORESUME block inside onAuthStateChanged below, which reads the
+  // saved session directly and silently credits any leftover progress).
+  // restoreTimerState();
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const qs = id => document.getElementById(id);
@@ -587,10 +591,45 @@ document.addEventListener("DOMContentLoaded", () => {
       _flushOfflineQueue(_timerUid, userDocRef);
     }, { once: false });
 
-    // Auto-resume timer if was running
+    // FIX-AUTORESUME: Do NOT auto-start the timer on reload/navigation.
+    // Instead, silently finalize any progress from a session that was
+    // interrupted (tab closed/reloaded while running) and leave the timer
+    // fully stopped — the user must press Start themselves. This also
+    // eliminates the old bug where the status field got stuck on "Online"
+    // even though the timer had silently resumed in the background.
     const prevState = sessionStorage.getItem(TIMER_KEY);
-    if (prevState && !isRunning && startBtn) {
-      setTimeout(() => { if (!isRunning) startBtn.click(); }, 400);
+    if (prevState) {
+      try {
+        const s = JSON.parse(prevState);
+        if (s && s.startedAt) {
+          const elapsedReal   = Math.max(0, Math.floor((Date.now() - s.startedAt) / 1000));
+          const wasCountdown  = s.mode === "countdown";
+          const focusElapsed  = wasCountdown
+            ? Math.min(elapsedReal, s.initialSeconds || 0)
+            : elapsedReal;
+          const totalMins     = Math.floor(focusElapsed / 60);
+          const totalXP       = Math.floor(focusElapsed / 120);
+          const unsavedMins   = Math.max(0, totalMins - (s.savedMinutes || 0));
+          const unsavedXP     = Math.max(0, totalXP   - (s.savedXP   || 0));
+          if (unsavedMins > 0) {
+            await updateDoc(uRef, { focusTime: increment(unsavedMins), lastActive: Date.now() }).catch(()=>{});
+          }
+          if (unsavedXP > 0) {
+            await updateDoc(uRef, { weeklyXP: increment(unsavedXP) }).catch(()=>{});
+          }
+          if (unsavedMins > 0 || unsavedXP > 0) {
+            await _syncTimerLeaderboard(unsavedMins, unsavedXP).catch(()=>{});
+          }
+        }
+      } catch(e) { console.warn("[Timer] resume-credit failed:", e); }
+      clearTimerState();
+      // Make sure UI + status reflect a fully stopped timer
+      isRunning = false;
+      seconds = 0; savedMinutes = 0; savedXP = 0; sessionStartAt = 0;
+      updateDisplay();
+      if (startBtn) startBtn.style.display = "block";
+      if (stopBtn)  stopBtn.style.display  = "none";
+      if (ring)     ring.classList.remove("active");
     }
   });
 
@@ -688,9 +727,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ─── Timer Logic ─────────────────────────────────────────────────────────────
+  // FIX-ACCURACY: sessionStartAt is the real wall-clock timestamp the current
+  // run began. Every tick recomputes `seconds` (and therefore minutes/XP) from
+  // real elapsed time instead of a plain ++ counter, so background throttling
+  // (screen off, tab minimized) can never cause a missed minute/XP boundary —
+  // the very next tick that DOES fire will catch up correctly.
+  let sessionStartAt = 0;
+
   if (startBtn) {
     startBtn.addEventListener("click", async () => {
       if (!_timerUid){ showToast("Login first"); return; }
+
+      // FIX-RACE: flip isRunning synchronously, before any await, so a
+      // double-fire (e.g. two rapid clicks, or two auth callbacks) can never
+      // start two overlapping interval loops.
+      if (isRunning) return;
+      isRunning = true;
 
       const week  = getWeekNumber();
       const uRef  = userDocRef();
@@ -698,71 +750,66 @@ document.addEventListener("DOMContentLoaded", () => {
       if (snap.exists() && snap.data().lastActiveWeek !== week) {
         await updateDoc(uRef,{weeklyXP:0,lastActiveWeek:week});
       }
-      // FIX-DUP: update users/{uid} not users/{displayName}
       await updateDoc(uRef,{status:"Focusing 👋", lastActive:Date.now()});
 
-      if (!isRunning) {
-        isRunning    = true;
-        savedMinutes = 0;
-        savedXP      = 0;  // FIX-XP: reset XP tracker on new session
-        startBtn.style.display = "none";
-        if (stopBtn) stopBtn.style.display  = "block";
-        if (ring)    ring.classList.add("active");
-        if (window._startRain) window._startRain();
-        if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(true);
+      savedMinutes = 0;
+      savedXP      = 0;  // FIX-XP: reset XP tracker on new session
+      sessionStartAt = Date.now() - seconds * 1000; // preserve any custom countdown offset
+      startBtn.style.display = "none";
+      if (stopBtn) stopBtn.style.display  = "block";
+      if (ring)    ring.classList.add("active");
+      if (window._startRain) window._startRain();
+      if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(true);
 
-        timerInterval = setInterval(async () => {
-          if (mode === "countdown") {
-            if (seconds > 0){
-              seconds--;
-              updateDisplay();
-              saveTimerState();
-              const elapsed = initialSeconds - seconds;
-              if (elapsed % 60 === 0 && elapsed > 0 && isRunning) {
-                savedMinutes++;
-                await updateDoc(userDocRef(),{
-                  status:"Focusing 👋", focusTime:increment(1), lastActive:Date.now()
-                });
-                await _syncTimerLeaderboard(1, 0);
-              }
-              if (elapsed % 120 === 0 && elapsed > 0 && isRunning) {
-                savedXP++;  // FIX-XP: track awarded XP
-                await updateDoc(userDocRef(),{weeklyXP:increment(1)});
-                await _syncTimerLeaderboardAndRefresh(0, 1);
-              }
-            }
-            else { finishTimer(); }
-          } else {
-            seconds++;
-            updateDisplay();
-            saveTimerState();
-            if (seconds % 60 === 0 && isRunning) {
-              savedMinutes++;
-              await updateDoc(userDocRef(),{
-                status:"Focusing 👋", focusTime:increment(1), lastActive:Date.now()
-              });
-              await _syncTimerLeaderboard(1, 0);
-            }
-            if (seconds % 120 === 0 && isRunning) {
-              savedXP++;  // FIX-XP: track awarded XP
-              await updateDoc(userDocRef(),{weeklyXP:increment(1)});
-              await _syncTimerLeaderboardAndRefresh(0, 1);
-            }
-          }
-        }, 1000);
-      }
+      timerInterval = setInterval(async () => {
+        if (!isRunning) return;
+        const elapsedReal = Math.floor((Date.now() - sessionStartAt) / 1000);
+
+        if (mode === "countdown") {
+          seconds = Math.max(0, initialSeconds - elapsedReal);
+          updateDisplay();
+          saveTimerState();
+          if (seconds <= 0) { finishTimer(); return; }
+        } else {
+          seconds = elapsedReal;
+          updateDisplay();
+          saveTimerState();
+        }
+
+        // FIX-ACCURACY: derive minutes/XP owed from real elapsed focus time
+        // (not from the tick counter) and award only the delta since last
+        // award. This self-corrects even if several ticks were skipped.
+        const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
+        const dueMinutes = Math.floor(focusElapsed / 60);
+        const dueXP      = Math.floor(focusElapsed / 120);
+
+        if (dueMinutes > savedMinutes) {
+          const deltaMin = dueMinutes - savedMinutes;
+          savedMinutes = dueMinutes;
+          await updateDoc(userDocRef(),{
+            status:"Focusing 👋", focusTime:increment(deltaMin), lastActive:Date.now()
+          });
+          await _syncTimerLeaderboard(deltaMin, 0);
+        }
+        if (dueXP > savedXP) {
+          const deltaXP = dueXP - savedXP;
+          savedXP = dueXP;
+          await updateDoc(userDocRef(),{weeklyXP:increment(deltaXP)});
+          await _syncTimerLeaderboardAndRefresh(0, deltaXP);
+        }
+      }, 1000);
     });
   }
 
   if (stopBtn) {
     stopBtn.addEventListener("click", async () => {
-      clearInterval(timerInterval);
       isRunning = false;
+      clearInterval(timerInterval);
       const elapsed     = mode === "countdown" ? (initialSeconds - seconds) : seconds;
       const totalMins   = Math.floor(elapsed / 60);
       const unsavedMins = totalMins - savedMinutes;
       // FIX-XP: Calculate exact unsaved XP = total earned XP - already saved XP
-      const totalXPEarned = Math.floor(totalMins / 2);
+      const totalXPEarned = Math.floor(elapsed / 120);
       const unsavedXP     = Math.max(0, totalXPEarned - savedXP);
       if (unsavedMins > 0) {
         await updateDoc(userDocRef(),{
@@ -777,6 +824,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       savedMinutes = 0;
       savedXP      = 0;
+      sessionStartAt = 0;
       clearTimerState();
       if (startBtn) startBtn.style.display = "block";
       stopBtn.style.display = "none";
@@ -790,15 +838,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function finishTimer() {
-    clearInterval(timerInterval);
     isRunning = false;
+    clearInterval(timerInterval);
     const totalMins   = Math.floor((initialSeconds - seconds) / 60);
     const unsavedMins = totalMins - savedMinutes;
     if (unsavedMins > 0 && _timerUid) {
       updateDoc(userDocRef(),{
         status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
       }).catch(()=>{});
-      const totalXPEarned = Math.floor(totalMins / 2);
+      const totalXPEarned = Math.floor((initialSeconds - seconds) / 120);
       const unsavedXP = Math.max(0, totalXPEarned - savedXP);
       if (unsavedXP > 0) {
         updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP)}).catch(()=>{});
@@ -809,6 +857,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     savedMinutes = 0;
     savedXP      = 0;  // reset so next session starts clean
+    sessionStartAt = 0;
     clearTimerState();
     if (startBtn) startBtn.style.display = "block";
     if (stopBtn)  stopBtn.style.display  = "none";

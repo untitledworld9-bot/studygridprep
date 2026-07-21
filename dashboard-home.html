@@ -3023,11 +3023,35 @@ if('serviceWorker' in navigator){
 
 <script type="module">
 import { db, auth } from "./firebase.js";
-import { collection, onSnapshot, doc, getDoc, setDoc, updateDoc, arrayUnion, where, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, onSnapshot, doc, getDoc, setDoc, updateDoc, increment, arrayUnion, where, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 onAuthStateChanged(auth, user => {
   if(!user) return;
+
+  // FIX-DAILY-RESET: focusTime must roll over to 0 at the start of each new
+  // day. script.js (timer.html) already does this, but if the user opens
+  // the dashboard first (without visiting timer.html that day) the field
+  // was never reset — causing "Today Focus" (and the admin's Focus Activity
+  // chart, which sums this same field) to keep showing yesterday's total
+  // forever. Run the same check here so it's correct regardless of entry page.
+  (async () => {
+    try {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
+      const uRef = doc(db, "users", user.uid);
+      const snap = await getDoc(uRef);
+      if (snap.exists() && snap.data().lastActiveDate !== todayStr) {
+        const prevFocus = snap.data().focusTime || 0;
+        await setDoc(uRef, {
+          focusTime: 0,
+          totalFocusTime: increment(prevFocus),
+          lastActiveDate: todayStr
+        }, { merge: true }).catch(()=>{});
+      }
+    } catch(e) {}
+  })();
+
   // XP + Rank live — FIX: read from leaderboard collection (uid-keyed, no duplicates)
   onSnapshot(collection(db,"leaderboard"), snap => {
     let users=[];

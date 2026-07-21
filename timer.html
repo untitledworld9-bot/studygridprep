@@ -392,16 +392,16 @@ header{
 
 /* ═══ MUSIC PANEL ════════════════════════════════════════════════════════════ */
 .music-panel{
-  position:fixed;bottom:calc(-100% - 64px);left:0;width:100%;height:72vh;
+  position:fixed;bottom:-100%;left:0;width:100%;height:92vh;
   background:var(--surface);border-top:1px solid var(--border);
   border-radius:24px 24px 0 0;z-index:105;
   transition:.35s cubic-bezier(.25,.46,.45,.94);
   display:flex;flex-direction:column;
   box-shadow:0 -12px 50px rgba(0,0,0,0.15);
 }
-.music-panel.open{bottom:calc(64px + env(safe-area-inset-bottom));}
+.music-panel.open{bottom:0;}
 .mp-fixed{flex-shrink:0;padding:16px 18px 0;}
-.mp-scroll{overflow-y:auto;flex:1;padding:0 18px 8px;min-height:0;}
+.mp-scroll{overflow-y:auto;flex:1;padding:0 18px 8px;min-height:120px;}
 .mp-scroll::-webkit-scrollbar{width:3px;}
 .mp-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .mp-bottom{
@@ -712,11 +712,28 @@ header{
 
 /* ═══ RESPONSIVE — Phone + Tablet ═══════════════════════════════════════════ */
 
+/* Catch-all: ANY viewport 600px+ wide gets centered into a phone-width
+   column by default, regardless of orientation/height — prevents the
+   header/bottom-nav/content from stretching full-bleed on tablet sizes
+   that don't match one of the more specific breakpoints below. */
+@media(min-width:600px){
+  .page{max-width:420px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
+  header{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  .bottom-nav{max-width:420px;left:50%;transform:translateX(-50%);right:auto;border-radius:18px 18px 0 0;}
+  .music-panel{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  #networkBar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  .rooms-panel{max-width:420px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
+  .rooms-panel.open{transform:translateX(-50%) translateY(0);}
+  .rooms-join-bar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  .social-sheet{max-width:420px;left:50%;transform:translateX(-50%);}
+}
+
 /* Very small phones (≤360px wide) */
 @media(max-width:360px){
   .timer-ring{width:clamp(175px,56vw,210px);height:clamp(175px,56vw,210px);}
   .time-display{font-size:clamp(36px,13vw,48px);}
-  .action-btn{width:92vw;font-size:13px;padding:13px;}
+  .action-btn{width:min(190px,58vw);font-size:13px;padding:12px;}
   .brand{font-size:14px;}
   .nav-item{padding:10px 12px 4px;font-size:10px;}
   #statusCard{margin:8px 12px 0;}
@@ -1117,7 +1134,7 @@ if(!localStorage.getItem("userName"))window.location.replace("login.html");
       <button class="music-close" id="closeMusicBtn"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="music-section-label"><i class="fa-solid fa-headphones" style="margin-right:5px;"></i>Admin Tracks</div>
-    <div id="adminTracks" style="max-height:32vh;overflow-y:auto;">
+    <div id="adminTracks" style="max-height:22vh;overflow-y:auto;">
       <div class="empty-tracks">Loading tracks...</div>
     </div>
     <div class="music-section-label" style="margin-top:10px;"><i class="fa-solid fa-bookmark" style="margin-right:5px;"></i>My Saved Tracks</div>
@@ -1865,11 +1882,14 @@ function loadTopRooms() {
           roomMap[id].name     = snap.data().name || id;
           roomMap[id].password = snap.data().password || '';
           roomMap[id].hasPass  = !!snap.data().password;
-          // Use persisted totalJoined from room doc if higher than current user count
-          const docJoined = snap.data().totalJoined || 0;
-          if (docJoined > roomMap[id].totalJoined) {
-            roomMap[id].totalJoined = docJoined;
-          }
+          // FIX-JOINED-COUNT: previously this overwrote the live unique
+          // member count with the room doc's lifetime totalJoined counter
+          // (via Math.max), which only ever increases and never reflects
+          // people who've since exited — showing "2 joined" forever after
+          // exit dropped it back to 1 live member. The live per-room count
+          // from the users-collection query above is already accurate
+          // (one doc per uid, `room` field reflects their current room),
+          // so we keep that and no longer inflate it with the historical figure.
         }
       });
 
@@ -1944,14 +1964,15 @@ function loadRecentRooms() {
       let rendered = 0;
 
       results.forEach(({ id, snap }) => {
-        const docJoined = snap?.exists() ? (snap.data().totalJoined || 0) : 0;
         const liveCount = roomCount[id] || 0;
         const roomData = {
           id,
           name:       snap?.exists() ? (snap.data().name || id) : id,
           password:   snap?.exists() ? (snap.data().password || '') : '',
           hasPass:    snap?.exists() ? !!snap.data().password : false,
-          totalJoined: Math.max(docJoined, liveCount),
+          // FIX-JOINED-COUNT: show the live current member count, not the
+          // lifetime join counter (see loadTopRooms for full explanation).
+          totalJoined: liveCount,
           onlineCount: roomOnline[id] || 0,
         };
 
