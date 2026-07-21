@@ -432,6 +432,22 @@ function initAdminPanel(user) {
  * Charts are seeded with placeholder data; connect to your
  * analytics/dailyStats Firestore collection to populate live data.
  */
+// FIX-DAILY-RESET: a user's `focusTime` field is only meaningful as "today's
+// minutes" if it was actually touched today (lastActiveDate === today).
+// If they haven't opened the app today, focusTime still holds a stale value
+// from whenever they last used it — counting that as "today" is what made
+// the Focus Activity chart and Focus Timer cards repeat the same number
+// every single day instead of resetting. Must match the non-padded
+// "Y-M-D" format script.js writes via getTodayDate().
+function _todayDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+function todaysFocusMinutes(u) {
+  if (!u) return 0;
+  return u.lastActiveDate === _todayDateKey() ? (u.focusTime || 0) : 0;
+}
+
 function initCharts() {
   const growthCanvas = $("growthChart");
   const focusCanvas  = $("focusChart");
@@ -540,7 +556,7 @@ async function loadDailyStats() {
     // waiting on any Firestore field (createdAt) that was never being written.
     const liveTotalUsers = STATE.allUsers.length;
     const liveFocusToday = STATE.allUsers.reduce(
-      (s, u) => s + (u.focusTime || 0), 0
+      (s, u) => s + todaysFocusMinutes(u), 0
     );
 
     const growthData = [];
@@ -4418,7 +4434,7 @@ window.setFocusFilter = (key) => {
 
 /** Compute & render the two summary cards + range card */
 async function updateFocusTimerStats() {
-  const todayFocusMin    = STATE.allUsers.reduce((s, u) => s + (u.focusTime || 0), 0);
+  const todayFocusMin    = STATE.allUsers.reduce((s, u) => s + todaysFocusMinutes(u), 0);
   const lifetimeFocusMin = STATE.allUsers.reduce((s, u) => s + (u.totalFocusTime || 0) + (u.focusTime || 0), 0);
 
   if ($("ftFullSession")) animateStat($("ftFullSession"), formatWatchTime(lifetimeFocusMin));
