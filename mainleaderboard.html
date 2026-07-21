@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+  
+  <title>Leaderboard — Study Grid Prep</title>
+  <link rel="icon" href="/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script type="module" src="/uw-core.js"></script>
+  <!-- THEME EARLY INIT -->
+  <script>
+  (function(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved ? saved : (systemDark ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+
+window.matchMedia("(prefers-color-scheme: dark)")
+.addEventListener("change", function(e){
+  if(localStorage.getItem("theme") === "system"){
+    document.documentElement.setAttribute(
+      "data-theme",
+      e.matches ? "dark" : "light"
+    );
+  }
+});
+  </script>
+  <style>html{ visibility: hidden; } html[data-theme]{ visibility: visible; }</style>
+  <style>
+    /* ── DESIGN TOKENS — matched to dashboard-home.html ── */
+    :root {
+      --bg:         #F0F2F8;
+      --surface:    #FFFFFF;
+      --surface2:   #F4F6FB;
+      --border:     #E2E8F2;
+      --text:       #0F172A;
+      --text2:      #5A6785;
+      --text3:      #94A3B8;
+      --accent:     #5B5BF6;
+      --accent2:    #7C3AED;
+      --green:      #10B981;
+      --orange:     #F97316;
+      --red:        #EF4444;
+      --gold:       #F59E0B;
+      --silver:     #94A3B8;
+      --bronze:     #B45309;
+      --header-bg:  rgba(240,242,248,0.97);
+      --nav-bg:     rgba(248,249,253,0.98);
+      --shadow-sm:  0 1px 6px rgba(0,0,0,0.07);
+      --shadow:     0 4px 16px rgba(0,0,0,0.09);
+      --shadow-md:  0 8px 28px rgba(0,0,0,0.12);
+      --r:          16px;
+      --t:          0.2s ease;
+      --header-h:   60px;
+      --safe-b:     env(safe-area-inset-bottom, 0px);
+    }
+    [data-theme="dark"] {
+      --bg:         #0D1120;
+      --surface:    #151E32;
+      --surface2:   #1A2440;
+      --border:     rgba(255,255,255,0.08);
+      --text:       #E8F0FE;
+      --text2:      #8B9EC8;
+      --text3:      #3D5080;
+      --header-bg:  rgba(13,17,32,0.97);
+      --nav-bg:     rgba(13,17,32,0.98);
+      --shadow-sm:  0 1px 6px rgba(0,0,0,0.35);
+      --shadow:     0 4px 16px rgba(0,0,0,0.4);
+      --shadow-md:  0 8px 32px rgba(0,0,0,0.55);
+      --gold:       #FBBF24;
+      --silver:     #CBD5E1;
+      --bronze:     #D97706;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      overscroll-behavior: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100dvh;
+      padding-bottom: calc(20px + var(--safe-b));
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      animation: pageIn 0.25s ease;
+    }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes popScale { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* ── HEADER — matches dashboard-home ── */
+    .header {
+      position: sticky; top: 0; left: 0; right: 0;
+      height: var(--header-h); z-index: 9999;
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 18px;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-sm);
+    }
+    .back-btn {
+      width: 36px; height: 36px; border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px; flex-shrink: 0;
+      transition: var(--t); text-decoration: none;
+      box-shadow: var(--shadow-sm);
+    }
+    [data-theme="dark"] .back-btn { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); }
+    [data-theme="light"] .back-btn { background: #fff; border-color: rgba(0,0,0,0.08); }
+    .back-btn:active { transform: scale(0.92); opacity: 0.8; }
+
+    .header-info { flex: 1; min-width: 0; }
+    .header-label {
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--accent); opacity: 0.7; line-height: 1;
+    }
+    .header-title {
+      font-size: 17px; font-weight: 800;
+      color: var(--text); letter-spacing: -0.3px; line-height: 1.25;
+    }
+    .header-refresh {
+      width: 36px; height: 36px; border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px;
+      transition: var(--t); box-shadow: var(--shadow-sm);
+    }
+    [data-theme="dark"] .header-refresh { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); }
+    [data-theme="light"] .header-refresh { background: #fff; border-color: rgba(0,0,0,0.08); }
+    .header-refresh:active { transform: scale(0.9); }
+    .header-refresh.spinning i { animation: spin 0.8s linear infinite; }
+
+    /* ── SCROLL WRAP ── */
+    .scroll-wrap {
+      padding-top: 16px;
+      padding-bottom: calc(32px + var(--safe-b));
+      max-width: 480px; margin: 0 auto;
+      padding-left: 14px; padding-right: 14px;
+    }
+
+    /* ── MY CARD ── */
+    .my-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px 18px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.4s ease;
+      position: relative; overflow: hidden;
+    }
+    [data-theme="light"] .my-card { background: #fff; border: 1.5px solid rgba(91,91,246,0.18); }
+    [data-theme="dark"] .my-card {
+      background: linear-gradient(135deg, rgba(91,91,246,0.08), rgba(124,58,237,0.05));
+      border-color: rgba(91,91,246,0.2);
+    }
+    .my-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .my-card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .my-avatar {
+      width: 50px; height: 50px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(91,91,246,0.35);
+    }
+    .my-info { flex: 1; min-width: 0; }
+    .my-name {
+      font-size: 15px; font-weight: 700;
+      color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .my-badge { font-size: 11.5px; color: var(--gold); margin-top: 2px; font-weight: 600; }
+    .my-rank-label {
+      font-size: 22px; font-weight: 900;
+      color: var(--accent); letter-spacing: -0.5px; flex-shrink: 0;
+    }
+
+    /* stat chips */
+    .my-stats { display: flex; gap: 8px; }
+    .stat-chip {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 9px 8px; text-align: center;
+    }
+    .stat-chip-val {
+      font-size: 17px; font-weight: 800; color: var(--accent);
+    }
+    .stat-chip-val.timer { color: var(--orange); }
+    .stat-chip-val.streak { color: var(--orange); }
+    .stat-chip-val.level { color: var(--green); }
+    .stat-chip-lbl { font-size: 9.5px; color: var(--text3); margin-top: 2px; font-weight: 600; letter-spacing: 0.3px; }
+
+    /* XP breakdown pills */
+    .xp-breakdown { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .xp-pill {
+      font-size: 10.5px; font-weight: 600;
+      padding: 4px 10px; border-radius: 50px;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .xp-pill.study { background: rgba(91,91,246,0.08); color: var(--accent); border: 1px solid rgba(91,91,246,0.2); }
+    .xp-pill.timer { background: rgba(249,115,22,0.08); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+    .xp-pill.total { background: rgba(16,185,129,0.08); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+
+    /* Level bar */
+    .level-wrap { margin-top: 12px; }
+    .level-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 6px;
+    }
+    .level-label { font-size: 12px; font-weight: 700; color: var(--text); }
+    .level-pct { font-size: 11px; color: var(--text2); font-weight: 600; }
+    .level-track {
+      height: 7px; border-radius: 50px;
+      background: var(--border); overflow: hidden;
+    }
+    .level-fill {
+      height: 100%; border-radius: 50px;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width 1s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 2px 6px rgba(91,91,246,0.3);
+    }
+
+    /* ── SECTION HEADING — dashboard-home style ── */
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 12px;
+      font-size: 11px; font-weight: 700;
+      color: var(--text2); letter-spacing: 1px; text-transform: uppercase;
+    }
+    .section-head .sh-icon {
+      width: 28px; height: 28px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0;
+    }
+    .section-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── PODIUM ── */
+    .podium {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 10px; margin-bottom: 20px; padding: 4px 0;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+    .podium-slot { flex: 1; max-width: 130px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .podium-slot.first  { order: 2; }
+    .podium-slot.second { order: 1; }
+    .podium-slot.third  { order: 3; }
+
+    .podium-medal-wrap {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .podium-slot.first .podium-medal-wrap { width: 34px; height: 34px; font-size: 18px; }
+
+    .podium-avatar {
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: #fff;
+      width: 52px; height: 52px;
+    }
+    .podium-slot.first  .podium-avatar { width: 64px; height: 64px; font-size: 24px; border-radius: 20px; }
+    .first  .podium-avatar { background: linear-gradient(135deg, #F59E0B, #D97706); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+    .second .podium-avatar { background: linear-gradient(135deg, #94A3B8, #64748B); box-shadow: 0 4px 14px rgba(100,116,139,0.3); }
+    .third  .podium-avatar { background: linear-gradient(135deg, #D97706, #B45309); box-shadow: 0 4px 14px rgba(180,83,9,0.3); }
+
+    .podium-name {
+      font-size: 11.5px; font-weight: 700;
+      color: var(--text); text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .podium-xp { font-size: 10.5px; color: var(--accent); font-weight: 700; }
+    .podium-breakdown { font-size: 9px; color: var(--text3); margin-top: 1px; }
+    .podium-focus { font-size: 9.5px; color: var(--orange); margin-top: 1px; }
+
+    .podium-base {
+      width: 100%; border-radius: 12px 12px 6px 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: var(--text3);
+    }
+    .first  .podium-base { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); height: 68px; }
+    .second .podium-base { background: rgba(148,163,184,0.08); border: 1px solid rgba(148,163,184,0.18); height: 52px; }
+    .third  .podium-base { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.18); height: 40px; }
+
+    /* ── RANK LIST ── */
+    .rank-list { display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.5s ease 0.15s both; }
+    .rank-row {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 12px 14px;
+      transition: var(--t);
+    }
+    [data-theme="light"] .rank-row { background: #fff; box-shadow: var(--shadow-sm); }
+    [data-theme="dark"] .rank-row { background: var(--surface); }
+    .rank-row:active { transform: scale(0.98); }
+    .rank-row.is-me {
+      background: rgba(91,91,246,0.08) !important;
+      border-color: rgba(91,91,246,0.3) !important;
+      box-shadow: 0 0 0 3px rgba(91,91,246,0.1) !important;
+    }
+    [data-theme="dark"] .rank-row.is-me {
+      background: rgba(91,91,246,0.12) !important;
+      border-color: rgba(91,91,246,0.25) !important;
+    }
+
+    .rank-num {
+      font-size: 13px; font-weight: 800;
+      color: var(--text3); min-width: 26px; text-align: center;
+    }
+    .rank-avatar {
+      width: 40px; height: 40px; border-radius: 13px;
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: var(--text2); flex-shrink: 0;
+    }
+    .rank-row.is-me .rank-avatar {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; border-color: transparent;
+      box-shadow: 0 3px 10px rgba(91,91,246,0.35);
+    }
+    .rank-info { flex: 1; min-width: 0; }
+    .rank-name { font-size: 13.5px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rank-badge { font-size: 10.5px; color: var(--text2); margin-top: 2px; font-weight: 500; }
+    .rank-right { text-align: right; flex-shrink: 0; }
+    .rank-xp { font-size: 13px; font-weight: 800; color: var(--accent); }
+    .rank-streak { font-size: 10.5px; color: var(--text3); margin-top: 2px; font-weight: 500; }
+
+    /* ── WEEKLY ── */
+    .weekly-list { display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.5s ease 0.2s both; }
+
+    /* ── EMPTY / LOADING ── */
+    .empty { text-align: center; padding: 40px 24px; color: var(--text2); font-size: 13.5px; line-height: 1.8; }
+    .empty-icon {
+      width: 56px; height: 56px; border-radius: 18px;
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin: 0 auto 14px; 
+    }
+    .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px 0; color: var(--text2); font-size: 13px; }
+    .spinner {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── LEVEL UP POPUP ── */
+    .popup-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(14px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+    .popup-overlay.show { opacity: 1; pointer-events: all; }
+    .popup-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 26px; padding: 36px 26px 28px;
+      max-width: 320px; width: 100%; text-align: center;
+      box-shadow: var(--shadow-md);
+      transform: scale(0.88) translateY(16px);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative; overflow: hidden;
+    }
+    .popup-box::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--green));
+    }
+    [data-theme="light"] .popup-box { background: #fff; }
+    [data-theme="dark"] .popup-box { background: linear-gradient(160deg, #0F1E38, #131C30); border-color: rgba(91,91,246,0.2); }
+    .popup-overlay.show .popup-box { transform: scale(1) translateY(0); }
+    .popup-icon-wrap {
+      width: 72px; height: 72px; border-radius: 22px; margin: 0 auto 14px;
+      background: rgba(91,91,246,0.1); border: 1.5px solid rgba(91,91,246,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 32px;
+      animation: popScale 0.6s cubic-bezier(0.34,1.8,0.64,1) 0.2s both;
+    }
+    .popup-title { font-size: 21px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.3px; }
+    .popup-sub { font-size: 13.5px; color: var(--text2); line-height: 1.6; margin-bottom: 22px; font-weight: 500; }
+    .popup-close {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 50px; padding: 14px 32px;
+      color: #fff; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; width: 100%;
+      transition: var(--t); box-shadow: 0 6px 20px rgba(91,91,246,0.35);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .popup-close:active { transform: scale(0.97); }
+
+    .mt-20 { margin-top: 20px; }
+    .mt-16 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="javascript:history.back()" class="back-btn" title="Back">
+      <i class="fa-solid fa-arrow-left" style="font-size:13px;"></i>
+    </a>
+    <div class="header-info">
+      <div class="header-title">Leaderboard</div>
+    </div>
+    <button class="header-refresh" id="refreshBtn" title="Refresh" onclick="loadLeaderboard()">
+      <i class="fa-solid fa-rotate-right" style="font-size:13px;"></i>
+    </button>
+  </header>
+
+  <main class="scroll-wrap">
+
+    <!-- MY CARD -->
+    <div class="my-card" id="myCard" style="display:none;">
+      <div class="my-card-top">
+        <div class="my-avatar" id="myAvatar">U</div>
+        <div class="my-info">
+          <div class="my-name" id="myName">—</div>
+          <div class="my-badge" id="myBadge">—</div>
+        </div>
+        <div class="my-rank-label" id="myRankLabel">#—</div>
+      </div>
+      <div class="my-stats">
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="myXP">0</div>
+          <div class="stat-chip-lbl">Total XP</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val timer" id="myTimerXP">0</div>
+          <div class="stat-chip-lbl">Focus XP</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val streak" id="myStreak">0</div>
+          <div class="stat-chip-lbl">Streak</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val level" id="myLevel">1</div>
+          <div class="stat-chip-lbl">Level</div>
+        </div>
+      </div>
+      <!-- XP breakdown pills -->
+      <div class="xp-breakdown">
+        <span class="xp-pill study">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" fill="rgba(91,91,246,0.2)" stroke="#5B5BF6" stroke-width="1.5"/><line x1="7" y1="8" x2="17" y2="8" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="16" x2="13" y2="16" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Study: <b id="myStudyXP">0</b>
+        </span>
+        <span class="xp-pill timer">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="7" stroke="#F97316" stroke-width="1.8"/><polyline points="12,10 12,13 14,13" stroke="#F97316" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Timer: <b id="myTimerXPPill">0</b>
+        </span>
+        <span class="xp-pill total">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#10B981"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          Total: <b id="myTotalXPPill">0</b>
+        </span>
+      </div>
+      <div class="level-wrap">
+        <div class="level-row">
+          <span class="level-label" id="levelLabel">Level 1</span>
+          <span class="level-pct" id="levelPct">0%</span>
+        </div>
+        <div class="level-track"><div class="level-fill" id="levelFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- PODIUM -->
+    <div class="section-head">
+      <span class="sh-icon" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" fill="rgba(245,158,11,0.15)" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M4 22h16" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      Top Champions
+    </div>
+    <div id="podiumWrap"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+
+    <!-- RANK LIST -->
+    <div id="rankListWrap" class="mt-16"></div>
+
+    <!-- WEEKLY -->
+    <div class="section-head mt-20">
+      <span class="sh-icon" style="background:rgba(91,91,246,0.1);border:1px solid rgba(91,91,246,0.18);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="3" stroke="#5B5BF6" stroke-width="2"/><line x1="3" y1="9" x2="21" y2="9" stroke="#5B5BF6" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="#5B5BF6" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="2" x2="16" y2="6" stroke="#5B5BF6" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      This Week
+    </div>
+    <div id="weeklyWrap"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+
+  </main>
+
+  <!-- POPUP -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-box">
+      <div class="popup-icon-wrap" id="popupIconWrap">
+        <span id="popupIcon">🚀</span>
+      </div>
+      <div class="popup-title" id="popupTitle">Level Up!</div>
+      <div class="popup-sub" id="popupSub">You reached a new level!</div>
+      <button class="popup-close" onclick="closePopup()">Awesome!</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, auth, onAuthStateChanged } from "./firebase.js";
+    import {
+      collection, query, orderBy, limit,
+      getDocs, getDoc, doc, where, Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    let currentUser = null;
+    let prevLevel   = null;
+    let prevRank    = null;
+    let allEntries  = [];
+
+    /* ── Level system (based on TOTAL XP = study + timer) ── */
+    const THRESHOLDS = [0, 100, 250, 500, 800, 1200, 1700, 2300];
+    function getLevel(xp) {
+      for (let i = THRESHOLDS.length - 1; i >= 0; i--) {
+        if (xp >= THRESHOLDS[i]) return i + 1;
+      }
+      return 1;
+    }
+    function getLevelProgress(xp) {
+      const lv = getLevel(xp);
+      if (lv >= 8) return 100;
+      const from = THRESHOLDS[lv - 1], to = THRESHOLDS[lv];
+      return Math.round(((xp - from) / (to - from)) * 100);
+    }
+    function getBadge(xp) {
+      if (xp >= 500) return "Study Grid Champion";
+      if (xp >= 300) return "Study Master";
+      if (xp >= 150) return "Focused Learner";
+      if (xp >= 50)  return "Rising Learner";
+      return "Beginner";
+    }
+    function getBadgeIcon(xp) {
+      if (xp >= 500) return "🏆";
+      if (xp >= 300) return "⚡";
+      if (xp >= 150) return "🔥";
+      if (xp >= 50)  return "⭐";
+      return "🏅";
+    }
+    function nameInitial(name) { return (name || "?")[0].toUpperCase(); }
+
+    /* ── Auth ── */
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        await renderMyCard(user);
+        await loadLeaderboard();
+      } else {
+        document.getElementById("myCard").style.display = "none";
+        await loadLeaderboard();
+      }
+    });
+
+    /* ── My card ── */
+    async function renderMyCard(user) {
+      const studyXP = parseInt(localStorage.getItem("uw_xp")    || "0", 10);
+      const streak  = parseInt(localStorage.getItem("uw_streak") || "0", 10);
+
+      let timerXP   = 0;
+      let focusTime = 0;
+      try {
+        const lbSnap = await getDoc(doc(db, "leaderboard", user.uid));
+        if (lbSnap.exists()) {
+          timerXP   = lbSnap.data().timerXP  || 0;
+          focusTime = lbSnap.data().focusTime || 0;
+        }
+      } catch(e) {}
+
+      const totalXP = studyXP + timerXP;
+      const level   = getLevel(totalXP);
+      const pct     = getLevelProgress(totalXP);
+      const badge   = getBadge(totalXP);
+      const badgeIcon = getBadgeIcon(totalXP);
+
+      document.getElementById("myCard").style.display       = "";
+      document.getElementById("myAvatar").textContent       = nameInitial(user.displayName);
+      document.getElementById("myName").textContent         = user.displayName || "You";
+      document.getElementById("myBadge").textContent        = badgeIcon + " " + badge;
+      document.getElementById("myXP").textContent           = totalXP;
+      document.getElementById("myTimerXP").textContent      = timerXP;
+      document.getElementById("myStreak").textContent       = streak;
+      document.getElementById("myLevel").textContent        = level;
+      document.getElementById("myStudyXP").textContent      = studyXP;
+      document.getElementById("myTimerXPPill").textContent  = timerXP;
+      document.getElementById("myTotalXPPill").textContent  = totalXP;
+      document.getElementById("levelLabel").textContent     = `Level ${level}`;
+      document.getElementById("levelPct").textContent       = pct + "%";
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById("levelFill").style.width = pct + "%";
+      }));
+    }
+
+    /* ── Load leaderboard ── */
+    window.loadLeaderboard = async function() {
+      const btn = document.getElementById("refreshBtn");
+      btn.classList.add("spinning");
+      try {
+        const snap = await getDocs(
+          query(collection(db, "leaderboard"), orderBy("xp", "desc"), limit(200))
+        );
+
+        const raw = snap.docs.map(d => {
+          const data     = d.data();
+          const studyXP  = data.xp      || 0;
+          const timerXP  = data.timerXP || 0;
+          const totalXP  = studyXP + timerXP;
+          return {
+            uid:       d.id,
+            name:      data.name || "Anonymous",
+            studyXP,
+            timerXP,
+            xp:        totalXP,
+            streak:    data.streak || 0,
+            focusTime: data.focusTime || 0,
+            level:     getLevel(totalXP)
+          };
+        });
+
+        const seen = new Set();
+        const deduped = raw.filter(e => {
+          if (seen.has(e.uid)) return false;
+          seen.add(e.uid);
+          return true;
+        });
+
+        deduped.sort((a, b) => b.xp - a.xp);
+        allEntries = deduped.map((e, i) => ({ ...e, rank: i + 1 }));
+
+        renderPodium();
+        renderRankList();
+        renderWeekly();
+        updateMyRank();
+        checkLevelUp();
+      } catch(e) {
+        console.warn("[Leaderboard]", e);
+        document.getElementById("podiumWrap").innerHTML = `<div class="empty"><div class="empty-icon"><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange);"></i></div>Could not load data.<br>Check your connection.</div>`;
+        document.getElementById("weeklyWrap").innerHTML = "";
+      }
+      setTimeout(() => btn.classList.remove("spinning"), 800);
+    };
+
+    /* ── Podium ── */
+    function renderPodium() {
+      const top3 = allEntries.slice(0, 3);
+      if (!top3.length) {
+        document.getElementById("podiumWrap").innerHTML = `<div class="empty"><div class="empty-icon"><i class="fa-solid fa-trophy" style="color:var(--gold);"></i></div>No users yet.<br>Start studying to appear here!</div>`;
+        return;
+      }
+      const classes = ["first","second","third"];
+      const rankNums = ["1","2","3"];
+      const html = top3.map((u, i) => {
+        const focusStr = u.focusTime >= 60
+          ? `${Math.floor(u.focusTime/60)}h ${u.focusTime%60}m`
+          : u.focusTime > 0 ? `${u.focusTime}m` : "";
+        return `
+        <div class="podium-slot ${classes[i]}">
+          <div class="podium-medal-wrap">${["🥇","🥈","🥉"][i]}</div>
+          <div class="podium-avatar">${nameInitial(u.name)}</div>
+          <div class="podium-name">${escHtml(u.name)}</div>
+          <div class="podium-xp">${u.xp} XP</div>
+          ${(u.studyXP > 0 || u.timerXP > 0) ? `<div class="podium-breakdown">${u.studyXP}+${u.timerXP}</div>` : ""}
+          ${focusStr ? `<div class="podium-focus">${focusStr}</div>` : ""}
+          <div class="podium-base">${rankNums[i]}</div>
+        </div>
+      `}).join("");
+      document.getElementById("podiumWrap").innerHTML = `<div class="podium">${html}</div>`;
+    }
+
+    /* ── Rank list (4th–20th) ── */
+    function renderRankList() {
+      const rest  = allEntries.slice(3, 20);
+      const myUid = currentUser?.uid;
+      if (!rest.length) { document.getElementById("rankListWrap").innerHTML = ""; return; }
+
+      const rows = rest.map(u => {
+        const isMe = u.uid === myUid;
+        const focusStr = u.focusTime > 0
+          ? `<span style="color:var(--orange);margin-left:5px;"><i class="fa-solid fa-clock" style="font-size:9px;"></i> ${u.focusTime >= 60 ? Math.floor(u.focusTime/60)+'h '+u.focusTime%60+'m' : u.focusTime+'m'}</span>`
+          : "";
+        return `
+          <div class="rank-row ${isMe ? "is-me" : ""}">
+            <div class="rank-num">#${u.rank}</div>
+            <div class="rank-avatar">${nameInitial(u.name)}</div>
+            <div class="rank-info">
+              <div class="rank-name">${escHtml(u.name)}${isMe ? " <span style='color:var(--accent);font-size:10.5px;font-weight:700;'>(You)</span>" : ""}</div>
+              <div class="rank-badge">${getBadgeIcon(u.xp)} ${getBadge(u.xp)}${focusStr}</div>
+            </div>
+            <div class="rank-right">
+              <div class="rank-xp">${u.xp} XP</div>
+              <div class="rank-streak"><i class="fa-solid fa-fire" style="font-size:9px;color:var(--orange);"></i> ${u.streak}</div>
+            </div>
+          </div>`;
+      }).join("");
+      document.getElementById("rankListWrap").innerHTML = `<div class="rank-list">${rows}</div>`;
+    }
+
+    /* ── Weekly ── */
+    async function renderWeekly() {
+      try {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const snap = await getDocs(
+          query(
+            collection(db, "leaderboard"),
+            where("updatedAt", ">=", Timestamp.fromDate(weekAgo)),
+            limit(50)
+          )
+        );
+
+        const myUid = currentUser?.uid;
+        const entries = snap.docs.map((d) => {
+          const data     = d.data();
+          // FIX-WEEKLY: use the real weekly fields with a plain 0 fallback —
+          // previously `data.weeklyTimerXP || timerXP` fell back to the
+          // lifetime timerXP whenever weeklyTimerXP was legitimately 0,
+          // which made "This Week" silently show all-time numbers.
+          // studyXP now also uses the weekly field (uw-core.js now tracks
+          // this) instead of the lifetime `xp` field.
+          const weeklyStudyXP = data.weeklyXP      || 0;
+          const weeklyTimerXP = data.weeklyTimerXP || 0;
+          const weeklyTotal   = weeklyStudyXP + weeklyTimerXP;
+          return {
+            uid:    d.id,
+            name:   data.name || "Anonymous",
+            xp:     weeklyTotal,
+            studyXP: weeklyStudyXP,
+            timerXP: weeklyTimerXP,
+            focusTime: data.weeklyFocusTime || 0,
+            streak: data.streak || 0
+          };
+        });
+
+        const seen = new Set();
+        const deduped = entries.filter(e => { if (seen.has(e.uid)) return false; seen.add(e.uid); return true; });
+        deduped.sort((a, b) => b.xp - a.xp);
+
+        if (!deduped.length) {
+          document.getElementById("weeklyWrap").innerHTML = `<div class="empty"><div class="empty-icon"><i class="fa-regular fa-calendar" style="color:var(--accent);"></i></div>No activity this week yet.</div>`;
+          return;
+        }
+
+        const rows = deduped.slice(0, 20).map((u, i) => {
+          const isMe = u.uid === myUid;
+          const focusStr = u.focusTime > 0
+            ? `<span style="color:var(--orange);margin-left:5px;"><i class="fa-solid fa-clock" style="font-size:9px;"></i> ${u.focusTime >= 60 ? Math.floor(u.focusTime/60)+'h '+u.focusTime%60+'m' : u.focusTime+'m'}</span>`
+            : "";
+          return `
+            <div class="rank-row ${isMe ? "is-me" : ""}">
+              <div class="rank-num">#${i+1}</div>
+              <div class="rank-avatar">${nameInitial(u.name)}</div>
+              <div class="rank-info">
+                <div class="rank-name">${escHtml(u.name)}${isMe ? " <span style='color:var(--accent);font-size:10.5px;font-weight:700;'>(You)</span>" : ""}</div>
+                <div class="rank-badge">${getBadgeIcon(u.xp)} ${getBadge(u.xp)}${focusStr}</div>
+              </div>
+              <div class="rank-right">
+                <div class="rank-xp">${u.xp} XP</div>
+                <div class="rank-streak"><i class="fa-solid fa-fire" style="font-size:9px;color:var(--orange);"></i> ${u.streak}</div>
+              </div>
+            </div>`;
+        }).join("");
+        document.getElementById("weeklyWrap").innerHTML = `<div class="weekly-list">${rows}</div>`;
+      } catch(e) {
+        console.warn("[Weekly]", e);
+        const myUid = currentUser?.uid;
+        if (allEntries.length) {
+          const rows = allEntries.slice(0, 20).map((u, i) => {
+            const isMe = u.uid === myUid;
+            return `
+              <div class="rank-row ${isMe ? "is-me" : ""}">
+                <div class="rank-num">#${i+1}</div>
+                <div class="rank-avatar">${nameInitial(u.name)}</div>
+                <div class="rank-info">
+                  <div class="rank-name">${escHtml(u.name)}${isMe ? " <span style='color:var(--accent);font-size:10.5px;font-weight:700;'>(You)</span>" : ""}</div>
+                  <div class="rank-badge">${getBadgeIcon(u.xp)} ${getBadge(u.xp)}</div>
+                </div>
+                <div class="rank-right">
+                  <div class="rank-xp">${u.xp} XP</div>
+                  <div class="rank-streak"><i class="fa-solid fa-fire" style="font-size:9px;color:var(--orange);"></i> ${u.streak}</div>
+                </div>
+              </div>`;
+          }).join("");
+          document.getElementById("weeklyWrap").innerHTML = `<div class="weekly-list">${rows}</div>`;
+        } else {
+          document.getElementById("weeklyWrap").innerHTML =
+            `<div class="empty"><div class="empty-icon"><i class="fa-regular fa-calendar" style="color:var(--accent);"></i></div>Weekly data loading...</div>`;
+        }
+      }
+    }
+
+    /* ── My rank ── */
+    function updateMyRank() {
+      if (!currentUser) return;
+      const me = allEntries.find(u => u.uid === currentUser.uid);
+      if (!me) return;
+      const rankEl = document.getElementById("myRankLabel");
+      if (rankEl) rankEl.textContent = `#${me.rank}`;
+      if (prevRank !== null && me.rank < prevRank) showPopup("📈", "Rank Up!", `You moved to #${me.rank}! Keep going!`);
+      prevRank = me.rank;
+    }
+
+    function checkLevelUp() {
+      if (!currentUser) return;
+      const xp    = parseInt(localStorage.getItem("uw_xp") || "0", 10);
+      const level = getLevel(xp);
+      if (prevLevel !== null && level > prevLevel) showPopup("🚀", `Level ${level}!`, `Amazing! You reached Level ${level}. ${getBadgeIcon(xp)} ${getBadge(xp)}`);
+      prevLevel = level;
+    }
+
+    function showPopup(icon, title, sub) {
+      document.getElementById("popupIcon").textContent  = icon;
+      document.getElementById("popupTitle").textContent = title;
+      document.getElementById("popupSub").textContent   = sub;
+      document.getElementById("popupOverlay").classList.add("show");
+    }
+    window.closePopup = () => document.getElementById("popupOverlay").classList.remove("show");
+
+    window.addEventListener("uw_xp_changed", () => { if (currentUser) renderMyCard(currentUser); });
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+  </script>
+
+<script src="theme.js"></script>
+<script>
+(function(){
+  function syncThemeColor(){
+    var isDark=document.documentElement.getAttribute("data-theme")==="dark";
+    var metas=document.querySelectorAll("meta[name='theme-color']");
+    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
+  }
+  syncThemeColor();
+  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+})();
+</script>
+</body>
+</html>
