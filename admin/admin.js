@@ -3093,14 +3093,26 @@ async function renderRoomsAdmin(rooms) {
   const container = $("roomsContainer");
   if (!container) return;
 
-  // Filter to rooms that have members OR keep all rooms (show empty ones too)
+  // FIX-ROOM-MGMT: highlighted/pinned rooms (given a color by an admin) show
+  // first, then sort by member count within each group.
   const sorted = [...rooms].sort((a, b) => {
     const mc = r => r.memberCount ?? (r.members ? Object.keys(r.members).length : 0);
+    const pinA = a.pinned ? 1 : 0, pinB = b.pinned ? 1 : 0;
+    if (pinA !== pinB) return pinB - pinA;
     return mc(b) - mc(a);
   });
 
+  // "+ Create Room" bar always shown at the very top, even with zero rooms.
+  const createBar = `
+    <div class="room-card" style="cursor:pointer;border:1.5px dashed var(--accent-cyan);
+         background:rgba(0,224,255,0.04);display:flex;align-items:center;justify-content:center;
+         gap:8px;padding:16px;font-weight:600;color:var(--accent-cyan);"
+         onclick="openRoomFormModal()">
+      <i class="fa-solid fa-circle-plus"></i> Create Room
+    </div>`;
+
   if (!sorted.length) {
-    container.innerHTML = `<div class="empty-state">
+    container.innerHTML = createBar + `<div class="empty-state">
       <div class="empty-state-icon">🏠</div>
       <div class="empty-state-text">No rooms found in Firestore</div>
     </div>`;
@@ -3108,7 +3120,7 @@ async function renderRoomsAdmin(rooms) {
   }
 
   // For each room, fetch members from STATE.allUsers by matching room field or members map
-  container.innerHTML = sorted.map(room => {
+  container.innerHTML = createBar + sorted.map(room => {
     // Collect member data: room.members = {uid: true} map OR match users with u.room === room.id/name
     let memberIds = [];
     if (room.members && typeof room.members === "object") {
@@ -3125,26 +3137,39 @@ async function renderRoomsAdmin(rooms) {
     const memberCount = room.memberCount ?? usersInRoom.length ?? memberIds.length;
     const isActive    = memberCount > 0;
     const createdAt   = room.createdAt ? formatTimestamp(room.createdAt) : "—";
+    const color       = room.color || "";
+    const hasPassword = !!room.password;
 
     return `
     <div class="room-card" onclick="viewRoomDetail('${escHtml(room.id)}')"
-         style="${isActive ? 'border-color:rgba(0,229,160,0.25);' : ''}">
+         style="${isActive ? 'border-color:rgba(0,229,160,0.25);' : ''}
+                ${color ? `box-shadow:inset 3px 0 0 ${escHtml(color)};` : ''}">
 
-      <button class="room-delete-btn"
-              onclick="event.stopPropagation();deleteRoomAdmin('${escHtml(room.id)}','${escHtml(roomName)}')"
-              title="Delete room">🗑️ Delete</button>
+      <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;">
+        <button class="room-delete-btn" style="position:static;background:rgba(0,224,255,0.1);
+                border-color:rgba(0,224,255,0.25);color:var(--accent-cyan);"
+                onclick="event.stopPropagation();openRoomFormModal('${escHtml(room.id)}')"
+                title="Edit room">✏️ Edit</button>
+        <button class="room-delete-btn" style="position:static;"
+                onclick="event.stopPropagation();deleteRoomAdmin('${escHtml(room.id)}','${escHtml(roomName)}')"
+                title="Delete room">🗑️</button>
+      </div>
 
       <div class="room-card-header">
         <div class="room-card-title">
-          🏠 ${escHtml(roomName)}
+          ${color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${escHtml(color)};margin-right:2px;"></span>` : "🏠"}
+          ${escHtml(roomName)}
           ${isActive ? `<span style="background:rgba(0,229,160,.1);color:var(--accent-green);
             border:1px solid rgba(0,229,160,.2);border-radius:99px;
             font-size:10px;font-weight:600;padding:2px 9px;">● Live</span>` : ""}
+          ${hasPassword ? `<i class="fa-solid fa-lock" style="font-size:11px;color:var(--text-muted);" title="Password protected"></i>` : ""}
         </div>
         <div class="room-card-meta">
           👥 ${memberCount} member${memberCount !== 1 ? "s" : ""}
           &nbsp;·&nbsp; 📅 ${createdAt}
         </div>
+        ${room.note ? `<div style="margin-top:6px;font-size:12px;color:var(--text-secondary);
+            background:rgba(255,255,255,0.03);border-radius:6px;padding:6px 10px;">📝 ${escHtml(room.note)}</div>` : ""}
       </div>
 
       ${usersInRoom.length ? `
@@ -3169,6 +3194,113 @@ async function renderRoomsAdmin(rooms) {
     `;
   }).join("");
 }
+
+// ============================================================
+//  ROOM CREATE / EDIT MODAL
+//  Self-contained (built entirely in JS, no HTML markup needed in either
+//  admin page) so this works identically in both the Sub-Admin and main
+//  SGPAdmin panels, since both load this same admin.js file.
+// ============================================================
+window.openRoomFormModal = (roomId) => {
+  const editing = !!roomId;
+  const room = editing ? (_roomsCache.find(r => r.id === roomId) || {}) : {};
+  const existing = document.getElementById("roomFormModalOverlay");
+  if (existing) existing.remove();
+
+  const swatches = ["#6C63EC", "#38BDF8", "#00E5A0", "#FFB830", "#FF5C7A", "#A855F7"];
+
+  const overlay = document.createElement("div");
+  overlay.id = "roomFormModalOverlay";
+  overlay.style.cssText = `position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);
+    display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);`;
+  overlay.innerHTML = `
+    <div style="background:var(--bg-card,#141824);border:1px solid var(--border,rgba(255,255,255,0.08));
+         border-radius:16px;padding:22px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;">
+      <div style="font-size:17px;font-weight:700;margin-bottom:16px;">
+        ${editing ? "✏️ Edit Room" : "➕ Create Room"}
+      </div>
+
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Room name</label>
+      <input id="rfRoomName" type="text" value="${escHtml(room.name || (editing ? roomId : ""))}"
+        placeholder="e.g. Evening Study Group"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;margin-bottom:14px;
+        background:rgba(255,255,255,0.04);border:1px solid var(--border,rgba(255,255,255,0.1));color:inherit;font-size:14px;">
+
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Highlight color (pins room to top)</label>
+      <div id="rfColorRow" style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+        ${swatches.map(c => `
+          <div data-color="${c}" onclick="document.getElementById('rfColorValue').value='${c}';
+            document.querySelectorAll('#rfColorRow > div').forEach(d=>d.style.outline='none');
+            this.style.outline='2px solid #fff';"
+            style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;
+            outline:${room.color === c ? '2px solid #fff' : 'none'};outline-offset:2px;"></div>
+        `).join("")}
+        <div onclick="document.getElementById('rfColorValue').value='';
+             document.querySelectorAll('#rfColorRow > div').forEach(d=>d.style.outline='none');"
+             style="width:26px;height:26px;border-radius:50%;cursor:pointer;
+             border:1.5px dashed var(--text-muted);display:flex;align-items:center;justify-content:center;
+             font-size:13px;color:var(--text-muted);" title="No highlight">✕</div>
+      </div>
+      <input type="hidden" id="rfColorValue" value="${room.color || ''}">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">No color = normal room, not pinned to top.</div>
+
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Note (shown to admins, short)</label>
+      <textarea id="rfNote" rows="2" maxlength="140" placeholder="e.g. Reserved for NEET batch, quiet hours 6–9 PM"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;margin-bottom:14px;
+        background:rgba(255,255,255,0.04);border:1px solid var(--border,rgba(255,255,255,0.1));color:inherit;
+        font-size:13px;resize:vertical;">${escHtml(room.note || "")}</textarea>
+
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Password (optional — leave blank for no password)</label>
+      <input id="rfPassword" type="text" value="${escHtml(room.password || "")}" placeholder="Leave blank for open room"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;margin-bottom:18px;
+        background:rgba(255,255,255,0.04);border:1px solid var(--border,rgba(255,255,255,0.1));color:inherit;font-size:14px;">
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('roomFormModalOverlay').remove();"
+          style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border,rgba(255,255,255,0.1));
+          background:none;color:var(--text-secondary);font-weight:600;cursor:pointer;">Cancel</button>
+        <button onclick="saveRoomAdmin(${editing ? `'${escHtml(roomId)}'` : 'null'})"
+          style="flex:1;padding:11px;border-radius:8px;border:none;
+          background:var(--accent-cyan);color:#001;font-weight:700;cursor:pointer;">
+          ${editing ? "Save Changes" : "Create Room"}
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+};
+
+window.saveRoomAdmin = async (roomId) => {
+  const name     = document.getElementById("rfRoomName")?.value.trim();
+  const color    = document.getElementById("rfColorValue")?.value.trim();
+  const note     = document.getElementById("rfNote")?.value.trim().slice(0, 140);
+  const password = document.getElementById("rfPassword")?.value.trim();
+
+  if (!name) { toast("Please enter a room name.", "error"); return; }
+
+  // FIX-ROOM-MGMT: slugify the name into an ID for new rooms (lowercase,
+  // hyphenated, alnum only) so it matches the same id format timer.html
+  // already expects for room links/joins.
+  const id = roomId || name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `room-${Date.now()}`;
+
+  try {
+    const payload = {
+      name,
+      color: color || null,
+      pinned: !!color,
+      note: note || null,
+      password: password || null,
+      updatedAt: serverTimestamp()
+    };
+    if (!roomId) payload.createdAt = serverTimestamp();
+    await setDoc(doc(db, COLL.ROOMS, id), payload, { merge: true });
+    document.getElementById("roomFormModalOverlay")?.remove();
+    toast(roomId ? "Room updated." : `Room "${name}" created.`, "success");
+  } catch (err) {
+    toast("Save failed: " + err.message, "error");
+  }
+};
 
 /** Open room detail modal — shows member list + recent chats */
 window.viewRoomDetail = async (roomId) => {
