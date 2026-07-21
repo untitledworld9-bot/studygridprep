@@ -22,7 +22,7 @@ import {
   collection, addDoc, onSnapshot,
   doc, setDoc, updateDoc, increment, deleteDoc,
   query, orderBy, getDocs, getDoc, where,
-  serverTimestamp
+  serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import {
@@ -573,18 +573,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // FIX-DUP: ALL user doc reads/writes now use users/{uid}
     const uRef  = doc(db, "users", _timerUid);
-    const snap  = await getDoc(uRef);
 
-    if (snap.exists() && snap.data().lastFocusResetDate !== today) {
-      const prevFocus = snap.data().focusTime || 0;
-      await setDoc(uRef,{
-        focusTime: 0,
-        todayTimerXP: 0,
-        totalFocusTime: increment(prevFocus), // carry yesterday's minutes into lifetime total before reset
-        lastFocusResetDate: today,
-        lastActive: Date.now()
-      },{merge:true});
-    }
+    // FIX-RACE: use a transaction instead of getDoc()+setDoc() — a plain
+    // read-then-write is vulnerable to a stale local-cache race when
+    // navigating quickly between pages (dashboard-home.html performs this
+    // exact same check independently). A transaction always reads fresh
+    // from the server at commit time, so it can never mistakenly fire a
+    // reset based on a stale cached read.
+    await runTransaction(db, async (tx) => {
+      const freshSnap = await tx.get(uRef);
+      if (freshSnap.exists() && freshSnap.data().lastFocusResetDate !== today) {
+        const prevFocus = freshSnap.data().focusTime || 0;
+        tx.set(uRef, {
+          focusTime: 0,
+          todayTimerXP: 0,
+          totalFocusTime: increment(prevFocus), // carry yesterday's minutes into lifetime total before reset
+          lastFocusResetDate: today,
+          lastActive: Date.now()
+        }, { merge: true });
+      }
+    }).catch((e) => console.warn("[Timer] day-reset transaction failed:", e));
     await setDoc(uRef,{
       name:        currentUser,
       displayName: currentUser,
@@ -844,41 +852,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (stopBtn) {
-    stopBtn.addEventListener("click", async () => {
-      isRunning = false;
-      clearInterval(timerInterval);
-      const elapsed     = mode === "countdown" ? (initialSeconds - seconds) : seconds;
-      const totalMins   = Math.floor(elapsed / 60);
-      const unsavedMins = totalMins - savedMinutes;
-      // FIX-XP: Calculate exact unsaved XP = total earned XP - already saved XP
-      const totalXPEarned = Math.floor(elapsed / 120);
-      const unsavedXP     = Math.max(0, totalXPEarned - savedXP);
-      if (unsavedMins > 0) {
-        await updateDoc(userDocRef(),{
-          status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
-        });
-        if (unsavedXP > 0) {
-          await updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)});
-        }
-        await _syncTimerLeaderboard(unsavedMins, unsavedXP);
-      } else {
-        await updateDoc(userDocRef(),{status:"Online", lastActive:Date.now()});
+  async function _stopSession() {
+    isRunning = false;
+    clearInterval(timerInterval);
+    const elapsed     = mode === "countdown" ? (initialSeconds - seconds) : seconds;
+    const totalMins   = Math.floor(elapsed / 60);
+    const unsavedMins = totalMins - savedMinutes;
+    // FIX-XP: Calculate exact unsaved XP = total earned XP - already saved XP
+    const totalXPEarned = Math.floor(elapsed / 120);
+    const unsavedXP     = Math.max(0, totalXPEarned - savedXP);
+    if (unsavedMins > 0) {
+      await updateDoc(userDocRef(),{
+        status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
+      });
+      if (unsavedXP > 0) {
+        await updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)});
       }
-      savedMinutes = 0;
-      savedXP      = 0;
-      sessionStartAt = 0;
-      clearTimerState();
-      if (startBtn) startBtn.style.display = "block";
-      stopBtn.style.display = "none";
-      if (ring) ring.classList.remove("active");
-      if (window._stopRain)  window._stopRain();
-      if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(false);
-      seconds = mode === "countdown" ? initialSeconds : 0;
-      if (mode !== "countdown" && display) display.innerText = "00:00";
-      updateDisplay();
-    });
+      await _syncTimerLeaderboard(unsavedMins, unsavedXP);
+    } else {
+      await updateDoc(userDocRef(),{status:"Online", lastActive:Date.now()});
+    }
+    savedMinutes = 0;
+    savedXP      = 0;
+    sessionStartAt = 0;
+    clearTimerState();
+    if (startBtn) startBtn.style.display = "block";
+    if (stopBtn)  stopBtn.style.display = "none";
+    if (ring) ring.classList.remove("active");
+    if (window._stopRain)  window._stopRain();
+    if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(false);
+    seconds = mode === "countdown" ? initialSeconds : 0;
+    if (mode !== "countdown" && display) display.innerText = "00:00";
+    updateDisplay();
   }
+
+  if (stopBtn) {
+    stopBtn.addEventListener("click", _stopSession);
+  }
+
+  // FIX-SCREEN-OFF: auto-stop the session the instant the screen locks or the
+  // app is backgrounded, instead of letting it silently keep "running" while
+  // throttled — that throttling is exactly what caused undercounted XP
+  // (e.g. 12 real minutes only crediting 5 XP instead of 6) and left the
+  // status flickering between Online/Focusing when the screen came back on.
+  // The user must explicitly press Start again after returning, same as the
+  // existing "no auto-resume on reload" behavior.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && isRunning) {
+      _stopSession().catch(e => console.warn("[Timer] auto-stop on background failed:", e));
+    }
+  });
 
   function finishTimer() {
     isRunning = false;
