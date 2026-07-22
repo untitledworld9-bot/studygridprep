@@ -1843,11 +1843,43 @@ ${`<button title="Delete User" onclick="deleteUser('${uid}','${uname}')" style="
           color:var(--accent-red);border-radius:7px;padding:5px 9px;
           font-size:13px;cursor:pointer;transition:all .15s;font-weight:600;
         " onmouseover="this.style.background='rgba(255,79,106,.25)'" onmouseout="this.style.background='rgba(255,79,106,.1)'"><i class="fa-solid fa-trash"></i></button>`}
+          <button title="Reset Focus/XP Stats (fixes corrupted data)" onclick="resetUserFocusStats('${uid}','${uname}')" style="
+          background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
+          color:var(--text-secondary);border-radius:7px;padding:5px 9px;
+          font-size:13px;cursor:pointer;transition:all .15s;
+        " onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.06)'"><i class="fa-solid fa-broom"></i></button>
         </div>
       </td>
     </tr>`;
   }).join("");
 }
+
+/** Reset a user's focus-timer time/XP fields to 0 — used to clean up
+ *  corrupted values (e.g. from a client-side timer bug) without touching
+ *  their study (playlist/todo) XP or account/subscription data at all. */
+window.resetUserFocusStats = async (uid, uname) => {
+  const yes = await confirmModal(
+    "Reset Focus Stats",
+    `Reset focus time and timer-XP for "${uname}" back to 0? This only affects focus-timer stats (today's time, today's timer XP, weekly timer XP, weekly focus time, lifetime focus time). Study/playlist XP and everything else is untouched.`
+  );
+  if (!yes) return;
+  try {
+    await setDoc(doc(db, "users", uid), {
+      focusTime: 0,
+      totalFocusTime: 0,
+      todayTimerXP: 0,
+      weeklyXP: 0
+    }, { merge: true });
+    await setDoc(doc(db, "leaderboard", uid), {
+      timerXP: 0,
+      weeklyTimerXP: 0,
+      weeklyFocusTime: 0
+    }, { merge: true }).catch(() => {}); // leaderboard doc may not exist yet — fine either way
+    toast(`Focus stats reset for "${uname}".`, "success");
+  } catch (err) {
+    toast("Reset failed: " + err.message, "error");
+  }
+};
 
 /** User management quick action helper */
 window.userQuickAction = (section, uid, uname) => {
@@ -3542,9 +3574,15 @@ window.switchLbTab = function(tab) {
 
 
 function listenLeaderboard() {
-  // Listen directly to the "leaderboard" collection which uw-core.js keeps updated
+  // Listen directly to the "leaderboard" collection which uw-core.js keeps updated.
+  // FIX-MISSING-DOCS: no orderBy('xp') — Firestore silently excludes any
+  // document missing that field entirely, which made timer-only users
+  // (whose leaderboard doc never got an `xp` field written, since they've
+  // never opened playlist/todo) invisible in both the Full and Timer
+  // leaderboard tabs here. renderFullLeaderboard/renderTimerLeaderboard
+  // already sort correctly on the client afterward, so this was redundant.
   const unsub = onSnapshot(
-    query(collection(db, "leaderboard"), orderBy("xp", "desc"), limit(100)),
+    query(collection(db, "leaderboard"), limit(300)),
     snap => {
       STATE.leaderboardData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderLeaderboardSection();

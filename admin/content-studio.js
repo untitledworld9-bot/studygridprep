@@ -111,6 +111,20 @@ function csRenderList() {
     return true;
   });
 
+  // FIX-COUNT: show total content count (badge near "All Content") and,
+  // whenever a filter/search is active, a "Showing X of Y" line so it's
+  // always clear exactly how many items exist and how many match.
+  const totalCountEl = $("csTotalCount");
+  if (totalCountEl) totalCountEl.textContent = CS.allContent.length;
+
+  const filterActive = !!(typeFilter || statusFilter || search);
+  const countLineEl = $("csFilterCountLine");
+  if (countLineEl) {
+    countLineEl.textContent = filterActive
+      ? `Showing ${rows.length} of ${CS.allContent.length} total`
+      : `${CS.allContent.length} item${CS.allContent.length === 1 ? "" : "s"} total`;
+  }
+
   const wrap = $("csTableWrap");
   if (!wrap) return;
 
@@ -652,6 +666,7 @@ window.csSaveContent = csSaveContent;
 window.csAiGenerate = csAiGenerate;
 window.csAiStop = csAiStop;
 window.csAiQuickAction = csAiQuickAction;
+window.csRenderPreview = csRenderPreview;
 
 // Call this once from your existing DOMContentLoaded / auth-success handler
 window.initContentStudio = function () {
