@@ -530,6 +530,8 @@ header{
 .mact:active{transform:scale(1.1);}
 .mact.wave:active{border-color:var(--green);color:var(--green);}
 .mact.chat:active{border-color:var(--accent);color:var(--accent);}
+.mact.mute{padding:5px 8px;font-size:12px;opacity:.75;}
+.mact.mute.muted{border-color:var(--red,#ff5c7a);color:var(--red,#ff5c7a);opacity:1;background:rgba(255,92,122,0.08);}
 @keyframes waveAnim{
   0%{transform:scale(1) rotate(0deg);}
   25%{transform:scale(1.3) rotate(-20deg);}
@@ -561,23 +563,34 @@ header{
 .close-sheet-btn:active{transform:scale(0.97);}
 
 /* ═══ CHAT BOX ═══════════════════════════════════════════════════════════════ */
+#chatBackdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.35);
+  backdrop-filter:blur(2px);z-index:9099;
+  display:none;opacity:0;transition:opacity .25s ease;
+}
+#chatBackdrop.open{display:block;opacity:1;}
 #chatBox{
   position:fixed;bottom:calc(64px + env(safe-area-inset-bottom));left:0;width:100%;
-  background:var(--surface);border-top:2px solid var(--accent);
+  background:var(--surface);border-top:1px solid var(--border);
   border-radius:20px 20px 0 0;display:none;z-index:9100;
-  flex-direction:column;max-height:65vh;
+  flex-direction:column;max-height:85vh;height:75vh;
   box-shadow:0 -8px 30px rgba(0,0,0,0.15);
+  transform:translateY(8px);opacity:0;transition:transform .25s cubic-bezier(.25,.46,.45,.94),opacity .25s ease;
 }
-#chatBox.open{display:flex;}
+#chatBox.open{display:flex;transform:translateY(0);opacity:1;}
+.chat-drag-handle{
+  width:36px;height:4px;border-radius:99px;background:var(--border);
+  margin:9px auto 2px;flex-shrink:0;
+}
 .chat-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px 10px;flex-shrink:0;
+  padding:8px 16px 10px;flex-shrink:0;
   border-bottom:1px solid var(--border);
 }
 .chat-hname{font-size:14px;font-weight:700;color:var(--accent);}
 .chat-close{background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
 .chat-close:active{color:var(--red);}
-#chatMessages{flex:1;overflow-y:auto;padding:12px;min-height:120px;max-height:210px;background:var(--surface2);}
+#chatMessages{flex:1;overflow-y:auto;padding:14px 12px;min-height:120px;background:var(--surface2);}
 #chatMessages::-webkit-scrollbar{width:3px;}
 #chatMessages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 #chatMessages div.msg-me,#chatMessages div.msg-other{
@@ -770,74 +783,80 @@ header{
 
 /* Tablet portrait (600px–1024px) */
 @media(min-width:600px) and (max-width:1024px) and (orientation:portrait){
-  /* Center content column like a phone app */
-  .page{max-width:420px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
-  header{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .bottom-nav{max-width:420px;left:50%;transform:translateX(-50%);right:auto;border-radius:18px 18px 0 0;}
-  .music-panel{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  #chatBox{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .dropdown{right:auto;left:50%;transform:translateX(160px);}
-  #networkBar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  /* FIX-TABLET: fill the full screen width like dashboard-home.html does,
+     instead of centering a narrow phone-width column — that left huge empty
+     margins on both sides and made everything look tiny/squashed on a big
+     tablet screen. */
+  .page{max-width:100%;width:100%;left:0;right:0;transform:none;margin:0;}
+  header{max-width:100%;left:0;right:0;transform:none;}
+  .bottom-nav{max-width:100%;left:0;right:0;transform:none;border-radius:0;}
+  .music-panel{max-width:600px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:600px;left:50%;transform:translateX(-50%);right:auto;}
+  .dropdown{right:24px;left:auto;transform:none;}
+  #networkBar{max-width:100%;left:0;right:0;transform:none;}
 
-  /* Timer sizing — same as phone, just slightly bigger */
-  .timer-ring{width:clamp(200px,42vw,240px);height:clamp(200px,42vw,240px);}
-  .time-display{font-size:clamp(46px,10vw,58px);}
-  .action-btn{width:200px;padding:14px;font-size:14px;}
-  .mode-row{max-width:260px;}
-  .preset-btn{font-size:12px;padding:10px 0;}
+  /* Timer sizing — scaled up to use the extra space, same spirit as dashboard-home.html's tablet cards */
+  .timer-wrapper{max-width:520px;margin:0 auto;padding:0 20px;}
+  .timer-ring{width:clamp(240px,45vw,300px);height:clamp(240px,45vw,300px);}
+  .time-display{font-size:clamp(52px,11vw,68px);}
+  .action-btn{width:min(240px,60vw);padding:16px;font-size:15px;}
+  .mode-row{max-width:300px;}
+  .preset-btn{font-size:13px;padding:11px 0;}
 
-  /* Cards */
-  #statusCard{padding:12px 16px;}
-  .lb-text{font-size:12px;}
-  .room-action-btn{font-size:12px;padding:10px 8px;}
-  .session-box{padding:13px 15px;}
+  /* Cards — centered, comfortably wide */
+  #statusCard{max-width:520px;margin:0 auto;padding:14px 20px;}
+  .room-section{max-width:520px;margin:8px auto 0;}
+  .lb-text{font-size:13px;}
+  .room-action-btn{font-size:13px;padding:11px 10px;}
+  .session-box{max-width:520px;margin:10px auto;padding:15px 18px;}
 
   /* Nav */
-  .nav-item{padding:10px 24px 4px;}
-  .nav-icon{font-size:21px;}
-  .brand{font-size:18px;}
+  .nav-item{padding:11px 32px 5px;}
+  .nav-icon{font-size:22px;}
+  .brand{font-size:19px;}
 
   /* Rooms panel */
-  .rooms-panel{max-width:420px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
-  .rooms-panel.open{transform:translateX(-50%) translateY(0);}
-  .rooms-join-bar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .social-sheet{max-width:420px;left:50%;transform:translateX(-50%);}
+  .rooms-panel{max-width:100%;left:0;right:0;transform:translateY(100%);}
+  .rooms-panel.open{transform:translateY(0);}
+  .rooms-panel-scroll{max-width:600px;margin:0 auto;}
+  .rooms-join-bar{max-width:600px;left:50%;transform:translateX(-50%);right:auto;}
+  .social-sheet{max-width:100%;left:0;transform:none;}
 }
 
 /* Tablet landscape (600px+ width AND landscape) */
 @media(min-width:600px) and (orientation:landscape) and (max-width:1280px){
-  /* Narrow phone-like column in center */
-  .page{max-width:380px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
-  header{max-width:380px;left:50%;transform:translateX(-50%);right:auto;height:52px;}
-  .bottom-nav{max-width:380px;left:50%;transform:translateX(-50%);right:auto;height:calc(56px + env(safe-area-inset-bottom));border-radius:14px 14px 0 0;}
-  .music-panel{max-width:380px;left:50%;transform:translateX(-50%);right:auto;}
-  #chatBox{max-width:380px;left:50%;transform:translateX(-50%);right:auto;}
-  .dropdown{right:auto;left:50%;transform:translateX(145px);}
-  #networkBar{max-width:380px;left:50%;transform:translateX(-50%);right:auto;}
+  /* FIX-TABLET: fill full width instead of a narrow centered column */
+  .page{max-width:100%;width:100%;left:0;right:0;transform:none;margin:0;}
+  header{max-width:100%;left:0;right:0;transform:none;height:56px;}
+  .bottom-nav{max-width:100%;left:0;right:0;transform:none;height:calc(60px + env(safe-area-inset-bottom));border-radius:0;}
+  .music-panel{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+  .dropdown{right:24px;left:auto;transform:none;}
+  #networkBar{max-width:100%;left:0;right:0;transform:none;}
 
-  /* Compact layout for landscape */
-  .page{top:52px;bottom:calc(56px + env(safe-area-inset-bottom));}
-  .timer-ring{width:clamp(140px,22vw,175px);height:clamp(140px,22vw,175px);}
-  .time-display{font-size:clamp(32px,7vw,44px);}
-  .action-btn{width:180px;padding:10px;font-size:13px;}
-  .mode-row{max-width:240px;margin-bottom:10px;}
-  .mode-label{display:none;}
-  .timer-wrapper{min-height:0;padding:4px 16px;}
-  #statusCard{margin:6px 14px 0;padding:9px 14px;}
-  .room-section{margin:6px 14px 0;}
-  .session-box{margin:4px 14px;padding:10px 13px;}
+  /* Compact-but-full layout for landscape — content centered within the full width */
+  .page{top:56px;bottom:calc(60px + env(safe-area-inset-bottom));}
+  .timer-wrapper{max-width:480px;margin:0 auto;min-height:0;padding:8px 20px;}
+  .timer-ring{width:clamp(170px,26vw,220px);height:clamp(170px,26vw,220px);}
+  .time-display{font-size:clamp(38px,8vw,50px);}
+  .action-btn{width:min(200px,45vw);padding:12px;font-size:14px;}
+  .mode-row{max-width:260px;margin-bottom:12px;}
+  #statusCard{max-width:480px;margin:8px auto 0;padding:11px 18px;}
+  .room-section{max-width:480px;margin:8px auto 0;}
+  .session-box{max-width:480px;margin:6px auto;padding:12px 16px;}
 
-  /* Nav compact */
-  .nav-item{padding:8px 16px 3px;}
-  .nav-icon{font-size:19px;}
-  .nav-item span{font-size:10px;}
-  .brand{font-size:17px;}
+  /* Nav */
+  .nav-item{padding:9px 22px 4px;}
+  .nav-icon{font-size:20px;}
+  .nav-item span{font-size:11px;}
+  .brand{font-size:18px;}
 
   /* Rooms panel */
-  .rooms-panel{max-width:380px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
-  .rooms-panel.open{transform:translateX(-50%) translateY(0);}
-  .rooms-join-bar{max-width:380px;left:50%;transform:translateX(-50%);right:auto;}
-  .social-sheet{max-width:380px;left:50%;transform:translateX(-50%);}
+  .rooms-panel{max-width:100%;left:0;right:0;transform:translateY(100%);}
+  .rooms-panel.open{transform:translateY(0);}
+  .rooms-panel-scroll{max-width:560px;margin:0 auto;}
+  .rooms-join-bar{max-width:560px;left:50%;transform:translateX(-50%);right:auto;}
+  .social-sheet{max-width:100%;left:0;transform:none;}
 }
 
 /* Large desktop (1025px+) */
@@ -1179,7 +1198,9 @@ if(!localStorage.getItem("userName"))window.location.replace("login.html");
 </div>
 
 <!-- CHAT BOX -->
+<div id="chatBackdrop" onclick="closeChat()"></div>
 <div id="chatBox">
+  <div class="chat-drag-handle"></div>
   <div class="chat-header">
     <span class="chat-hname" id="chatWithLabel"><i class="fa-solid fa-message" style="margin-right:6px;font-size:13px;"></i>Chat</span>
     <button class="chat-close" onclick="closeChat()"><i class="fa-solid fa-xmark"></i></button>
@@ -1842,27 +1863,25 @@ function loadTopRooms() {
   if (!container) return;
 
   if (_topRoomsUnsub) _topRoomsUnsub();
+  if (_topRoomsDocsUnsub) _topRoomsDocsUnsub();
 
-  // Listen to ALL users to count per room (rooms collection doesn't store count)
-  _topRoomsUnsub = onSnapshot(collection(db, 'users'), usersSnap => {
-    // Count total joined + online per roomId
+  let latestUsersSnap = null;
+  let latestRoomDocs   = null;
+
+  const render = () => {
+    if (!latestUsersSnap) return; // wait for at least the users listener to fire once
+
+    // Count ONLINE (currently present) per roomId from live user presence.
+    // "joined" (lifetime unique members) comes from the room doc's
+    // memberUids array instead — see below.
     const roomMap = {};  // roomId → { totalJoined, onlineCount, name }
 
-    usersSnap.docs.forEach(d => {
+    latestUsersSnap.docs.forEach(d => {
       const u = d.data();
       const r = u.room;
       if (!r || r === 'default') return;
 
-      // FIX-JOINED-COUNT: only count a user doc toward "joined" if it's been
-      // active reasonably recently. Without this, old orphaned duplicate
-      // docs (e.g. leftover from before users were keyed by UID) that still
-      // have a stale `room` field set would count forever, inflating the
-      // number beyond the real unique people actually in the room.
-      const presentRecently = u.lastActive && (Date.now() - u.lastActive) < 30 * 60 * 1000;
-      if (!presentRecently) return;
-
       if (!roomMap[r]) roomMap[r] = { totalJoined: 0, onlineCount: 0, name: r };
-      roomMap[r].totalJoined++;
 
       const s = (u.status || '').toLowerCase();
       const activeRecently = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
@@ -1871,50 +1890,61 @@ function loadTopRooms() {
       }
     });
 
-    // Fetch room names from rooms collection, then render
+    // FIX-ROOM-DISCOVERY: merge in every room document that actually exists
+    // in Firestore, even ones with zero current members — otherwise a
+    // freshly created room (e.g. from the admin panel) is invisible until
+    // someone already knows the direct link to join it, which is impossible
+    // since there's no other way to discover it.
+    // FIX-JOINED-COUNT: "joined" is now the permanent, never-decrementing
+    // count of everyone who has EVER joined (room.memberUids, deduplicated
+    // by uid) — not who's currently present. This also fixes popular rooms
+    // disappearing from "Top" after everyone temporarily left.
+    (latestRoomDocs || []).forEach(room => {
+      if (!roomMap[room.id]) roomMap[room.id] = { totalJoined: 0, onlineCount: 0, name: room.id };
+      roomMap[room.id].name     = room.name || room.id;
+      roomMap[room.id].password = room.password || '';
+      roomMap[room.id].hasPass  = !!room.password;
+      roomMap[room.id].color    = room.color || '';
+      roomMap[room.id].note     = room.note || '';
+      roomMap[room.id].pinned   = !!room.pinned;
+      roomMap[room.id].totalJoined = Array.isArray(room.memberUids) ? room.memberUids.length : roomMap[room.id].totalJoined;
+    });
+
     const roomIds = Object.keys(roomMap);
     if (!roomIds.length) {
       container.innerHTML = '<div class="rooms-empty">No active rooms right now. Create one! 🚀</div>';
       return;
     }
 
-    // Parallel fetch room docs for names
-    Promise.all(
-      roomIds.map(id => getDoc(doc(db, 'rooms', id))
-        .then(snap => ({ id, snap }))
-        .catch(() => ({ id, snap: null }))
-      )
-    ).then(results => {
-      results.forEach(({ id, snap }) => {
-        if (snap && snap.exists()) {
-          roomMap[id].name     = snap.data().name || id;
-          roomMap[id].password = snap.data().password || '';
-          roomMap[id].hasPass  = !!snap.data().password;
-          // FIX-JOINED-COUNT: previously this overwrote the live unique
-          // member count with the room doc's lifetime totalJoined counter
-          // (via Math.max), which only ever increases and never reflects
-          // people who've since exited — showing "2 joined" forever after
-          // exit dropped it back to 1 live member. The live per-room count
-          // from the users-collection query above is already accurate
-          // (one doc per uid, `room` field reflects their current room),
-          // so we keep that and no longer inflate it with the historical figure.
-        }
-      });
+    // Sort: admin-pinned rooms first, then by lifetime member count. Take top 5.
+    const top5 = Object.entries(roomMap)
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => {
+        const pinA = a.pinned ? 1 : 0, pinB = b.pinned ? 1 : 0;
+        if (pinA !== pinB) return pinB - pinA;
+        return b.totalJoined - a.totalJoined;
+      })
+      .slice(0, 5);
 
-      // Sort by totalJoined desc, take top 5
-      const top5 = Object.entries(roomMap)
-        .map(([id, data]) => ({ id, ...data }))
-        .sort((a, b) => b.totalJoined - a.totalJoined)
-        .slice(0, 5);
+    container.innerHTML = '';
+    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
 
-      container.innerHTML = '';
-      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-
-      top5.forEach((room, idx) => {
-        const card = buildRoomCard(room, idx, medals[idx], true);
-        container.appendChild(card);
-      });
+    top5.forEach((room, idx) => {
+      const card = buildRoomCard(room, idx, medals[idx], true);
+      container.appendChild(card);
     });
+  };
+
+  // Listen to ALL users to count who's currently online per room
+  _topRoomsUnsub = onSnapshot(collection(db, 'users'), usersSnap => {
+    latestUsersSnap = usersSnap;
+    render();
+  });
+
+  // Listen to the rooms collection directly for room metadata + memberUids
+  _topRoomsDocsUnsub = onSnapshot(collection(db, 'rooms'), roomsSnap => {
+    latestRoomDocs = roomsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
   });
 }
 
@@ -1976,15 +2006,15 @@ function loadRecentRooms() {
       let rendered = 0;
 
       results.forEach(({ id, snap }) => {
-        const liveCount = roomCount[id] || 0;
+        const memberUids = snap?.exists() && Array.isArray(snap.data().memberUids) ? snap.data().memberUids : [];
         const roomData = {
           id,
           name:       snap?.exists() ? (snap.data().name || id) : id,
           password:   snap?.exists() ? (snap.data().password || '') : '',
           hasPass:    snap?.exists() ? !!snap.data().password : false,
-          // FIX-JOINED-COUNT: show the live current member count, not the
-          // lifetime join counter (see loadTopRooms for full explanation).
-          totalJoined: liveCount,
+          // FIX-JOINED-COUNT: permanent, never-decrementing count of
+          // everyone who has EVER joined (see loadTopRooms for full explanation).
+          totalJoined: memberUids.length,
           onlineCount: roomOnline[id] || 0,
         };
 
@@ -2137,25 +2167,16 @@ function joinSelectedRoom() {
 }
 
 async function _doJoinRoomHtml(room) {
-  // Check if already accessed before marking
+  // Mark as accessed permanently (still used to skip re-asking for a
+  // password once already entered once on this device)
   let accessed = [];
   try { accessed = JSON.parse(localStorage.getItem('uw_accessed_rooms') || '[]'); } catch(e) {}
-  const isFirstJoin = !accessed.includes(room.id);
-
-  // Mark as accessed permanently
-  if (isFirstJoin) {
-    try {
-      if (!accessed.includes(room.id)) { accessed.push(room.id); localStorage.setItem('uw_accessed_rooms', JSON.stringify(accessed)); }
-    } catch(e) {}
+  if (!accessed.includes(room.id)) {
+    try { accessed.push(room.id); localStorage.setItem('uw_accessed_rooms', JSON.stringify(accessed)); } catch(e) {}
   }
 
-  // Increment totalJoined ONLY on first join
-  if (isFirstJoin) {
-    try {
-      const { doc: d2, updateDoc: ud, increment: inc2 } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-      await ud(d2(db, 'rooms', room.id), { totalJoined: inc2(1) });
-    } catch(e) {}
-  }
+  // Membership (memberUids arrayUnion) is now recorded centrally once the
+  // target page loads with ?room=id — see script.js's auth handler.
 
   // Save to recent rooms
   saveRecentRoom(room.id);

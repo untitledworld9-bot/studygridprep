@@ -616,8 +616,17 @@ window.matchMedia("(prefers-color-scheme: dark)")
       const btn = document.getElementById("refreshBtn");
       btn.classList.add("spinning");
       try {
+        // FIX-MISSING-DOCS: no orderBy('xp') here — Firestore silently
+        // excludes any document missing the field it's ordering by, so a
+        // user whose leaderboard doc never had an `xp` field written (e.g.
+        // they've only ever used the focus timer, never playlist/todo)
+        // would vanish from Top Champions / the full rank list entirely,
+        // while still showing up fine in "This Week" (a different,
+        // field-agnostic query) — exactly the bug that was reported.
+        // We already re-sort correctly on the client right below by the
+        // properly-computed combined total, so this was redundant anyway.
         const snap = await getDocs(
-          query(collection(db, "leaderboard"), orderBy("xp", "desc"), limit(200))
+          query(collection(db, "leaderboard"), limit(200))
         );
 
         const raw = snap.docs.map(d => {

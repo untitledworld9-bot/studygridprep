@@ -22,7 +22,7 @@ import {
   collection, addDoc, onSnapshot,
   doc, setDoc, updateDoc, increment, deleteDoc,
   query, orderBy, getDocs, getDoc, where,
-  serverTimestamp, runTransaction
+  serverTimestamp, runTransaction, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import {
@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let initialSeconds    = 0;
   let savedMinutes      = 0;
   let savedXP           = 0;  // FIX-XP: track XP already awarded during session
+  let _tickInFlight      = false; // FIX-RACE: prevents overlapping tick executions if a Firestore write is still pending when the next 1s tick fires
   let chattingWith      = "";
   let lastWaveTime      = 0;
   let lastMsgTime       = Date.now();
@@ -307,7 +308,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.exitRoom = async () => {
     if (_timerUid) {
-      try { await updateDoc(userDocRef(), {room:"default"}); } catch(e) {}
+      try {
+        await updateDoc(userDocRef(), {room:"default"});
+        // FIX-STALE-EXIT: updateDoc() resolves once the write hits the local
+        // cache, not once it's actually confirmed synced to Firestore's
+        // server — navigating away immediately can cancel that background
+        // sync mid-flight, leaving other devices/admin panel seeing the
+        // stale "still in room X" state. A short grace delay gives it a
+        // real chance to actually reach the server first.
+        await new Promise(resolve => setTimeout(resolve, 400));
+      } catch(e) {}
     }
     window.location.href = location.pathname;
   };
@@ -457,14 +467,19 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         ${!isMe && panelMode==="room" ? `
         <div class="member-acts">
-          <button class="mact wave" data-wave-target="${u.id}" data-wave-name="${displayName.replace(/"/g,'&quot;')}">👋</button>
-          <button class="mact chat" data-chat-target="${displayName.replace(/"/g,'&quot;')}">💬</button>
+          <button class="mact wave" data-wave-target="${u.id}" data-wave-name="${displayName.replace(/"/g,'&quot;')}" title="Wave"><i class="fa-solid fa-hand"></i></button>
+          <button class="mact chat" data-chat-target="${displayName.replace(/"/g,'&quot;')}" title="Message"><i class="fa-solid fa-comment"></i></button>
+          <button class="mact mute${_isMuted(displayName) ? ' muted' : ''}" data-mute-target="${displayName.replace(/"/g,'&quot;')}"
+            title="${_isMuted(displayName) ? 'Unmute' : 'Mute'} ${displayName.replace(/"/g,'&quot;')}">
+            <i class="fa-solid ${_isMuted(displayName) ? 'fa-bell-slash' : 'fa-bell'}"></i>
+          </button>
         </div>` : ""}`;
 
-      // Attach wave/chat listeners safely (no inline onclick)
+      // Attach wave/chat/mute listeners safely (no inline onclick)
       if (!isMe && panelMode === "room") {
         const waveBtn = card.querySelector('.mact.wave');
         const chatBtn = card.querySelector('.mact.chat');
+        const muteBtn = card.querySelector('.mact.mute');
         if (waveBtn) {
           waveBtn.addEventListener('click', function() {
             window.wave(u.id, displayName, this);
@@ -473,6 +488,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chatBtn) {
           chatBtn.addEventListener('click', function() {
             window.openChat(displayName);
+          });
+        }
+        if (muteBtn) {
+          muteBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            window.toggleMuteUser(displayName, this);
           });
         }
       }
@@ -606,6 +627,19 @@ document.addEventListener("DOMContentLoaded", () => {
       currentPage: "timer.html"
     },{merge:true});
 
+    // FIX-JOINED-COUNT: record permanent (lifetime, never-decrementing)
+    // room membership via arrayUnion, keyed by real Firebase UID — this is
+    // the ONE place every room-entry path funnels through (create, join by
+    // code, direct link, or the rooms panel), so it can't be missed or
+    // double-counted regardless of device/localStorage state. Never removed
+    // on exit — "joined" tracks everyone who has EVER joined; "online"/
+    // "live" elsewhere already tracks who's currently present.
+    if (roomId && roomId !== "default") {
+      try {
+        await setDoc(doc(db, "rooms", roomId), { memberUids: arrayUnion(_timerUid) }, { merge: true });
+      } catch(e) { console.warn("[Timer] room membership record failed:", e); }
+    }
+
     // Reset weeklyTimerXP in leaderboard doc if it's a new week
     try {
       const lbSnap = await getDoc(doc(db,"leaderboard",_timerUid));
@@ -653,7 +687,8 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const s = JSON.parse(prevState);
         if (s && s.startedAt) {
-          const elapsedReal   = Math.max(0, Math.floor((Date.now() - s.startedAt) / 1000));
+          const MAX_SESSION_SECONDS = 12 * 60 * 60; // FIX-CORRUPTION-GUARD
+          const elapsedReal   = Math.max(0, Math.min(MAX_SESSION_SECONDS, Math.floor((Date.now() - s.startedAt) / 1000)));
           const wasCountdown  = s.mode === "countdown";
           const focusElapsed  = wasCountdown
             ? Math.min(elapsedReal, s.initialSeconds || 0)
@@ -720,8 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
         name,
         password: password || "",   // empty = public room
         createdBy: currentUser,
-        createdAt: Date.now(),
-        totalJoined: 1              // creator counts as first joined
+        createdAt: Date.now()
       });
       await updateDoc(userDocRef(),{room:newId});
       // Save to recent rooms in localStorage
@@ -758,13 +792,10 @@ document.addEventListener("DOMContentLoaded", () => {
         qs("joinError").style.display="block";
         return;
       }
-      // Only increment totalJoined if not previously accessed
+      // Membership is now recorded centrally (memberUids arrayUnion) once
+      // the page loads with ?room=id, so no separate increment needed here.
       let accessed2 = [];
       try { accessed2 = JSON.parse(localStorage.getItem('uw_accessed_rooms') || '[]'); } catch(e) {}
-      const isFirstJoin2 = !accessed2.includes(id);
-      if (isFirstJoin2) {
-        try { await updateDoc(doc(db,"rooms",id),{totalJoined:increment(1)}); } catch(e){}
-      }
       await updateDoc(userDocRef(),{room:id});
       // Save to recent + accessed rooms
       try {
@@ -813,77 +844,115 @@ document.addEventListener("DOMContentLoaded", () => {
       if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(true);
 
       timerInterval = setInterval(async () => {
-        if (!isRunning) return;
-        const elapsedReal = Math.floor((Date.now() - sessionStartAt) / 1000);
+        if (!isRunning || _tickInFlight) return;
+        _tickInFlight = true;
+        try {
+          // FIX-CORRUPTION-GUARD: sessionStartAt must always be a real,
+          // recent timestamp. If it's ever missing/zero/absurd (e.g. from a
+          // race between two stop/start paths firing close together), NEVER
+          // compute elapsed time from it — that produced a multi-decade
+          // "session" and wrote tens of millions of bogus minutes/XP to
+          // Firestore. Treat corruption as an immediate hard stop instead.
+          const MAX_SESSION_SECONDS = 12 * 60 * 60; // no single session > 12h
+          if (!sessionStartAt || sessionStartAt > Date.now() || (Date.now() - sessionStartAt) / 1000 > MAX_SESSION_SECONDS * 2) {
+            console.warn("[Timer] corrupted sessionStartAt detected — force-stopping without crediting.");
+            isRunning = false;
+            clearInterval(timerInterval);
+            sessionStartAt = 0; savedMinutes = 0; savedXP = 0;
+            seconds = mode === "countdown" ? initialSeconds : 0;
+            clearTimerState();
+            if (startBtn) startBtn.style.display = "block";
+            if (stopBtn)  stopBtn.style.display  = "none";
+            if (ring)     ring.classList.remove("active");
+            updateDisplay();
+            return;
+          }
+          const elapsedReal = Math.min(MAX_SESSION_SECONDS, Math.floor((Date.now() - sessionStartAt) / 1000));
 
-        if (mode === "countdown") {
-          seconds = Math.max(0, initialSeconds - elapsedReal);
-          updateDisplay();
-          saveTimerState();
-          if (seconds <= 0) { finishTimer(); return; }
-        } else {
-          seconds = elapsedReal;
-          updateDisplay();
-          saveTimerState();
-        }
+          if (mode === "countdown") {
+            seconds = Math.max(0, initialSeconds - elapsedReal);
+            updateDisplay();
+            saveTimerState();
+            if (seconds <= 0) { finishTimer(); return; }
+          } else {
+            seconds = elapsedReal;
+            updateDisplay();
+            saveTimerState();
+          }
 
-        // FIX-ACCURACY: derive minutes/XP owed from real elapsed focus time
-        // (not from the tick counter) and award only the delta since last
-        // award. This self-corrects even if several ticks were skipped.
-        const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
-        const dueMinutes = Math.floor(focusElapsed / 60);
-        const dueXP      = Math.floor(focusElapsed / 120);
+          // FIX-ACCURACY: derive minutes/XP owed from real elapsed focus time
+          // (not from the tick counter) and award only the delta since last
+          // award. This self-corrects even if several ticks were skipped.
+          const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
+          const dueMinutes = Math.floor(focusElapsed / 60);
+          const dueXP      = Math.floor(focusElapsed / 120);
 
-        if (dueMinutes > savedMinutes) {
-          const deltaMin = dueMinutes - savedMinutes;
-          savedMinutes = dueMinutes;
-          await updateDoc(userDocRef(),{
-            status:"Focusing 👋", focusTime:increment(deltaMin), lastActive:Date.now()
-          });
-          await _syncTimerLeaderboard(deltaMin, 0);
-        }
-        if (dueXP > savedXP) {
-          const deltaXP = dueXP - savedXP;
-          savedXP = dueXP;
-          await updateDoc(userDocRef(),{weeklyXP:increment(deltaXP), todayTimerXP:increment(deltaXP)});
-          await _syncTimerLeaderboardAndRefresh(0, deltaXP);
+          if (dueMinutes > savedMinutes) {
+            const deltaMin = dueMinutes - savedMinutes;
+            savedMinutes = dueMinutes;
+            await updateDoc(userDocRef(),{
+              status:"Focusing 👋", focusTime:increment(deltaMin), lastActive:Date.now()
+            });
+            await _syncTimerLeaderboard(deltaMin, 0);
+          }
+          if (dueXP > savedXP) {
+            const deltaXP = dueXP - savedXP;
+            savedXP = dueXP;
+            await updateDoc(userDocRef(),{weeklyXP:increment(deltaXP), todayTimerXP:increment(deltaXP)});
+            await _syncTimerLeaderboardAndRefresh(0, deltaXP);
+          }
+        } finally {
+          _tickInFlight = false;
         }
       }, 1000);
     });
   }
 
+  let _stopInFlight = false; // FIX-RACE: prevents _stopSession from ever running twice concurrently
   async function _stopSession() {
-    isRunning = false;
-    clearInterval(timerInterval);
-    const elapsed     = mode === "countdown" ? (initialSeconds - seconds) : seconds;
-    const totalMins   = Math.floor(elapsed / 60);
-    const unsavedMins = totalMins - savedMinutes;
-    // FIX-XP: Calculate exact unsaved XP = total earned XP - already saved XP
-    const totalXPEarned = Math.floor(elapsed / 120);
-    const unsavedXP     = Math.max(0, totalXPEarned - savedXP);
-    if (unsavedMins > 0) {
-      await updateDoc(userDocRef(),{
-        status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
-      });
-      if (unsavedXP > 0) {
-        await updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)});
+    if (_stopInFlight) return; // already stopping — the manual Stop click and
+                                // the auto-stop-on-background listener can
+                                // both fire close together; without this guard
+                                // they'd race and could double-credit or read
+                                // inconsistent half-reset state.
+    _stopInFlight = true;
+    try {
+      isRunning = false;
+      clearInterval(timerInterval);
+      const MAX_SESSION_SECONDS = 12 * 60 * 60; // FIX-CORRUPTION-GUARD: same cap as the tick loop
+      const rawElapsed  = mode === "countdown" ? (initialSeconds - seconds) : seconds;
+      const elapsed     = Math.max(0, Math.min(MAX_SESSION_SECONDS, rawElapsed));
+      const totalMins   = Math.floor(elapsed / 60);
+      const unsavedMins = Math.max(0, totalMins - savedMinutes);
+      // FIX-XP: Calculate exact unsaved XP = total earned XP - already saved XP
+      const totalXPEarned = Math.floor(elapsed / 120);
+      const unsavedXP     = Math.max(0, totalXPEarned - savedXP);
+      if (unsavedMins > 0) {
+        await updateDoc(userDocRef(),{
+          status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
+        });
+        if (unsavedXP > 0) {
+          await updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)});
+        }
+        await _syncTimerLeaderboard(unsavedMins, unsavedXP);
+      } else {
+        await updateDoc(userDocRef(),{status:"Online", lastActive:Date.now()});
       }
-      await _syncTimerLeaderboard(unsavedMins, unsavedXP);
-    } else {
-      await updateDoc(userDocRef(),{status:"Online", lastActive:Date.now()});
+      savedMinutes = 0;
+      savedXP      = 0;
+      sessionStartAt = 0;
+      clearTimerState();
+      if (startBtn) startBtn.style.display = "block";
+      if (stopBtn)  stopBtn.style.display = "none";
+      if (ring) ring.classList.remove("active");
+      if (window._stopRain)  window._stopRain();
+      if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(false);
+      seconds = mode === "countdown" ? initialSeconds : 0;
+      if (mode !== "countdown" && display) display.innerText = "00:00";
+      updateDisplay();
+    } finally {
+      _stopInFlight = false;
     }
-    savedMinutes = 0;
-    savedXP      = 0;
-    sessionStartAt = 0;
-    clearTimerState();
-    if (startBtn) startBtn.style.display = "block";
-    if (stopBtn)  stopBtn.style.display = "none";
-    if (ring) ring.classList.remove("active");
-    if (window._stopRain)  window._stopRain();
-    if (window._uwPresence?.setFocusing) window._uwPresence.setFocusing(false);
-    seconds = mode === "countdown" ? initialSeconds : 0;
-    if (mode !== "countdown" && display) display.innerText = "00:00";
-    updateDisplay();
   }
 
   if (stopBtn) {
@@ -897,22 +966,38 @@ document.addEventListener("DOMContentLoaded", () => {
   // status flickering between Online/Focusing when the screen came back on.
   // The user must explicitly press Start again after returning, same as the
   // existing "no auto-resume on reload" behavior.
+  let _hiddenSince = 0;
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden && isRunning) {
-      _stopSession().catch(e => console.warn("[Timer] auto-stop on background failed:", e));
+    if (document.hidden) {
+      _hiddenSince = Date.now();
+      // FIX-SPURIOUS-HIDDEN: wait ~2s before treating this as a real
+      // background event — some mobile browsers fire brief visibility
+      // blips during normal taps/keyboard toggles that aren't a real
+      // screen-off/app-switch, and auto-stopping on those would be
+      // disruptive and needlessly cut real sessions short.
+      setTimeout(() => {
+        if (document.hidden && isRunning && _hiddenSince && (Date.now() - _hiddenSince) >= 1900) {
+          _stopSession().catch(e => console.warn("[Timer] auto-stop on background failed:", e));
+        }
+      }, 2000);
+    } else {
+      _hiddenSince = 0;
     }
   });
 
   function finishTimer() {
     isRunning = false;
     clearInterval(timerInterval);
-    const totalMins   = Math.floor((initialSeconds - seconds) / 60);
-    const unsavedMins = totalMins - savedMinutes;
+    const MAX_SESSION_SECONDS = 12 * 60 * 60; // FIX-CORRUPTION-GUARD
+    const rawElapsed = initialSeconds - seconds;
+    const elapsed     = Math.max(0, Math.min(MAX_SESSION_SECONDS, rawElapsed));
+    const totalMins   = Math.floor(elapsed / 60);
+    const unsavedMins = Math.max(0, totalMins - savedMinutes);
     if (unsavedMins > 0 && _timerUid) {
       updateDoc(userDocRef(),{
         status:"Online", focusTime:increment(unsavedMins), lastActive:Date.now()
       }).catch(()=>{});
-      const totalXPEarned = Math.floor((initialSeconds - seconds) / 120);
+      const totalXPEarned = Math.floor(elapsed / 120);
       const unsavedXP = Math.max(0, totalXPEarned - savedXP);
       if (unsavedXP > 0) {
         updateDoc(userDocRef(),{weeklyXP:increment(unsavedXP), todayTimerXP:increment(unsavedXP)}).catch(()=>{});
@@ -1048,12 +1133,40 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast('👋 Waved at ' + targetName + '!');
   };
 
+  // ── Mute ───────────────────────────────────────────────────────────────
+  // Per-device preference: muted senders' message notifications are
+  // suppressed. Keyed by display name (same identity model chat already
+  // uses for from/to), stored locally since this is purely a personal
+  // "stop notifying me" preference, not something the other person needs
+  // to know about.
+  function _getMutedList() {
+    try { return JSON.parse(localStorage.getItem("uw_muted_users") || "[]"); }
+    catch(e) { return []; }
+  }
+  function _isMuted(name) {
+    return _getMutedList().includes(name);
+  }
+  window.toggleMuteUser = (name, btnEl) => {
+    let muted = _getMutedList();
+    const nowMuted = !muted.includes(name);
+    muted = nowMuted ? [...muted, name] : muted.filter(n => n !== name);
+    try { localStorage.setItem("uw_muted_users", JSON.stringify(muted)); } catch(e) {}
+    if (btnEl) {
+      btnEl.classList.toggle("muted", nowMuted);
+      btnEl.title = nowMuted ? `Unmute ${name}` : `Mute ${name}`;
+      btnEl.innerHTML = `<i class="fa-solid ${nowMuted ? "fa-bell-slash" : "fa-bell"}"></i>`;
+    }
+    showToast(nowMuted ? `🔕 Muted ${name}` : `🔔 Unmuted ${name}`);
+  };
+
   window.openChat = name => {
     chattingWith = name;
     const box  = qs("chatBox");
+    const bd   = qs("chatBackdrop");
     const area = qs("chatMessages");
     const lbl  = qs("chatWithLabel");
     if (box)  { box.style.display="flex"; box.classList.add("open"); }
+    if (bd)   { bd.style.display="block"; bd.classList.add("open"); }
     if (lbl)  lbl.textContent = "💬 " + name;
     if (area) {
       area.innerHTML = `<div style="text-align:center;opacity:.4;font-size:12px;padding:16px">Loading...</div>`;
@@ -1063,7 +1176,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.closeChat = () => {
     const box = qs("chatBox");
-    if (box){ box.style.display="none"; box.classList.remove("open"); }
+    const bd  = qs("chatBackdrop");
+    if (box){ box.classList.remove("open"); setTimeout(() => { if (!box.classList.contains("open")) box.style.display="none"; }, 250); }
+    if (bd)  { bd.classList.remove("open"); setTimeout(() => { if (!bd.classList.contains("open")) bd.style.display="none"; }, 250); }
   };
 
   window.sendMsg = async () => {
@@ -1185,6 +1300,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const msg = d.data();
           if (msg.from===currentUser || msg.time<=lastMsgTime) return;
           lastMsgTime = msg.time;
+          if (_isMuted(msg.from)) return; // FIX-MUTE: suppress notification popup for muted senders
           const box = qs("chatNotify"), txt = qs("notifyText");
           if (!box||!txt) return;
           txt.textContent = `${msg.from}: ${msg.text}`;
