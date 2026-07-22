@@ -432,7 +432,17 @@ document.addEventListener("DOMContentLoaded", () => {
           // FIX-ONLINE: Only show if actually active recently (prevents stale "online" entries)
           return active && (s === "online" || s.includes("focus"));
         })
-      : _allUsersCache.filter(u => u.room === roomId);
+      : _allUsersCache.filter(u => u.room === roomId).sort((a, b) => {
+          // FIX-SORT-ORDER: you first, then online/focusing members, then
+          // offline ones — a plain unsorted Firestore doc order felt random
+          // and didn't match how a real app should present a room.
+          if (a.id === _timerUid) return -1;
+          if (b.id === _timerUid) return 1;
+          const activeA = a.lastActive && (Date.now() - a.lastActive) < ONLINE_THRESHOLD;
+          const activeB = b.lastActive && (Date.now() - b.lastActive) < ONLINE_THRESHOLD;
+          if (activeA !== activeB) return activeA ? -1 : 1;
+          return (b.lastActive || 0) - (a.lastActive || 0);
+        });
 
     if (!users.length) {
       userList.innerHTML = `<div style="text-align:center;opacity:.4;font-size:13px;padding:24px">
@@ -443,7 +453,12 @@ document.addEventListener("DOMContentLoaded", () => {
     users.forEach(u => {
       const s      = (u.status||"").toLowerCase();
       const isMe   = u.id === _timerUid; // FIX-DUP: compare by UID
-      const dotCls = s.includes("focus") ? "s-focus" : s === "online" ? "s-online" : "s-offline";
+      // FIX-STALE-STATUS: status can get stuck at "Online"/"Focusing"
+      // forever if the app was closed abruptly (no clean disconnect
+      // detection in plain Firestore) — only trust it if lastActive is
+      // recent, same 5-minute threshold admin.js already uses correctly.
+      const recentlyActive = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
+      const dotCls = !recentlyActive ? "s-offline" : (s.includes("focus") ? "s-focus" : s === "online" ? "s-online" : "s-offline");
       const liveFocusTime = _displayFocusTime(u);
       const h = Math.floor(liveFocusTime/60), m = liveFocusTime%60;
       const timeStr = h>0 ? `${h}h ${m}m` : `${m}m`;
@@ -460,7 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div class="member-stat">
             <span class="sdot ${dotCls}"></span>
-            <span>${u.status}</span>
+            <span>${recentlyActive ? u.status : "Offline"}</span>
             <span style="margin-left:4px;color:var(--accent)">· ${timeStr}</span>
             ${panelMode==="global" ? `<span style="margin-left:4px;color:gold">· ⭐${xp}</span>` : ""}
           </div>
@@ -590,6 +605,16 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("userEmail", user.email || "");
     if (loginOverlay) loginOverlay.style.display = "none";
 
+    // FIX-JOINED-DELAY: record room membership as early as possible (right
+    // after we know who the user is), rather than after several other
+    // awaited operations — minimizes the visible delay before "joined"
+    // count updates for anyone watching the rooms panel live.
+    if (roomId && roomId !== "default") {
+      try {
+        await setDoc(doc(db, "rooms", roomId), { memberUids: arrayUnion(_timerUid) }, { merge: true });
+      } catch(e) { console.warn("[Timer] room membership record failed:", e); }
+    }
+
     const today = getTodayDate(), week = getWeekNumber();
 
     // FIX-DUP: ALL user doc reads/writes now use users/{uid}
@@ -626,19 +651,6 @@ document.addEventListener("DOMContentLoaded", () => {
       lastActiveWeek: week,
       currentPage: "timer.html"
     },{merge:true});
-
-    // FIX-JOINED-COUNT: record permanent (lifetime, never-decrementing)
-    // room membership via arrayUnion, keyed by real Firebase UID — this is
-    // the ONE place every room-entry path funnels through (create, join by
-    // code, direct link, or the rooms panel), so it can't be missed or
-    // double-counted regardless of device/localStorage state. Never removed
-    // on exit — "joined" tracks everyone who has EVER joined; "online"/
-    // "live" elsewhere already tracks who's currently present.
-    if (roomId && roomId !== "default") {
-      try {
-        await setDoc(doc(db, "rooms", roomId), { memberUids: arrayUnion(_timerUid) }, { merge: true });
-      } catch(e) { console.warn("[Timer] room membership record failed:", e); }
-    }
 
     // Reset weeklyTimerXP in leaderboard doc if it's a new week
     try {
@@ -755,7 +767,8 @@ document.addEventListener("DOMContentLoaded", () => {
         name,
         password: password || "",   // empty = public room
         createdBy: currentUser,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        memberUids: [_timerUid]   // FIX-JOINED-DELAY: record creator as first member immediately, not on next page load
       });
       await updateDoc(userDocRef(),{room:newId});
       // Save to recent rooms in localStorage

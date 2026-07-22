@@ -860,6 +860,42 @@ header{
 }
 
 /* Large desktop (1025px+) */
+/* FIX-PHONE-LANDSCAPE: any landscape viewport with short height is a phone,
+   not a tablet, regardless of width — a large flagship phone in landscape
+   can be 700-950px wide (falling into the "tablet landscape" bucket above by
+   width alone) but only ~350-430px tall, nowhere near a real tablet's
+   vertical room. This comes after that block so it correctly overrides for
+   short heights specifically, fixing the overlapping/broken layout on big
+   phones rotated sideways. */
+@media(orientation:landscape) and (max-height:500px){
+  .page{top:50px;bottom:calc(54px + env(safe-area-inset-bottom));}
+  header{height:50px;max-width:100%;left:0;right:0;transform:none;}
+  .bottom-nav{height:calc(54px + env(safe-area-inset-bottom));max-width:100%;left:0;right:0;transform:none;border-radius:0;}
+  .brand{font-size:16px;}
+  .nav-item{padding:7px 18px 3px;}
+  .nav-icon{font-size:18px;}
+  .nav-item span{font-size:10px;}
+
+  .timer-wrapper{
+    flex-direction:row;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;
+    padding:6px 20px;min-height:0;max-width:100%;
+  }
+  .mode-row{width:auto;margin-bottom:0;order:1;}
+  .timer-ring{width:clamp(120px,22vh,170px);height:clamp(120px,22vh,170px);margin-bottom:0;order:2;}
+  .time-display{font-size:clamp(26px,7vh,40px);}
+  .action-btn{width:min(170px,40vw);padding:9px;font-size:13px;order:3;}
+  .mode-label{display:none;}
+
+  #statusCard{margin:4px auto 0;padding:8px 16px;max-width:520px;}
+  .room-section{margin:4px auto 0;max-width:520px;}
+  .session-box{margin:4px auto;padding:8px 14px;max-width:520px;}
+
+  .music-panel,#chatBox{max-width:520px;left:50%;transform:translateX(-50%);right:auto;}
+  .rooms-panel{max-width:100%;left:0;right:0;}
+  .rooms-panel-scroll{max-width:520px;margin:0 auto;}
+  .social-sheet{max-width:100%;left:0;transform:none;}
+}
+
 @media(min-width:1025px) and (orientation:landscape){
   .page{max-width:420px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
   header{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
@@ -1823,6 +1859,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/fi
 // ── State ────────────────────────────────────────────────────────────────────
 let _selectedRoom    = null;  // { id, name, password }
 let _topRoomsUnsub   = null;
+let _topRoomsDocsUnsub = null;
 let _myUid           = null;
 let _myName          = null;
 
@@ -1869,14 +1906,14 @@ function loadTopRooms() {
   let latestRoomDocs   = null;
 
   const render = () => {
-    if (!latestUsersSnap) return; // wait for at least the users listener to fire once
+    if (!latestUsersSnap && !latestRoomDocs) return; // wait for at least one listener to fire once
 
     // Count ONLINE (currently present) per roomId from live user presence.
     // "joined" (lifetime unique members) comes from the room doc's
     // memberUids array instead — see below.
     const roomMap = {};  // roomId → { totalJoined, onlineCount, name }
 
-    latestUsersSnap.docs.forEach(d => {
+    (latestUsersSnap?.docs || []).forEach(d => {
       const u = d.data();
       const r = u.room;
       if (!r || r === 'default') return;
@@ -1939,12 +1976,19 @@ function loadTopRooms() {
   _topRoomsUnsub = onSnapshot(collection(db, 'users'), usersSnap => {
     latestUsersSnap = usersSnap;
     render();
+  }, err => {
+    console.warn('[Rooms] users listener failed:', err);
+    latestUsersSnap = latestUsersSnap || { docs: [] }; // unblock rendering with rooms data alone
+    render();
   });
 
   // Listen to the rooms collection directly for room metadata + memberUids
   _topRoomsDocsUnsub = onSnapshot(collection(db, 'rooms'), roomsSnap => {
     latestRoomDocs = roomsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
+  }, err => {
+    console.warn('[Rooms] rooms listener failed:', err);
+    container.innerHTML = '<div class="rooms-empty">Could not load rooms. Check your connection.</div>';
   });
 }
 
