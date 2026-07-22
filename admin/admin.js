@@ -453,10 +453,16 @@ function initCharts() {
   const focusCanvas  = $("focusChart");
   if (!growthCanvas || !focusCanvas) return;
 
+  // FIX-CHART-THEME: previously hardcoded to white (rgba(255,255,255,...)),
+  // which made every axis label and gridline invisible in light mode (white
+  // text on a white/light background) while looking fine in dark mode. Now
+  // it reads the actual current theme and picks readable colors either way.
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
   const chartDefaults = {
-    color: "rgba(255,255,255,0.7)",
+    color: isLight ? "rgba(15,23,42,0.75)" : "rgba(255,255,255,0.7)",
     font: { family: "'Manrope', sans-serif", size: 11 }
   };
+  const gridColor = isLight ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.04)";
 
   Chart.defaults.color          = chartDefaults.color;
   Chart.defaults.font.family    = chartDefaults.font.family;
@@ -3159,15 +3165,24 @@ async function renderRoomsAdmin(rooms) {
       memberIds = Object.keys(room.members);
     }
 
-    // Match users currently in this room from STATE.allUsers
+    // Match users CURRENTLY (recently active) in this room from STATE.allUsers
     const roomName = room.name || room.id;
-    const usersInRoom = STATE.allUsers.filter(u =>
-      (u.room && (u.room === room.id || u.room === roomName)) ||
-      memberIds.includes(u.id)
-    );
+    const STALE_MS_ROOM = 5 * 60 * 1000;
+    const usersInRoom = STATE.allUsers.filter(u => {
+      const inRoom = (u.room && (u.room === room.id || u.room === roomName)) || memberIds.includes(u.id);
+      if (!inRoom) return false;
+      // FIX-STALE-STATUS: don't show a user as "currently in the room" if
+      // their presence data is stale (app closed abruptly, no Firestore
+      // disconnect detection) — same 5-min threshold used elsewhere.
+      return u.lastActive && (Date.now() - u.lastActive) < STALE_MS_ROOM;
+    });
 
-    const memberCount = room.memberCount ?? usersInRoom.length ?? memberIds.length;
-    const isActive    = memberCount > 0;
+    // FIX-JOINED-COUNT: prefer the permanent lifetime-joined count
+    // (memberUids, never decrements) over the currently-present count for
+    // the headline number — matches the same semantic used in the
+    // student-facing rooms panel.
+    const memberCount = Array.isArray(room.memberUids) ? room.memberUids.length : (room.memberCount ?? usersInRoom.length ?? memberIds.length);
+    const isActive    = usersInRoom.length > 0;
     const createdAt   = room.createdAt ? formatTimestamp(room.createdAt) : "—";
     const color       = room.color || "";
     const hasPassword = !!room.password;
