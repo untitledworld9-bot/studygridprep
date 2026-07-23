@@ -267,7 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loginOverlay) loginOverlay.style.display = "none";
   }
 
-  if (statusCard) statusCard.addEventListener("click", () => { window.location.href="leaderboard.html"; });
+  // NOTE: statusCard click handler (navigate to leaderboard) is now wired
+  // further down, right after _stopSession is defined, so it can stop any
+  // running session immediately before navigating away — see FIX-LEADERBOARD-NAV.
 
   // ── Room UI initialiser ───────────────────────────────────────────────────────
   function initRoomUI() {
@@ -277,16 +279,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (globalBox)    globalBox.style.display    = inRoom ? "none" : "block";
     if (openPanelBtn) openPanelBtn.style.display = inRoom ? "block" : "none";
     if (inRoom && roomBadge) {
-      // Show roomId initially, then update with actual name from Firestore
-      const fallbackLabel = roomId.replace(/_[a-z0-9]{3,5}$/i, "");
-      roomBadge.innerHTML = '<i class="fa-solid fa-users-line" style="font-size:12px;margin-right:6px;flex-shrink:0;"></i><span id="roomBadgeText">' + fallbackLabel + '</span>';
+      // Show a neutral placeholder while fetching the real name — never show
+      // the raw hyphenated room-ID slug (e.g. "jee-study-room"), which looked
+      // broken/unstyled compared to the actual room name with its emoji.
+      roomBadge.innerHTML = '<i class="fa-solid fa-users-line" style="font-size:12px;margin-right:6px;flex-shrink:0;"></i><span id="roomBadgeText">Room</span>';
       // Fetch actual room name (preserving emojis)
       import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ doc: d2, getDoc: gd }) => {
         gd(d2(db, "rooms", roomId)).then(snap => {
-          if (snap.exists()) {
-            const actualName = snap.data().name || fallbackLabel;
-            const badgeText = document.getElementById("roomBadgeText");
-            if (badgeText) badgeText.textContent = actualName;
+          const badgeText = document.getElementById("roomBadgeText");
+          if (!badgeText) return;
+          if (snap.exists() && snap.data().name) {
+            badgeText.textContent = snap.data().name;
+          } else {
+            // No name on record — fall back to a readable version of the ID
+            // (spaces instead of hyphens, title case) rather than the raw slug.
+            badgeText.textContent = roomId
+              .replace(/_[a-z0-9]{3,5}$/i, "")
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, c => c.toUpperCase());
           }
         }).catch(() => {});
       }).catch(() => {});
@@ -968,6 +978,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // FIX-AUTOSTOP-NOTICE: centered, auto-dismissing popup shown whenever the
+  // timer is force-stopped automatically (screen off/background, or
+  // navigating away to the leaderboard) — not shown for a manual Stop press.
+  function _showAutoStopPopup() {
+    const existing = document.getElementById("autoStopPopup");
+    if (existing) existing.remove();
+    const pop = document.createElement("div");
+    pop.id = "autoStopPopup";
+    pop.style.cssText = `
+      position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+      z-index:99999;background:var(--surface,#1a1f2e);border:1px solid var(--border,rgba(255,255,255,0.12));
+      border-radius:16px;padding:20px 26px;max-width:82vw;text-align:center;
+      box-shadow:0 12px 40px rgba(0,0,0,0.35);
+      display:flex;flex-direction:column;align-items:center;gap:8px;
+      animation:autoStopPopIn .2s ease;
+    `;
+    pop.innerHTML = `
+      <div style="font-size:28px;">⏸️</div>
+      <div style="font-weight:700;font-size:14px;color:var(--text,#fff);">Focus session paused</div>
+      <div style="font-size:12px;color:var(--text2,#9ca3af);">Screen was off or you left the app — press Start to resume.</div>
+    `;
+    if (!document.getElementById("autoStopPopupStyle")) {
+      const style = document.createElement("style");
+      style.id = "autoStopPopupStyle";
+      style.textContent = `@keyframes autoStopPopIn{from{opacity:0;transform:translate(-50%,-50%) scale(.9);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}`;
+      document.head.appendChild(style);
+    }
+    document.body.appendChild(pop);
+    setTimeout(() => { pop.remove(); }, 2000);
+  }
+
+  // FIX-LEADERBOARD-NAV: navigating to the leaderboard (or anywhere else via
+  // the status card) must stop the session IMMEDIATELY, not via the
+  // debounced background-detection path — otherwise the timer silently kept
+  // "running" in the background showing "Online" instead of "Focusing",
+  // which is exactly what caused time to increase without matching XP.
+  if (statusCard) {
+    statusCard.addEventListener("click", async () => {
+      if (isRunning) {
+        _showAutoStopPopup();
+        await _stopSession().catch(() => {});
+      }
+      window.location.href = "leaderboard.html";
+    });
+  }
+
   if (stopBtn) {
     stopBtn.addEventListener("click", _stopSession);
   }
@@ -990,6 +1046,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // disruptive and needlessly cut real sessions short.
       setTimeout(() => {
         if (document.hidden && isRunning && _hiddenSince && (Date.now() - _hiddenSince) >= 1900) {
+          _showAutoStopPopup();
           _stopSession().catch(e => console.warn("[Timer] auto-stop on background failed:", e));
         }
       }, 2000);
