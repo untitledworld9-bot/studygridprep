@@ -505,8 +505,8 @@ function initCharts() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { maxRotation: 0 } },
-        y: { grid: { color: "rgba(255,255,255,0.04)" }, beginAtZero: true, ticks: { stepSize: 1 } }
+        x: { grid: { color: gridColor }, ticks: { maxRotation: 0, color: chartDefaults.color } },
+        y: { grid: { color: gridColor }, beginAtZero: true, ticks: { stepSize: 1, color: chartDefaults.color } }
       }
     }
   });
@@ -533,11 +533,28 @@ function initCharts() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { maxRotation: 0 } },
-        y: { grid: { color: "rgba(255,255,255,0.04)" }, beginAtZero: true }
+        x: { grid: { color: gridColor }, ticks: { maxRotation: 0, color: chartDefaults.color } },
+        y: { grid: { color: gridColor }, beginAtZero: true, ticks: { color: chartDefaults.color } }
       }
     }
   });
+
+  // FIX-CHART-THEME-LIVE: allow the theme toggle to re-color already-created
+  // charts on demand instead of only picking up the theme once at creation.
+  window.__sgpApplyChartTheme = function () {
+    const lightNow = document.documentElement.getAttribute("data-theme") === "light";
+    const color = lightNow ? "rgba(15,23,42,0.75)" : "rgba(255,255,255,0.7)";
+    const grid  = lightNow ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.04)";
+    Chart.defaults.color = color;
+    [STATE.charts.growth, STATE.charts.focus].forEach(ch => {
+      if (!ch) return;
+      ch.options.scales.x.grid.color = grid;
+      ch.options.scales.y.grid.color = grid;
+      ch.options.scales.x.ticks.color = color;
+      ch.options.scales.y.ticks.color = color;
+      ch.update();
+    });
+  };
 
   // Load analytics data into charts
   loadDailyStats();
@@ -1849,11 +1866,11 @@ ${`<button title="Delete User" onclick="deleteUser('${uid}','${uname}')" style="
           color:var(--accent-red);border-radius:7px;padding:5px 9px;
           font-size:13px;cursor:pointer;transition:all .15s;font-weight:600;
         " onmouseover="this.style.background='rgba(255,79,106,.25)'" onmouseout="this.style.background='rgba(255,79,106,.1)'"><i class="fa-solid fa-trash"></i></button>`}
-          <button title="Reset Focus/XP Stats (fixes corrupted data)" onclick="resetUserFocusStats('${uid}','${uname}')" style="
+${!window.IS_SUB_ADMIN ? `<button title="Reset Focus/XP Stats (fixes corrupted data)" onclick="resetUserFocusStats('${uid}','${uname}')" style="
           background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
           color:var(--text-secondary);border-radius:7px;padding:5px 9px;
           font-size:13px;cursor:pointer;transition:all .15s;
-        " onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.06)'"><i class="fa-solid fa-broom"></i></button>
+        " onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.06)'"><i class="fa-solid fa-broom"></i></button>` : ""}
         </div>
       </td>
     </tr>`;
@@ -1864,6 +1881,7 @@ ${`<button title="Delete User" onclick="deleteUser('${uid}','${uname}')" style="
  *  corrupted values (e.g. from a client-side timer bug) without touching
  *  their study (playlist/todo) XP or account/subscription data at all. */
 window.resetUserFocusStats = async (uid, uname) => {
+  if (window.IS_SUB_ADMIN) { toast("Only the main admin can reset user stats.", "error"); return; }
   const yes = await confirmModal(
     "Reset Focus Stats",
     `Reset focus time and timer-XP for "${uname}" back to 0? This only affects focus-timer stats (today's time, today's timer XP, weekly timer XP, weekly focus time, lifetime focus time). Study/playlist XP and everything else is untouched.`

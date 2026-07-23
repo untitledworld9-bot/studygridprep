@@ -3048,6 +3048,7 @@ function toggleSgpTheme() {
   if (next === "light") html.setAttribute("data-theme", "light");
   else html.removeAttribute("data-theme");
   localStorage.setItem("sgp-admin-theme", next);
+  if (typeof window.__sgpApplyChartTheme === "function") window.__sgpApplyChartTheme();
 }
 (function initSgpTheme() {
   const saved = localStorage.getItem("sgp-admin-theme");
