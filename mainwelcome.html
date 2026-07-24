@@ -14,24 +14,45 @@
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<!-- ✅ THEME DETECTION — matches index.html logic exactly -->
+<!-- ✅ THEME DETECTION — matches dashboard - home logic exactly -->
 <script>
 (function(){
-  var saved = localStorage.getItem("theme");
-  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
-  document.documentElement.setAttribute("data-theme", theme);
-})();
+  const saved = localStorage.getItem('theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-window.matchMedia("(prefers-color-scheme: dark)")
-.addEventListener("change", function(e){
-  if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
+  const theme =
+    (!saved || saved === "system")
+      ? (systemDark ? "dark" : "light")
+      : saved;
+
+  document.documentElement.setAttribute('data-theme', theme);
+
+  function _utc(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+    const m = document.createElement('meta');
+    m.name='theme-color';
+    m.content = isDark ? '#0D1120' : '#F0F2F8';
+    document.head.appendChild(m);
   }
-});
+
+  _utc();
+
+  window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      document.documentElement.setAttribute(
+        "data-theme",
+        e.matches ? "dark" : "light"
+      );
+    }
+  });
+
+  new MutationObserver(_utc).observe(document.documentElement,{
+    attributes:true,
+    attributeFilter:['data-theme']
+  });
+})();
 </script>
 
 <!-- ✅ FLASH PREVENTION -->
