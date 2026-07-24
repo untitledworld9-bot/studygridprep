@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 
 Sitemap: https://studygridprep.online/sitemap.xml
+
+https://studygridprep.online/sitemap-content.xml
