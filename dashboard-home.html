@@ -3076,7 +3076,14 @@ onAuthStateChanged(auth, user => {
   onSnapshot(doc(db,"users",user.uid), snap => {
     const data=snap.data();
     if(!data) return;
-    const mins=data.focusTime||0;
+    // FIX-DEFENSIVE-DISPLAY: don't blindly trust the raw focusTime field —
+    // verify it was actually reset today before showing it, exactly like
+    // admin.js's todaysFocusMinutes() guard. This means the UI can never
+    // show stale data even during the brief window before the day-rollover
+    // transaction above finishes (or in the unlikely case it's delayed).
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
+    const mins = (data.lastFocusResetDate === todayStr) ? (data.focusTime||0) : 0;
     const h=Math.floor(mins/60),m=mins%60;
     const text=h>0?`${h}h ${m}m`:`${m}m`;
     const el=document.getElementById("todayFocusValue");

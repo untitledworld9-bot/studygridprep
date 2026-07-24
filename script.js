@@ -411,8 +411,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // is crossed (see the tick loop), but there's still a small round-trip
   // before the onSnapshot listener echoes it back — this closes that gap
   // so the panel never visibly "lags" behind the live timer for yourself.
+  function _todayDateStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  }
   function _displayFocusTime(u) {
-    const base = u.focusTime || 0;
+    // FIX-STALE-OTHERS: don't trust focusTime for anyone (including other
+    // room members) unless it was actually reset today — otherwise a user
+    // who simply hasn't opened the app yet today shows yesterday's stale
+    // minutes instead of 0.
+    const resetToday = u.lastFocusResetDate === _todayDateStr();
+    const base = resetToday ? (u.focusTime || 0) : 0;
     if (u.id === _timerUid && isRunning) {
       const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
       const pendingMins   = Math.floor(focusElapsed / 60) - savedMinutes;
@@ -421,7 +430,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return base;
   }
   function _displayXP(u) {
-    const base = u.todayTimerXP || 0;
+    const resetToday = u.lastFocusResetDate === _todayDateStr();
+    const base = resetToday ? (u.todayTimerXP || 0) : 0;
     if (u.id === _timerUid && isRunning) {
       const focusElapsed = mode === "countdown" ? (initialSeconds - seconds) : seconds;
       const pendingXP     = Math.floor(focusElapsed / 120) - savedXP;
@@ -1143,6 +1153,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (_timerUid) updateDoc(userDocRef(),{
       status:"Offline", lastActive:Date.now()
     }).catch(()=>{});
+  });
+
+  // FIX-BFCACHE: browser back/forward navigation often restores the page
+  // from the back-forward cache instead of reloading it — the whole JS
+  // context (including the running timer interval) gets frozen and then
+  // resumed exactly as it was, so none of the reload-time fixes above ever
+  // get a chance to run. `pageshow` with persisted=true specifically
+  // detects this and force-stops any session that was left running.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && isRunning) {
+      _showAutoStopPopup();
+      _stopSession().catch(e => console.warn("[Timer] bfcache auto-stop failed:", e));
+    }
   });
 
   // ─── Logout ──────────────────────────────────────────────────────────────────
