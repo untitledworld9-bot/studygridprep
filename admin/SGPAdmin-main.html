@@ -2189,9 +2189,28 @@
       </button>
     </div>
 
+    <div id="lbDeleteRangeBox" style="display:none;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;
+         background:rgba(255,79,106,0.06);border:1px solid rgba(255,79,106,0.2);border-radius:10px;padding:10px 14px;">
+      <i class="fa-solid fa-trash-can" style="color:var(--accent-red);font-size:13px;"></i>
+      <span style="font-size:12.5px;color:var(--text-secondary);">Delete leaderboard entries</span>
+      <select id="lbDeleteDirection" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:12.5px;">
+        <option value="before">not active in the last</option>
+        <option value="after">active within the last</option>
+      </select>
+      <input type="number" id="lbDeleteDays" min="1" value="30" style="width:64px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:12.5px;">
+      <span style="font-size:12.5px;color:var(--text-secondary);">days</span>
+      <button onclick="deleteLeaderboardByRange()" style="
+        padding:6px 14px;border-radius:6px;border:none;background:var(--accent-red);color:#fff;
+        font-size:12.5px;font-weight:700;cursor:pointer;">Delete</button>
+    </div>
+
     <div class="table-card">
       <div class="table-header">
         <div class="table-title" id="lbTableTitle"><i class="fa-solid fa-trophy"></i> Full Leaderboard — XP + Level + Badge</div>
+        <div class="search-box">
+          <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="lbSearch" placeholder="Search by name or email…" oninput="renderLeaderboardSection()" />
+        </div>
       </div>
       <div class="table-scroll" id="leaderboardContainer">
         <div class="empty-state">
@@ -2846,6 +2865,10 @@
       </div>
       <div class="live-dot">Live</div>
     </div>
+    <div class="search-box" style="margin-bottom:16px;max-width:360px;">
+      <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" id="perfSearch" placeholder="Search by name or email…" oninput="filterPerformance()" />
+    </div>
     <div id="performanceContainer" style="display:flex;flex-direction:column;gap:14px;">
       <div class="empty-state">
         <div class="empty-state-icon"><i class="fa-solid fa-chart-column"></i></div>
@@ -3248,6 +3271,7 @@ function toggleSgpTheme() {
 <!-- ================================================================
      SCRIPTS — loaded as module; admin.js handles all Firebase logic
 ================================================================ -->
+<script>window.IS_SUB_ADMIN = false;</script>
 <script type="module" src="/admin/admin.js"></script>
 <script type="module" src="/admin/content-studio.js"></script>
 <script type="module" src="/admin/media-library.js"></script>

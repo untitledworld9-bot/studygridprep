@@ -1081,6 +1081,24 @@ function renderPaymentRequests() {
            onclick="openImageModal('${escHtml(p.screenshot)}')" title="View Screenshot" />`
       : `<span style="font-size:11px;color:var(--text-muted);">No image</span>`;
 
+    const actionTs = p.status === 'approved' ? p.approvedAt : p.status === 'rejected' ? p.rejectedAt : null;
+    const actionDate = actionTs ? new Date(actionTs).toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : '';
+    const actionByName = p.status === 'approved' ? p.approvedByName : p.status === 'rejected' ? p.rejectedByName : '';
+    const actionBySubAdmin = p.status === 'approved' ? p.approvedBySubAdmin : p.status === 'rejected' ? p.rejectedBySubAdmin : false;
+
+    // FIX-ATTRIBUTION: main admin sees exactly who acted (sub-admin's name,
+    // or "Admin" if they did it themselves); sub-admin only ever sees the
+    // generic "by admin" regardless of who actually approved/rejected it.
+    let attributionHtml = "";
+    if (actionTs) {
+      const who = window.IS_SUB_ADMIN
+        ? "admin"
+        : (actionBySubAdmin ? escHtml(actionByName || "a sub-admin") : "Admin");
+      attributionHtml = `<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">by ${who} · ${actionDate}</div>`;
+    }
+
     const actionBtns = p.status === 'pending' ? `
       <button onclick="approvePayment('${escHtml(p.id)}')" style="
         background:rgba(0,229,160,0.12);color:var(--accent-green);
@@ -1109,7 +1127,7 @@ function renderPaymentRequests() {
         onmouseout="this.style.background='rgba(255,255,255,0.05)'">
         <i class="fa-solid fa-envelope"></i> Mail
       </button>
-    ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIconHtml} ${p.status}</span>`;
+    ` : `<span style="font-size:12px;color:${statusColor};font-weight:700;">${statusIconHtml} ${p.status}</span>${attributionHtml}`;
 
     return `<tr data-payment-id="${escHtml(p.id)}">
       <td>
@@ -1265,7 +1283,9 @@ window.approvePayment = async (paymentId) => {
     await updateDoc(doc(db, COLL.PAYMENTS, paymentId), {
       status:     'approved',
       approvedAt: Date.now(),
-      approvedBy: auth.currentUser?.email || 'admin'
+      approvedBy: auth.currentUser?.email || 'admin',
+      approvedByName: auth.currentUser?.displayName || auth.currentUser?.email || 'Admin',
+      approvedBySubAdmin: !!window.IS_SUB_ADMIN
     });
 
     toast(`✅ Approved — ${p.plan === 'trial' ? '7-day trial' : '30-day plan'} activated for ${userName || userId}`);
@@ -1349,7 +1369,9 @@ window.rejectPayment = async (paymentId) => {
     await updateDoc(doc(db, COLL.PAYMENTS, paymentId), {
       status:     'rejected',
       rejectedAt: Date.now(),
-      rejectedBy: auth.currentUser?.email || 'admin'
+      rejectedBy: auth.currentUser?.email || 'admin',
+      rejectedByName: auth.currentUser?.displayName || auth.currentUser?.email || 'Admin',
+      rejectedBySubAdmin: !!window.IS_SUB_ADMIN
     });
 
     toast(`❌ Payment rejected for ${userName || userId}`, 'error');
@@ -1715,7 +1737,7 @@ function updateUserStats() {
   }).length;
 
   const totalFocMin = users.reduce((sum, u) =>
-    sum + (u.focusTime || u.totalFocusTime || u.timerMinutes || 0), 0);
+    sum + (u.focusTime || 0) + (u.totalFocusTime || 0) + (!u.focusTime && !u.totalFocusTime ? (u.timerMinutes || 0) : 0), 0);
   const focHours = totalFocMin < 60
     ? `${totalFocMin}m`
     : `${Math.floor(totalFocMin / 60)}h ${totalFocMin % 60}m`;
@@ -1946,6 +1968,7 @@ function renderDashRecent() {
 
 /** Filter users table when search input changes */
 window.filterUsers = () => renderUserTable();
+window.filterPerformance = () => renderPerformanceSection(STATE.allUsers);
 
 /** Delete a user document from Firestore */
 window.deleteUser = async (uid, name) => {
@@ -3169,7 +3192,7 @@ async function renderRoomsAdmin(rooms) {
 
   if (!sorted.length) {
     container.innerHTML = createBar + `<div class="empty-state">
-      <div class="empty-state-icon">🏠</div>
+      <div class="empty-state-icon"><i class="fa-solid fa-house"></i></div>
       <div class="empty-state-text">No rooms found in Firestore</div>
     </div>`;
     return;
@@ -3208,21 +3231,21 @@ async function renderRoomsAdmin(rooms) {
     return `
     <div class="room-card" onclick="viewRoomDetail('${escHtml(room.id)}')"
          style="${isActive ? 'border-color:rgba(0,229,160,0.25);' : ''}
-                ${color ? `box-shadow:inset 3px 0 0 ${escHtml(color)};` : ''}">
+                ${color ? `box-shadow:inset 4px 0 0 ${escHtml(color)};background:linear-gradient(90deg,${escHtml(color)}14,transparent 40%);` : ''}">
 
       <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;">
         <button class="room-delete-btn" style="position:static;background:rgba(0,224,255,0.1);
                 border-color:rgba(0,224,255,0.25);color:var(--accent-cyan);"
                 onclick="event.stopPropagation();openRoomFormModal('${escHtml(room.id)}')"
-                title="Edit room">✏️ Edit</button>
+                title="Edit room"><i class="fa-solid fa-pen"></i> Edit</button>
         <button class="room-delete-btn" style="position:static;"
                 onclick="event.stopPropagation();deleteRoomAdmin('${escHtml(room.id)}','${escHtml(roomName)}')"
-                title="Delete room">🗑️</button>
+                title="Delete room"><i class="fa-solid fa-trash"></i></button>
       </div>
 
       <div class="room-card-header">
         <div class="room-card-title">
-          ${color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${escHtml(color)};margin-right:2px;"></span>` : "🏠"}
+          ${color ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${escHtml(color)};margin-right:2px;box-shadow:0 0 0 2px ${escHtml(color)}33;"></span>` : `<i class="fa-solid fa-house" style="font-size:14px;color:var(--text-secondary);"></i>`}
           ${escHtml(roomName)}
           ${isActive ? `<span style="background:rgba(0,229,160,.1);color:var(--accent-green);
             border:1px solid rgba(0,229,160,.2);border-radius:99px;
@@ -3230,11 +3253,12 @@ async function renderRoomsAdmin(rooms) {
           ${hasPassword ? `<i class="fa-solid fa-lock" style="font-size:11px;color:var(--text-muted);" title="Password protected"></i>` : ""}
         </div>
         <div class="room-card-meta">
-          👥 ${memberCount} member${memberCount !== 1 ? "s" : ""}
-          &nbsp;·&nbsp; 📅 ${createdAt}
+          <i class="fa-solid fa-users" style="font-size:11px;"></i> ${memberCount} member${memberCount !== 1 ? "s" : ""}
+          &nbsp;·&nbsp; <i class="fa-regular fa-calendar" style="font-size:11px;"></i> ${createdAt}
         </div>
-        ${room.note ? `<div style="margin-top:6px;font-size:12px;color:var(--text-secondary);
-            background:rgba(255,255,255,0.03);border-radius:6px;padding:6px 10px;">📝 ${escHtml(room.note)}</div>` : ""}
+        ${room.note ? `<div style="margin-top:6px;font-size:12.5px;color:var(--text-primary);font-weight:500;
+            background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:7px 11px;">
+            <i class="fa-regular fa-note-sticky" style="margin-right:5px;opacity:.7;"></i>${escHtml(room.note)}</div>` : ""}
       </div>
 
       ${usersInRoom.length ? `
@@ -3282,7 +3306,7 @@ window.openRoomFormModal = (roomId) => {
     <div style="background:var(--bg-card,#141824);border:1px solid var(--border,rgba(255,255,255,0.08));
          border-radius:16px;padding:22px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;">
       <div style="font-size:17px;font-weight:700;margin-bottom:16px;">
-        ${editing ? "✏️ Edit Room" : "➕ Create Room"}
+        <i class="fa-solid ${editing ? "fa-pen" : "fa-circle-plus"}" style="margin-right:6px;"></i>${editing ? "Edit Room" : "Create Room"}
       </div>
 
       <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Room name</label>
@@ -3373,7 +3397,7 @@ window.viewRoomDetail = async (roomId) => {
   if (!room) return;
 
   const roomName = room.name || room.id;
-  $("roomDetailTitle").textContent = `🏠 ${roomName}`;
+  $("roomDetailTitle").innerHTML = `<i class="fa-solid fa-house" style="margin-right:8px;"></i>${escHtml(roomName)}`;
 
   // Delete button wires up to this room
   $("roomDeleteBtn").onclick = () => {
@@ -3384,12 +3408,22 @@ window.viewRoomDetail = async (roomId) => {
   $("roomDetailBody").innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);">Loading…</div>`;
   $("roomDetailModal").classList.add("open");
 
-  // Fetch members
-  const usersInRoom = STATE.allUsers.filter(u => {
-    let memberIds = [];
-    if (room.members && typeof room.members === "object") memberIds = Object.keys(room.members);
-    return (u.room && (u.room === roomId || u.room === roomName)) || memberIds.includes(u.id);
-  });
+  // FIX-STALE-MEMBERS: resolve the room's permanent, never-decrementing
+  // memberUids list against STATE.allUsers, instead of only showing whoever
+  // happens to be currently present (u.room === roomId) — that made this
+  // modal show "0 members" as soon as everyone went offline, even though
+  // they had genuinely joined and the room card outside correctly still
+  // showed the real joined count.
+  const memberUids = Array.isArray(room.memberUids) ? room.memberUids : [];
+  const STALE_MS_DETAIL = 5 * 60 * 1000;
+  const resolvedMembers = memberUids
+    .map(uid => STATE.allUsers.find(u => u.id === uid))
+    .filter(Boolean)
+    .map(u => ({
+      ...u,
+      isOnline: !!(u.lastActive && (Date.now() - u.lastActive) < STALE_MS_DETAIL)
+    }))
+    .sort((a, b) => (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0));
 
   // Fetch recent chats for this room
   let chats = [];
@@ -3414,44 +3448,50 @@ window.viewRoomDetail = async (roomId) => {
     } catch {}
   }
 
-  const memberCount = room.memberCount ?? usersInRoom.length;
+  const memberCount = memberUids.length;
 
   $("roomDetailBody").innerHTML = `
     <!-- Members -->
     <div style="margin-bottom:20px;">
       <div style="font-size:12px;font-weight:700;color:var(--text-secondary);
         text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">
-        👥 Members (${memberCount})
+        <i class="fa-solid fa-users" style="margin-right:6px;"></i>Members (${memberCount})
       </div>
-      ${usersInRoom.length ? `
+      ${resolvedMembers.length ? `
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          ${usersInRoom.map(u => `
+          ${resolvedMembers.map(u => `
             <div style="
-              background:var(--bg-input);border:1px solid rgba(0,229,160,.2);
+              background:var(--bg-input);border:1px solid ${u.isOnline ? 'rgba(0,229,160,.2)' : 'var(--border)'};
               border-radius:10px;padding:8px 12px;
               display:flex;align-items:center;gap:8px;
+              ${u.isOnline ? '' : 'opacity:.6;'}
             ">
               <div style="
                 width:28px;height:28px;border-radius:50%;
                 background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan));
                 display:flex;align-items:center;justify-content:center;
-                font-size:11px;font-weight:700;color:#000;
-              ">${(u.name || "?")[0].toUpperCase()}</div>
+                font-size:11px;font-weight:700;color:#000;position:relative;
+              ">${(u.name || "?")[0].toUpperCase()}
+                <span style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;
+                  background:${u.isOnline ? 'var(--accent-green)' : 'var(--text-muted)'};border:1.5px solid var(--bg-card);"></span>
+              </div>
               <div>
                 <div style="font-size:12px;font-weight:600;">${escHtml(u.name || u.id)}</div>
-                <div style="font-size:10px;color:var(--accent-green);">⏱️ ${formatFocusTime(u.focusTime || 0)}</div>
+                <div style="font-size:10px;color:${u.isOnline ? 'var(--accent-green)' : 'var(--text-muted)'};">
+                  <i class="fa-solid fa-stopwatch" style="font-size:9px;"></i> ${formatFocusTime(u.focusTime || 0)} · ${u.isOnline ? 'online' : 'offline'}
+                </div>
               </div>
             </div>
           `).join("")}
         </div>
-      ` : `<div style="font-size:13px;color:var(--text-muted);">No active members</div>`}
+      ` : `<div style="font-size:13px;color:var(--text-muted);">No members have joined yet</div>`}
     </div>
 
     <!-- Chats -->
     <div>
       <div style="font-size:12px;font-weight:700;color:var(--text-secondary);
         text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">
-        💬 Recent Chats (${chats.length})
+        <i class="fa-solid fa-comments" style="margin-right:6px;"></i>Recent Chats (${chats.length})
       </div>
       ${chats.length ? `
         <div style="display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;
@@ -3584,6 +3624,47 @@ window.setLbRange = async function (range) {
   renderLeaderboardSection();
 };
 
+// FIX-LB-DELETE: main-admin-only cleanup of stale/inactive leaderboard
+// entries by how recently they were updated. "before" = delete anyone NOT
+// active in the last N days (stale accounts); "after" = delete anyone who
+// WAS active within the last N days (rarely needed, but requested as the
+// symmetric option).
+window.deleteLeaderboardByRange = async function () {
+  if (window.IS_SUB_ADMIN) { toast("Only the main admin can delete leaderboard data.", "error"); return; }
+  const days = parseInt($("lbDeleteDays")?.value, 10);
+  const direction = $("lbDeleteDirection")?.value || "before";
+  if (!days || days < 1) { toast("Enter a valid number of days", "error"); return; }
+
+  const label = direction === "before"
+    ? `entries NOT active in the last ${days} day(s)`
+    : `entries active within the last ${days} day(s)`;
+  const yes = await confirmModal("Delete Leaderboard Entries", `Permanently delete ${label}? This can't be undone.`);
+  if (!yes) return;
+
+  try {
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const snap = await getDocs(collection(db, "leaderboard"));
+    const toDelete = snap.docs.filter(d => {
+      const ts = d.data().updatedAt?.seconds ? d.data().updatedAt.seconds * 1000 : 0;
+      const isRecent = ts >= cutoff.getTime();
+      return direction === "before" ? !isRecent : isRecent;
+    });
+    if (!toDelete.length) { toast("No matching entries found.", "info"); return; }
+    await Promise.all(toDelete.map(d => deleteDoc(doc(db, "leaderboard", d.id))));
+    toast(`Deleted ${toDelete.length} leaderboard entr${toDelete.length === 1 ? "y" : "ies"}.`, "success");
+  } catch (e) {
+    console.error(e);
+    toast("Delete failed: " + e.message, "error");
+  }
+};
+
+// Hide the delete-range control entirely for sub-admin (defense in depth
+// alongside the function-level guard above).
+(function gateLbDeleteBox() {
+  const box = document.getElementById("lbDeleteRangeBox");
+  if (box) box.style.display = window.IS_SUB_ADMIN ? "none" : "flex";
+})();
+
 window.switchLbTab = function(tab) {
   _lbTab = tab;
 
@@ -3683,7 +3764,10 @@ async function renderFullLeaderboard(container) {
     u.totalXP = r.xp + r.timerXP;
     if (r.partial) partialCount++;
   }
-  users = users.sort((a, b) => b.totalXP - a.totalXP).slice(0, 100);
+  const lbSearch = ($("lbSearch")?.value || "").toLowerCase().trim();
+  users = users
+    .filter(u => !lbSearch || `${u.name||""} ${u.displayName||""} ${u.email||""}`.toLowerCase().includes(lbSearch))
+    .sort((a, b) => b.totalXP - a.totalXP).slice(0, 100);
 
   if (!users.length) {
     container.innerHTML = `<div class="empty-state">
@@ -3791,7 +3875,13 @@ async function renderTimerLeaderboard(container) {
     if (r.partial) partialCount++;
   }
 
-  users = users.filter(u => u.focusTime > 0).sort((a, b) => b.focusTime - a.focusTime).slice(0, 100);
+  users = users
+    .filter(u => u.focusTime > 0)
+    .filter(u => {
+      const lbSearch = ($("lbSearch")?.value || "").toLowerCase().trim();
+      return !lbSearch || `${u.name||""} ${u.displayName||""} ${u.email||""}`.toLowerCase().includes(lbSearch);
+    })
+    .sort((a, b) => b.focusTime - a.focusTime).slice(0, 100);
 
   if (!users.length) {
     container.innerHTML = `<div class="empty-state">
@@ -4353,14 +4443,24 @@ function renderPerformanceSection(users) {
   const container = $("performanceContainer");
   if (!container) return;
 
+  const search = ($("perfSearch")?.value || "").toLowerCase().trim();
+
+  // FIX-MISSING-TIMER-XP: timerXP lives on the `leaderboard` collection doc,
+  // not the `users` doc — merge it in here so Study + Timer XP are both
+  // properly combined, instead of only ever showing the study portion.
+  const lbById = {};
+  (STATE.leaderboardData || []).forEach(lb => { lbById[lb.id] = lb; });
+
   // Sort by combined XP (study + timer), then focus time
   const ranked = [...users]
+    .filter(u => !search || `${u.name||""} ${u.displayName||""} ${u.email||""}`.toLowerCase().includes(search))
     .map(u => {
+      const lb       = lbById[u.id] || {};
       const graph    = Array.isArray(u.studyGraphData) ? u.studyGraphData : [0,0,0,0,0,0,0];
       const videos   = graph.reduce((s, v) => s + (Number(v) || 0), 0);
       const focus    = u.focusTime || u.totalFocusTime || u.timerMinutes || 0;
-      const studyXP  = Number(u.xp ?? u.points ?? 0);
-      const timerXP  = Number(u.timerXP || 0);
+      const studyXP  = Number(lb.xp ?? u.xp ?? u.points ?? 0);
+      const timerXP  = Number(lb.timerXP ?? u.timerXP ?? 0);
       const xp       = studyXP + timerXP;  // combined
       return { ...u, _videos: videos, _focus: focus, _xp: xp, _studyXP: studyXP, _timerXP: timerXP, _graph: graph };
     })

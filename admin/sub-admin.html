@@ -2116,6 +2116,10 @@
     <div class="table-card">
       <div class="table-header">
         <div class="table-title" id="lbTableTitle"><i class="fa-solid fa-trophy"></i> Full Leaderboard — XP + Level + Badge</div>
+        <div class="search-box">
+          <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="lbSearch" placeholder="Search by name or email…" oninput="renderLeaderboardSection()" />
+        </div>
       </div>
       <div class="table-scroll" id="leaderboardContainer">
         <div class="empty-state">
@@ -2723,6 +2727,10 @@
       </div>
       <div class="live-dot">Live</div>
     </div>
+    <div class="search-box" style="margin-bottom:16px;max-width:360px;">
+      <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" id="perfSearch" placeholder="Search by name or email…" oninput="filterPerformance()" />
+    </div>
     <div id="performanceContainer" style="display:flex;flex-direction:column;gap:14px;">
       <div class="empty-state">
         <div class="empty-state-icon"><i class="fa-solid fa-chart-column"></i></div>
@@ -3122,6 +3130,7 @@ function toggleSgpTheme() {
 ================================================================ -->
 <script>window.SGP_SKIP_AUTOLAUNCH = true;</script>
 <script>window.SGP_SKIP_AUTOLAUNCH = true;</script>
+<script>window.IS_SUB_ADMIN = true;</script>
 <script type="module" src="/admin/admin.js"></script>
 <script type="module" src="/admin/content-studio.js"></script>
 <script type="module" src="/admin/media-library.js"></script>

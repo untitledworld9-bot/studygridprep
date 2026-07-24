@@ -31,6 +31,11 @@ function apToast(message, type = "info") {
   if (typeof window.toast === "function") { window.toast(message, type); return; }
   console.log(`[${type}]`, message);
 }
+
+// FIX-ACTIVITY-TIME: entries older than a day previously only showed "Xd
+// ago" with no way to tell exactly when something happened — now anything
+// a day or older also shows the actual date + time alongside the relative
+// label, e.g. "3d ago · 20 Jul, 04:12 pm".
 function timeAgo(ms) {
   const diff = Date.now() - ms;
   const mins = Math.floor(diff / 60000);
@@ -39,7 +44,10 @@ function timeAgo(ms) {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+  const dateStr = new Date(ms).toLocaleString("en-IN", {
+    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit"
+  });
+  return `${days}d ago · ${dateStr}`;
 }
 const ACTION_LABELS = {
   login: { icon: "fa-right-to-bracket", label: "Logged in" },
@@ -127,7 +135,7 @@ async function apLoadList() {
             <div style="font-size:13px;font-weight:600;">${escHtml(meta.label)}</div>
             ${a.details ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${escHtml(a.details)}</div>` : ""}
           </div>
-          <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;">${ts ? timeAgo(ts) : ""}</div>
+          <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;text-align:right;">${ts ? timeAgo(ts) : ""}</div>
         </div>
       `;
     }).join("");
