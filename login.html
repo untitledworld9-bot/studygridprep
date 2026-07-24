@@ -31,31 +31,42 @@
 <!-- THEME DETECTION -->
 <script>
 (function(){
-  var saved = localStorage.getItem("theme");
-  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
-  document.documentElement.setAttribute("data-theme", theme);
-  // Dynamic theme-color sync
+  const saved = localStorage.getItem('theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  const theme =
+    (!saved || saved === "system")
+      ? (systemDark ? "dark" : "light")
+      : saved;
+
+  document.documentElement.setAttribute('data-theme', theme);
+
   function _utc(){
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
-    var m = document.createElement('meta'); m.name='theme-color';
-    m.content = isDark ? '#0B1220' : '#F0F2F8';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+    const m = document.createElement('meta');
+    m.name='theme-color';
+    m.content = isDark ? '#0D1120' : '#F0F2F8';
     document.head.appendChild(m);
   }
-  _utc();
-  new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-})();
 
-window.matchMedia("(prefers-color-scheme: dark)")
-.addEventListener("change", function(e){
-  if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
-  }
-});
+  _utc();
+
+  window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      document.documentElement.setAttribute(
+        "data-theme",
+        e.matches ? "dark" : "light"
+      );
+    }
+  });
+
+  new MutationObserver(_utc).observe(document.documentElement,{
+    attributes:true,
+    attributeFilter:['data-theme']
+  });
+})();
 </script>
 
 <style>
