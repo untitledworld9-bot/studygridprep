@@ -1786,9 +1786,10 @@ function renderUserTable() {
   }
 
   tbody.innerHTML = rows.map(u => {
-    // COMBINED XP = playlist+todo (u.xp from uw-core) + timer (u.timerXP from script.js)
-    const studyXP  = Number(u.xp ?? u.points ?? u.score ?? 0);
-    const timerXP  = Number(u.timerXP || 0);
+    // COMBINED XP = playlist+todo (u.xp from uw-core) + timer (from leaderboard collection)
+    const lb       = (STATE.leaderboardData || []).find(l => l.id === u.id) || {};
+    const studyXP  = Number(lb.xp ?? u.xp ?? u.points ?? u.score ?? 0);
+    const timerXP  = Number(lb.timerXP ?? u.timerXP ?? 0);
     const xp       = studyXP + timerXP;   // combined total for display + level
     const level   = adminGetLevel(xp);
     const badge   = adminGetBadge(xp);
@@ -3700,6 +3701,11 @@ function listenLeaderboard() {
     snap => {
       STATE.leaderboardData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderLeaderboardSection();
+      // FIX-PERF-TIMING: Performance section's combined XP depends on this
+      // same leaderboard data — refresh it too so timer XP shows up live
+      // instead of only after some unrelated re-render (like searching).
+      if ($("performanceContainer")) renderPerformanceSection(STATE.allUsers);
+      if ($("userTable")) renderUserTable();
     },
     err => {
       console.warn("[Leaderboard] collection listen failed, falling back to users:", err);
