@@ -81,7 +81,14 @@ async function _syncTimerLeaderboard(focusMinsDelta, xpDelta) {
     return;
   }
   try {
-    const update = { updatedAt: serverTimestamp() };
+    // FIX-STREAK-SYNC: also keep streak in sync here — previously only the
+    // playlist/todo XP path (uw-core.js) wrote this field, so a user whose
+    // only activity was the focus timer never got their streak synced to
+    // the leaderboard collection, showing stale/zero streak for them in
+    // the weekly leaderboard even though it was correct in their own
+    // profile (read from localStorage there instead).
+    const streak = Math.max(0, parseInt(localStorage.getItem("uw_streak") || "0", 10));
+    const update = { updatedAt: serverTimestamp(), streak };
     if (focusMinsDelta > 0) {
       update.focusTime       = increment(focusMinsDelta);
       update.weeklyFocusTime = increment(focusMinsDelta);
@@ -869,7 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       savedMinutes = 0;
       savedXP      = 0;  // FIX-XP: reset XP tracker on new session
-      sessionStartAt = Date.now() - seconds * 1000; // preserve any custom countdown offset
+      sessionStartAt = mode === "countdown" ? Date.now() : (Date.now() - seconds * 1000);
       startBtn.style.display = "none";
       if (stopBtn) stopBtn.style.display  = "block";
       if (ring)    ring.classList.add("active");
@@ -1005,7 +1012,10 @@ document.addEventListener("DOMContentLoaded", () => {
       animation:autoStopPopIn .2s ease;
     `;
     pop.innerHTML = `
-      <div style="font-size:28px;">⏸️</div>
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,184,48,0.12);
+        display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-pause" style="font-size:20px;color:var(--accent-amber,#ffb830);"></i>
+      </div>
       <div style="font-weight:700;font-size:14px;color:var(--text,#fff);">Focus session paused</div>
       <div style="font-size:12px;color:var(--text2,#9ca3af);">Screen was off or you left the app — press Start to resume.</div>
     `;

@@ -750,6 +750,14 @@ window.matchMedia("(prefers-color-scheme: dark)")
           const weeklyStudyXP = data.weeklyXP      || 0;
           const weeklyTimerXP = data.weeklyTimerXP || 0;
           const weeklyTotal   = weeklyStudyXP + weeklyTimerXP;
+          // FIX-STREAK-FRESHNESS: for our own row, prefer the always-fresh
+          // localStorage streak over the Firestore leaderboard doc's value,
+          // which can lag a sync behind (e.g. right after the streak ticks
+          // up but before the next XP/timer event triggers a re-sync).
+          const isMyRow = d.id === myUid;
+          const freshStreak = isMyRow
+            ? parseInt(localStorage.getItem("uw_streak") || "0", 10)
+            : (data.streak || 0);
           return {
             uid:    d.id,
             name:   data.name || "Anonymous",
@@ -757,7 +765,7 @@ window.matchMedia("(prefers-color-scheme: dark)")
             studyXP: weeklyStudyXP,
             timerXP: weeklyTimerXP,
             focusTime: data.weeklyFocusTime || 0,
-            streak: data.streak || 0
+            streak: freshStreak
           };
         });
 
