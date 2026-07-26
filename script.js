@@ -1055,23 +1055,28 @@ document.addEventListener("DOMContentLoaded", () => {
   // status flickering between Online/Focusing when the screen came back on.
   // The user must explicitly press Start again after returning, same as the
   // existing "no auto-resume on reload" behavior.
-  let _hiddenSince = 0;
+  // FIX-BACKGROUND-THROTTLE: mobile browsers suspend/throttle JS timers
+  // (including setTimeout) while a page is backgrounded — a debounced
+  // "wait 2s then check if still hidden" approach could simply never fire
+  // while genuinely backgrounded, meaning closing the app via recents/home
+  // and reopening it later never triggered the auto-stop. Now we record
+  // the real timestamp when hidden, and check elapsed time the moment
+  // visibility RETURNS (visibilitychange always fires reliably and
+  // immediately on both transitions — it's the setTimeout that's unreliable).
+  let _hiddenAt = 0;
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      _hiddenSince = Date.now();
-      // FIX-SPURIOUS-HIDDEN: wait ~2s before treating this as a real
-      // background event — some mobile browsers fire brief visibility
-      // blips during normal taps/keyboard toggles that aren't a real
-      // screen-off/app-switch, and auto-stopping on those would be
-      // disruptive and needlessly cut real sessions short.
-      setTimeout(() => {
-        if (document.hidden && isRunning && _hiddenSince && (Date.now() - _hiddenSince) >= 1900) {
-          _showAutoStopPopup();
-          _stopSession().catch(e => console.warn("[Timer] auto-stop on background failed:", e));
-        }
-      }, 2000);
-    } else {
-      _hiddenSince = 0;
+      _hiddenAt = Date.now();
+    } else if (_hiddenAt) {
+      const hiddenDuration = Date.now() - _hiddenAt;
+      _hiddenAt = 0;
+      // Ignore brief blips (<1.9s) some browsers fire spuriously during
+      // normal taps/keyboard toggles; anything longer is a real
+      // background/app-switch event.
+      if (hiddenDuration >= 1900 && isRunning) {
+        _showAutoStopPopup();
+        _stopSession().catch(e => console.warn("[Timer] auto-stop on background failed:", e));
+      }
     }
   });
 
