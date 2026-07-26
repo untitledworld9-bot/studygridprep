@@ -255,6 +255,11 @@ async function _saveUser(partial) {
    combined (playlist/todo + timer) XP.
    Uses merge:true so script.js writes to timerXP/focusTime are preserved.
 ───────────────────────────── */
+function _getTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
 async function _syncLeaderboard(delta) {
   if (!_authUser) return;
   delta = delta || 0;
@@ -262,20 +267,25 @@ async function _syncLeaderboard(delta) {
   const streak     = getStreak();
   const name       = _authUser.displayName || _authUser.email || "Anonymous";
   const week       = _getWeekKey();
+  const today      = _getTodayKey();
 
   try {
-    // Read existing timerXP + weekly study XP state to compute combined level
-    // and correctly roll over weeklyXP on a new week.
+    // Read existing timerXP + weekly/daily study XP state to compute
+    // combined level and correctly roll both over on new week/day.
     let timerXP  = 0;
     let weeklyXP = 0;
+    let todayXP  = 0;
     let lastActiveWeekStudy = "";
+    let lastStudyResetDate  = "";
     try {
       const lbSnap = await getDoc(doc(db, "leaderboard", _authUser.uid));
       if (lbSnap.exists()) {
         const d = lbSnap.data();
         timerXP = d.timerXP || 0;
         weeklyXP = d.weeklyXP || 0;
+        todayXP  = d.todayXP || 0;
         lastActiveWeekStudy = d.lastActiveWeekStudy || "";
+        lastStudyResetDate  = d.lastStudyResetDate || "";
       }
     } catch(e) {}
 
@@ -286,6 +296,13 @@ async function _syncLeaderboard(delta) {
     if (lastActiveWeekStudy !== week) weeklyXP = 0;
     if (delta > 0) weeklyXP += delta;
 
+    // FIX-DAILY-STUDY-XP: todayXP resets every day, mirroring how
+    // todayTimerXP already works for the focus timer — this is what was
+    // missing, which made the admin panel's "Today" leaderboard tab always
+    // show 0 study XP for every single user regardless of real activity.
+    if (lastStudyResetDate !== today) todayXP = 0;
+    if (delta > 0) todayXP += delta;
+
     const totalXP = playlistXP + timerXP;
     const level   = getLevel(totalXP);
 
@@ -294,7 +311,9 @@ async function _syncLeaderboard(delta) {
       name,
       xp:        playlistXP,   // playlist + todo XP only (lifetime)
       weeklyXP,                // playlist + todo XP (resets weekly)
+      todayXP,                 // playlist + todo XP (resets daily)
       lastActiveWeekStudy: week,
+      lastStudyResetDate: today,
       streak,
       level,                   // level from combined total
       updatedAt: serverTimestamp()
