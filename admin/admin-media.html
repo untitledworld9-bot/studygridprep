@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Media SaaS System - Admin</title>
+  <title>Media Studio — Study Grid Prep</title>
   <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="theme-color" content="#07080d" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <style>
     /* ============================================================
-       DESIGN TOKENS — Matching Admin Panel
+       DESIGN TOKENS — matches sub-admin.html so both panels stay
+       visually identical and share the same theme preference.
     ============================================================ */
     :root {
       --bg-void:       #07080d;
@@ -31,69 +34,170 @@
       --text-secondary:#8890b0;
       --text-muted:    #4a5070;
 
+      --sidebar-w:     240px;
       --radius-lg:     16px;
       --radius-md:     10px;
       --radius-sm:     6px;
+
+      --shadow-card:   0 4px 32px rgba(0,0,0,.45);
+      --shadow-glow:   0 0 24px rgba(0,224,255,.12);
 
       --font-display:  'Syne', sans-serif;
       --font-body:     'Manrope', sans-serif;
       --font-mono:     'DM Mono', monospace;
     }
 
+    /* ── LIGHT THEME — toggled via [data-theme="light"] on <html> ── */
+    [data-theme="light"] {
+      --bg-void:       #f1f5f9;
+      --bg-panel:      #ffffff;
+      --bg-card:       #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input:      #ffffff;
+      --border:        #e2e8f0;
+      --border-glow:   rgba(79,70,229,.15);
+
+      --accent-cyan:   #4F46E5;
+      --accent-violet: #7C3AED;
+      --accent-green:  #059669;
+      --accent-amber:  #D97706;
+      --accent-red:    #DC2626;
+
+      --text-primary:  #0f172a;
+      --text-secondary:#475569;
+      --text-muted:    #94a3b8;
+
+      --shadow-card:   0 4px 24px rgba(15,23,42,.08);
+      --shadow-glow:   0 0 24px rgba(79,70,229,.08);
+    }
+    html { transition: background-color .25s ease; }
+    body { transition: background-color .25s ease, color .25s ease; }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
       font-family: var(--font-body);
       background: var(--bg-void);
       color: var(--text-primary);
       display: flex;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
 
+    /* ============================================================  AUTH GATE  */
+    #authGate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-void);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .auth-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      width: 360px;
+      max-width: calc(100vw - 32px);
+      text-align: center;
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      animation: fadeSlideUp .5s ease both;
+    }
+    .auth-logo {
+      font-family: var(--font-display);
+      font-size: 22px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .auth-sub { font-size: 12px; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 28px; }
+    .auth-btn {
+      width: 100%; padding: 13px;
+      background: var(--bg-panel); color: var(--text-primary);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-family: var(--font-body); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .auth-btn:hover { border-color: var(--accent-cyan); transform: translateY(-1px); }
+    .auth-btn:disabled { opacity: .6; cursor: default; transform: none; }
+    .auth-error { color: var(--accent-red); font-size: 12px; margin-top: 14px; min-height: 16px; }
+
+    #authLoading {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-void); align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px;
+    }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
     /* ============================================================  SIDEBAR  */
+    #hamburgerBtn { display: none; }
+    .sidebar-backdrop { display: none; }
+
     .sidebar {
-      width: 240px;
+      width: var(--sidebar-w);
       background: var(--bg-panel);
       border-right: 1px solid var(--border);
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      display: flex; flex-direction: column;
+      flex-shrink: 0;
+      height: 100vh; height: 100dvh;
+      -webkit-overflow-scrolling: touch;
+      transition: width .3s ease;
     }
+    .sidebar-header { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
     .sidebar-logo {
       font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 17px; font-weight: 800;
       background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 30px;
-      padding: 0 12px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: block;
     }
+    .sidebar-role { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-top: 3px; }
+
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 4px; }
     .nav-btn {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px; border-radius: var(--radius-md);
+      padding: 11px 12px; border-radius: var(--radius-md);
       background: transparent; border: none; color: var(--text-secondary);
-      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      font-family: var(--font-body); font-size: 13.5px; font-weight: 600;
       cursor: pointer; transition: all 0.2s; width: 100%; text-align: left;
     }
+    .nav-icon { width: 18px; text-align: center; flex-shrink: 0; }
     .nav-btn:hover { background: rgba(255,255,255,.03); color: var(--text-primary); }
-    .nav-btn.active {
-      background: rgba(0,224,255,.08);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(0,224,255,.12);
+    .nav-btn.active { background: rgba(0,224,255,.08); color: var(--accent-cyan); border: 1px solid rgba(0,224,255,.12); }
+
+    .sidebar-footer { border-top: 1px solid var(--border); padding: 12px; }
+    .theme-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 4px; }
+    .theme-toggle-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .theme-switch { position: relative; width: 42px; height: 24px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 99px; cursor: pointer; flex-shrink: 0; }
+    .theme-switch-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent-cyan); transition: transform .22s cubic-bezier(0.4,0,0.2,1); }
+    [data-theme="light"] .theme-switch-knob { transform: translateX(18px); }
+
+    .admin-profile { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+    .admin-avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+      color: #000; font-weight: 800; font-family: var(--font-display);
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
     }
+    .admin-name { font-size: 12.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 108px; }
+    .admin-email { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 108px; }
+    .logout-btn {
+      margin-left: auto; background: transparent; border: 1px solid var(--border);
+      color: var(--text-secondary); border-radius: var(--radius-sm);
+      width: 30px; height: 30px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: all .15s;
+    }
+    .logout-btn:hover { border-color: var(--accent-red); color: var(--accent-red); }
 
     /* ============================================================  MAIN  */
-    .main {
-      flex: 1; padding: 32px; overflow-y: auto;
-    }
+    .main { flex: 1; padding: 32px; overflow-y: auto; width: 100%; }
     .section { display: none; animation: fadeSlideUp 0.3s ease; }
     .section.active { display: block; }
-    
-    .section-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-    .section-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
+
+    .section-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .section-subtitle { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 28px; }
 
     /* ============================================================  STATS  */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
@@ -108,131 +212,210 @@
       pointer-events: none;
     }
     .stat-card.violet::before { background: radial-gradient(ellipse at top right, rgba(124,92,252,.08), transparent 60%); }
-    .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
-    .stat-value { font-family: var(--font-display); font-size: 36px; font-weight: 800; color: var(--accent-cyan); margin-top: 8px; }
+    .stat-label { font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+    .stat-value { font-family: var(--font-display); font-size: 34px; font-weight: 800; color: var(--accent-cyan); margin-top: 8px; }
     .stat-card.violet .stat-value { color: var(--accent-violet); }
 
-    /* ============================================================  UPLOAD BAR  */
+    /* ============================================================  TOOLBAR  */
     .toolbar {
-      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
       background: var(--bg-card); padding: 16px; border-radius: var(--radius-lg);
       border: 1px solid var(--border); align-items: center;
     }
     .form-select, .form-input {
       background: var(--bg-input); border: 1px solid var(--border);
       border-radius: var(--radius-md); padding: 10px 14px;
-      color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none;
+      color: var(--text-primary); font-family: var(--font-body); font-size: 13.5px; outline: none;
     }
     .form-select:focus, .form-input:focus { border-color: var(--accent-cyan); }
     .btn {
-      padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;
-      border: none; font-family: var(--font-body); font-size: 14px; transition: opacity 0.2s;
+      padding: 10px 18px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer;
+      border: none; font-family: var(--font-body); font-size: 13px; transition: opacity 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
     }
     .btn-primary { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet)); color: #000; }
     .btn-primary:hover { opacity: 0.9; }
-    .btn-danger { background: rgba(255,79,106,.15); color: var(--accent-red); border: 1px solid rgba(255,79,106,.3); }
-    .btn-danger:hover { background: rgba(255,79,106,.25); }
+    .btn-danger { background: rgba(255,79,106,.12); color: var(--accent-red); border: 1px solid rgba(255,79,106,.3); }
+    .btn-danger:hover { background: rgba(255,79,106,.22); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
     .btn-outline:hover { border-color: var(--text-muted); }
-    
+
     .progress-wrapper { flex: 1; min-width: 150px; height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden; display: none; }
     .progress-bar { height: 100%; width: 0%; background: var(--accent-green); transition: width 0.2s ease; }
 
-    /* ============================================================  GALLERY  */
-    .search-bar { width: 100%; margin-bottom: 24px; }
-    .search-bar input { width: 100%; max-width: 400px; padding: 12px 16px; }
+    /* ============================================================  FILTER BAR  */
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; align-items: center; }
+    .filter-bar input { flex: 1; min-width: 200px; max-width: 380px; }
 
-    .gallery-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;
-    }
+    /* ============================================================  GALLERY  */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
     .media-card {
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: var(--radius-lg); overflow: hidden;
       transition: transform 0.2s, border-color 0.2s;
     }
     .media-card:hover { transform: translateY(-4px); border-color: var(--border-glow); }
-    .img-container { height: 140px; background: #000; position: relative; }
+    .img-container { height: 140px; background: var(--bg-void); position: relative; }
     .img-container img { width: 100%; height: 100%; object-fit: contain; }
-    
+
     .badge-folder {
       position: absolute; top: 8px; left: 8px;
       background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
       padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase;
-      border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary);
+      border: 1px solid rgba(255,255,255,0.1); color: #eef0ff;
     }
 
-    .media-info { padding: 16px; }
-    .media-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .media-tags { font-size: 11px; color: var(--accent-cyan); margin-bottom: 12px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .media-stats { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
-    
+    .media-info { padding: 14px 16px 16px; }
+    .media-name { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-tags { font-size: 11px; color: var(--accent-cyan); margin-bottom: 8px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .media-meta span { display: flex; align-items: center; gap: 4px; }
+
     .media-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .media-actions .btn { padding: 8px; font-size: 12px; text-align: center; }
+    .media-actions .btn { padding: 8px; font-size: 11.5px; justify-content: center; }
+
+    .empty-state { color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px 0; font-size: 13.5px; }
 
     /* ============================================================  TOAST  */
     #toast {
       position: fixed; bottom: 24px; right: 24px; background: var(--bg-card);
       border: 1px solid var(--border-glow); padding: 12px 20px; border-radius: var(--radius-md);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); font-size: 13.5px; font-weight: 600;
       transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 9999;
+      z-index: 9999; display: flex; align-items: center; gap: 8px;
     }
     #toast.show { transform: translateY(0); opacity: 1; }
 
-    @keyframes fadeSlideUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ============================================================  RESPONSIVE  */
+    @media (max-width: 768px) {
+      :root { --sidebar-w: 64px; }
+      .sidebar-logo, .sidebar-role, .nav-btn span, .admin-name, .admin-email { display: none; }
+      .nav-btn { justify-content: center; padding: 11px; }
+      .admin-profile { justify-content: center; }
+      .main { padding: 20px 16px; }
+    }
+
+    @media (max-width: 540px) {
+      :root { --sidebar-w: 0px; }
+      body { overflow: hidden; }
+
+      .sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0;
+        width: 240px !important;
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+        z-index: 1000;
+      }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .sidebar-logo, .sidebar-role, .nav-btn span, .admin-name, .admin-email { display: block !important; }
+      .nav-btn { justify-content: flex-start !important; padding: 11px 12px !important; }
+      .admin-profile { justify-content: flex-start; }
+
+      .main { padding: 16px 14px; padding-top: 64px; width: 100vw; }
+
+      .sidebar-backdrop {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.65);
+        z-index: 999;
+      }
+      .sidebar-backdrop.open { display: block; }
+
+      #hamburgerBtn {
+        display: flex;
+        position: fixed; top: 14px; left: 14px;
+        width: 40px; height: 40px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        align-items: center; justify-content: center;
+        font-size: 17px; cursor: pointer; z-index: 1001;
+        color: var(--text-primary);
+      }
+
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+      .toolbar, .filter-bar { flex-direction: column; align-items: stretch; }
+      .toolbar .form-input, .toolbar .form-select { width: 100%; }
+      #toast { left: 12px; right: 12px; bottom: 16px; }
+    }
+
+    @media (min-width: 541px) and (max-width: 900px) {
+      :root { --sidebar-w: 200px; }
+      .main { padding: 22px 20px; }
     }
   </style>
 </head>
 <body>
 
-<!-- LOGIN GATE -->
-<div id="loginGate" style="display:none;position:fixed;inset:0;z-index:9999;
-  background:#07080d;align-items:center;justify-content:center;">
-  <div style="background:#111420;border:1px solid rgba(255,255,255,.06);border-radius:16px;
-    padding:40px;width:340px;text-align:center;">
-    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
-      background:linear-gradient(135deg,#00e0ff,#7c5cfc);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">
-      Media SaaS
-    </div>
-    <div style="font-size:12px;color:#4a5070;margin-bottom:28px;text-transform:uppercase;letter-spacing:.08em;">
-      Admin Access Only
-    </div>
-    <input id="lgEmail" type="email" placeholder="Admin Email"
-      style="width:100%;padding:12px 14px;background:#0f1220;border:1px solid rgba(255,255,255,.06);
-      border-radius:10px;color:#eef0ff;font-size:14px;margin-bottom:10px;outline:none;
-      font-family:'Manrope',sans-serif;">
-    <input id="lgPass" type="password" placeholder="Password"
-      style="width:100%;padding:12px 14px;background:#0f1220;border:1px solid rgba(255,255,255,.06);
-      border-radius:10px;color:#eef0ff;font-size:14px;margin-bottom:16px;outline:none;
-      font-family:'Manrope',sans-serif;">
-    <div id="lgErr" style="color:#ff4f6a;font-size:12px;margin-bottom:12px;min-height:16px;"></div>
-    <button onclick="adminLogin()"
-      style="width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;
-      background:linear-gradient(135deg,#00e0ff,#7c5cfc);color:#000;
-      font-weight:700;font-size:14px;font-family:'Manrope',sans-serif;">
-      Login
+<!-- ================================================================
+     AUTH GATE — Google sign-in, gated on admin allowlist or the
+     subAdmins/{email} collection (same rule Firestore enforces).
+================================================================ -->
+<div id="authGate">
+  <div class="auth-box">
+    <img src="/icon-192.png" alt="Study Grid Prep" style="width:48px;height:48px;border-radius:14px;margin-bottom:16px;" />
+    <div class="auth-logo">Media Studio</div>
+    <div class="auth-sub">Study Grid Prep</div>
+    <p style="font-size:12.5px;color:var(--text-secondary);margin:-16px 0 24px;line-height:1.6;">
+      Sign in with your admin or appointed sub-admin Google account.
+    </p>
+    <button class="auth-btn" id="googleSignInBtn" onclick="signInWithGoogleMedia()">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
     </button>
+    <div class="auth-error" id="authError"></div>
   </div>
 </div>
 
-<!-- APP SHELL — hidden until auth confirmed -->
-<div id="appShell" style="display:none;width:100%;height:100vh;overflow:hidden;">
+<div id="authLoading">
+  <div class="spinner"></div>
+  <div style="color:var(--text-secondary);font-size:13px;">Checking your session…</div>
+</div>
 
-  <nav class="sidebar">
-    <div class="sidebar-logo">Media SaaS</div>
-    <button class="nav-btn active" onclick="showSection('dashboard')" id="nav-dashboard">📊 Dashboard</button>
-    <button class="nav-btn" onclick="showSection('media')" id="nav-media">🖼 Media Manager</button>
-    <button class="nav-btn" onclick="goBackAdmin()" style="margin-top:20px; border:1px solid rgba(0,224,255,0.2);">
-  ⬅ Back to Admin Panel</button>
-    <button class="nav-btn" onclick="adminLogout()" style="margin-top:8px;color:#ff4f6a;border:1px solid rgba(255,79,106,0.2);">
-  🚪 Logout</button>
+<!-- Hamburger (mobile only) -->
+<button id="hamburgerBtn" onclick="toggleMediaSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+<div class="sidebar-backdrop" id="mediaSidebarBackdrop" onclick="toggleMediaSidebar()"></div>
+
+<!-- APP SHELL — hidden until auth confirmed -->
+<div id="appShell" style="display:none;width:100%;height:100%;">
+
+  <nav class="sidebar" id="mediaSidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-logo">Media Studio</span>
+      <span class="sidebar-role">Study Grid Prep</span>
+    </div>
+
+    <div class="sidebar-nav">
+      <button class="nav-btn active" onclick="showMediaSection('dashboard')" id="nav-dashboard">
+        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span><span>Dashboard</span>
+      </button>
+      <button class="nav-btn" onclick="showMediaSection('media')" id="nav-media">
+        <span class="nav-icon"><i class="fa-solid fa-images"></i></span><span>Media Manager</span>
+      </button>
+      <button class="nav-btn" onclick="goBackMedia()" style="margin-top:14px;">
+        <span class="nav-icon"><i class="fa-solid fa-arrow-left"></i></span><span>Back</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="theme-toggle-row">
+        <span class="theme-toggle-label"><i class="fa-solid fa-moon"></i> Theme</span>
+        <div class="theme-switch" onclick="toggleSgpTheme()"><div class="theme-switch-knob"></div></div>
+      </div>
+      <div class="admin-profile">
+        <div class="admin-avatar" id="mediaAvatar">A</div>
+        <div>
+          <div class="admin-name" id="mediaName">Admin</div>
+          <div class="admin-email" id="mediaEmail">—</div>
+        </div>
+        <button class="logout-btn" onclick="mediaLogout()" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+      </div>
+    </div>
   </nav>
 
   <main class="main">
-    
+
     <section id="dashboard" class="section active">
       <div class="section-title">Overview</div>
       <div class="section-subtitle">Real-time statistics for all media assets</div>
@@ -255,284 +438,345 @@
 
       <div class="toolbar">
         <select id="folder" class="form-select">
-          <option value="banner">📁 Banner</option>
-          <option value="ads">📁 Ads</option>
-          <option value="thumbnails">📁 Thumbnails</option>
+          <option value="banner">Banner</option>
+          <option value="ads">Ads</option>
+          <option value="thumbnails">Thumbnails</option>
         </select>
 
-        <input type="file" id="file" class="form-input" accept="image/*" style="width: 250px;">
-        
-        <button class="btn btn-primary" onclick="upload()">⬆ Upload</button>
+        <input type="file" id="file" class="form-input" accept="image/*" style="width: 220px;">
+
+        <button class="btn btn-primary" onclick="uploadMedia()"><i class="fa-solid fa-upload"></i> Upload</button>
 
         <div class="progress-wrapper" id="progress-wrapper">
           <div class="progress-bar" id="progress-bar"></div>
         </div>
       </div>
 
-      <div class="search-bar">
-        <input type="text" id="search" class="form-input" placeholder="🔍 Search by filename or AI tags..." oninput="loadMedia()">
+      <div class="filter-bar">
+        <input type="text" id="search" class="form-input" placeholder="Search by filename or tags…" oninput="loadMedia()">
+        <select id="sortOrder" class="form-select" onchange="loadMedia()">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name (A–Z)</option>
+          <option value="mostUsed">Most used</option>
+        </select>
       </div>
 
-      <div class="gallery-grid" id="gallery">
-        </div>
+      <div class="gallery-grid" id="gallery"></div>
     </section>
 
   </main>
 
-  <div id="toast">✅ Action Successful</div>
+  <div id="toast"></div>
+</div><!-- /appShell -->
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<script type="module">
+  import {
+    auth, provider, db,
+    signInWithPopup, onAuthStateChanged, signOut,
+    doc, getDoc, collection, addDoc, getDocs, deleteDoc,
+    updateDoc, increment, serverTimestamp
+  } from "../firebase.js";
+  import { sgpLogActivity } from "../activity-log.js";
 
-    const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
+  const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
+  const $ = id => document.getElementById(id);
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
-      authDomain: "untitled-world-2e645.firebaseapp.com",
-      projectId: "untitled-world-2e645",
-      storageBucket: "untitled-world-2e645.appspot.com",
-      messagingSenderId: "990115586087",
-      appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
-    };
+  function showAuthError(msg) { const el = $("authError"); if (el) el.textContent = msg; }
 
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-    const auth = getAuth(app);
+  window.signInWithGoogleMedia = async () => {
+    const btn = $("googleSignInBtn");
+    if (btn) { btn.disabled = true; }
+    showAuthError("");
+    try {
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged below picks up the result
+    } catch (err) {
+      console.error("Media Studio sign-in error:", err);
+      showAuthError("Sign-in failed: " + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; }
+    }
+  };
 
-    // ── Auth Gate — block non-admins ──
-    onAuthStateChanged(auth, (user) => {
-      if (!user || !ADMIN_EMAILS.includes(user.email)) {
-        // Not logged in or not admin — show login gate
-        document.getElementById('loginGate').style.display = 'flex';
-        document.getElementById('appShell').style.display  = 'none';
-      } else {
-        document.getElementById('loginGate').style.display = 'none';
-        document.getElementById('appShell').style.display  = 'flex';
-        loadStats();
-      }
-    });
+  window.mediaLogout = async () => { await signOut(auth); };
 
-    window.adminLogin = async () => {
-      const email = document.getElementById('lgEmail').value.trim();
-      const pass  = document.getElementById('lgPass').value;
-      const err   = document.getElementById('lgErr');
-      err.textContent = '';
+  onAuthStateChanged(auth, async (user) => {
+    const gate = $("authGate");
+    const loading = $("authLoading");
+    const shell = $("appShell");
+
+    if (!user) {
+      loading.style.display = "none";
+      gate.style.display = "flex";
+      shell.style.display = "none";
+      return;
+    }
+
+    gate.style.display = "none";
+    loading.style.display = "flex";
+
+    let isAdmin = ADMIN_EMAILS.includes(user.email);
+    let isSubAdmin = false;
+
+    if (!isAdmin) {
       try {
-        await signInWithEmailAndPassword(auth, email, pass);
-      } catch(e) {
-        err.textContent = 'Invalid email or password.';
-      }
-    };
-
-    window.adminLogout = async () => {
-      await signOut(auth);
-    };
-
-async function uploadToCloudinary(file){
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "e3vvwepk");
-
-  const res = await fetch(
-    "https://api.cloudinary.com/v1_1/dm9hqkipf/image/upload",
-    {
-      method: "POST",
-      body: formData
-    }
-  );
-
-  const data = await res.json();
-
-  console.log("Cloudinary response:", data); // 👈 ADD THIS
-
-  if (!data.secure_url) {
-    throw new Error("Upload failed - no URL returned");
-  }
-
-  return data.secure_url;
-}
-
-    // Navigation
-    window.showSection = (id) => {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      document.getElementById('nav-' + id).classList.add('active');
-      
-      if(id === 'media') loadMedia();
-      if(id === 'dashboard') loadStats();
-    };
-
-    // UI Toast Notification
-    window.showToast = (msg, isError = false) => {
-      const t = document.getElementById('toast');
-      t.innerHTML = isError ? `❌ ${msg}` : `✅ ${msg}`;
-      t.style.borderColor = isError ? 'var(--accent-red)' : 'var(--accent-green)';
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    };
-
-    // AI Tagging (Basic Extract)
-    function generateTags(filename) {
-      // Remove extension and split by non-alphanumeric
-      const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
-      return nameWithoutExt.toLowerCase().split(/[^a-z0-9]/g).filter(Boolean);
-    }
-
-    // Upload Logic
-    window.upload = async () => {
-  const fileInput = document.getElementById('file');
-  const file = fileInput.files[0];
-  const folder = document.getElementById('folder').value;
-
-  if (!file) return showToast("Please select a file to upload.", true);
-
-  const wrapper = document.getElementById('progress-wrapper');
-  const bar = document.getElementById('progress-bar');
-
-  wrapper.style.display = 'block';
-  bar.style.width = "30%";
-
-  try {
-    const url = await uploadToCloudinary(file);
-
-    bar.style.width = "80%";
-
-    const tags = generateTags(file.name);
-
-    await addDoc(collection(db, 'media'), {
-      url,
-      folder,
-      name: file.name,
-      tags,
-      used: 0,
-      time: Date.now()
-    });
-
-    bar.style.width = "100%";
-
-    setTimeout(() => {
-      wrapper.style.display = 'none';
-      bar.style.width = "0%";
-    }, 500);
-
-    fileInput.value = "";
-
-    navigator.clipboard.writeText(url);
-
-    showToast("Uploaded 🚀");
-    loadMedia();
-    loadStats();
-
-  } catch (err) {
-    showToast("Upload failed: " + err.message, true);
-    wrapper.style.display = 'none';
-  }
-};
-
-    // Load & Render Gallery
-    window.loadMedia = async () => {
-      const snap = await getDocs(collection(db, 'media'));
-      const search = document.getElementById("search").value.toLowerCase();
-      const gallery = document.getElementById("gallery");
-      gallery.innerHTML = "";
-
-      if (snap.empty) {
-        gallery.innerHTML = `<div style="color:var(--text-muted); grid-column: 1/-1;">No media assets found.</div>`;
+        const subAdminDoc = await getDoc(doc(db, "subAdmins", user.email));
+        isSubAdmin = subAdminDoc.exists();
+      } catch (e) {
+        console.error(e);
+        loading.style.display = "none";
+        gate.style.display = "flex";
+        showAuthError("Could not verify your access — please try again.");
         return;
       }
+    }
 
-      snap.forEach(d => {
-        const data = d.data();
-        
-        // Smart Search (Name + Tags)
-        if (search && !data.name.toLowerCase().includes(search) && !(data.tags||[]).some(t => t.includes(search))) {
-          return;
-        }
+    if (!isAdmin && !isSubAdmin) {
+      loading.style.display = "none";
+      gate.style.display = "flex";
+      showAuthError("This account doesn't have Media Studio access. Ask the site owner to appoint you, then try again.");
+      await signOut(auth);
+      return;
+    }
 
-        const tagsDisplay = (data.tags && data.tags.length > 0) ? `#${data.tags.join(' #')}` : 'No tags';
+    window.IS_SUB_ADMIN = isSubAdmin;
+    const isEmbedded = window.self !== window.top;
+    if (isSubAdmin && !isEmbedded) sgpLogActivity("login", "Signed in to Media Studio");
 
-        gallery.innerHTML += `
-          <div class="media-card">
-            <div class="img-container">
-              <span class="badge-folder">${data.folder}</span>
-              <img src="${data.url}" alt="${data.name}" loading="lazy">
-            </div>
-            <div class="media-info">
-              <div class="media-name" title="${data.name}">${data.name}</div>
-              <div class="media-tags" title="${tagsDisplay}">${tagsDisplay}</div>
-              <div class="media-stats">🔥 Used ${data.used || 0} times</div>
-              
-              <div class="media-actions">
-                <button class="btn btn-outline" onclick="useImg('${data.url}', '${d.id}')">🎯 Use</button>
-                <button class="btn btn-outline" onclick="copyUrl('${data.url}')">📋 Copy</button>
-                <button class="btn btn-outline" onclick="replaceImg('${data.path}')">🔄 Replace</button>
-                <button class="btn btn-danger" onclick="deleteImg('${d.id}', '${data.path}')">🗑 Delete</button>
-              </div>
-            </div>
-          </div>
-        `;
+    loading.style.display = "none";
+    shell.style.display = "block";
+
+    $("mediaName").textContent = user.displayName || (isAdmin ? "Admin" : "Sub-Admin");
+    $("mediaEmail").textContent = user.email;
+    $("mediaAvatar").textContent = (user.displayName || user.email || "?")[0].toUpperCase();
+
+    loadStats();
+  });
+
+  // ── Navigation ──
+  window.showMediaSection = (id) => {
+    document.querySelectorAll("#appShell .section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll("#appShell .nav-btn").forEach(b => b.classList.remove("active"));
+    $(id).classList.add("active");
+    $("nav-" + id).classList.add("active");
+    if (id === "media") loadMedia();
+    if (id === "dashboard") loadStats();
+    closeMobileSidebar();
+  };
+
+  window.goBackMedia = () => {
+    if (window.history.length > 1) window.history.back();
+    else window.close();
+  };
+
+  // ── Toast ──
+  window.showToast = (msg, isError = false) => {
+    const t = $("toast");
+    t.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-xmark' : 'fa-circle-check'}" style="color:${isError ? 'var(--accent-red)' : 'var(--accent-green)'};"></i> ${msg}`;
+    t.style.borderColor = isError ? "var(--accent-red)" : "var(--accent-green)";
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3000);
+  };
+
+  // ── AI-ish tag extraction from filename ──
+  function generateTags(filename) {
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+    return nameWithoutExt.toLowerCase().split(/[^a-z0-9]/g).filter(Boolean);
+  }
+
+  async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "e3vvwepk");
+
+    const res = await fetch("https://api.cloudinary.com/v1_1/dm9hqkipf/image/upload", {
+      method: "POST", body: formData
+    });
+    const data = await res.json();
+    if (!data.secure_url) throw new Error("Upload failed — no URL returned");
+    return data.secure_url;
+  }
+
+  window.uploadMedia = async () => {
+    const fileInput = $("file");
+    const file = fileInput.files[0];
+    const folder = $("folder").value;
+    if (!file) return showToast("Please select a file to upload.", true);
+
+    const wrapper = $("progress-wrapper");
+    const bar = $("progress-bar");
+    wrapper.style.display = "block";
+    bar.style.width = "30%";
+
+    try {
+      const url = await uploadToCloudinary(file);
+      bar.style.width = "80%";
+
+      const tags = generateTags(file.name);
+
+      await addDoc(collection(db, "media"), {
+        url, folder, name: file.name, tags,
+        used: 0,
+        time: Date.now(),
+        createdAt: serverTimestamp()
       });
-    };
 
-    // Actions
-    window.copyUrl = (url) => {
-      navigator.clipboard.writeText(url);
-      showToast("URL Copied to Clipboard");
-    };
+      bar.style.width = "100%";
+      setTimeout(() => { wrapper.style.display = "none"; bar.style.width = "0%"; }, 500);
 
-    window.useImg = async (url, id) => {
-      // Integration point for main admin panel
-      localStorage.setItem("bannerImage", url);
-      
-      // Increment Analytics
-      await updateDoc(doc(db, "media", id), {
-        used: increment(1)
-      });
+      fileInput.value = "";
+      navigator.clipboard.writeText(url).catch(() => {});
 
-      showToast("Image Set to LocalStorage & Analytics Updated");
-      loadMedia(); // refresh stats on card
+      showToast("Uploaded — URL copied to clipboard");
+      sgpLogActivity("media_upload", `Uploaded "${file.name}" to ${folder}`);
+      loadMedia();
       loadStats();
-    };
+    } catch (err) {
+      showToast("Upload failed: " + err.message, true);
+      wrapper.style.display = "none";
+    }
+  };
 
-    window.replaceImg = () => {
-  showToast("Replace disabled (Cloudinary mode)");
-};
+  function formatWhen(ms) {
+    if (!ms) return "—";
+    const d = new Date(ms);
+    return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) +
+      " · " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
 
-window.deleteImg = async (id) => {
-  await deleteDoc(doc(db, "media", id));
-  showToast("Deleted from database");
-  loadMedia();
-};
+  window.loadMedia = async () => {
+    const snap = await getDocs(collection(db, "media"));
+    const search = $("search").value.toLowerCase();
+    const sortOrder = $("sortOrder").value;
+    const gallery = $("gallery");
+    gallery.innerHTML = "";
 
-    // Dashboard Stats
-    window.loadStats = async () => {
-      const snap = await getDocs(collection(db, 'media'));
-      let total = 0;
-      let used = 0;
+    if (snap.empty) {
+      gallery.innerHTML = `<div class="empty-state">No media assets found.</div>`;
+      return;
+    }
 
-      snap.forEach(d => {
-        total++;
-        used += (d.data().used || 0);
-      });
+    let items = [];
+    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
 
-      document.getElementById("stat-total").innerText = total;
-      document.getElementById("stat-used").innerText = used;
-    };
+    items = items.filter(data =>
+      !search ||
+      (data.name || "").toLowerCase().includes(search) ||
+      (data.tags || []).some(t => t.includes(search))
+    );
 
-    // Initial Load handled by onAuthStateChanged above
+    switch (sortOrder) {
+      case "oldest":   items.sort((a, b) => (a.time || 0) - (b.time || 0)); break;
+      case "name":     items.sort((a, b) => (a.name || "").localeCompare(b.name || "")); break;
+      case "mostUsed": items.sort((a, b) => (b.used || 0) - (a.used || 0)); break;
+      default:         items.sort((a, b) => (b.time || 0) - (a.time || 0)); // newest
+    }
 
-    window.goBackAdmin = () => {
-  window.open("/admin/studygridadmin.html", "_self");
-};
+    if (!items.length) {
+      gallery.innerHTML = `<div class="empty-state">No media matches your search.</div>`;
+      return;
+    }
 
-  </script>
+    for (const data of items) {
+      const tagsDisplay = (data.tags && data.tags.length) ? `#${data.tags.join(" #")}` : "No tags";
+      const card = document.createElement("div");
+      card.className = "media-card";
+      card.innerHTML = `
+        <div class="img-container">
+          <span class="badge-folder">${data.folder || "—"}</span>
+          <img src="${data.url}" alt="${data.name || ""}" loading="lazy">
+        </div>
+        <div class="media-info">
+          <div class="media-name" title="${data.name || ""}">${data.name || "Untitled"}</div>
+          <div class="media-tags" title="${tagsDisplay}">${tagsDisplay}</div>
+          <div class="media-meta">
+            <span><i class="fa-solid fa-fire"></i> Used ${data.used || 0}×</span>
+            <span><i class="fa-regular fa-clock"></i> ${formatWhen(data.time)}</span>
+          </div>
+          <div class="media-actions">
+            <button class="btn btn-outline" data-act="use"><i class="fa-solid fa-bullseye"></i> Use</button>
+            <button class="btn btn-outline" data-act="copy"><i class="fa-solid fa-copy"></i> Copy</button>
+            <button class="btn btn-danger" data-act="delete" style="grid-column:1/-1;"><i class="fa-solid fa-trash"></i> Delete</button>
+          </div>
+        </div>
+      `;
+      card.querySelector('[data-act="use"]').onclick = () => useImg(data.url, data.id);
+      card.querySelector('[data-act="copy"]').onclick = () => copyUrl(data.url);
+      card.querySelector('[data-act="delete"]').onclick = () => deleteImg(data.id, data.name);
+      gallery.appendChild(card);
+    }
+  };
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+  window.copyUrl = (url) => {
+    navigator.clipboard.writeText(url).catch(() => {});
+    showToast("URL copied to clipboard");
+  };
 
-</div><!-- /appShell -->
+  window.useImg = async (url, id) => {
+    localStorage.setItem("bannerImage", url);
+    await updateDoc(doc(db, "media", id), { used: increment(1) });
+    showToast("Image set — usage count updated");
+    loadMedia();
+    loadStats();
+  };
+
+  window.deleteImg = async (id, name) => {
+    if (!confirm(`Delete "${name || "this file"}"? This can't be undone.`)) return;
+    await deleteDoc(doc(db, "media", id));
+    showToast("Deleted from library");
+    sgpLogActivity("media_delete", `Deleted "${name || id}"`);
+    loadMedia();
+    loadStats();
+  };
+
+  window.loadStats = async () => {
+    const snap = await getDocs(collection(db, "media"));
+    let total = 0, used = 0;
+    snap.forEach(d => { total++; used += (d.data().used || 0); });
+    $("stat-total").innerText = total;
+    $("stat-used").innerText = used;
+  };
+</script>
+
+<script>
+  /* ── Mobile hamburger sidebar toggle ── */
+  function toggleMediaSidebar() {
+    const sidebar = document.getElementById("mediaSidebar");
+    const backdrop = document.getElementById("mediaSidebarBackdrop");
+    sidebar.classList.toggle("mobile-open");
+    backdrop.classList.toggle("open");
+  }
+  window.toggleMediaSidebar = toggleMediaSidebar;
+  function closeMobileSidebar() {
+    const sidebar = document.getElementById("mediaSidebar");
+    const backdrop = document.getElementById("mediaSidebarBackdrop");
+    if (sidebar && sidebar.classList.contains("mobile-open")) {
+      sidebar.classList.remove("mobile-open");
+      backdrop.classList.remove("open");
+    }
+  }
+
+  /* ── Light/Dark theme — shares the same localStorage key as
+     sub-admin.html so the choice stays in sync across both panels ── */
+  function toggleSgpTheme() {
+    const html = document.documentElement;
+    const isLight = html.getAttribute("data-theme") === "light";
+    const next = isLight ? "dark" : "light";
+    if (next === "light") html.setAttribute("data-theme", "light");
+    else html.removeAttribute("data-theme");
+    localStorage.setItem("sgp-admin-theme", next);
+  }
+  window.toggleSgpTheme = toggleSgpTheme;
+  (function initSgpTheme() {
+    const saved = localStorage.getItem("sgp-admin-theme");
+    if (saved === "light") { document.documentElement.setAttribute("data-theme", "light"); return; }
+    if (saved === "dark") return;
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  })();
+</script>
+
 </body>
 </html>

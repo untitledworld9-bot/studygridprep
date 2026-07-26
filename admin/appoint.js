@@ -54,6 +54,7 @@ const ACTION_LABELS = {
   content_create: { icon: "fa-plus", label: "Created content" },
   content_update: { icon: "fa-pen", label: "Updated content" },
   media_upload: { icon: "fa-image", label: "Uploaded media" },
+  media_delete: { icon: "fa-trash", label: "Deleted media" },
   report_sent: { icon: "fa-flag", label: "Sent report" }
 };
 
