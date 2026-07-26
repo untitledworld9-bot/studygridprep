@@ -3590,10 +3590,10 @@ let _lbRange = "all"; // 'today' | 'week' | 'all'
 function computeLbRangeValues(u) {
   if (_lbRange === "today") {
     return {
-      xp: 0, // study (playlist/todo) XP has no daily granularity anywhere in the app yet
+      xp: Number(u.todayXP || 0),  // FIX-DAILY-STUDY-XP: now properly tracked (resets daily), no longer hardcoded to 0
       timerXP: Number(u.todayTimerXP || 0),
       focusTime: Number(u._todayFocusMin || 0),
-      partial: true
+      partial: false
     };
   }
   if (_lbRange === "week") {
