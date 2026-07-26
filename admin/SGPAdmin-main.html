@@ -2829,16 +2829,36 @@
           <input class="form-input" id="apEmail" type="email" placeholder="person@gmail.com" />
         </div>
       </div>
-      <button class="btn btn-primary" onclick="apAppoint()">
+      <div class="form-group" style="max-width:280px;margin-top:14px;">
+        <label class="form-label">Panel Access</label>
+        <select class="form-input" id="apRole">
+          <option value="sub-admin" selected>Sub-Admin</option>
+          <option value="mock-admin">Mock-Admin</option>
+          <option value="both">Both Admin</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="apAppoint()" style="margin-top:16px;">
         <i class="fa-solid fa-user-plus"></i> Appoint
       </button>
       <p style="font-size:12px;color:var(--text-muted);margin-top:12px;">
-        They'll open <strong>sub-admin.html</strong> and sign in with this exact Google account — access is granted automatically, no extra steps.
+        Sub-Admin opens <strong>sub-admin.html</strong> (full dashboard). Mock-Admin opens <strong>admin-mock.html</strong> (mock test tools only). Both Admin gets access to both panels — sign in with this exact Google account, access is granted automatically.
       </p>
     </div>
 
     <div class="form-panel">
       <div class="form-panel-title">Currently Appointed <span class="pill">Activity — last 30 days</span></div>
+
+      <div class="tabs" style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-outline btn-sm" id="apTab-sub-admin" onclick="apSetTab('sub-admin')">
+          <i class="fa-solid fa-user-shield"></i> Sub-Admin
+        </button>
+        <button class="btn btn-outline btn-sm" id="apTab-mock-admin" onclick="apSetTab('mock-admin')">
+          <i class="fa-solid fa-list-check"></i> Mock-Admin
+        </button>
+      </div>
+
+      <input class="form-input" id="apSearch" placeholder="Search by name or Gmail…" style="margin-bottom:16px;" oninput="apSetSearch(this.value)" />
+
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
         <input class="form-input" id="apDeleteDays" type="number" min="1" placeholder="Days" style="max-width:100px;" />
         <button class="btn btn-outline btn-sm" onclick="apDeleteOldActivity()">

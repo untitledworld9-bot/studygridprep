@@ -18,6 +18,8 @@
 
 import {
   auth,
+  provider,
+  signInWithPopup,
   onAuthStateChanged,
   signOut,
   db,
@@ -38,12 +40,12 @@ import {
   serverTimestamp,
   writeBatch
 } from '../firebase.js';
+import { sgpLogActivity } from '../activity-log.js';
 
 // ============================================================
 //  CONSTANTS
 // ============================================================
 
-const ADMIN_CODE   = "7905";
 const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
 
 const COLL = {
@@ -216,47 +218,78 @@ window.switchBroadcastTab = (paneId, btnEl) => {
 };
 
 // ============================================================
-//  AUTH GATE
+//  AUTH GATE — Google sign-in, gated on the admin allowlist or a
+//  subAdmins/{email} doc with role "mock-admin" or "both". Mirrors
+//  sub-admin.html's gateway + loading flow exactly.
 // ============================================================
 
-window.verifyAdmin = async () => {
-  const code  = $('adminCodeInput').value.trim();
-  const errEl = $('authError');
-  const btn   = document.querySelector('.auth-btn');
+function showAuthError(msg) {
+  const el = $('authError');
+  if (el) el.textContent = msg;
+}
 
-  if (code !== ADMIN_CODE) {
-    errEl.textContent = 'Incorrect access code.';
-    $('adminCodeInput').value = '';
-    $('adminCodeInput').focus();
+window.signInWithGoogleMock = async () => {
+  const btn = $('googleSignInBtn');
+  if (btn) btn.disabled = true;
+  showAuthError('');
+  try {
+    await signInWithPopup(auth, provider);
+    // onAuthStateChanged below picks up the result
+  } catch (err) {
+    console.error('Mock Admin sign-in error:', err);
+    showAuthError('Sign-in failed: ' + err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+onAuthStateChanged(auth, async (user) => {
+  const gate = $('authGate');
+  const loading = $('authLoading');
+
+  if (!user) {
+    if (loading) loading.style.display = 'none';
+    if (gate) gate.style.display = 'flex';
     return;
   }
 
-  btn.disabled    = true;
-  btn.textContent = 'Verifying...';
-  errEl.textContent = '';
+  if (gate) gate.style.display = 'none';
+  if (loading) loading.style.display = 'flex';
 
-  try {
-    const user = await new Promise((resolve, reject) => {
-      const unsub = onAuthStateChanged(auth, u => { unsub(); resolve(u); }, reject);
-    });
+  let isAdmin = ADMIN_EMAILS.includes(user.email);
+  let isMockAdmin = false;
 
-    if (!user) {
-      errEl.textContent = 'Not signed in. Please sign in first.';
-      btn.disabled = false; btn.textContent = 'Verify Access'; return;
+  if (!isAdmin) {
+    try {
+      const subAdminDoc = await getDoc(doc(db, 'subAdmins', user.email));
+      const role = subAdminDoc.exists() ? (subAdminDoc.data().role || 'sub-admin') : null;
+      isMockAdmin = role === 'mock-admin' || role === 'both';
+    } catch (e) {
+      console.error(e);
+      if (loading) loading.style.display = 'none';
+      if (gate) gate.style.display = 'flex';
+      showAuthError('Could not verify your access — please try again.');
+      return;
     }
-
-    if (!ADMIN_EMAILS.includes(user.email)) {
-      errEl.textContent = 'This account does not have admin access.';
-      btn.disabled = false; btn.textContent = 'Verify Access'; return;
-    }
-
-    STATE.adminUser = user;
-    initAdminPanel(user);
-  } catch(err) {
-    errEl.textContent = 'Auth error: ' + err.message;
-    btn.disabled = false; btn.textContent = 'Verify Access';
   }
-};
+
+  if (!isAdmin && !isMockAdmin) {
+    if (loading) loading.style.display = 'none';
+    if (gate) gate.style.display = 'flex';
+    showAuthError("This account doesn't have Mock Admin access. Ask the site owner to appoint you, then try again.");
+    await signOut(auth);
+    return;
+  }
+
+  window.IS_SUB_ADMIN = isMockAdmin; // gates sgpLogActivity — real admins aren't tracked
+  const isEmbedded = window.self !== window.top;
+  if (isMockAdmin && !isEmbedded) sgpLogActivity('login', 'Signed in to Mock Admin panel');
+
+  if (loading) loading.style.display = 'none';
+
+  STATE.adminUser = user;
+  initAdminPanel(user);
+});
 
 function initAdminPanel(user) {
   const gate = $('authGate');
@@ -680,6 +713,7 @@ window.createTest = async () => {
     STATE.qBlockCount    = 0;
 
     toast(`Test created! ${testName || (exam.toUpperCase() + (year ? ' ' + year : ''))}`, 'success');
+    sgpLogActivity('test_create', `Created "${testName}" (${exam.toUpperCase()}${year ? ' ' + year : ''})`);
     refreshActiveTestBanner();
     resetCreateForm();
 
@@ -1258,7 +1292,10 @@ window.syncAllDrafts = async () => {
       saved++;
     }
   }
-  if (saved > 0) toast(`${saved} question${saved !== 1 ? 's' : ''} synced to Firestore.`, 'success');
+  if (saved > 0) {
+    toast(`${saved} question${saved !== 1 ? 's' : ''} synced to Firestore.`, 'success');
+    sgpLogActivity('test_draft_save', `Saved ${saved} question${saved !== 1 ? 's' : ''} as draft for "${STATE.activeTest.testName || STATE.activeTest.exam?.toUpperCase() || ''}"`);
+  }
 };
 
 /** Collect all question blocks from DOM into STATE.draftQuestions, and sync to Firestore */
@@ -1612,6 +1649,7 @@ window.publishTest = async () => {
       `${testSnapshot.exam.toUpperCase()} ${testSnapshot.year} · ${testSnapshot.shift}`,
       `${questionSnapshot.length} questions saved to Firestore. Test is now LIVE for users.`
     );
+    sgpLogActivity('test_publish', `Published "${testSnapshot.testName || testSnapshot.exam.toUpperCase()}" — ${questionSnapshot.length} questions`);
 
   } catch(err) {
     console.error('publishTest error:', err);
@@ -1632,11 +1670,13 @@ function showPublishModal(success, title, body) {
   const bodyEl  = $('publishResultBody');
   if (!modal) {
     // Fallback if modal not in HTML
-    toast(success ? `✅ ${title}: ${body}` : `❌ ${title}: ${body}`, success ? 'success' : 'error', 6000);
+    toast(`${title}: ${body}`, success ? 'success' : 'error', 6000);
     if (success) setTimeout(() => showSection('sectionTestManager'), 1500);
     return;
   }
-  if (iconEl)  iconEl.textContent  = success ? '✅' : '❌';
+  if (iconEl)  iconEl.innerHTML = success
+    ? '<i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i>'
+    : '<i class="fa-solid fa-circle-xmark" style="color:var(--accent-red);"></i>';
   if (titleEl) titleEl.textContent = title;
   if (bodyEl)  bodyEl.textContent  = body;
   modal.classList.add('open');
@@ -1894,6 +1934,8 @@ window.toggleTestIsFree = async (id, makeFree) => {
   try {
     await updateDoc(doc(db, COLL.TESTS, id), { isFree: makeFree });
     toast(makeFree ? 'Test marked as Free.' : 'Test marked as Premium.', 'success');
+    const t = STATE.allTests.find(x => x.id === id);
+    sgpLogActivity('test_update', `${makeFree ? 'Marked' : 'Unmarked'} "${t?.testName || t?.exam?.toUpperCase() || id}" as free`);
   } catch(err) { toast('Update failed: ' + err.message, 'error'); }
 };
 
@@ -1902,6 +1944,7 @@ window.deleteTest = async id => {
   if (!yes) return;
 
   try {
+    const t = STATE.allTests.find(x => x.id === id);
     // Fetch all questions for this test
     const qSnap = await getDocs(query(collection(db, COLL.QUESTIONS), where('testId', '==', id)));
 
@@ -1917,6 +1960,7 @@ window.deleteTest = async id => {
     // Delete the test document itself
     await deleteDoc(doc(db, COLL.TESTS, id));
     toast('Test and all questions deleted.', 'info');
+    sgpLogActivity('test_delete', `Deleted "${t?.testName || t?.exam?.toUpperCase() || id}"`);
   } catch(err) {
     toast('Delete failed: ' + err.message, 'error');
     console.error('deleteTest error:', err);
@@ -2218,6 +2262,7 @@ window.sendAnnouncement = async () => {
       page, active: true, time: Date.now(), createdAt: serverTimestamp()
     });
     toast('Announcement sent!', 'success');
+    sgpLogActivity('notification_broadcast', `Sent announcement: "${text.slice(0, 60)}${text.length > 60 ? '…' : ''}"`);
     $('announceText').value = '';
     if ($('announceImageUrl')) $('announceImageUrl').value = '';
     if ($('announceUser'))     $('announceUser').value     = '';
@@ -2406,6 +2451,7 @@ window.sendNotification = async () => {
       read: false, time: Date.now(), sentAt: serverTimestamp()
     });
     toast(target === 'all' ? 'Broadcast sent!' : `Sent to ${user}!`, 'success');
+    sgpLogActivity('notification_broadcast', `Sent notification "${title}" to ${target === 'all' ? 'all users' : user}`);
     ['notifyTitle','notifyText','notifyIcon','notifyUser','notifyImage'].forEach(id => { if ($(id)) $(id).value = id === 'notifyIcon' ? '🔔' : ''; });
   } catch(err) { toast('Failed: ' + err.message, 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-bell"></i> Send Notification'; }
@@ -2677,11 +2723,12 @@ window.sendOffer = async () => {
       user: targetType === 'user' ? selectedUser : null,
       active: true, time: Date.now(), createdAt: serverTimestamp()
     });
-    toast('🎁 Offer sent to users!', 'success');
+    toast('Offer sent to users!', 'success');
+    sgpLogActivity('notification_broadcast', `Sent offer "${heading}"`);
     ['offerHeading','offerMessage','offerImageUrl','offerCtaUrl','offerUser'].forEach(id => { if ($(id)) $(id).value = ''; });
     if ($('offerDuration')) $('offerDuration').value = '0';
   } catch(err) { toast('Failed: ' + err.message, 'error'); }
-  finally { btn.disabled = false; btn.innerHTML = '🎁 Send Offer'; }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-gift"></i> Send Offer'; }
 };
 
 window.deleteOffer = async id => {
@@ -2804,6 +2851,7 @@ window.saveMaintenance = async () => {
       updatedBy: STATE.adminUser?.email || 'admin'
     });
     toast(enabled ? 'Maintenance mode enabled.' : 'Maintenance mode disabled.', enabled ? 'warning' : 'success');
+    sgpLogActivity('notification_broadcast', `${enabled ? 'Enabled' : 'Disabled'} maintenance mode`);
     updateMaintenanceUI(enabled);
   } catch(err) { toast('Save failed: ' + err.message, 'error'); }
 };
@@ -4026,6 +4074,7 @@ window.publishAITest = async () => {
       `${meta.exam.toUpperCase()} ${meta.year} · ${meta.shift}`,
       `AI-generated test with ${qs.length} questions is now LIVE!`
     );
+    sgpLogActivity('test_ai_create', `Created & published "${meta.exam.toUpperCase()} ${meta.year}" with AI — ${qs.length} questions`);
   } catch(err) {
     console.error('AI publish error:', err);
     toast('Publish failed: ' + err.message, 'error');
@@ -4034,3 +4083,25 @@ window.publishAITest = async () => {
     btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Create & Publish Test';
   }
 };
+
+// ============================================================
+//  THEME TOGGLE — shares the same localStorage key as
+//  sub-admin.html / admin-media.html so the choice stays in
+//  sync across every admin surface.
+// ============================================================
+window.toggleSgpTheme = () => {
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  if (next === 'light') html.setAttribute('data-theme', 'light');
+  else html.removeAttribute('data-theme');
+  localStorage.setItem('sgp-admin-theme', next);
+};
+(function initSgpTheme() {
+  const saved = localStorage.getItem('sgp-admin-theme');
+  if (saved === 'light') { document.documentElement.setAttribute('data-theme', 'light'); return; }
+  if (saved === 'dark') return;
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
