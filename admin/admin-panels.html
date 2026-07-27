@@ -78,7 +78,25 @@
     a { text-decoration: none; color: inherit; }
 
     /* ============================================================
-       SIDEBAR
+       ANIMATIONS
+    ============================================================ */
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ============================================================
+       SIDEBAR (Fixed)
     ============================================================ */
     .sidebar {
       width: var(--sidebar-w);
@@ -87,6 +105,10 @@
       display: flex; flex-direction: column;
       height: 100vh;
       flex-shrink: 0;
+      position: sticky; /* Stuck */
+      top: 0;
+      z-index: 10;
+      animation: slideInLeft 0.5s ease-out forwards;
     }
     .sidebar-header {
       padding: 24px 20px 20px;
@@ -120,17 +142,28 @@
     .main {
       flex: 1; overflow-y: auto; padding: 48px 56px;
       background: var(--bg-void);
+      /* Smooth scrolling */
+      scroll-behavior: smooth;
     }
-    .page-header { margin-bottom: 40px; }
-    .page-title { font-family: var(--font-display); font-size: 32px; font-weight: 800; margin-bottom: 8px; }
-    .page-subtitle { font-size: 15px; color: var(--text-secondary); }
+    .page-header { 
+      margin-bottom: 40px; 
+      animation: slideInUp 0.6s ease-out forwards;
+      opacity: 0; /* Starts hidden for animation */
+    }
+    .page-title { 
+      font-family: var(--font-display); font-size: 36px; font-weight: 800; margin-bottom: 8px; 
+      /* Subtle text gradient */
+      background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .page-subtitle { font-size: 16px; color: var(--text-secondary); }
 
     /* ============================================================
        HUB CARDS
     ============================================================ */
     .hub-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 24px;
     }
 
@@ -138,57 +171,82 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 24px;
+      padding: 28px;
       display: flex;
       flex-direction: column;
       gap: 16px;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
       box-shadow: var(--shadow-card);
       cursor: pointer;
+      opacity: 0; /* Starts hidden for animation */
+      animation: slideInUp 0.6s ease-out forwards;
     }
     
-    /* Soft hover effect, no neon glow */
+    /* Staggered animation delays */
+    .hub-card:nth-child(1) { animation-delay: 0.1s; }
+    .hub-card:nth-child(2) { animation-delay: 0.2s; }
+    .hub-card:nth-child(3) { animation-delay: 0.3s; }
+    .hub-card:nth-child(4) { animation-delay: 0.4s; }
+
+    
+    /* Soft hover effect, no neon glow, slight lift */
     .hub-card:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-hover);
-      transform: translateY(-2px);
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+
+    [data-theme="light"] .hub-card:hover {
+        box-shadow: 0 8px 30px rgba(15,23,42,0.1);
     }
 
     .card-icon {
-      width: 48px; height: 48px;
+      width: 52px; height: 52px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
+      font-size: 22px;
       background: rgba(124, 92, 252, 0.08);
       color: var(--accent-main);
+      transition: transform 0.3s ease;
     }
+    
+    .hub-card:hover .card-icon {
+        transform: scale(1.05);
+    }
+
     [data-theme="light"] .card-icon {
       background: rgba(99, 102, 241, 0.1);
     }
 
     .card-title {
       font-family: var(--font-display);
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--text-primary);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .card-desc {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-secondary);
-      line-height: 1.5;
+      line-height: 1.6;
     }
     .card-link-arrow {
       margin-top: auto;
       align-self: flex-start;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text-secondary);
-      display: flex; align-items: center; gap: 6px;
-      transition: color 0.2s;
+      display: flex; align-items: center; gap: 8px;
+      transition: color 0.2s, transform 0.2s;
     }
+    
+    /* Arrow moves on hover */
     .hub-card:hover .card-link-arrow {
       color: var(--text-primary);
+    }
+    .hub-card:hover .card-link-arrow i {
+        transform: translateX(4px);
     }
 
     /* ── DANGER / SGP MAIN CARD ── */
@@ -207,13 +265,21 @@
     .danger-card .card-title {
       color: var(--accent-danger);
     }
+    .danger-card:hover .card-link-arrow {
+        color: var(--accent-danger);
+    }
 
     /* ============================================================
        RESPONSIVE
     ============================================================ */
     @media (max-width: 768px) {
       body { flex-direction: column; overflow-y: auto; }
-      .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; align-items: center; justify-content: space-between; padding: 0; }
+      .sidebar { 
+          width: 100%; height: auto; border-right: none; 
+          border-bottom: 1px solid var(--border); flex-direction: row; 
+          align-items: center; justify-content: space-between; padding: 0;
+          position: relative; /* Unstick on mobile */
+      }
       .sidebar-header { border-bottom: none; padding: 16px 20px; }
       .sidebar-nav { display: none; }
       .theme-toggle-row { border-top: none; padding: 16px 20px; }
@@ -230,12 +296,8 @@
       <span class="sidebar-logo">Study Grid Prep</span>
       <span class="sidebar-role">Admin Panels Hub</span>
     </div>
-    <div class="sidebar-nav">
-      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
-        Select an administrative module to manage the platform. 
-      </p>
-    </div>
-    <div class="theme-toggle-row">
+    
+    <div class="theme-toggle-row" style="margin-top: auto; border-top: none;">
       <span class="theme-toggle-label"><i class="fa-solid fa-moon"></i> <span>Theme</span></span>
       <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-knob"></div></div>
     </div>
@@ -244,8 +306,8 @@
   <!-- MAIN CONTENT -->
   <main class="main">
     <div class="page-header">
-      <h1 class="page-title">Welcome back</h1>
-      <p class="page-subtitle">Access your centralized management dashboards</p>
+      <h1 class="page-title">Welcome back, Admin.</h1>
+      <p class="page-subtitle">Select a module to manage the platform.</p>
     </div>
 
     <div class="hub-grid">
@@ -265,7 +327,7 @@
         <div class="card-icon"><i class="fa-solid fa-photo-film"></i></div>
         <div>
           <div class="card-title">Media Studio Admin</div>
-          <div class="card-desc">Upload assets, manage library, taxonomy, and organize content resources for the platform.</div>
+          <div class="card-desc">Upload assets, manage library, taxonomy, and organize content resources.</div>
         </div>
         <div class="card-link-arrow">Open Panel <i class="fa-solid fa-arrow-right"></i></div>
       </a>
@@ -275,7 +337,7 @@
         <div class="card-icon"><i class="fa-solid fa-file-pen"></i></div>
         <div>
           <div class="card-title">Mock Admin Panel</div>
-          <div class="card-desc">Create, publish, and evaluate mock tests, assignments, and structural exam data.</div>
+          <div class="card-desc">Create, publish, and evaluate mock tests, assignments, and exam data.</div>
         </div>
         <div class="card-link-arrow">Open Panel <i class="fa-solid fa-arrow-right"></i></div>
       </a>
