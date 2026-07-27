@@ -782,6 +782,14 @@ window.navigate = function(url) {
   veil.classList.add('leaving');
   setTimeout(() => { window.location.href = url; }, 220);
 };
+
+// FIX: back/forward (bfcache) can restore this page frozen mid-transition,
+// i.e. with the white "leaving" overlay still covering everything — that's
+// the blank/white screen users see on browser Back. Remove it on restore.
+window.addEventListener('pageshow', function() {
+  const veil = document.getElementById('pageTransition');
+  if (veil) veil.classList.remove('leaving');
+});
 </script>
 
 <script type="module">

@@ -933,6 +933,14 @@ window.navigate = function(url) {
   setTimeout(() => { window.location.href = url; }, 210);
 };
 
+// FIX: back/forward (bfcache) can restore this page frozen mid-transition,
+// i.e. with the white "leaving" overlay still covering everything — that's
+// the blank/white screen users see on browser Back. Remove it on restore.
+window.addEventListener('pageshow', function() {
+  const veil = document.getElementById('pageTransition');
+  if (veil) veil.classList.remove('leaving');
+});
+
 /* ─── Theme-color meta sync ───────────────────────────── */
 (function() {
   const meta = document.querySelector('meta[name="theme-color"]');
@@ -1289,7 +1297,7 @@ window.startTest = async function() {
   const isResumable_ = !isCompleted_ && savedProgress_ && savedProgress_.remainingSeconds > 0;
 
   setTimeout(() => {
-    window.location.href = isResumable_ ? 'mock.html?exam=jee&resume=1' : 'jeeinstructions.html';
+    window.location.href = isResumable_ ? 'run-test.html?exam=jee&resume=1' : 'jeeinstructions.html';
   }, 900);
 };
 

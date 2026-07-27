@@ -876,6 +876,14 @@ window.navigate = function(url) {
   setTimeout(() => { window.location.href = url; }, 210);
 };
 
+// FIX: back/forward (bfcache) can restore this page frozen mid-transition,
+// i.e. with the white "leaving" overlay still covering everything — that's
+// the blank/white screen users see on browser Back. Remove it on restore.
+window.addEventListener('pageshow', function() {
+  const v = document.getElementById('pageTransition');
+  if (v) v.classList.remove('leaving');
+});
+
 /* ── Helpers ── */
 function escHtml(str) {
   if (!str && str !== 0) return '';

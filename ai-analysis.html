@@ -369,6 +369,62 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 }
 
 /* ============================================================
+   CHAPTER-WISE BREAKDOWN (ACCORDION)
+============================================================ */
+.chapter-subject { border-bottom:1px solid var(--card-border); }
+.chapter-subject:last-child { border-bottom:none; }
+.chapter-subject-head {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 2px; cursor:pointer; user-select:none;
+}
+.chapter-subject-head .subj-icon { width:34px; height:34px; font-size:14px; }
+.chapter-subject-name { font-size:13px; font-weight:700; color:var(--text-primary); }
+.chapter-subject-sub  { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+.chapter-subject-chevron {
+  margin-left:auto; color:var(--text-secondary); font-size:13px;
+  transition:transform 0.25s;
+}
+.chapter-subject.open .chapter-subject-chevron { transform:rotate(180deg); }
+.chapter-list {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.3s ease;
+}
+.chapter-subject.open .chapter-list { max-height:1200px; }
+.chapter-row {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 2px 9px 44px;
+  font-size:12px;
+}
+.chapter-row-mark {
+  width:20px; height:20px; border-radius:99px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800;
+}
+.chapter-row-mark.tick  { background:rgba(16,185,129,0.14); color:var(--green); }
+.chapter-row-mark.cross { background:rgba(239,68,68,0.14);  color:var(--red); }
+.chapter-row-name { flex:1; font-weight:600; color:var(--text-primary); }
+.chapter-row-count { font-size:10.5px; color:var(--text-secondary); font-weight:600; }
+
+/* ============================================================
+   ASK ABOUT YOUR TEST (tappable question chips, no free-text)
+============================================================ */
+.ask-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.ask-chip {
+  font-size:12px; font-weight:600; color:var(--text-primary);
+  background:var(--glass-bg); border:1px solid var(--card-border);
+  border-radius:99px; padding:8px 14px; cursor:pointer;
+  transition:transform 0.15s, opacity 0.15s;
+}
+.ask-chip:active { transform:scale(0.95); }
+.ask-chip.selected { background:rgba(91,91,246,0.12); border-color:rgba(91,91,246,0.35); color:var(--primary); }
+.ask-chip[disabled], .ask-chip.loading { opacity:0.6; pointer-events:none; }
+#askAnswerBox {
+  margin-top:14px; padding:14px; border-radius:12px;
+  background:var(--glass-bg); border:1px solid var(--card-border);
+  font-size:13px; line-height:1.6; color:var(--text-primary);
+}
+
+/* ============================================================
    TOPIC CHIPS (WEAK / STRONG)
 ============================================================ */
 .topic-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
@@ -701,6 +757,18 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
       <div id="subjectRows"></div>
     </div>
 
+    <!-- CHAPTER-WISE BREAKDOWN -->
+    <div class="section-label">
+      <div class="icon-dot" style="background:rgba(139,92,246,0.12);color:var(--purple);">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+      Chapter-wise Breakdown
+    </div>
+    <div class="card" id="chapterCard">
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">Tap a subject to see chapter-by-chapter results.</div>
+      <div id="chapterAccordion"></div>
+    </div>
+
     <!-- 2. WEAK AREAS -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(239,68,68,0.12);color:var(--red);">
@@ -781,6 +849,19 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 
     <div id="recGrid" class="rec-grid" style="margin-bottom:12px;"></div>
 
+    <!-- ASK ABOUT YOUR TEST — tap a question, no typing -->
+    <div class="section-label">
+      <div class="icon-dot" style="background:rgba(34,211,238,0.12);color:var(--primary);">
+        <i class="fa-solid fa-comment-dots"></i>
+      </div>
+      Ask About Your Test
+    </div>
+    <div class="card" id="askCard">
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Tap a question — answer is based on this test's actual data.</div>
+      <div class="ask-chips" id="askChips"></div>
+      <div id="askAnswerBox" style="display:none;"></div>
+    </div>
+
     <!-- 7. MOTIVATION -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(244,63,94,0.12);color:var(--accent);">
@@ -827,6 +908,14 @@ function goBack() {
     history.back();
   }, 220);
 }
+
+// FIX: back/forward (bfcache) can restore this page frozen mid-transition,
+// i.e. with the white "leaving" overlay still covering everything — that's
+// the blank/white screen users see on browser Back/Forward. Remove it on restore.
+window.addEventListener('pageshow', function() {
+  const overlay = document.getElementById('pageTransition');
+  if (overlay) overlay.classList.remove('leaving');
+});
 
 /* ================================================================
    DATA LOADING
@@ -893,13 +982,31 @@ function processAnalysisData(data) {
   });
 
   // Time insights
-  const totalMinutes = data.timeTaken || 0;
+  // NOTE: data.timeTaken comes from mock.html as SECONDS
+  // (STATE.totalSeconds - STATE.remainingSeconds), never minutes.
+  // Do not multiply by 60 again below — that was the "50 min for a
+  // 2 min test" bug.
+  const totalSeconds  = data.timeTaken || 0;
+  const totalMinutes  = Math.round(totalSeconds / 60);
   const questionCount = questions.length || data.total || 1;
-  const secPerQ = Math.round((totalMinutes * 60) / questionCount);
+  const secPerQ = Math.round(totalSeconds / questionCount);
+
+  // Group ALL topics by subject (not just top weak/strong slices) so a
+  // proper subject → chapter breakdown can be rendered.
+  const topicsBySubject = {};
+  topics.forEach(t => {
+    const sub = t.subject || 'Other';
+    if (!topicsBySubject[sub]) topicsBySubject[sub] = [];
+    topicsBySubject[sub].push(t);
+  });
+  Object.values(topicsBySubject).forEach(arr =>
+    arr.sort((a, b) => (a.correct / a.total) - (b.correct / b.total))
+  );
 
   return {
     score:        data.score || 0,
     total:        data.total || 0,
+    exam:         data.exam || '',
     maxScore: (function() {
       if (data.maxScore && data.maxScore > data.total) return data.maxScore;
       // Calculate from exam type if not passed correctly
@@ -914,6 +1021,7 @@ function processAnalysisData(data) {
     subjects:     subjectStats,
     weakTopics,
     strongTopics,
+    topicsBySubject,
     secPerQ,
     questionCount,
   };
@@ -943,6 +1051,51 @@ function subjectStyle(sub) {
 }
 
 /* ================================================================
+   CHAPTER-WISE ACCORDION (subject → chapters, tick/cross per chapter)
+================================================================ */
+function renderChapterAccordion(p) {
+  const el = document.getElementById('chapterAccordion');
+  const subjects = Object.keys(p.topicsBySubject || {});
+
+  if (subjects.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text-secondary);padding:8px 2px;">Chapter-level data not available for this test.</div>`;
+    return;
+  }
+
+  el.innerHTML = subjects.map((sub, si) => {
+    const chapters = p.topicsBySubject[sub];
+    const sty = subjectStyle(sub);
+    const weakCount = chapters.filter(c => (c.correct / c.total) < 0.5).length;
+
+    const rows = chapters.map(c => {
+      const acc = c.total > 0 ? Math.round((c.correct / c.total) * 100) : 0;
+      const isWeak = acc < 50;
+      return `
+        <div class="chapter-row">
+          <span class="chapter-row-mark ${isWeak ? 'cross' : 'tick'}">
+            <i class="fa-solid fa-${isWeak ? 'xmark' : 'check'}"></i>
+          </span>
+          <span class="chapter-row-name">${c.topic}</span>
+          <span class="chapter-row-count">${c.correct}/${c.total} · ${acc}%</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="chapter-subject" id="chapterSubj${si}">
+        <div class="chapter-subject-head" onclick="document.getElementById('chapterSubj${si}').classList.toggle('open')">
+          <div class="subj-icon" style="background:${sty.bg};">${sty.icon}</div>
+          <div>
+            <div class="chapter-subject-name">${cap(sub)}</div>
+            <div class="chapter-subject-sub">${chapters.length} chapter${chapters.length > 1 ? 's' : ''}${weakCount > 0 ? ` · ${weakCount} weak` : ''}</div>
+          </div>
+          <span class="chapter-subject-chevron"><i class="fa-solid fa-chevron-down"></i></span>
+        </div>
+        <div class="chapter-list">${rows}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ================================================================
    RENDER UI
 ================================================================ */
 function renderUI(p) {
@@ -958,6 +1111,7 @@ function renderUI(p) {
   gradeEl.style.cssText = `background:${grade.bg};color:${grade.color};border:1px solid ${grade.color}22;`;
 
   document.getElementById('heroMeta').innerHTML = `
+    ${p.exam ? `<span class="hero-meta-chip"><i class="fa-solid fa-graduation-cap"></i> ${examLabel(p.exam)}</span>` : ''}
     <span class="hero-meta-chip"><i class="fa-solid fa-clock"></i> ${p.timeTaken} min</span>
     <span class="hero-meta-chip"><i class="fa-solid fa-ranking-star"></i> Rank ${p.rank}</span>
     <span class="hero-meta-chip" style="color:var(--primary);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.08);">
@@ -1021,6 +1175,9 @@ function renderUI(p) {
     });
   }, 400);
 
+  // ── Chapter-wise Breakdown ──
+  renderChapterAccordion(p);
+
   // ── Weak Areas ──
   if (p.weakTopics.length === 0) {
     document.getElementById('weakDesc').textContent = '🎉 Excellent! No significantly weak topics detected in this test.';
@@ -1071,6 +1228,9 @@ function renderUI(p) {
 
   // ── Motivation ──
   renderMotivation(p);
+
+  // ── Ask About Your Test (chips) ──
+  renderAskChips(p);
 }
 
 /* ================================================================
@@ -1346,8 +1506,16 @@ function parseMarkdownLite(text) {
 /* ================================================================
    GEMINI API CALL
 ================================================================ */
+const EXAM_FULL_NAMES = {
+  jee: 'JEE', cuet: 'CUET', neet: 'NEET', boards: 'Boards',
+};
+function examLabel(examCode) {
+  const key = (examCode || '').toLowerCase();
+  return EXAM_FULL_NAMES[key] || (examCode ? examCode.toUpperCase() : 'competitive');
+}
+
 async function callGeminiAPI(p) {
-  const exam = (p.exam || '').toUpperCase();
+  const exam = examLabel(p.exam);
 
   const weakList = p.weakTopics.length > 0
     ? p.weakTopics.map(t => {
@@ -1397,7 +1565,7 @@ Jo weak topics/chapters hain unhe NUMBERED LIST mein likh:
 Agar topic data "Unknown" ya "A/B/C" jaisa hai — tab subject ke basis pe common weak chapters suggest kar.
 
 **⏱️ Time Management**
-${p.secPerQ}s per question — JEE/CUET ke standard (90-120s/Q) se compare karke bata. Kya strategy adopt karni chahiye?
+${p.secPerQ}s per question — ${exam} ke standard (90-120s/Q) se compare karke bata. Kya strategy adopt karni chahiye?
 
 **✅ Next 2 Weeks Ka Plan**
 Specific, realistic steps — har step kya karna hai aur kitna time dena hai. False hope nahi — agar bahut weak hai toh seedha bol ki basics se start karo.
@@ -1409,6 +1577,14 @@ Specific, realistic steps — har step kya karna hai aur kitna time dena hai. Fa
 - 350-450 words
 - Koi intro/title mat likho — seedha "📊 Overall Verdict" se shuru karo`;
 
+  return fetchGemini(prompt, 1500);
+}
+
+/* ================================================================
+   SHARED GEMINI FETCH HELPER
+   (used by both the full analysis and the quick-question chips)
+================================================================ */
+async function fetchGemini(promptText, maxOutputTokens) {
   // Call via Cloudflare Worker proxy — key stays server-side
   let response;
   try {
@@ -1416,8 +1592,8 @@ Specific, realistic steps — har step kya karna hai aur kitna time dena hai. Fa
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.85, maxOutputTokens: 1500 }
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: { temperature: 0.85, maxOutputTokens: maxOutputTokens || 600 }
       })
     });
   } catch(networkErr) {
@@ -1445,6 +1621,66 @@ Specific, realistic steps — har step kya karna hai aur kitna time dena hai. Fa
 }
 
 /* ================================================================
+   ASK ABOUT YOUR TEST — tappable questions, no typing
+================================================================ */
+const QUICK_QUESTIONS = [
+  { key:'focus',   label:'Which chapter should I focus on first?' },
+  { key:'time',    label:'How was my time management?' },
+  { key:'subject', label:'Which subject pulled my score down?' },
+  { key:'plan',    label:'What should I do in the next 7 days?' },
+  { key:'compare', label:'Am I exam-ready at this level?' },
+];
+
+function renderAskChips(p) {
+  const chipsEl = document.getElementById('askChips');
+  chipsEl.innerHTML = QUICK_QUESTIONS.map(q => `
+    <button type="button" class="ask-chip" id="askChip-${q.key}" onclick="askQuickQuestion('${q.key}')">${q.label}</button>
+  `).join('');
+}
+
+function quickQuestionContext(p) {
+  const exam = examLabel(p.exam);
+  const weakList = p.weakTopics.slice(0, 5).map(t => `${t.topic} (${cap(t.subject)}, ${t.correct}/${t.correct+t.wrong})`).join(', ') || 'none flagged';
+  const subjectSummary = Object.entries(p.subjects).map(([sub, s]) => `${cap(sub)}: ${s.acc}% acc`).join(', ');
+  return `Test: ${exam} mock | Score ${p.score}/${p.maxScore} | Accuracy ${p.accuracy}% | Time ${p.timeTaken} min (${p.secPerQ}s/question)
+Subjects: ${subjectSummary}
+Weak chapters: ${weakList}`;
+}
+
+async function askQuickQuestion(key) {
+  const q = QUICK_QUESTIONS.find(x => x.key === key);
+  if (!q || !processedData) return;
+  const p = processedData;
+
+  document.querySelectorAll('.ask-chip').forEach(c => c.classList.remove('selected'));
+  const chipEl = document.getElementById(`askChip-${key}`);
+  if (chipEl) chipEl.classList.add('selected');
+
+  document.querySelectorAll('.ask-chip').forEach(c => c.setAttribute('disabled', 'true'));
+  const box = document.getElementById('askAnswerBox');
+  box.style.display = 'block';
+  box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);"><i class="fa-solid fa-circle-notch fa-spin"></i> Checking your test data...</div>`;
+
+  const prompt = `Tu ek ${examLabel(p.exam)} exam coach hai. Neeche EK student ke EK specific mock test ka data hai — sirf isi test ke baare mein baat kar, kisi aur test ya exam ko assume mat kar.
+
+${quickQuestionContext(p)}
+
+Student ka sawaal: "${q.label}"
+
+Answer Hinglish mein, 3-5 lines, seedha aur specific (numbers/chapter names cite kar jahan relevant ho). Koi intro mat likh, seedha jawab de.`;
+
+  try {
+    const answer = await fetchGemini(prompt, 350);
+    box.innerHTML = `<strong style="display:block;margin-bottom:6px;color:var(--primary);">${q.label}</strong>${answer.replace(/\n/g, '<br>')}`;
+  } catch (err) {
+    console.error('Quick question failed:', err);
+    box.innerHTML = `<strong style="display:block;margin-bottom:6px;color:var(--primary);">${q.label}</strong>Abhi answer load nahi ho paya — neeche full AI analysis mein detail already available hai. (${err.message})`;
+  } finally {
+    document.querySelectorAll('.ask-chip').forEach(c => c.removeAttribute('disabled'));
+  }
+}
+
+/* ================================================================
    LOCAL FALLBACK ANALYSIS (no API key)
 ================================================================ */
 function buildLocalAnalysis(p) {
@@ -1465,7 +1701,7 @@ function buildLocalAnalysis(p) {
     ? `Your time per question (${p.secPerQ}s) suggests you may be rushing. Slow down on problem-solving questions — accuracy beats speed in this exam.`
     : p.secPerQ > 120
     ? `You spent ${p.secPerQ}s per question on average. Practice timed mock tests to build speed without sacrificing accuracy.`
-    : `Your pacing is excellent at ${p.secPerQ}s per question — right in the sweet spot for JEE/CUET strategy.`;
+    : `Your pacing is excellent at ${p.secPerQ}s per question — right in the sweet spot for ${examLabel(p.exam)} strategy.`;
 
   const closing = p.accuracy >= 70
     ? `You're on the right path. **Keep this momentum going** — consistency is your biggest weapon now. 🚀`
