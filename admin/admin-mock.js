@@ -365,6 +365,8 @@ async function restoreDraftFromFirestore() {
           fsId:          qDoc.id,
           subject:       q.subject       || 'General',
           section:       q.section       || '',
+          chapter:       q.chapter       || '',
+          topic:         q.topic         || '',
           type:          q.type          || 'mcq',
           question:      q.questionText  || q.question || '',
           optionA:       q.options?.[0]  || '',
@@ -446,6 +448,20 @@ function restoreQuestionBlock(data) {
           <option value="match">Match the Following</option>
           <option value="table">Table Based</option>
         </select>
+      </div>
+    </div>
+
+    <div class="form-grid cols-2" style="margin-bottom:12px;">
+      <div class="form-group">
+        <label class="form-label">Chapter</label>
+        <input class="form-control q-chapter" type="text"
+               placeholder="e.g. Laws of Motion, Thermodynamics..."
+               oninput="syncDefaultChapter(this)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic (within chapter)</label>
+        <input class="form-control q-topic" type="text"
+               placeholder="e.g. Newton's Second Law...">
       </div>
     </div>
 
@@ -540,6 +556,8 @@ function restoreQuestionBlock(data) {
   // Fill in saved values
   block.querySelector('.q-subject').value = data.subject    || '';
   block.querySelector('.q-section').value = data.section    || '';
+  block.querySelector('.q-chapter').value = data.chapter    || '';
+  block.querySelector('.q-topic').value   = data.topic      || '';
   block.querySelector('.q-text').value    = data.question   || '';
   block.querySelector('.q-correct').value = data.correctAnswer || '';
   block.querySelector('.q-qno').value     = qno;
@@ -842,6 +860,8 @@ window.editPublishedTest = async (id) => {
           fsId:          qDoc.id,
           subject:       q.subject       || 'General',
           section:       q.section       || '',
+          chapter:       q.chapter       || '',
+          topic:         q.topic         || '',
           type:          q.type          || 'mcq',
           question:      q.questionText  || q.question || '',
           optionA:       q.options?.[0]  || '',
@@ -959,6 +979,20 @@ window.addQuestionBlock = () => {
       </div>
     </div>
 
+    <div class="form-grid cols-2" style="margin-bottom:12px;">
+      <div class="form-group">
+        <label class="form-label">Chapter</label>
+        <input class="form-control q-chapter" type="text"
+               placeholder="e.g. Laws of Motion, Thermodynamics..."
+               oninput="syncDefaultChapter(this)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic (within chapter)</label>
+        <input class="form-control q-topic" type="text"
+               placeholder="e.g. Newton's Second Law...">
+      </div>
+    </div>
+
     <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label">Question Text</label>
       <textarea class="form-control q-text" rows="3" placeholder="Enter the full question text here..."></textarea>
@@ -1047,11 +1081,13 @@ window.addQuestionBlock = () => {
     </div>
   `;
 
-  // Prefill default subject/section if set
+  // Prefill default subject/section/chapter if set
   const defSubj = $('defaultSubject')?.value.trim();
   const defSec  = $('defaultSection')?.value.trim();
+  const defChap = $('defaultChapter')?.value.trim();
   if (defSubj) block.querySelector('.q-subject').value = defSubj;
   if (defSec)  block.querySelector('.q-section').value = defSec;
+  if (defChap) block.querySelector('.q-chapter').value = defChap;
 
   wrap.appendChild(block);
   block.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1075,6 +1111,8 @@ async function _saveDraftToFirestore(blockIdx) {
   const testId  = STATE.activeTest.id;
   const subject = block.querySelector('.q-subject')?.value.trim() || 'General';
   const section = block.querySelector('.q-section')?.value.trim() || null;
+  const chapter = block.querySelector('.q-chapter')?.value.trim() || null;
+  const topic   = block.querySelector('.q-topic')?.value.trim() || null;
   const type    = block.querySelector('.q-type')?.value || 'mcq';
   const question= block.querySelector('.q-text')?.value.trim() || '';
   const correct = block.querySelector('.q-correct')?.value.trim() || '';
@@ -1137,6 +1175,8 @@ async function _saveDraftToFirestore(blockIdx) {
     shift:         STATE.activeTest.shift,
     subject,
     section,
+    chapter,
+    topic,
     questionNo:    qno,
     questionText:  question,
     question:      question,
@@ -1279,6 +1319,10 @@ window.syncDefaultSubject = el => {
   // When user updates subject in first block, offer as default
 };
 
+window.syncDefaultChapter = el => {
+  // When user updates chapter in first block, offer as default
+};
+
 /** Sync all current draft blocks to Firestore (called before publish or manually) */
 window.syncAllDrafts = async () => {
   if (!STATE.activeTest) { toast('No active test to sync drafts for.', 'warning'); return; }
@@ -1306,6 +1350,8 @@ function collectQuestionsFromDOM() {
   blocks.forEach((block) => {
     const subject  = block.querySelector('.q-subject')?.value.trim();
     const section  = block.querySelector('.q-section')?.value.trim();
+    const chapter  = block.querySelector('.q-chapter')?.value.trim();
+    const topic    = block.querySelector('.q-topic')?.value.trim();
     const type     = block.querySelector('.q-type')?.value || 'mcq';
     const question = block.querySelector('.q-text')?.value.trim();
     const correct  = block.querySelector('.q-correct')?.value.trim();
@@ -1316,6 +1362,8 @@ function collectQuestionsFromDOM() {
     const q = {
       subject:       subject  || 'General',
       section:       section  || null,
+      chapter:       chapter  || null,
+      topic:         topic    || null,
       type,
       question,
       questionNo:    qno,
@@ -1411,6 +1459,8 @@ async function renderPublishSummary() {
           return {
             subject:       q.subject || 'General',
             section:       q.section || null,
+            chapter:       q.chapter       || null,
+            topic:         q.topic         || null,
             type:          q.type || 'mcq',
             question:      q.questionText || q.question || '',
             questionNo:    q.questionNo || 1,
@@ -1505,6 +1555,8 @@ window.publishTest = async () => {
           return {
             subject:       q.subject       || 'General',
             section:       q.section       || null,
+            chapter:       q.chapter       || null,
+            topic:         q.topic         || null,
             type:          q.type          || 'mcq',
             question:      q.questionText  || q.question || '',
             questionNo:    q.questionNo    || 1,
@@ -1580,6 +1632,8 @@ window.publishTest = async () => {
           shift:         testSnapshot.shift,
           subject:       q.subject       || 'General',
           section:       q.section       || null,
+          chapter:       q.chapter       || null,
+          topic:         q.topic         || null,
           questionNo:    q.questionNo    || (globalIdx + 1),
           questionText:  q.question,
           question:      q.question,
@@ -1878,6 +1932,7 @@ window.viewTestDetail = async id => {
               <tr>
                 <th>#</th>
                 <th>Subject</th>
+                <th>Chapter</th>
                 <th>Type</th>
                 <th>Question</th>
                 <th>Correct</th>
@@ -1889,6 +1944,7 @@ window.viewTestDetail = async id => {
                 <tr>
                   <td style="font-family:var(--font-mono);font-size:12px;">${q.questionNo || (i+1)}</td>
                   <td><span class="badge badge-cyan" style="font-size:10px;">${escHtml(q.subject || '—')}</span></td>
+                  <td style="font-size:11px;color:var(--text-secondary);">${escHtml(q.chapter || '—')}${q.topic ? ` <span style="opacity:.6;">/ ${escHtml(q.topic)}</span>` : ''}</td>
                   <td><span class="badge badge-violet" style="font-size:10px;">${escHtml(q.type || 'mcq')}</span></td>
                   <td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;">${escHtml(q.question || '—')}</td>
                   <td style="font-family:var(--font-mono);color:var(--accent-green);font-size:12px;">${escHtml(q.correctAnswer || '—')}</td>
@@ -2959,6 +3015,8 @@ window.importCSV = function(input) {
         questionNo:    parseInt(row.questionno || row['q.no'] || row.qno) || (i),
         subject:       row.subject || 'General',
         section:       row.section || null,
+        chapter:       row.chapter || null,
+        topic:         row.topic   || null,
         type:          row.type || 'mcq',
         question:      row.question,
         optionA:       row.optiona,
@@ -2990,6 +3048,8 @@ window.importJSON = function(input) {
         questionNo:    q.questionNo || q.qno || q['q. no'] || (i + 1),
         subject:       q.subject || 'General',
         section:       q.section || null,
+        chapter:       q.chapter       || null,
+        topic:         q.topic         || null,
         type:          q.type || 'mcq',
         question:      q.questionText || q.question || q.text || '',
         options:       Array.isArray(q.options) ? q.options : [q.optionA||'', q.optionB||'', q.optionC||'', q.optionD||''].filter(Boolean),
@@ -3020,6 +3080,8 @@ function addQuestionBlockFromData(data) {
 
   set('.q-subject', data.subject);
   set('.q-section', data.section);
+  set('.q-chapter', data.chapter);
+  set('.q-topic', data.topic);
   set('.q-text',    data.question);
   set('.q-correct', data.correctAnswer);
   set('.q-qno',     data.questionNo);
@@ -3717,6 +3779,8 @@ async function parseJSONFile() {
     questionNo:    q.questionNo    || q.no          || (i + 1),
     subject:       q.subject       || selectedFirstSubject() || 'General',
     section:       q.section       || null,
+    chapter:       q.chapter       || null,
+    topic:         q.topic         || null,
     type:          q.type          || 'mcq',
     question:      q.questionText  || q.question    || '',
     options:       Array.isArray(q.options) ? q.options : [q.optionA||'', q.optionB||'', q.optionC||'', q.optionD||''].filter(Boolean),
@@ -3812,6 +3876,8 @@ Rules:
       questionNo:    q.questionNo || (i + 1),
       subject:       q.subject    || selectedFirstSubject(),
       section:       q.section    || null,
+      chapter:       q.chapter       || null,
+      topic:         q.topic         || null,
       type:          q.type       || 'mcq',
       question:      q.question   || '',
       options:       Array.isArray(q.options) ? q.options
@@ -3865,6 +3931,8 @@ Rules: For match questions always extract left[] and right[] arrays. Return raw 
     questionNo:    q.questionNo || (i + 1),
     subject:       q.subject    || selectedFirstSubject(),
     section:       q.section    || null,
+    chapter:       q.chapter       || null,
+    topic:         q.topic         || null,
     type:          q.type       || 'mcq',
     question:      q.question,
     options:       Array.isArray(q.options) ? q.options
@@ -4048,6 +4116,8 @@ window.publishAITest = async () => {
           shift:         meta.shift,
           subject:       q.subject       || 'General',
           section:       q.section       || null,
+          chapter:       q.chapter       || null,
+          topic:         q.topic         || null,
           questionNo:    q.questionNo    || (c * CHUNK + i + 1),
           questionText:  q.question,
           question:      q.question,
