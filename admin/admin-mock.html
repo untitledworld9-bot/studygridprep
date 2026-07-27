@@ -273,6 +273,22 @@ body {
 }
 #mobOverlay.open { display:block; }
 
+@media (max-width:768px) {
+  .mob-topbar { display:flex; }
+  .sidebar {
+    position:fixed; top:0; left:0; bottom:0; z-index:100;
+    transform:translateX(-100%); transition:transform .3s ease;
+  }
+  .sidebar.open { transform:translateX(0); }
+  .main { padding:72px 16px 24px; }
+
+  /* Let the whole page scroll naturally on mobile — nested flex
+     scroll containers were getting their content clipped instead
+     of scrolling on some mobile browsers. */
+  html, body { height:auto; min-height:100vh; min-height:100dvh; overflow-x:hidden; overflow-y:auto; -webkit-overflow-scrolling:touch; display:block; }
+  .main { height:auto; min-height:100vh; min-height:100dvh; overflow-y:visible; }
+}
+
 /* =====================================================
    MAIN
 ===================================================== */
@@ -280,17 +296,6 @@ body {
   flex:1; min-height:0; overflow-y:auto; padding:28px 28px;
   background:var(--bg-void); height:100vh; height:100dvh;
   scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.08) transparent;
-  max-width:100vw; overflow-x:hidden;
-}
-.main::-webkit-scrollbar { width:5px; }
-.main::-webkit-scrollbar-thumb { background:rgba(255,255,255,.08); border-radius:4px; }
-
-@media (max-width:768px) {
-  .mob-topbar { display:flex; }
-  .sidebar { position:fixed; top:0; left:0; bottom:0; z-index:100; transform:translateX(-100%); transition:transform .3s ease; }
-  .sidebar.open { transform:translateX(0); }
-  html, body { height:auto; min-height:100vh; min-height:100dvh; overflow-x:hidden; overflow-y:auto; -webkit-overflow-scrolling:touch; display:block; }
-  .main { height:auto; min-height:100vh; min-height:100dvh; overflow-y:visible; overflow-x:hidden; width:100%; max-width:100vw; padding:72px 16px 24px; }
 }
 .main::-webkit-scrollbar { width:5px; }
 .main::-webkit-scrollbar-thumb { background:rgba(255,255,255,.08); border-radius:4px; }
