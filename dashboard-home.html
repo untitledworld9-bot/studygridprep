@@ -2098,10 +2098,10 @@ body { padding-bottom: 64px; }
 <!-- Streak Break Popup (shown on app open if streak broke) -->
 <div id="streakBreakOverlay" class="streak-break-overlay" style="display:none;" onclick="closeStreakBreakPopup()">
   <div class="streak-break-card" onclick="event.stopPropagation()">
-    <span class="streak-break-emoji">😔</span>
+    <span class="streak-break-emoji"><i class="fa-solid fa-fire-flame-curved" style="color:#EF4444;"></i></span>
     <div class="streak-break-title">Streak Broken!</div>
-    <div class="streak-break-sub" id="streakBreakMsg">You missed a day and your streak has been reset to 0. Start fresh today — every champion stumbles, what matters is getting back up! 💪</div>
-    <button class="streak-break-btn" onclick="closeStreakBreakPopup()">Start Fresh Today 🔥</button>
+    <div class="streak-break-sub" id="streakBreakMsg">You missed a day and your streak has been reset to 0. Start fresh today — every champion stumbles, what matters is getting back up.</div>
+    <button class="streak-break-btn" onclick="closeStreakBreakPopup()">Start Fresh Today</button>
   </div>
 </div>
 
@@ -3375,23 +3375,21 @@ onAuthStateChanged(auth, async user => {
   const streakDoneToday = (lastStreakDate === today);
   // missedDay: lastStreakDate set tha, aaj nahi, kal bhi nahi → streak break
   const missedDay = lastStreakDate && lastStreakDate !== today && lastStreakDate !== yesterday;
-  // Also check if user was active but didn't complete streak (lastActive was before yesterday)
-  const missedActive = lastActive && lastActive !== today && lastActive !== yesterday;
 
   if(lastActive!==today){
     if(streakDoneToday){
       // Streak already earned today (possibly via playlist.html/todo.html) —
       // just resync lastActiveDate, never break a streak that's valid today.
       await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
-    } else if(lastActive===yesterday) {
-      // consecutive — don't increment here; only increment on daily goal completion
-      // ✅ FIX: still refresh lastActiveDate so it never goes stale across sessions
-      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
-    } else if((missedDay || missedActive) && hadStreakBefore){
-      // Broke streak — reset. (The streakDoneToday check above already
-      // guards against the false-positive where streak was legitimately
-      // earned today but lastActiveDate happened to be stale — so this OR
-      // stays intentionally broad to still correctly catch genuine gaps.)
+    } else if(missedDay && hadStreakBefore){
+      // ✅ FIX (root cause): break detection must depend ONLY on lastStreakDate
+      // (the last day the goal was actually completed), never on lastActiveDate
+      // (the last day the app was merely opened). The old code checked
+      // lastActive===yesterday FIRST and treated that as "still fine", so a
+      // user who opens the app every day but skips the goal for several days
+      // kept sliding lastActiveDate forward daily and the streak never broke.
+      // missedDay is true only when lastStreakDate is 2+ days old, which is
+      // the real signal that the streak is broken — so it now takes priority.
       streak = 0;
       await updateDoc(userRef,{streak:0, lastActiveDate:today}).catch(()=>{});
       localStorage.setItem("uw_streak","0");
@@ -3401,11 +3399,9 @@ onAuthStateChanged(auth, async user => {
         localStorage.setItem(breakKey,"1");
         setTimeout(()=>{ if(window.showStreakBreakPopup) window.showStreakBreakPopup(); }, 1200);
       }
-    } else if(!lastActive){
-      // first time user — set lastActiveDate
-      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
     } else {
-      // Just updating lastActiveDate without changing streak
+      // lastStreakDate is today/yesterday/empty (streak still valid or never
+      // started) — just refresh lastActiveDate, no streak change.
       await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
     }
     localStorage.setItem("uw_streak",streak);
