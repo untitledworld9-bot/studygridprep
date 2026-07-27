@@ -1,387 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Admin Hub — Study Grid Prep</title>
-  <link rel="manifest" href="/admin/manifestadmin.json">
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-  <meta name="theme-color" content="#07080d" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <style>
-    /* ============================================================
-       DESIGN TOKENS — Professional, No Neon
-    ============================================================ */
-    :root {
-      --bg-void:       #07080d;
-      --bg-panel:      #0d0f18;
-      --bg-card:       #111420;
-      --bg-card-hover: #161b2e;
-      --border:        rgba(255,255,255,0.08);
-      --border-hover:  rgba(255,255,255,0.15);
-
-      --accent-main:   #7c5cfc;
-      --accent-danger: #ef4444;
-      
-      --text-primary:  #eef0ff;
-      --text-secondary:#8890b0;
-      --text-muted:    #4a5070;
-
-      --sidebar-w:     260px;
-      --radius-lg:     16px;
-      --radius-md:     10px;
-
-      --shadow-card:   0 4px 20px rgba(0,0,0,0.3);
-
-      --font-display:  'Syne', sans-serif;
-      --font-body:     'Manrope', sans-serif;
-    }
-
-    /* ── LIGHT THEME ── */
-    [data-theme="light"] {
-      --bg-void:       #f8fafc;
-      --bg-panel:      #ffffff;
-      --bg-card:       #ffffff;
-      --bg-card-hover: #f1f5f9;
-      --border:        #e2e8f0;
-      --border-hover:  #cbd5e1;
-
-      --accent-main:   #6366f1;
-      --accent-danger: #dc2626;
-
-      --text-primary:  #0f172a;
-      --text-secondary:#475569;
-      --text-muted:    #94a3b8;
-
-      --shadow-card:   0 4px 16px rgba(15,23,42,0.06);
-    }
-    
-    html { transition: background-color .25s ease; }
-    body { 
-      transition: background-color .25s ease, color .25s ease;
-      font-family: var(--font-body);
-      background: var(--bg-void);
-      color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      margin: 0;
-      overflow: hidden;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    a { text-decoration: none; color: inherit; }
-
-    /* ============================================================
-       ANIMATIONS
-    ============================================================ */
-    @keyframes slideInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    /* ============================================================
-       SIDEBAR (Fixed)
-    ============================================================ */
-    .sidebar {
-      width: var(--sidebar-w);
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      height: 100vh;
-      flex-shrink: 0;
-      position: sticky; /* Stuck */
-      top: 0;
-      z-index: 10;
-      animation: slideInLeft 0.5s ease-out forwards;
-    }
-    .sidebar-header {
-      padding: 24px 20px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-logo {
-      font-family: var(--font-display);
-      font-size: 18px; font-weight: 800;
-      color: var(--text-primary);
-      display: block;
-    }
-    .sidebar-role {
-      font-size: 11px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px;
-    }
-    .sidebar-nav { flex: 1; padding: 24px 20px; }
-    
-    /* Theme Toggle */
-    .theme-toggle-row { 
-      display: flex; align-items: center; justify-content: space-between; 
-      padding: 16px 20px; border-top: 1px solid var(--border);
-    }
-    .theme-toggle-label { font-size: 13px; color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .theme-switch { position: relative; width: 44px; height: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 99px; cursor: pointer; }
-    .theme-switch-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-secondary); transition: transform .25s ease; }
-    [data-theme="light"] .theme-switch-knob { transform: translateX(20px); background: var(--accent-main); }
-
-    /* ============================================================
-       MAIN CONTENT
-    ============================================================ */
-    .main {
-      flex: 1; overflow-y: auto; padding: 48px 56px;
-      background: var(--bg-void);
-      /* Smooth scrolling */
-      scroll-behavior: smooth;
-    }
-    .page-header { 
-      margin-bottom: 40px; 
-      animation: slideInUp 0.6s ease-out forwards;
-      opacity: 0; /* Starts hidden for animation */
-    }
-    .page-title { 
-      font-family: var(--font-display); font-size: 36px; font-weight: 800; margin-bottom: 8px; 
-      /* Subtle text gradient */
-      background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .page-subtitle { font-size: 16px; color: var(--text-secondary); }
-
-    /* ============================================================
-       HUB CARDS
-    ============================================================ */
-    .hub-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 24px;
-    }
-
-    .hub-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
-      box-shadow: var(--shadow-card);
-      cursor: pointer;
-      opacity: 0; /* Starts hidden for animation */
-      animation: slideInUp 0.6s ease-out forwards;
-    }
-    
-    /* Staggered animation delays */
-    .hub-card:nth-child(1) { animation-delay: 0.1s; }
-    .hub-card:nth-child(2) { animation-delay: 0.2s; }
-    .hub-card:nth-child(3) { animation-delay: 0.3s; }
-    .hub-card:nth-child(4) { animation-delay: 0.4s; }
-
-    
-    /* Soft hover effect, no neon glow, slight lift */
-    .hub-card:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-hover);
-      transform: translateY(-4px) scale(1.01);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    }
-
-    [data-theme="light"] .hub-card:hover {
-        box-shadow: 0 8px 30px rgba(15,23,42,0.1);
-    }
-
-    .card-icon {
-      width: 52px; height: 52px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      background: rgba(124, 92, 252, 0.08);
-      color: var(--accent-main);
-      transition: transform 0.3s ease;
-    }
-    
-    .hub-card:hover .card-icon {
-        transform: scale(1.05);
-    }
-
-    [data-theme="light"] .card-icon {
-      background: rgba(99, 102, 241, 0.1);
-    }
-
-    .card-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-    .card-desc {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-    .card-link-arrow {
-      margin-top: auto;
-      align-self: flex-start;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-secondary);
-      display: flex; align-items: center; gap: 8px;
-      transition: color 0.2s, transform 0.2s;
-    }
-    
-    /* Arrow moves on hover */
-    .hub-card:hover .card-link-arrow {
-      color: var(--text-primary);
-    }
-    .hub-card:hover .card-link-arrow i {
-        transform: translateX(4px);
-    }
-
-    /* ── DANGER / SGP MAIN CARD ── */
-    .hub-card.danger-card {
-      background: rgba(239, 68, 68, 0.03);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-    .hub-card.danger-card:hover {
-      background: rgba(239, 68, 68, 0.06);
-      border-color: rgba(239, 68, 68, 0.4);
-    }
-    .danger-card .card-icon {
-      background: rgba(239, 68, 68, 0.1);
-      color: var(--accent-danger);
-    }
-    .danger-card .card-title {
-      color: var(--accent-danger);
-    }
-    .danger-card:hover .card-link-arrow {
-        color: var(--accent-danger);
-    }
-
-    /* ============================================================
-       RESPONSIVE
-    ============================================================ */
-    @media (max-width: 768px) {
-      body { flex-direction: column; overflow-y: auto; }
-      .sidebar { 
-          width: 100%; height: auto; border-right: none; 
-          border-bottom: 1px solid var(--border); flex-direction: row; 
-          align-items: center; justify-content: space-between; padding: 0;
-          position: relative; /* Unstick on mobile */
-      }
-      .sidebar-header { border-bottom: none; padding: 16px 20px; }
-      .sidebar-nav { display: none; }
-      .theme-toggle-row { border-top: none; padding: 16px 20px; }
-      .theme-toggle-label span { display: none; }
-      .main { padding: 32px 20px; height: auto; overflow: visible; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Study Grid Prep - Admin Hub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+--bg:#07080d;--panel:#10131d;--card:#161b27;--accent:#7c5cfc;
+--text:#eef0ff;--muted:#8b93b5;--border:rgba(255,255,255,.08)
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family:Arial,sans-serif;
+background:
+radial-gradient(circle at top right,#7c5cfc22,transparent 35%),
+radial-gradient(circle at bottom left,#2f6bff11,transparent 40%),var(--bg);
+color:var(--text);
+display:flex;
+}
+.sidebar{
+position:fixed;left:0;top:0;width:260px;height:100vh;
+background:var(--panel);border-right:1px solid var(--border);
+padding:22px;
+}
+.logo{font-size:22px;font-weight:700}
+.role{font-size:12px;color:var(--muted);margin-top:6px}
+.main{margin-left:260px;flex:1;height:100vh;overflow:auto;padding:24px 40px}
+.header{
+position:sticky;top:0;z-index:20;
+background:rgba(7,8,13,.78);
+backdrop-filter:blur(18px);
+padding:18px 0 20px;
+border-bottom:1px solid var(--border);
+margin-bottom:28px;
+animation:down .7s;
+}
+.header h1{font-size:34px}
+.header p{color:var(--muted);margin-top:6px}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:22px;
+}
+.card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:18px;
+padding:24px;
+display:flex;
+flex-direction:column;
+gap:18px;
+transition:.3s;
+animation:up .6s both;
+}
+.card:hover{
+transform:translateY(-6px);
+border-color:#7c5cfc66;
+}
+.icon{
+width:56px;height:56px;border-radius:14px;
+display:flex;align-items:center;justify-content:center;
+background:#7c5cfc22;color:#9b85ff;font-size:22px;
+}
+.title{font-size:22px;font-weight:700}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips span{
+padding:6px 10px;border-radius:30px;
+background:#ffffff10;font-size:12px
+}
+.btn{
+margin-top:auto;
+padding:13px;
+border-radius:12px;
+background:var(--accent);
+text-align:center;
+font-weight:700;
+color:white;
+}
+.danger .btn{background:#e53935}
+#intro{
+position:fixed;inset:0;background:#07080d;
+display:flex;align-items:center;justify-content:center;
+flex-direction:column;z-index:999;
+animation:hide 1.8s forwards 1.2s;
+}
+#intro h1{font-size:42px}
+#intro p{margin-top:10px;color:#aaa}
+@keyframes hide{to{opacity:0;visibility:hidden}}
+@keyframes up{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:none}}
+@keyframes down{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+</style>
 </head>
 <body>
+<div id="intro">
+<h1>👋 Welcome Admin</h1>
+<p>Initializing Secure Workspace...</p>
+</div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-logo">Study Grid Prep</span>
-      <span class="sidebar-role">Admin Panels Hub</span>
-    </div>
-    
-    <div class="theme-toggle-row" style="margin-top: auto; border-top: none;">
-      <span class="theme-toggle-label"><i class="fa-solid fa-moon"></i> <span>Theme</span></span>
-      <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-knob"></div></div>
-    </div>
-  </aside>
+<aside class="sidebar">
+<div class="logo">Study Grid Prep</div>
+<div class="role">ADMIN HUB</div>
+</aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="main">
-    <div class="page-header">
-      <h1 class="page-title">Welcome back, Admin.</h1>
-      <p class="page-subtitle">Select a module to manage the platform.</p>
-    </div>
+<main class="main">
+<div class="header">
+<h1>Welcome Back</h1>
+<p>Select a module</p>
+</div>
 
-    <div class="hub-grid">
-      
-      <!-- SUB-ADMIN PANEL -->
-      <a href="/admin/sub-admin" class="hub-card">
-        <div class="card-icon"><i class="fa-solid fa-users-gear"></i></div>
-        <div>
-          <div class="card-title">Sub-Admin Panel</div>
-          <div class="card-desc">Manage users, track focus timers, handle push notifications, and monitor chat rooms.</div>
-        </div>
-        <div class="card-link-arrow">Open Panel <i class="fa-solid fa-arrow-right"></i></div>
-      </a>
+<div class="grid">
 
-      <!-- MEDIA STUDIO -->
-      <a href="/admin/admin-media" class="hub-card">
-        <div class="card-icon"><i class="fa-solid fa-photo-film"></i></div>
-        <div>
-          <div class="card-title">Media Studio Admin</div>
-          <div class="card-desc">Upload assets, manage library, taxonomy, and organize content resources.</div>
-        </div>
-        <div class="card-link-arrow">Open Panel <i class="fa-solid fa-arrow-right"></i></div>
-      </a>
+<a class="card" href="/admin/sub-admin">
+<div class="icon"><i class="fa-solid fa-users-gear"></i></div>
+<div class="title">Sub Admin</div>
+<div class="chips"><span>Users</span><span>Reports</span><span>Push</span></div>
+<div class="btn">Open Panel</div>
+</a>
 
-      <!-- MOCK ADMIN -->
-      <a href="/admin/admin-mock" class="hub-card">
-        <div class="card-icon"><i class="fa-solid fa-file-pen"></i></div>
-        <div>
-          <div class="card-title">Mock Admin Panel</div>
-          <div class="card-desc">Create, publish, and evaluate mock tests, assignments, and exam data.</div>
-        </div>
-        <div class="card-link-arrow">Open Panel <i class="fa-solid fa-arrow-right"></i></div>
-      </a>
+<a class="card" href="/admin/admin-media">
+<div class="icon"><i class="fa-solid fa-photo-film"></i></div>
+<div class="title">Media Studio</div>
+<div class="chips"><span>Assets</span><span>Upload</span><span>Library</span></div>
+<div class="btn">Open Panel</div>
+</a>
 
-      <!-- SGP MAIN ADMIN (DANGER/MASTER) -->
-      <a href="/admin/SGPAdmin-main" class="hub-card danger-card">
-        <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div>
-          <div class="card-title">SGP Main Admin</div>
-          <div class="card-desc">Superuser access. Platform-wide configuration, revenue data, and global overrides.</div>
-        </div>
-        <div class="card-link-arrow" style="color: var(--accent-danger);">Authorize <i class="fa-solid fa-arrow-right"></i></div>
-      </a>
+<a class="card" href="/admin/admin-mock">
+<div class="icon"><i class="fa-solid fa-graduation-cap"></i></div>
+<div class="title">Mock Admin</div>
+<div class="chips"><span>Tests</span><span>Results</span><span>Exam</span></div>
+<div class="btn">Open Panel</div>
+</a>
 
-    </div>
-  </main>
+<a class="card danger" href="/admin/SGPAdmin-main">
+<div class="icon"><i class="fa-solid fa-crown"></i></div>
+<div class="title">SGP Main</div>
+<div class="chips"><span>Revenue</span><span>Control</span><span>Root</span></div>
+<div class="btn">Authorize</div>
+</a>
 
-  <script>
-    // Theme Toggle Logic
-    function toggleTheme() {
-      const html = document.documentElement;
-      const isLight = html.getAttribute("data-theme") === "light";
-      const next = isLight ? "dark" : "light";
-      
-      if (next === "light") {
-        html.setAttribute("data-theme", "light");
-      } else {
-        html.removeAttribute("data-theme");
-      }
-      localStorage.setItem("sgp-hub-theme", next);
-    }
-
-    // Initialize Theme
-    (function initTheme() {
-      const saved = localStorage.getItem("sgp-hub-theme");
-      if (saved === "light") { 
-        document.documentElement.setAttribute("data-theme", "light"); 
-        return; 
-      }
-      if (saved === "dark") return;
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-        document.documentElement.setAttribute("data-theme", "light");
-      }
-    })();
-  </script>
+</div>
+</main>
 </body>
 </html>
