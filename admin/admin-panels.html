@@ -4,20 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Hub — Study Grid Prep</title>
-  
+
   <link rel="manifest" href="/admin/manifestadmin.json">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <meta name="theme-color" content="#07080d">
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
+
+  <!-- THEME INITIALIZATION SCRIPT (Prevents Flash of Unstyled Content) -->
+  <script>
+    const savedTheme = localStorage.getItem('sgp-theme');
+    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    if (savedTheme === 'light' || (!savedTheme && systemPrefersLight)) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  </script>
+
   <style>
     /* ============================================================
        DESIGN TOKENS — Ultra Clean, Linear/Vercel Style
     ============================================================ */
     :root {
+      /* Dark Theme (Default) */
       --bg: #07080d;
       --panel: #0d0f18;
       --card: #111420;
@@ -28,12 +38,32 @@
       --muted: #8b93b5;
       --border: rgba(255, 255, 255, 0.08);
       --border-hover: rgba(255, 255, 255, 0.15);
+      
       --font-display: 'Syne', sans-serif;
       --font-body: 'Manrope', sans-serif;
     }
 
+    [data-theme="light"] {
+      /* Light Theme */
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --card: #ffffff;
+      --card-hover: #f1f5f9;
+      --accent: #6366f1; /* Softer indigo for light mode */
+      --danger: #dc2626;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-hover: rgba(0, 0, 0, 0.15);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     a { text-decoration: none; color: inherit; }
+
+    /* Smooth transition for theme switching */
+    body, .sidebar, .card, .header, .theme-btn, .chips span {
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
 
     body {
       font-family: var(--font-body);
@@ -55,7 +85,7 @@
     }
     #intro h1 { 
       font-family: var(--font-display); font-size: 42px; font-weight: 800; 
-      background: linear-gradient(135deg, #ffffff, #8890b0); 
+      background: linear-gradient(135deg, var(--text), var(--muted)); 
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
     }
     #intro p { margin-top: 12px; color: var(--muted); font-size: 14px; letter-spacing: 1px; }
@@ -86,9 +116,37 @@
       margin-bottom: 32px;
       animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
       animation-delay: 1.6s;
+      
+      /* Flexbox applied for Top Right Button */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .header h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; letter-spacing: -1px; }
-    .header p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+    
+    [data-theme="light"] .header {
+      background: rgba(248, 250, 252, 0.75); /* Light glass effect */
+    }
+
+    .header-text h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+    .header-text p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+
+    /* Theme Button */
+    .theme-btn {
+      background: rgba(124, 92, 252, 0.1);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      outline: none;
+    }
+    .theme-btn:hover {
+      background: rgba(124, 92, 252, 0.18);
+      transform: scale(1.05);
+      border-color: var(--border-hover);
+    }
 
     /* ── GRID & CARDS ── */
     .grid {
@@ -97,7 +155,6 @@
     .card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
       padding: 24px; display: flex; flex-direction: column; gap: 20px;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
       opacity: 0;
     }
@@ -115,11 +172,14 @@
       background: var(--card-hover); 
     }
     
+    [data-theme="light"] .card:hover {
+      box-shadow: 0 12px 32px rgba(15,23,42,0.08); 
+    }
+    
     .icon {
       width: 52px; height: 52px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
       background: rgba(124, 92, 252, 0.1); color: var(--accent); font-size: 22px;
-      transition: transform 0.3s ease;
     }
     .card:hover .icon { transform: scale(1.08); }
 
@@ -128,7 +188,7 @@
     /* Chips */
     .chips { display: flex; gap: 8px; flex-wrap: wrap; }
     .chips span {
-      padding: 6px 12px; border-radius: 99px; background: rgba(255, 255, 255, 0.04);
+      padding: 6px 12px; border-radius: 99px; background: rgba(124, 92, 252, 0.05);
       border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--muted);
       text-transform: uppercase; letter-spacing: 0.5px;
     }
@@ -136,7 +196,7 @@
     .btn {
       margin-top: auto; padding: 14px; border-radius: 10px;
       background: var(--accent); text-align: center; font-weight: 700; color: white;
-      font-size: 14px; transition: opacity 0.2s; border: none; cursor: pointer;
+      font-size: 14px; border: none; cursor: pointer;
     }
     .card:hover .btn { opacity: 0.9; }
 
@@ -175,8 +235,15 @@
       .role { margin-top: 0; }
       
       .main { margin-left: 0; padding: 0 20px 32px; }
-      .header { padding: 20px 0; margin-bottom: 24px; }
-      .header h1 { font-size: 28px; }
+      
+      .header { 
+        padding: 20px 0; margin-bottom: 24px;
+      }
+      .header-text h1 { font-size: 26px; }
+      .header-text p { font-size: 13px; }
+      
+      .theme-btn { width: 40px; height: 40px; font-size: 16px; flex-shrink: 0; margin-left: 12px; }
+
       .grid { gap: 16px; }
     }
   </style>
@@ -200,10 +267,17 @@
   <!-- Main Content -->
   <main class="main">
     
-    <!-- STICKY HEADER -->
+    <!-- STICKY HEADER WITH THEME BUTTON -->
     <div class="header">
-      <h1>Welcome Back</h1>
-      <p>Select a module to manage the platform</p>
+      <div class="header-text">
+        <h1>Welcome Back</h1>
+        <p>Select a module to manage the platform</p>
+      </div>
+      
+      <!-- Theme Toggle Button -->
+      <button id="themeToggle" class="theme-btn" aria-label="Toggle Theme">
+        <i class="fa-solid fa-moon"></i>
+      </button>
     </div>
 
     <!-- CARDS GRID -->
@@ -243,6 +317,57 @@
 
     </div>
   </main>
-  
+
+  <!-- THEME LOGIC JAVASCRIPT -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = themeToggle.querySelector('i');
+      const root = document.documentElement;
+
+      // Function to apply UI changes based on theme
+      const applyThemeUI = (theme) => {
+        if (theme === 'light') {
+          themeIcon.classList.remove('fa-moon');
+          themeIcon.classList.add('fa-sun');
+        } else {
+          themeIcon.classList.remove('fa-sun');
+          themeIcon.classList.add('fa-moon');
+        }
+      };
+
+      // Set initial icon based on the pre-loaded theme
+      applyThemeUI(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+
+      // Manual click event
+      themeToggle.addEventListener('click', () => {
+        let currentTheme = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        let newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        if (newTheme === 'light') {
+          root.setAttribute('data-theme', 'light');
+        } else {
+          root.removeAttribute('data-theme');
+        }
+        
+        localStorage.setItem('sgp-theme', newTheme);
+        applyThemeUI(newTheme);
+      });
+
+      // Listen for system theme changes in real-time
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+        // Only change automatically if user hasn't explicitly set a preference
+        if (!localStorage.getItem('sgp-theme')) {
+          const newTheme = e.matches ? 'light' : 'dark';
+          if (newTheme === 'light') {
+            root.setAttribute('data-theme', 'light');
+          } else {
+            root.removeAttribute('data-theme');
+          }
+          applyThemeUI(newTheme);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
