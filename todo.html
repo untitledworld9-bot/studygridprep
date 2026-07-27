@@ -1309,6 +1309,16 @@ pointer-events:none;">
     /* ============================================================
        MODAL: OPEN / CLOSE / SAVE
     ============================================================ */
+    // Returns the date a NEW task should default to, based on whichever
+    // tab the user is currently looking at (Today / Tomorrow / Calendar).
+    function getDefaultTaskDate() {
+      const activeBtn = document.querySelector('.tab-btn.active');
+      const tab = activeBtn ? activeBtn.dataset.tab : 'today';
+      if (tab === 'tomorrow') return tomorrowKey();
+      if (tab === 'calendar') return calSel || todayKey();
+      return todayKey(); // 'today' and 'upcoming' tabs have no single-date context
+    }
+
     function openModal(id) {
       editingId = id || null;
       const fab = document.getElementById('fab');
@@ -1323,7 +1333,12 @@ pointer-events:none;">
       } else {
         document.getElementById('modalTitle').textContent = 'New Task';
         document.getElementById('taskName').value = '';
-        document.getElementById('taskDate').value = todayKey();
+        // ✅ FIX: pehle yahan hamesha todayKey() set ho jaata tha, chahe user
+        // "Tomorrow" tab pe ho ya "Calendar" tab mein koi aur date tap kiya ho —
+        // isliye jo bhi date select karo, add task modal mein "Today" hi
+        // default select rehta tha. Ab active tab ke hisaab se sahi date
+        // default select hoti hai.
+        document.getElementById('taskDate').value = getDefaultTaskDate();
         document.getElementById('taskTime').value = '';
         document.querySelector('input[name="prio"][value="none"]').checked = true;
       }

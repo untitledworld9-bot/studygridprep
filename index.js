@@ -190,8 +190,26 @@ function isPWA() {
 
 function initServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
-  navigator.serviceWorker.register("/firebase-messaging-sw.js");
-  navigator.serviceWorker.register("/sw.js");
+
+  // ✅ ROOT-CAUSE FIX: both SWs were registering at the default scope ('/'),
+  // which put them in direct conflict — the browser keys a registration by
+  // its scope, so two different script URLs fighting over the same scope
+  // never settle into a stable "activated + controlling" worker. That's
+  // exactly why sw.js (which owns offline caching/navigation fallback)
+  // sometimes wasn't in control on page load, and the browser's own raw
+  // "This site can't be reached" error showed instead of offline.html.
+  //
+  // Firebase-messaging-sw.js only needs to exist for push notifications;
+  // scoping it to its own narrow path (Firebase's own documented pattern
+  // for running alongside a custom root SW) leaves sw.js in sole, stable
+  // control of the whole site ('/').
+  navigator.serviceWorker
+    .register("/firebase-messaging-sw.js", { scope: "/firebase-cloud-messaging-push-scope" })
+    .catch(err => console.warn("[SW] firebase-messaging-sw registration failed:", err));
+
+  navigator.serviceWorker
+    .register("/sw.js", { scope: "/" })
+    .catch(err => console.warn("[SW] sw.js registration failed:", err));
 }
 
 
