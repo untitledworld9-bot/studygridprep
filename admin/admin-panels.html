@@ -1,145 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Study Grid Prep - Admin Hub</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
-:root{
---bg:#07080d;--panel:#10131d;--card:#161b27;--accent:#7c5cfc;
---text:#eef0ff;--muted:#8b93b5;--border:rgba(255,255,255,.08)
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-font-family:Arial,sans-serif;
-background:
-radial-gradient(circle at top right,#7c5cfc22,transparent 35%),
-radial-gradient(circle at bottom left,#2f6bff11,transparent 40%),var(--bg);
-color:var(--text);
-display:flex;
-}
-.sidebar{
-position:fixed;left:0;top:0;width:260px;height:100vh;
-background:var(--panel);border-right:1px solid var(--border);
-padding:22px;
-}
-.logo{font-size:22px;font-weight:700}
-.role{font-size:12px;color:var(--muted);margin-top:6px}
-.main{margin-left:260px;flex:1;height:100vh;overflow:auto;padding:24px 40px}
-.header{
-position:sticky;top:0;z-index:20;
-background:rgba(7,8,13,.78);
-backdrop-filter:blur(18px);
-padding:18px 0 20px;
-border-bottom:1px solid var(--border);
-margin-bottom:28px;
-animation:down .7s;
-}
-.header h1{font-size:34px}
-.header p{color:var(--muted);margin-top:6px}
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:22px;
-}
-.card{
-background:var(--card);
-border:1px solid var(--border);
-border-radius:18px;
-padding:24px;
-display:flex;
-flex-direction:column;
-gap:18px;
-transition:.3s;
-animation:up .6s both;
-}
-.card:hover{
-transform:translateY(-6px);
-border-color:#7c5cfc66;
-}
-.icon{
-width:56px;height:56px;border-radius:14px;
-display:flex;align-items:center;justify-content:center;
-background:#7c5cfc22;color:#9b85ff;font-size:22px;
-}
-.title{font-size:22px;font-weight:700}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chips span{
-padding:6px 10px;border-radius:30px;
-background:#ffffff10;font-size:12px
-}
-.btn{
-margin-top:auto;
-padding:13px;
-border-radius:12px;
-background:var(--accent);
-text-align:center;
-font-weight:700;
-color:white;
-}
-.danger .btn{background:#e53935}
-#intro{
-position:fixed;inset:0;background:#07080d;
-display:flex;align-items:center;justify-content:center;
-flex-direction:column;z-index:999;
-animation:hide 1.8s forwards 1.2s;
-}
-#intro h1{font-size:42px}
-#intro p{margin-top:10px;color:#aaa}
-@keyframes hide{to{opacity:0;visibility:hidden}}
-@keyframes up{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:none}}
-@keyframes down{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin Hub — Study Grid Prep</title>
+  
+  <link rel="manifest" href="/admin/manifestadmin.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <meta name="theme-color" content="#07080d">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Ultra Clean, Linear/Vercel Style
+    ============================================================ */
+    :root {
+      --bg: #07080d;
+      --panel: #0d0f18;
+      --card: #111420;
+      --card-hover: #161b2e;
+      --accent: #7c5cfc;
+      --danger: #ef4444;
+      --text: #eef0ff;
+      --muted: #8b93b5;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    a { text-decoration: none; color: inherit; }
+
+    body {
+      font-family: var(--font-body);
+      background: radial-gradient(circle at top right, rgba(124, 92, 252, 0.08), transparent 40%),
+                  radial-gradient(circle at bottom left, rgba(47, 107, 255, 0.05), transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── WELCOME INTRO OVERLAY ── */
+    #intro {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      z-index: 9999;
+      animation: hideIntro 2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+    }
+    #intro h1 { 
+      font-family: var(--font-display); font-size: 42px; font-weight: 800; 
+      background: linear-gradient(135deg, #ffffff, #8890b0); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+    }
+    #intro p { margin-top: 12px; color: var(--muted); font-size: 14px; letter-spacing: 1px; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
+      background: var(--panel); border-right: 1px solid var(--border);
+      padding: 32px 24px; z-index: 30;
+      display: flex; flex-direction: column;
+    }
+    .logo { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .role { font-size: 11px; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      margin-left: 260px; flex: 1; padding: 0 48px 48px;
+      min-height: 100vh;
+    }
+
+    /* ── STICKY GLASS HEADER ── */
+    .header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(7, 8, 13, 0.75); 
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+      animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: 1.6s;
+    }
+    .header h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+    .header p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+
+    /* ── GRID & CARDS ── */
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; display: flex; flex-direction: column; gap: 20px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+      opacity: 0;
+    }
+    
+    /* Staggered load animation after intro */
+    .card:nth-child(1) { animation-delay: 1.7s; }
+    .card:nth-child(2) { animation-delay: 1.8s; }
+    .card:nth-child(3) { animation-delay: 1.9s; }
+    .card:nth-child(4) { animation-delay: 2.0s; }
+
+    .card:hover { 
+      transform: translateY(-6px); 
+      border-color: rgba(124, 92, 252, 0.4); 
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4); 
+      background: var(--card-hover); 
+    }
+    
+    .icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(124, 92, 252, 0.1); color: var(--accent); font-size: 22px;
+      transition: transform 0.3s ease;
+    }
+    .card:hover .icon { transform: scale(1.08); }
+
+    .title { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+    
+    /* Chips */
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chips span {
+      padding: 6px 12px; border-radius: 99px; background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .btn {
+      margin-top: auto; padding: 14px; border-radius: 10px;
+      background: var(--accent); text-align: center; font-weight: 700; color: white;
+      font-size: 14px; transition: opacity 0.2s; border: none; cursor: pointer;
+    }
+    .card:hover .btn { opacity: 0.9; }
+
+    /* ── DANGER CARD (SGP Main) ── */
+    .card.danger { background: rgba(239, 68, 68, 0.02); border-color: rgba(239, 68, 68, 0.15); }
+    .card.danger:hover { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.06); }
+    .card.danger .icon { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .card.danger .btn { background: var(--danger); }
+
+    /* ── KEYFRAME ANIMATIONS ── */
+    @keyframes hideIntro {
+      0% { opacity: 1; visibility: visible; }
+      80% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    @keyframes slideUp { 
+      from { opacity: 0; transform: translateY(30px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+    @keyframes slideDown { 
+      from { opacity: 0; transform: translateY(-30px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+
+    /* ── PERFECT MOBILE RESPONSIVE ── */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      #intro h1 { font-size: 32px; }
+      
+      /* Turn Sidebar into a Top Bar on Mobile */
+      .sidebar {
+        position: relative; width: 100%; height: auto;
+        border-right: none; border-bottom: 1px solid var(--border);
+        padding: 16px 20px; flex-direction: row; align-items: center; justify-content: space-between;
+      }
+      .role { margin-top: 0; }
+      
+      .main { margin-left: 0; padding: 0 20px 32px; }
+      .header { padding: 20px 0; margin-bottom: 24px; }
+      .header h1 { font-size: 28px; }
+      .grid { gap: 16px; }
+    }
+  </style>
 </head>
 <body>
-<div id="intro">
-<h1>👋 Welcome Admin</h1>
-<p>Initializing Secure Workspace...</p>
-</div>
 
-<aside class="sidebar">
-<div class="logo">Study Grid Prep</div>
-<div class="role">ADMIN HUB</div>
-</aside>
+  <!-- Welcome Intro Overlay -->
+  <div id="intro">
+    <h1>👋 Welcome, Admin</h1>
+    <p>Initializing Secure Workspace...</p>
+  </div>
 
-<main class="main">
-<div class="header">
-<h1>Welcome Back</h1>
-<p>Select a module</p>
-</div>
+  <!-- Sidebar / Mobile Topbar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo">Study Grid Prep</div>
+      <div class="role">Admin Hub</div>
+    </div>
+  </aside>
 
-<div class="grid">
+  <!-- Main Content -->
+  <main class="main">
+    
+    <!-- STICKY HEADER -->
+    <div class="header">
+      <h1>Welcome Back</h1>
+      <p>Select a module to manage the platform</p>
+    </div>
 
-<a class="card" href="/admin/sub-admin">
-<div class="icon"><i class="fa-solid fa-users-gear"></i></div>
-<div class="title">Sub Admin</div>
-<div class="chips"><span>Users</span><span>Reports</span><span>Push</span></div>
-<div class="btn">Open Panel</div>
-</a>
+    <!-- CARDS GRID -->
+    <div class="grid">
+      
+      <!-- Sub Admin -->
+      <a class="card" href="/admin/sub-admin">
+        <div class="icon"><i class="fa-solid fa-users-gear"></i></div>
+        <div class="title">Sub Admin</div>
+        <div class="chips"><span>Users</span><span>Reports</span><span>Push</span></div>
+        <div class="btn">Open Panel</div>
+      </a>
 
-<a class="card" href="/admin/admin-media">
-<div class="icon"><i class="fa-solid fa-photo-film"></i></div>
-<div class="title">Media Studio</div>
-<div class="chips"><span>Assets</span><span>Upload</span><span>Library</span></div>
-<div class="btn">Open Panel</div>
-</a>
+      <!-- Media Studio -->
+      <a class="card" href="/admin/admin-media">
+        <div class="icon"><i class="fa-solid fa-photo-film"></i></div>
+        <div class="title">Media Studio</div>
+        <div class="chips"><span>Assets</span><span>Upload</span><span>Library</span></div>
+        <div class="btn">Open Panel</div>
+      </a>
 
-<a class="card" href="/admin/admin-mock">
-<div class="icon"><i class="fa-solid fa-graduation-cap"></i></div>
-<div class="title">Mock Admin</div>
-<div class="chips"><span>Tests</span><span>Results</span><span>Exam</span></div>
-<div class="btn">Open Panel</div>
-</a>
+      <!-- Mock Admin -->
+      <a class="card" href="/admin/admin-mock">
+        <div class="icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="title">Mock Admin</div>
+        <div class="chips"><span>Tests</span><span>Results</span><span>Exam</span></div>
+        <div class="btn">Open Panel</div>
+      </a>
 
-<a class="card danger" href="/admin/SGPAdmin-main">
-<div class="icon"><i class="fa-solid fa-crown"></i></div>
-<div class="title">SGP Main</div>
-<div class="chips"><span>Revenue</span><span>Control</span><span>Root</span></div>
-<div class="btn">Authorize</div>
-</a>
+      <!-- SGP Main -->
+      <a class="card danger" href="/admin/SGPAdmin-main">
+        <div class="icon"><i class="fa-solid fa-crown"></i></div>
+        <div class="title">SGP Main</div>
+        <div class="chips"><span>Revenue</span><span>Control</span><span>Root</span></div>
+        <div class="btn">Authorize</div>
+      </a>
 
-</div>
-</main>
+    </div>
+  </main>
+  
 </body>
 </html>
