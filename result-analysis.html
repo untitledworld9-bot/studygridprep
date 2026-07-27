@@ -1638,7 +1638,7 @@ window.launchAIAnalysis = async function() {
       const ansKeys = Object.keys(subAnswers).map(Number).sort((a,b) => a-b);
       const questionsToUse = subQs.length > 0
         ? subQs
-        : ansKeys.map(i => ({ subject: sub, questionNo: i+1, topic: sub, correctAnswer: '' }));
+        : ansKeys.map(i => ({ subject: sub, questionNo: i+1, chapter: null, topic: null, correctAnswer: '' }));
 
       questionsToUse.forEach((q, i) => {
         const ansObj        = subAnswers[i] || { answer: null };
@@ -1647,9 +1647,15 @@ window.launchAIAnalysis = async function() {
         const isSkipped     = userAnswer === null || userAnswer === '';
         const isCorrect     = !isSkipped && String(userAnswer).toUpperCase() === correctAnswer;
 
+        // NOTE: q.section is the CUET exam-section (Section A / Section B) —
+        // it is NOT a syllabus chapter and must never be used as one (that
+        // was the bug that made "A" show up as a fake chapter name).
+        // chapter/topic only exist if the admin actually tagged the question.
         questions.push({
-          subject: sub,
-          topic:   q.topic || q.chapter || q.section || sub,
+          subject:       sub,
+          chapter:       q.chapter || null,
+          topic:         q.topic   || null,
+          chapterTagged: !!(q.chapter || q.topic),
           correct: isCorrect,
         });
       });
@@ -1659,8 +1665,8 @@ window.launchAIAnalysis = async function() {
     if (result.subjectData && Array.isArray(result.subjectData)) {
       result.subjectData.forEach(s => {
         const subName = s.subject || 'Unknown';
-        for (let i = 0; i < (s.correct   || 0); i++) questions.push({ subject:subName, topic:subName, correct:true  });
-        for (let i = 0; i < (s.incorrect || 0); i++) questions.push({ subject:subName, topic:subName, correct:false });
+        for (let i = 0; i < (s.correct   || 0); i++) questions.push({ subject:subName, chapter:null, topic:null, chapterTagged:false, correct:true  });
+        for (let i = 0; i < (s.incorrect || 0); i++) questions.push({ subject:subName, chapter:null, topic:null, chapterTagged:false, correct:false });
       });
     }
   }

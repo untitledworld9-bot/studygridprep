@@ -424,6 +424,18 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   font-size:13px; line-height:1.6; color:var(--text-primary);
 }
 
+.chapter-row-chevron {
+  margin-left:auto; color:var(--text-secondary); font-size:11px;
+  transition:transform 0.25s;
+}
+.topic-list {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.3s ease;
+}
+.topic-list.open { max-height:800px; }
+.topic-list.open ~ .chapter-row .chapter-row-chevron,
+.chapter-item:has(.topic-list.open) .chapter-row-chevron { transform:rotate(180deg); }
+
 /* ============================================================
    TOPIC CHIPS (WEAK / STRONG)
 ============================================================ */
@@ -491,7 +503,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   width:38px; height:38px; border-radius:12px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
   display:flex; align-items:center; justify-content:center;
-  font-size:16px; flex-shrink:0;
+  font-size:16px; flex-shrink:0; color:#fff;
   box-shadow:0 4px 16px rgba(91,91,246,0.3);
 }
 .ai-title-wrap { flex:1; min-width:0; }
@@ -817,7 +829,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 
     <div class="ai-card" id="aiStrategyCard">
       <div class="ai-header">
-        <div class="ai-avatar">🤖</div>
+        <div class="ai-avatar"><i class="fa-solid fa-microchip"></i></div>
         <div class="ai-title-wrap">
           <div class="ai-title">Study Grid Prep AI</div>
           <div class="ai-subtitle" id="aiStatus">Generating personalised analysis...</div>
@@ -871,7 +883,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     </div>
 
     <div class="motivation-card" id="motivCard">
-      <span class="motivation-emoji" id="motivEmoji">🚀</span>
+      <i class="fa-solid fa-rocket motivation-emoji" id="motivEmoji"></i>
       <div class="motivation-quote" id="motivQuote">"Loading your motivation..."</div>
       <div class="motivation-author" id="motivAuthor"></div>
     </div>
@@ -938,22 +950,58 @@ function processAnalysisData(data) {
   const questions  = data.questions || [];
   const subjectsRaw = data.subjects || {};
 
-  // Topic aggregation
-  const topicMap = {};
+  // ── Chapter → Topic aggregation ──
+  // Chapter is the primary grouping; topic is an optional sub-grouping
+  // *within* a chapter. Both come only from real admin-tagged data
+  // (result-analysis.html no longer fakes these from the CUET exam
+  // section A/B field — that was the "chapter: A" bug).
+  const chapterMap = {};
+  let anyChapterTagged = false;
+
   questions.forEach(q => {
-    const key = `${q.subject}||${q.topic}`;
-    if (!topicMap[key]) {
-      topicMap[key] = { topic: q.topic, subject: q.subject, correct: 0, wrong: 0, total: 0 };
+    const chapterName = q.chapter || null;
+    const topicName   = q.topic || null;
+    if (chapterName || topicName) anyChapterTagged = true;
+
+    const chapKey = `${q.subject}||${chapterName || '__untagged__'}`;
+    if (!chapterMap[chapKey]) {
+      chapterMap[chapKey] = {
+        subject: q.subject,
+        chapter: chapterName,   // null = not tagged by admin yet
+        correct: 0, wrong: 0, total: 0,
+        topicMap: {}
+      };
     }
-    topicMap[key].total++;
-    if (q.correct) topicMap[key].correct++;
-    else topicMap[key].wrong++;
+    const c = chapterMap[chapKey];
+    c.total++;
+    if (q.correct) c.correct++; else c.wrong++;
+
+    const topKey = topicName || '__general__';
+    if (!c.topicMap[topKey]) {
+      c.topicMap[topKey] = { topic: topicName, correct: 0, wrong: 0, total: 0 };
+    }
+    c.topicMap[topKey].total++;
+    if (q.correct) c.topicMap[topKey].correct++; else c.topicMap[topKey].wrong++;
   });
 
-  const topics = Object.values(topicMap);
+  const chapters = Object.values(chapterMap).map(c => ({
+    ...c,
+    topics: Object.values(c.topicMap),
+  }));
+
+  // Flat topic list for weak/strong chips — prefer the real topic name,
+  // fall back to the chapter name, skip anything with neither (fully untagged).
+  const flatTopics = [];
+  chapters.forEach(c => {
+    c.topics.forEach(t => {
+      const label = t.topic || c.chapter;
+      if (!label) return;
+      flatTopics.push({ topic: label, subject: c.subject, correct: t.correct, wrong: t.wrong, total: t.total });
+    });
+  });
 
   // Weak topics: sorted by wrong count desc, accuracy asc
-  const weakTopics = topics
+  const weakTopics = flatTopics
     .filter(t => t.wrong > 0)
     .sort((a, b) => {
       const aAcc = a.correct / a.total;
@@ -963,7 +1011,7 @@ function processAnalysisData(data) {
     .slice(0, 8);
 
   // Strong topics: accuracy >= 75% with at least 1 correct
-  const strongTopics = topics
+  const strongTopics = flatTopics
     .filter(t => t.total > 0 && (t.correct / t.total) >= 0.75)
     .sort((a, b) => (b.correct / b.total) - (a.correct / a.total))
     .slice(0, 8);
@@ -991,15 +1039,15 @@ function processAnalysisData(data) {
   const questionCount = questions.length || data.total || 1;
   const secPerQ = Math.round(totalSeconds / questionCount);
 
-  // Group ALL topics by subject (not just top weak/strong slices) so a
-  // proper subject → chapter breakdown can be rendered.
-  const topicsBySubject = {};
-  topics.forEach(t => {
-    const sub = t.subject || 'Other';
-    if (!topicsBySubject[sub]) topicsBySubject[sub] = [];
-    topicsBySubject[sub].push(t);
+  // Group real chapters by subject (each chapter carries its own topics[])
+  // so a proper subject → chapter → topic breakdown can be rendered.
+  const chaptersBySubject = {};
+  chapters.forEach(c => {
+    const sub = c.subject || 'Other';
+    if (!chaptersBySubject[sub]) chaptersBySubject[sub] = [];
+    chaptersBySubject[sub].push(c);
   });
-  Object.values(topicsBySubject).forEach(arr =>
+  Object.values(chaptersBySubject).forEach(arr =>
     arr.sort((a, b) => (a.correct / a.total) - (b.correct / b.total))
   );
 
@@ -1021,7 +1069,8 @@ function processAnalysisData(data) {
     subjects:     subjectStats,
     weakTopics,
     strongTopics,
-    topicsBySubject,
+    chaptersBySubject,
+    anyChapterTagged,
     secPerQ,
     questionCount,
   };
@@ -1031,12 +1080,12 @@ function processAnalysisData(data) {
    GRADE HELPER
 ================================================================ */
 function getGrade(accuracy) {
-  if (accuracy >= 90) return { label:'S Rank', color:'#5B5BF6',    bg:'rgba(91,91,246,0.12)',    emoji:'🏆' };
-  if (accuracy >= 75) return { label:'A+',     color:'#10B981',    bg:'rgba(16,185,129,0.12)',   emoji:'⭐' };
-  if (accuracy >= 60) return { label:'A',      color:'#10B981',    bg:'rgba(16,185,129,0.12)',   emoji:'✅' };
-  if (accuracy >= 45) return { label:'B',      color:'#F59E0B',    bg:'rgba(245,158,11,0.12)',   emoji:'📈' };
-  if (accuracy >= 30) return { label:'C',      color:'#F97316',    bg:'rgba(249,115,22,0.12)',   emoji:'💪' };
-  return                     { label:'D',      color:'#EF4444',    bg:'rgba(239,68,68,0.12)',    emoji:'🔥' };
+  if (accuracy >= 90) return { label:'S Rank', color:'#5B5BF6',    bg:'rgba(91,91,246,0.12)',    icon:'fa-solid fa-trophy' };
+  if (accuracy >= 75) return { label:'A+',     color:'#10B981',    bg:'rgba(16,185,129,0.12)',   icon:'fa-solid fa-star' };
+  if (accuracy >= 60) return { label:'A',      color:'#10B981',    bg:'rgba(16,185,129,0.12)',   icon:'fa-solid fa-circle-check' };
+  if (accuracy >= 45) return { label:'B',      color:'#F59E0B',    bg:'rgba(245,158,11,0.12)',   icon:'fa-solid fa-arrow-trend-up' };
+  if (accuracy >= 30) return { label:'C',      color:'#F97316',    bg:'rgba(249,115,22,0.12)',   icon:'fa-solid fa-fire' };
+  return                     { label:'D',      color:'#EF4444',    bg:'rgba(239,68,68,0.12)',    icon:'fa-solid fa-arrow-up-right-dots' };
 }
 
 /* ================================================================
@@ -1044,53 +1093,82 @@ function getGrade(accuracy) {
 ================================================================ */
 function subjectStyle(sub) {
   const s = sub.toLowerCase();
-  if (s.includes('phys'))  return { bg:'rgba(34,211,238,0.1)',  color:'var(--primary)',  icon:'⚛️' };
-  if (s.includes('chem'))  return { bg:'rgba(16,185,129,0.1)',  color:'var(--green)',    icon:'🧪' };
-  if (s.includes('math') || s.includes('maths')) return { bg:'rgba(139,92,246,0.1)', color:'var(--purple)', icon:'📐' };
-  return { bg:'rgba(245,158,11,0.1)', color:'var(--amber)', icon:'📚' };
+  if (s.includes('phys'))  return { bg:'rgba(91,91,246,0.1)',   color:'#5B5BF6', icon:'fa-solid fa-atom' };
+  if (s.includes('chem'))  return { bg:'rgba(16,185,129,0.1)',  color:'#10B981', icon:'fa-solid fa-flask' };
+  if (s.includes('math'))  return { bg:'rgba(124,58,237,0.1)',  color:'#7C3AED', icon:'fa-solid fa-square-root-variable' };
+  if (s.includes('bio'))   return { bg:'rgba(16,185,129,0.1)',  color:'#10B981', icon:'fa-solid fa-dna' };
+  if (s.includes('eng'))   return { bg:'rgba(244,63,94,0.1)',   color:'#F43F5E', icon:'fa-solid fa-language' };
+  return { bg:'rgba(245,158,11,0.1)', color:'#F59E0B', icon:'fa-solid fa-book' };
 }
 
 /* ================================================================
-   CHAPTER-WISE ACCORDION (subject → chapters, tick/cross per chapter)
+   CHAPTER-WISE ACCORDION (subject → chapter → topic, tick/cross)
 ================================================================ */
 function renderChapterAccordion(p) {
   const el = document.getElementById('chapterAccordion');
-  const subjects = Object.keys(p.topicsBySubject || {});
+  const subjects = Object.keys(p.chaptersBySubject || {});
 
-  if (subjects.length === 0) {
-    el.innerHTML = `<div style="font-size:12px;color:var(--text-secondary);padding:8px 2px;">Chapter-level data not available for this test.</div>`;
+  if (!p.anyChapterTagged || subjects.length === 0) {
+    el.innerHTML = `
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--text-secondary);padding:4px 2px;">
+        <i class="fa-solid fa-circle-info" style="color:var(--text-secondary);margin-top:2px;"></i>
+        <span>Chapter/topic tagging isn't set up for this test yet — questions were added without chapter tags. Once your admin panel tags chapters and topics on the questions, this section will show a full chapter-by-chapter breakdown.</span>
+      </div>`;
     return;
   }
 
   el.innerHTML = subjects.map((sub, si) => {
-    const chapters = p.topicsBySubject[sub];
+    const chaps = p.chaptersBySubject[sub];
     const sty = subjectStyle(sub);
-    const weakCount = chapters.filter(c => (c.correct / c.total) < 0.5).length;
+    const weakCount = chaps.filter(c => (c.correct / c.total) < 0.5).length;
 
-    const rows = chapters.map(c => {
+    const chapRows = chaps.map((c, ci) => {
       const acc = c.total > 0 ? Math.round((c.correct / c.total) * 100) : 0;
       const isWeak = acc < 50;
+      const chapId = `chap${si}_${ci}`;
+      const chapterLabel = c.chapter || 'Untagged questions';
+
+      // Topics inside this chapter (skip the single "__general__" bucket —
+      // that just means no sub-topic was tagged, only a chapter).
+      const realTopics = c.topics.filter(t => t.topic);
+      const topicRows = realTopics.map(t => {
+        const tAcc = t.total > 0 ? Math.round((t.correct / t.total) * 100) : 0;
+        const tWeak = tAcc < 50;
+        return `
+          <div class="chapter-row" style="padding-left:64px;">
+            <span class="chapter-row-mark ${tWeak ? 'cross' : 'tick'}">
+              <i class="fa-solid fa-${tWeak ? 'xmark' : 'check'}"></i>
+            </span>
+            <span class="chapter-row-name">${t.topic}</span>
+            <span class="chapter-row-count">${t.correct}/${t.total} · ${tAcc}%</span>
+          </div>`;
+      }).join('');
+
       return `
-        <div class="chapter-row">
-          <span class="chapter-row-mark ${isWeak ? 'cross' : 'tick'}">
-            <i class="fa-solid fa-${isWeak ? 'xmark' : 'check'}"></i>
-          </span>
-          <span class="chapter-row-name">${c.topic}</span>
-          <span class="chapter-row-count">${c.correct}/${c.total} · ${acc}%</span>
+        <div class="chapter-item">
+          <div class="chapter-row" style="cursor:${realTopics.length ? 'pointer' : 'default'};" ${realTopics.length ? `onclick="document.getElementById('${chapId}').classList.toggle('open')"` : ''}>
+            <span class="chapter-row-mark ${isWeak ? 'cross' : 'tick'}">
+              <i class="fa-solid fa-${isWeak ? 'xmark' : 'check'}"></i>
+            </span>
+            <span class="chapter-row-name">${chapterLabel}</span>
+            <span class="chapter-row-count">${c.correct}/${c.total} · ${acc}%</span>
+            ${realTopics.length ? `<i class="fa-solid fa-chevron-down chapter-row-chevron"></i>` : ''}
+          </div>
+          <div class="topic-list" id="${chapId}">${topicRows}</div>
         </div>`;
     }).join('');
 
     return `
       <div class="chapter-subject" id="chapterSubj${si}">
         <div class="chapter-subject-head" onclick="document.getElementById('chapterSubj${si}').classList.toggle('open')">
-          <div class="subj-icon" style="background:${sty.bg};">${sty.icon}</div>
+          <div class="subj-icon" style="background:${sty.bg};"><i class="${sty.icon}" style="color:${sty.color};"></i></div>
           <div>
             <div class="chapter-subject-name">${cap(sub)}</div>
-            <div class="chapter-subject-sub">${chapters.length} chapter${chapters.length > 1 ? 's' : ''}${weakCount > 0 ? ` · ${weakCount} weak` : ''}</div>
+            <div class="chapter-subject-sub">${chaps.length} chapter${chaps.length > 1 ? 's' : ''}${weakCount > 0 ? ` · ${weakCount} weak` : ''}</div>
           </div>
           <span class="chapter-subject-chevron"><i class="fa-solid fa-chevron-down"></i></span>
         </div>
-        <div class="chapter-list">${rows}</div>
+        <div class="chapter-list">${chapRows}</div>
       </div>`;
   }).join('');
 }
@@ -1104,7 +1182,7 @@ function renderUI(p) {
 
   // ── Hero Card ──
   document.getElementById('ringNum').textContent  = p.score;
-  document.getElementById('heroName').textContent = `${grade.emoji} Hey, ${userName}!`;
+  document.getElementById('heroName').innerHTML = `<i class="${grade.icon}" style="color:${grade.color};font-size:15px;margin-right:6px;"></i>Hey, ${escHtml(userName)}!`;
 
   const gradeEl = document.getElementById('heroGrade');
   gradeEl.textContent = grade.label;
@@ -1151,7 +1229,7 @@ function renderUI(p) {
     const clr = pct >= 60 ? '#10B981' : pct >= 40 ? '#F59E0B' : '#EF4444';
     return `
       <div class="subject-row">
-        <div class="subj-icon" style="background:${sty.bg};">${sty.icon}</div>
+        <div class="subj-icon" style="background:${sty.bg};"><i class="${sty.icon}" style="color:${sty.color};"></i></div>
         <div class="subj-info">
           <div class="subj-name">${cap(sub)}</div>
           <div class="subj-stats">
@@ -1179,8 +1257,11 @@ function renderUI(p) {
   renderChapterAccordion(p);
 
   // ── Weak Areas ──
-  if (p.weakTopics.length === 0) {
-    document.getElementById('weakDesc').textContent = '🎉 Excellent! No significantly weak topics detected in this test.';
+  if (!p.anyChapterTagged) {
+    document.getElementById('weakDesc').innerHTML = '<i class="fa-solid fa-circle-info"></i> Chapter/topic tags aren\'t set up for this test yet, so weak topics can\'t be pinpointed. See the subject-wise breakdown above instead.';
+    document.getElementById('weakChips').innerHTML = '';
+  } else if (p.weakTopics.length === 0) {
+    document.getElementById('weakDesc').textContent = 'Excellent! No significantly weak topics detected in this test.';
     document.getElementById('weakChips').innerHTML = '';
   } else {
     document.getElementById('weakDesc').textContent =
@@ -1194,7 +1275,10 @@ function renderUI(p) {
   }
 
   // ── Strong Areas ──
-  if (p.strongTopics.length === 0) {
+  if (!p.anyChapterTagged) {
+    document.getElementById('strongDesc').innerHTML = '<i class="fa-solid fa-circle-info"></i> Chapter/topic tags aren\'t set up for this test yet, so strong topics can\'t be pinpointed.';
+    document.getElementById('strongChips').innerHTML = '';
+  } else if (p.strongTopics.length === 0) {
     document.getElementById('strongDesc').textContent = 'Keep practising — strong topics will appear as your accuracy improves.';
     document.getElementById('strongChips').innerHTML = '';
   } else {
@@ -1212,7 +1296,7 @@ function renderUI(p) {
   const timeInsights = buildTimeInsights(p);
   document.getElementById('timeRows').innerHTML = timeInsights.map(t => `
     <div class="time-row">
-      <div class="time-icon" style="background:${t.bg};">${t.icon}</div>
+      <div class="time-icon" style="background:${t.bg};"><i class="${t.icon}"></i></div>
       <div class="time-info">
         <div class="time-label">${t.label}</div>
         <div class="time-value">${t.value}</div>
@@ -1247,14 +1331,14 @@ function buildTimeInsights(p) {
 
   return [
     {
-      icon:'⏱', bg:'rgba(34,211,238,0.1)',
+      icon:'fa-solid fa-stopwatch', bg:'rgba(34,211,238,0.1)',
       label:'Total Time Taken',
       value:`${totalMin} minutes for ${qCount} questions`,
       badge:`${Math.floor(totalMin/60)}h ${totalMin%60}m`,
       badgeBg:'rgba(34,211,238,0.1)', badgeColor:'var(--primary)',
     },
     {
-      icon:'⚡', bg:`${paceBg}`,
+      icon:'fa-solid fa-bolt', bg:`${paceBg}`,
       label:'Avg Time Per Question',
       value:secPerQ < 45 ? 'You may be rushing. Slow down on tricky questions.' :
             secPerQ > 120 ? 'You spent too long per question. Practice speed.' :
@@ -1263,10 +1347,10 @@ function buildTimeInsights(p) {
       badgeBg:paceBg, badgeColor:paceColor,
     },
     {
-      icon:'🎯', bg:'rgba(139,92,246,0.1)',
+      icon:'fa-solid fa-bullseye', bg:'rgba(139,92,246,0.1)',
       label:'Efficiency Score',
       value:`Score / Time ratio — ${p.accuracy >= 60 && secPerQ <= 90 ? 'Excellent efficiency!' : p.accuracy < 40 ? 'Low efficiency — speed didn\'t help accuracy.' : 'Moderate — there\'s room to improve.'}`,
-      badge:p.accuracy >= 60 && secPerQ <= 90 ? '🔥 High' : p.accuracy < 40 ? '⚠️ Low' : '📊 Mid',
+      badge:p.accuracy >= 60 && secPerQ <= 90 ? 'High' : p.accuracy < 40 ? 'Low' : 'Mid',
       badgeBg:'rgba(139,92,246,0.1)', badgeColor:'var(--purple)',
     },
   ];
@@ -1280,7 +1364,7 @@ function renderStrategyInsights(p) {
 
   if (p.weakTopics.length > 0) {
     insights.push({
-      icon:'📖', bg:'rgba(239,68,68,0.1)', color:'var(--red)',
+      icon:'fa-solid fa-book-open', bg:'rgba(239,68,68,0.1)', color:'var(--red)',
       title:`Revise ${p.weakTopics[0].topic}`,
       desc:`Your highest error topic. Dedicate 2–3 focused sessions this week with solved examples.`,
     });
@@ -1288,13 +1372,13 @@ function renderStrategyInsights(p) {
 
   if (p.accuracy < 50) {
     insights.push({
-      icon:'🎯', bg:'rgba(245,158,11,0.1)', color:'var(--amber)',
+      icon:'fa-solid fa-bullseye', bg:'rgba(245,158,11,0.1)', color:'var(--amber)',
       title:'Focus on Accuracy First',
       desc:'Attempting fewer questions with higher accuracy will improve your score more than attempting all.',
     });
   } else {
     insights.push({
-      icon:'🚀', bg:'rgba(16,185,129,0.1)', color:'var(--green)',
+      icon:'fa-solid fa-rocket', bg:'rgba(16,185,129,0.1)', color:'var(--green)',
       title:'Maintain Accuracy, Increase Attempts',
       desc:'Your accuracy is solid. Work on reducing skipped questions to maximise your score.',
     });
@@ -1302,13 +1386,13 @@ function renderStrategyInsights(p) {
 
   if (p.secPerQ < 45) {
     insights.push({
-      icon:'⏳', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
+      icon:'fa-solid fa-hourglass-half', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
       title:'Read Questions Carefully',
       desc:'Your speed is very high — rushing leads to avoidable mistakes. Slow down on multi-step problems.',
     });
   } else if (p.secPerQ > 120) {
     insights.push({
-      icon:'⚡', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
+      icon:'fa-solid fa-bolt', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
       title:'Improve Speed with Timed Practice',
       desc:'Practice with a timer daily. Aim for 60–90 seconds per question across all subjects.',
     });
@@ -1316,21 +1400,21 @@ function renderStrategyInsights(p) {
 
   if (p.strongTopics.length > 0) {
     insights.push({
-      icon:'💡', bg:'rgba(139,92,246,0.1)', color:'var(--purple)',
+      icon:'fa-solid fa-lightbulb', bg:'rgba(139,92,246,0.1)', color:'var(--purple)',
       title:`Leverage Your Strength in ${p.strongTopics[0].topic}`,
       desc:'Strong topics are your score boosters. Attempt these first in the exam to build momentum.',
     });
   }
 
   insights.push({
-    icon:'📅', bg:'rgba(244,63,94,0.1)', color:'var(--accent)',
+    icon:'fa-solid fa-calendar-days', bg:'rgba(244,63,94,0.1)', color:'var(--accent)',
     title:'Recommended Study Schedule',
     desc:'Revise weak topics daily (60 min), take 1 mock test per week, and review solutions the same day.',
   });
 
   document.getElementById('insightRows').innerHTML = insights.map(i => `
     <div class="insight-row">
-      <div class="insight-icon" style="background:${i.bg};color:${i.color};">${i.icon}</div>
+      <div class="insight-icon" style="background:${i.bg};color:${i.color};"><i class="${i.icon}"></i></div>
       <div>
         <div class="insight-title">${i.title}</div>
         <div class="insight-desc">${i.desc}</div>
@@ -1342,12 +1426,14 @@ function renderStrategyInsights(p) {
    RECOMMENDATIONS
 ================================================================ */
 const TOPIC_ICONS = {
-  default:'📚', integration:'∫', differentiation:'d/dx', mechanics:'⚙️',
-  thermodynamics:'🌡️', optics:'🔭', magnetism:'🧲', electricity:'⚡',
-  waves:'〜', 'organic chemistry':'🧬', 'inorganic chemistry':'⚗️',
-  electrochemistry:'🔋', equilibrium:'⚖️', kinematics:'🏃', gravitation:'🌍',
-  trigonometry:'📐', probability:'🎲', algebra:'x²', calculus:'∫',
-  vectors:'→', matrices:'▦',
+  default:'fa-solid fa-book', integration:'fa-solid fa-chart-line', differentiation:'fa-solid fa-chart-line',
+  mechanics:'fa-solid fa-gears', thermodynamics:'fa-solid fa-temperature-half', optics:'fa-solid fa-eye',
+  magnetism:'fa-solid fa-magnet', electricity:'fa-solid fa-bolt', waves:'fa-solid fa-wave-square',
+  'organic chemistry':'fa-solid fa-dna', 'inorganic chemistry':'fa-solid fa-flask-vial',
+  electrochemistry:'fa-solid fa-battery-full', equilibrium:'fa-solid fa-scale-balanced',
+  kinematics:'fa-solid fa-person-running', gravitation:'fa-solid fa-earth-americas',
+  trigonometry:'fa-solid fa-draw-polygon', probability:'fa-solid fa-dice', algebra:'fa-solid fa-square-root-variable',
+  calculus:'fa-solid fa-chart-line', vectors:'fa-solid fa-arrow-right', matrices:'fa-solid fa-table-cells',
 };
 
 function topicIcon(topic) {
@@ -1378,7 +1464,11 @@ function renderRecommendations(p) {
   });
 
   if (recs.length === 0) {
-    document.getElementById('recGrid').innerHTML = `
+    document.getElementById('recGrid').innerHTML = !p.anyChapterTagged ? `
+      <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-secondary);font-size:13px;">
+        <i class="fa-solid fa-circle-info" style="color:var(--text-secondary);font-size:24px;display:block;margin-bottom:8px;"></i>
+        Chapters aren't tagged for this test yet — recommendations will show up here once they are.
+      </div>` : `
       <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-secondary);font-size:13px;">
         <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:24px;display:block;margin-bottom:8px;"></i>
         Great performance! No specific topics to recommend.
@@ -1388,7 +1478,7 @@ function renderRecommendations(p) {
 
   document.getElementById('recGrid').innerHTML = recs.map((r, i) => `
     <div class="rec-card" style="animation-delay:${i * 0.05}s;">
-      <div class="rec-icon">${r.icon}</div>
+      <div class="rec-icon"><i class="${r.icon}"></i></div>
       <div class="rec-topic">${r.topic}</div>
       <div class="rec-subject">${r.subject}</div>
       <div class="rec-difficulty">
@@ -1402,14 +1492,14 @@ function renderRecommendations(p) {
    MOTIVATION
 ================================================================ */
 const QUOTES = [
-  { emoji:'🔥', quote:'The expert in anything was once a beginner. Every wrong answer is a step forward.', author:'Keep pushing.' },
-  { emoji:'💪', quote:'You don\'t have to be perfect. You just have to be better than yesterday.', author:'Progress over perfection.' },
-  { emoji:'🌟', quote:'Difficult roads often lead to beautiful destinations. Stay consistent.', author:'Your future self thanks you.' },
-  { emoji:'🚀', quote:'Every master was once a disaster. Embrace the process and keep going.', author:'Trust the journey.' },
-  { emoji:'⚡', quote:'Hard work beats talent when talent doesn\'t work hard. You have both.', author:'Go win it.' },
-  { emoji:'🎯', quote:'Small daily improvements lead to stunning long-term results. One topic at a time.', author:'Be patient with yourself.' },
-  { emoji:'🌙', quote:'The night before your breakthrough often feels the darkest. Keep studying.', author:'Your moment is coming.' },
-  { emoji:'🏆', quote:'Champions are made in the hours when they want to give up but don\'t. Be a champion.', author:'That\'s you.' },
+  { icon:'fa-solid fa-fire', quote:'The expert in anything was once a beginner. Every wrong answer is a step forward.', author:'Keep pushing.' },
+  { icon:'fa-solid fa-dumbbell', quote:'You don\'t have to be perfect. You just have to be better than yesterday.', author:'Progress over perfection.' },
+  { icon:'fa-solid fa-star', quote:'Difficult roads often lead to beautiful destinations. Stay consistent.', author:'Your future self thanks you.' },
+  { icon:'fa-solid fa-rocket', quote:'Every master was once a disaster. Embrace the process and keep going.', author:'Trust the journey.' },
+  { icon:'fa-solid fa-bolt', quote:'Hard work beats talent when talent doesn\'t work hard. You have both.', author:'Go win it.' },
+  { icon:'fa-solid fa-bullseye', quote:'Small daily improvements lead to stunning long-term results. One topic at a time.', author:'Be patient with yourself.' },
+  { icon:'fa-solid fa-moon', quote:'The night before your breakthrough often feels the darkest. Keep studying.', author:'Your moment is coming.' },
+  { icon:'fa-solid fa-trophy', quote:'Champions are made in the hours when they want to give up but don\'t. Be a champion.', author:'That\'s you.' },
 ];
 
 function renderMotivation(p) {
@@ -1420,7 +1510,7 @@ function renderMotivation(p) {
   if (p.accuracy >= 75) pick = QUOTES[4]; // high performer
   else if (p.accuracy < 40) pick = QUOTES[2]; // needs encouragement
 
-  document.getElementById('motivEmoji').textContent  = pick.emoji;
+  document.getElementById('motivEmoji').className = `${pick.icon} motivation-emoji`;
   document.getElementById('motivQuote').textContent  = `"${pick.quote}"`;
   document.getElementById('motivAuthor').textContent = `— ${pick.author}`;
 }
@@ -1523,11 +1613,11 @@ async function callGeminiAPI(p) {
         const acc = tot > 0 ? Math.round(t.correct / tot * 100) : 0;
         return `• ${t.topic} (${cap(t.subject)}): ${t.wrong} galat, ${t.correct} sahi — ${acc}% accuracy`;
       }).join('\n')
-    : 'Koi specific weak chapter detect nahi hua (topic data available nahi)';
+    : (p.anyChapterTagged ? 'Koi significantly weak chapter/topic nahi mila.' : 'Chapter/topic tagging is test ke liye set nahi hai — topic data available nahi.');
 
   const strongList = p.strongTopics.length > 0
     ? p.strongTopics.map(t => `${t.topic} (${cap(t.subject)})`).join(', ')
-    : 'Abhi koi strong chapter nahi — sab mein improvement chahiye';
+    : (p.anyChapterTagged ? 'Abhi koi strong chapter nahi — sab mein improvement chahiye' : 'Chapter/topic tagging is test ke liye set nahi hai.');
 
   const subjectSummary = Object.entries(p.subjects)
     .map(([sub, s]) => `• ${cap(sub)}: ${s.correct} correct, ${s.wrong} wrong, ${s.acc}% accuracy`)
@@ -1550,24 +1640,24 @@ STRONG TOPICS: ${strongList}
 
 ===YAHAN SE ANALYSIS LIKH — EXACTLY IS FORMAT MEIN===
 
-**📊 Overall Verdict**
+**Overall Verdict**
 (2-3 lines) Score aur accuracy ka seedha matlab bata. Percentile explain kar. Agar performance kharab hai — real baat bol, lekin encourage bhi kar.
 
-**📚 Subject-wise Diagnosis**
+**Subject-wise Diagnosis**
 Har subject ke liye ek paragraph:
 - Numbers cite kar (correct/wrong/accuracy)
 - Bata kya problem hai — concept weak? Careless mistakes? Time management? Ya sab attempt nahi kiya?
 
-**⚠️ Weak Chapters — Priority Action List**
-Jo weak topics/chapters hain unhe NUMBERED LIST mein likh:
+**Weak Chapters — Priority Action List**
+Jo weak topics/chapters hain unhe NUMBERED LIST mein likh, sirf unka jo neeche diye gaye hain:
 1. [Chapter/Topic naam] ([Subject]): [Kyu urgent hai] → Kya karna hai exactly (NCERT/formula revision/practice sets)
 2. ...
-Agar topic data "Unknown" ya "A/B/C" jaisa hai — tab subject ke basis pe common weak chapters suggest kar.
+IMPORTANT: Sirf WEAK CHAPTERS/TOPICS list mein diye gaye ASLI naam use kar — koi chapter/topic naam khud se mat bana ya guess mat kar. Agar list "topic data available nahi" bolti hai, toh yahan koi chapter list mat de — bas ek line mein bata ki chapter-wise tagging is test ke liye set nahi hai, aur subject-level accuracy ke basis pe hi general guidance de.
 
-**⏱️ Time Management**
+**Time Management**
 ${p.secPerQ}s per question — ${exam} ke standard (90-120s/Q) se compare karke bata. Kya strategy adopt karni chahiye?
 
-**✅ Next 2 Weeks Ka Plan**
+**Next 2 Weeks Ka Plan**
 Specific, realistic steps — har step kya karna hai aur kitna time dena hai. False hope nahi — agar bahut weak hai toh seedha bol ki basics se start karo.
 
 ===RULES===
@@ -1640,11 +1730,14 @@ function renderAskChips(p) {
 
 function quickQuestionContext(p) {
   const exam = examLabel(p.exam);
-  const weakList = p.weakTopics.slice(0, 5).map(t => `${t.topic} (${cap(t.subject)}, ${t.correct}/${t.correct+t.wrong})`).join(', ') || 'none flagged';
+  const weakList = p.weakTopics.length > 0
+    ? p.weakTopics.slice(0, 5).map(t => `${t.topic} (${cap(t.subject)}, ${t.correct}/${t.correct+t.wrong})`).join(', ')
+    : (p.anyChapterTagged ? 'none flagged' : 'not available — chapter/topic tagging is not set up for this test');
   const subjectSummary = Object.entries(p.subjects).map(([sub, s]) => `${cap(sub)}: ${s.acc}% acc`).join(', ');
   return `Test: ${exam} mock | Score ${p.score}/${p.maxScore} | Accuracy ${p.accuracy}% | Time ${p.timeTaken} min (${p.secPerQ}s/question)
 Subjects: ${subjectSummary}
-Weak chapters: ${weakList}`;
+Weak chapters: ${weakList}
+${!p.anyChapterTagged ? 'IMPORTANT: Chapter/topic names are NOT available for this test — never invent or guess specific chapter names. Answer using only subject-level accuracy.' : ''}`;
 }
 
 async function askQuickQuestion(key) {
@@ -1704,8 +1797,8 @@ function buildLocalAnalysis(p) {
     : `Your pacing is excellent at ${p.secPerQ}s per question — right in the sweet spot for ${examLabel(p.exam)} strategy.`;
 
   const closing = p.accuracy >= 70
-    ? `You're on the right path. **Keep this momentum going** — consistency is your biggest weapon now. 🚀`
-    : `Remember: **every test is a data point**, not a verdict. Use this analysis, fix the weak spots, and come back stronger. You've got this! 💪`;
+    ? `You're on the right path. **Keep this momentum going** — consistency is your biggest weapon now.`
+    : `Remember: **every test is a data point**, not a verdict. Use this analysis, fix the weak spots, and come back stronger. You've got this!`;
 
   return [intro, weakAdvice, timeAdvice, closing].join('\n\n');
 }
@@ -1762,6 +1855,11 @@ window.regenerateAnalysis = regenerateAnalysis;
    HELPERS
 ================================================================ */
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
 
 /* ================================================================
    INIT
@@ -1786,12 +1884,12 @@ async function init() {
           background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(34,211,238,0.12));
           border:1px solid rgba(139,92,246,0.2);
           display:flex;align-items:center;justify-content:center;
-          font-size:36px;box-shadow:0 8px 32px rgba(139,92,246,0.15);">🤖</div>
+          display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(139,92,246,0.15);"><i class="fa-solid fa-microchip" style="font-size:32px;color:var(--purple);"></i></div>
         <div>
           <div style="font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:8px;">No Analysis Data Found</div>
           <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;max-width:290px;margin:0 auto;">
             Please attempt a test first, then tap
-            <strong style="color:var(--purple);">🤖 AI Detailed Analysis</strong>
+            <strong style="color:var(--purple);"><i class="fa-solid fa-microchip"></i> AI Detailed Analysis</strong>
             from the result page.
           </div>
         </div>
