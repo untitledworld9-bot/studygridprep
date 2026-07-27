@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Content Hub Admin</title>
+<meta name="theme-color" content="#07080d" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#07080d;--panel:#0d0f18;--card:#111420;--card2:#161b2e;--input:#0f1220;--line:rgba(255,255,255,.07);--line2:rgba(0,224,255,.18);--accent:#00e0ff;--accent2:#7c5cfc;--good:#00e5a0;--warn:#ffb830;--bad:#ff4f6a;--text:#eef0ff;--muted:#8890b0;--muted2:#4a5070;--shadow:0 8px 30px rgba(0,0,0,.34);--shadow2:0 14px 44px rgba(0,224,255,.10);--r:18px;--r2:24px;--fontD:'Syne',sans-serif;--fontB:'Manrope',sans-serif}
+[data-theme="light"]{--bg:#f1f5f9;--panel:#ffffff;--card:#ffffff;--card2:#f8fafc;--input:#ffffff;--line:#e2e8f0;--line2:rgba(79,70,229,.15);--accent:#4f46e5;--accent2:#7c3aed;--good:#059669;--warn:#d97706;--bad:#dc2626;--text:#0f172a;--muted:#475569;--muted2:#94a3b8;--shadow:0 8px 24px rgba(15,23,42,.08);--shadow2:0 14px 44px rgba(79,70,229,.08)}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--fontB);-webkit-tap-highlight-color:transparent} html,body{height:100%} html{background:var(--bg)} body{background:radial-gradient(circle at 20% 0%, rgba(0,224,255,.08), transparent 25%), radial-gradient(circle at 80% 0%, rgba(124,92,252,.08), transparent 28%), var(--bg);color:var(--text);overflow:hidden;user-select:none;-webkit-user-select:none;animation:in .24s ease forwards} @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.app{height:100%;display:flex}
+.auth{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}.auth-box{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:28px;padding:32px 24px;box-shadow:var(--shadow),var(--shadow2)}.auth-badge{display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--muted)}.auth-title{font-family:var(--fontD);font-size:28px;font-weight:800;line-height:1.05;margin-top:10px}.auth-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-top:10px}.auth-btn{width:100%;margin-top:20px;padding:14px 16px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:14px;font-weight:800;cursor:pointer;box-shadow:var(--shadow2)}.auth-error{min-height:18px;margin-top:12px;font-size:12px;color:var(--bad)}
+.sidebar{width:270px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100%;overflow:hidden}.side-top{padding:18px;border-bottom:1px solid var(--line)}.brand{font-family:var(--fontD);font-size:17px;font-weight:800}.role{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:4px}.nav{flex:1;overflow:auto;padding:14px 12px;display:flex;flex-direction:column;gap:6px}.nav a,.nav button{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid transparent;background:transparent;color:var(--text);text-decoration:none;font-size:13px;font-weight:700;cursor:pointer;text-align:left}.nav a i,.nav button i{width:18px;text-align:center;color:var(--accent)}.nav a.active,.nav button.active,.nav a:hover,.nav button:hover{background:var(--card);border-color:var(--line)}.foot{padding:14px;border-top:1px solid var(--line)}.theme{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--card)}.theme-l{font-size:12px;font-weight:800}.theme-s{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}.tog{position:relative;width:46px;height:26px;border-radius:999px;border:1px solid var(--line);background:var(--card2);cursor:pointer}.tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--accent);transition:transform .22s cubic-bezier(.4,0,.2,1)}[data-theme="light"] .tog::after{transform:translateX(20px)}
+.main{flex:1;height:100%;overflow:auto;padding:24px 28px 100px}.main::-webkit-scrollbar,.scroll::-webkit-scrollbar{width:4px}.main::-webkit-scrollbar-thumb,.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+.wrap{max-width:1180px;margin:0 auto}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:20px}.h-left{min-width:0}.eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:800}.h-title{font-family:var(--fontD);font-size:30px;font-weight:800;line-height:1.04;margin-top:6px}.h-sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}.h-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.btn{padding:11px 14px;border:none;border-radius:15px;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}.btn.soft{background:var(--card);border:1px solid var(--line);color:var(--text)}.btn.good{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.2);color:var(--good)}.btn.warn{background:rgba(255,184,48,.12);border:1px solid rgba(255,184,48,.2);color:var(--warn)}.btn.bad{background:rgba(255,79,106,.12);border:1px solid rgba(255,79,106,.2);color:var(--bad)}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}.stat{background:linear-gradient(180deg, rgba(0,224,255,.04), transparent 28%), var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}.stat .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}.stat .v{font-family:var(--fontD);font-size:26px;font-weight:800;line-height:1;margin-top:8px}.stat .s{font-size:11px;color:var(--muted);margin-top:6px}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}.panel-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-t{font-family:var(--fontD);font-size:15px;font-weight:800}.panel-s{font-size:11px;color:var(--muted);margin-top:3px}.panel-b{padding:16px 18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-grid.three{grid-template-columns:repeat(3,1fr)}.field{display:flex;flex-direction:column;gap:6px}.lbl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.inp,.sel,.txt{width:100%;background:var(--input);border:1px solid var(--line);border-radius:15px;padding:12px 13px;color:var(--text);outline:none;font-size:13px}.txt{min-height:94px;resize:vertical;line-height:1.65}.inp:focus,.sel:focus,.txt:focus{border-color:rgba(0,224,255,.26);box-shadow:0 0 0 3px rgba(0,224,255,.06)}.tiny{font-size:11px;color:var(--muted);line-height:1.45}
+.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.switch-row:first-child{border-top:none}.sw{position:relative;width:46px;height:26px;border-radius:999px;border:1px solid var(--line);background:var(--card2)}.sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--muted2);transition:transform .22s cubic-bezier(.4,0,.2,1)}.sw.on{background:rgba(0,229,160,.12);border-color:rgba(0,229,160,.2)}.sw.on::after{background:var(--good);transform:translateX(20px)}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-size:12px;font-weight:800;cursor:pointer}.tab.active{background:rgba(0,224,255,.10);border-color:rgba(0,224,255,.22);color:var(--accent)}
+.scroll{max-height:560px;overflow:auto}.list{display:flex;flex-direction:column;gap:10px}.row{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--card2);box-shadow:var(--shadow);cursor:pointer}.row.active{border-color:rgba(0,224,255,.26)}.thumb{width:48px;height:48px;border-radius:16px;flex-shrink:0;display:grid;place-items:center;background:rgba(0,224,255,.10);color:var(--accent)}.rbody{flex:1;min-width:0}.rbody strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rbody small{display:block;margin-top:4px;color:var(--muted);font-size:11.5px;line-height:1.55}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.meta span{font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.act{padding:7px 10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:11px;font-weight:800;cursor:pointer}.act.good{background:rgba(0,229,160,.12);border-color:rgba(0,229,160,.2);color:var(--good)}.act.warn{background:rgba(255,184,48,.12);border-color:rgba(255,184,48,.2);color:var(--warn)}.act.bad{background:rgba(255,79,106,.12);border-color:rgba(255,79,106,.2);color:var(--bad)}.act.soft{background:var(--card2)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chart-box{background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:14px;height:280px}.chart-box canvas{width:100%!important;height:210px!important}
+.auth-loading{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.12);display:none;align-items:center;justify-content:center}.spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:s 0.8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+.drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);z-index:130;opacity:0;pointer-events:none;transition:opacity .22s ease}.drawer-mask.on{opacity:1;pointer-events:auto}.drawer{position:fixed;right:18px;top:18px;bottom:18px;width:min(470px,calc(100vw - 36px));background:var(--panel);border:1px solid var(--line);border-radius:28px;z-index:140;transform:translateX(106%);transition:transform .28s cubic-bezier(.22,1,.36,1);box-shadow:0 28px 70px rgba(0,0,0,.42);display:flex;flex-direction:column;overflow:hidden}.drawer.on{transform:translateX(0)}.drawer-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.drawer-t{font-family:var(--fontD);font-size:18px;font-weight:800}.drawer-b{padding:16px 18px;overflow:auto}.drawer-b .actions{justify-content:flex-start}.close{width:38px;height:38px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);cursor:pointer}.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:210;padding:12px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);font-size:13px;font-weight:700;display:none}.empty{padding:44px 18px;text-align:center;color:var(--muted)}.empty i{font-size:42px;opacity:.35;display:block;margin-bottom:12px}
+@media (max-width: 1000px){.sidebar{width:70px}.brand,.role,.nav a span,.nav button span,.theme-l,.theme-s{display:none}.nav a,.nav button{justify-content:center}.cards{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.chart-grid{grid-template-columns:1fr}.main{padding:18px 14px 90px}}
+@media (max-width: 640px){.sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-104%);z-index:150;width:min(290px,88vw)}.sidebar.on{transform:translateX(0)}.cards{grid-template-columns:repeat(2,1fr)}.form-grid,.form-grid.three{grid-template-columns:1fr}.main{padding-top:16px}}
+</style>
+</head>
+<body>
+<div class="auth" id="authGate">
+  <div class="auth-box">
+    <div class="auth-badge"><i class="fa-solid fa-screwdriver-wrench"></i> Content Hub Admin</div>
+    <div class="auth-title">Studio control for feed, files and live content.</div>
+    <div class="auth-sub">Google sign-in plus role check. Manage content, categories, authors, slots and publishing from one panel.</div>
+    <button class="auth-btn" id="signInBtn"><i class="fa-brands fa-google"></i> Continue with Google</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+<div class="auth-loading" id="authLoading"><div class="spin"></div></div>
+<div class="toast" id="toast"></div>
+<div class="drawer-mask" id="drawerMask"></div>
+<div class="drawer" id="drawer"><div class="drawer-h"><div><div class="drawer-t" id="drawerTitle">Selected item</div><div class="panel-s" id="drawerSub">Quick actions</div></div><button class="close" id="closeDrawer"><i class="fa-solid fa-xmark"></i></button></div><div class="drawer-b" id="drawerBody"></div></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-top"><div class="brand">Content Hub Admin</div><div class="role" id="roleTag">Sub-admin studio</div></div>
+    <div class="nav">
+      <button class="active" data-sec="overview"><i class="fa-solid fa-chart-column"></i><span>Overview</span></button>
+      <button data-sec="studio"><i class="fa-solid fa-pen-to-square"></i><span>Content Studio</span></button>
+      <button data-sec="library"><i class="fa-solid fa-layer-group"></i><span>Library</span></button>
+      <button data-sec="feed"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Feed Builder</span></button>
+      <button data-sec="categories"><i class="fa-solid fa-tags"></i><span>Categories</span></button>
+      <button data-sec="authors"><i class="fa-solid fa-user-pen"></i><span>Authors</span></button>
+      <button data-sec="analytics"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></button>
+      <a href="content-hub.html"><i class="fa-solid fa-arrow-left"></i><span>Open Content Hub</span></a>
+    </div>
+    <div class="foot"><div class="theme"><div><div class="theme-l">Theme</div><div class="theme-s">Light / dark</div></div><button class="tog" id="themeBtn"></button></div></div>
+  </aside>
+  <main class="main">
+    <div class="wrap">
+      <div class="header">
+        <div class="h-left">
+          <div class="eyebrow">Studio</div>
+          <div class="h-title">Content Hub Admin</div>
+          <div class="h-sub">Everything that appears in the app is controlled here: content, slots, categories, authors, publish state, featured order and quick updates.</div>
+        </div>
+        <div class="h-actions">
+          <button class="btn soft" id="toggleSidebar"><i class="fa-solid fa-bars"></i> Menu</button>
+          <button class="btn primary" id="newContentBtn"><i class="fa-solid fa-circle-plus"></i> New content</button>
+          <button class="btn bad" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+      </div>
+
+      <section class="cards" id="statsRow"></section>
+
+      <section class="grid">
+        <div class="panel" id="section-overview">
+          <div class="panel-h"><div><div class="panel-t">Overview</div><div class="panel-s">Realtime summary and top content</div></div><div class="pills"><span class="pill" id="liveCountPill">0 live</span><span class="pill" id="draftCountPill">0 drafts</span></div></div>
+          <div class="panel-b">
+            <div class="chart-grid">
+              <div class="chart-box"><div class="panel-s" style="margin-bottom:8px">By status</div><canvas id="statusChart"></canvas></div>
+              <div class="chart-box"><div class="panel-s" style="margin-bottom:8px">By type</div><canvas id="typeChart"></canvas></div>
+            </div>
+            <div class="section-head" style="margin-top:16px"><h3>Top viewed</h3><a href="#" id="openLibraryFromOverview">Library</a></div>
+            <div class="list scroll" id="topViewedList" style="max-height:320px"></div>
+          </div>
+        </div>
+
+        <div class="panel" id="section-studio">
+          <div class="panel-h"><div><div class="panel-t">Content Studio</div><div class="panel-s">Create, edit, publish and schedule one item at a time</div></div><div class="actions"><button class="act soft" id="resetFormBtn">Reset</button></div></div>
+          <div class="panel-b">
+            <div class="form-grid three">
+              <div class="field"><div class="lbl">Title</div><input class="inp" id="fTitle" placeholder="Title"></div>
+              <div class="field"><div class="lbl">Slug</div><input class="inp" id="fSlug" placeholder="auto-generated"></div>
+              <div class="field"><div class="lbl">Type</div><select class="sel" id="fType"><option>note</option><option>pdf</option><option>article</option><option>news</option><option>college</option><option>announcement</option><option>resource</option></select></div>
+            </div>
+            <div class="form-grid three" style="margin-top:12px">
+              <div class="field"><div class="lbl">Category</div><input class="inp" id="fCategory" list="categoryList" placeholder="Choose or type"></div>
+              <div class="field"><div class="lbl">Author</div><input class="inp" id="fAuthor" list="authorList" placeholder="Author name"></div>
+              <div class="field"><div class="lbl">Priority</div><input class="inp" id="fPriority" type="number" min="0" step="1" value="50"></div>
+            </div>
+            <div class="form-grid three" style="margin-top:12px">
+              <div class="field"><div class="lbl">Slot</div><select class="sel" id="fSlot"><option value="latest">latest</option><option value="featured">featured</option><option value="pinned">pinned</option><option value="trending">trending</option><option value="resources">resources</option></select></div>
+              <div class="field"><div class="lbl">Visibility</div><select class="sel" id="fVisibility"><option value="public">public</option><option value="members">members</option><option value="app">app</option><option value="hidden">hidden</option></select></div>
+              <div class="field"><div class="lbl">Status</div><select class="sel" id="fStatus"><option value="draft">draft</option><option value="scheduled">scheduled</option><option value="published">published</option><option value="archived">archived</option></select></div>
+            </div>
+            <div class="field" style="margin-top:12px"><div class="lbl">Description</div><textarea class="txt" id="fDesc" placeholder="Short description"></textarea></div>
+            <div class="field" style="margin-top:12px"><div class="lbl">Body / content</div><textarea class="txt" id="fBody" placeholder="Long content text for the detail drawer or full article."></textarea></div>
+            <div class="form-grid" style="margin-top:12px">
+              <div class="field"><div class="lbl">Tags</div><input class="inp" id="fTags" placeholder="comma separated"></div>
+              <div class="field"><div class="lbl">Thumbnail URL</div><input class="inp" id="fThumb" placeholder="https://..."></div>
+            </div>
+            <div class="form-grid" style="margin-top:12px">
+              <div class="field"><div class="lbl">File URL</div><input class="inp" id="fFile" placeholder="PDF / file link"></div>
+              <div class="field">
+                <div class="lbl">External URL</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input class="inp" id="fExt" placeholder="Open link / article URL" style="flex:1">
+                  <button class="btn soft" id="fetchUrlBtn" type="button"><i class="fa-solid fa-magnifying-glass"></i> Fetch</button>
+                </div>
+                <div class="tiny" id="urlPreview" style="margin-top:8px">Paste a URL and fetch metadata / preview.</div>
+              </div>
+            </div>
+            <div class="form-grid" style="margin-top:12px">
+              <div class="field"><div class="lbl">Scheduled publish</div><input class="inp" id="fSchedule" type="datetime-local"></div>
+              <div class="field"><div class="lbl">Expiry date</div><input class="inp" id="fExpiry" type="datetime-local"></div>
+            </div>
+            <div class="form-grid" style="margin-top:12px">
+              <div class="field"><div class="lbl">SEO title</div><input class="inp" id="fSeoTitle" placeholder="SEO title"></div>
+              <div class="field"><div class="lbl">SEO description</div><input class="inp" id="fSeoDesc" placeholder="SEO description"></div>
+            </div>
+            <div class="form-grid" style="margin-top:12px">
+              <div class="field"><div class="lbl">Keywords</div><input class="inp" id="fKeywords" placeholder="search terms, synonyms, exam names"></div>
+              <div class="field"><div class="lbl">Boost score</div><input class="inp" id="fBoost" type="number" min="0" step="1" value="0"></div>
+            </div>
+            <div style="margin-top:14px" class="pills">
+              <span class="pill">Select item below to edit</span>
+              <span class="pill">Feed changes live</span>
+              <span class="pill">No fake content</span>
+            </div>
+            <div style="margin-top:10px">
+              <div class="switch-row"><div><div style="font-size:13px;font-weight:800">Featured</div><div class="tiny">Push into the featured area of the app</div></div><button class="sw" id="fFeatured"></button></div>
+              <div class="switch-row"><div><div style="font-size:13px;font-weight:800">Pinned</div><div class="tiny">Lock near top of the feed</div></div><button class="sw" id="fPinned"></button></div>
+              <div class="switch-row"><div><div style="font-size:13px;font-weight:800">Searchable</div><div class="tiny">Allow it to show in global search</div></div><button class="sw on" id="fSearchable"></button></div>
+            </div>
+            <div class="actions" style="margin-top:14px;justify-content:flex-start">
+              <button class="btn good" id="saveDraftBtn"><i class="fa-regular fa-floppy-disk"></i> Save draft</button>
+              <button class="btn primary" id="publishBtn"><i class="fa-solid fa-bolt"></i> Publish now</button>
+              <button class="btn warn" id="scheduleBtn"><i class="fa-regular fa-clock"></i> Schedule</button>
+              <button class="btn soft" id="uploadThumbBtn"><i class="fa-regular fa-image"></i> Upload thumbnail</button>
+              <button class="btn soft" id="uploadFileBtn"><i class="fa-regular fa-file"></i> Upload file</button>
+            </div>
+            <input type="file" id="thumbInput" accept="image/*" hidden>
+            <input type="file" id="fileInput" hidden>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid" style="margin-top:14px">
+        <div class="panel" id="section-library">
+          <div class="panel-h"><div><div class="panel-t">Library</div><div class="panel-s">All content items with quick actions</div></div><div class="actions"><input class="inp" id="searchLibrary" style="width:220px" placeholder="Search title, tags, category"></div></div>
+          <div class="panel-b">
+            <div class="tabs" id="statusTabs"><button class="tab active" data-status="all">All</button><button class="tab" data-status="published">Published</button><button class="tab" data-status="draft">Drafts</button><button class="tab" data-status="scheduled">Scheduled</button><button class="tab" data-status="featured">Featured</button><button class="tab" data-status="pinned">Pinned</button></div>
+            <div class="scroll list" id="libraryList" style="margin-top:12px;max-height:520px"></div>
+            <div class="empty" id="libraryEmpty" style="display:none"><i class="fa-regular fa-folder-open"></i>No content yet.</div>
+          </div>
+        </div>
+
+        <div class="panel" id="section-feed">
+          <div class="panel-h"><div><div class="panel-t">Feed Builder</div><div class="panel-s">Select an item and push it to a slot</div></div><div class="pills"><span class="pill" id="selectedPill">No item selected</span></div></div>
+          <div class="panel-b">
+            <div class="empty" id="feedEmpty" style="padding:24px 12px"><i class="fa-solid fa-wand-magic-sparkles"></i>Select a content item from the library to adjust its feed placement.</div>
+            <div id="feedControls" style="display:none">
+              <div class="field"><div class="lbl">Selected content</div><input class="inp" id="feedTitle" disabled></div>
+              <div class="form-grid" style="margin-top:12px">
+                <div class="field"><div class="lbl">Slot</div><select class="sel" id="feedSlot"><option value="latest">latest</option><option value="featured">featured</option><option value="pinned">pinned</option><option value="trending">trending</option><option value="resources">resources</option></select></div>
+                <div class="field"><div class="lbl">Priority</div><input class="inp" id="feedPriority" type="number"></div>
+              </div>
+              <div class="actions" style="margin-top:12px;justify-content:flex-start"><button class="btn primary" id="applyFeedBtn"><i class="fa-solid fa-check"></i> Apply</button><button class="btn soft" id="selectInEditorBtn"><i class="fa-solid fa-pen-to-square"></i> Edit</button></div>
+              <div class="section-head" style="margin-top:18px"><h3>Slot preview</h3><a href="#" id="resetSelected">Clear</a></div>
+              <div class="pills" id="slotPreview"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid" style="margin-top:14px">
+        <div class="panel" id="section-categories">
+          <div class="panel-h"><div><div class="panel-t">Categories</div><div class="panel-s">Manage the chips shown in the app</div></div></div>
+          <div class="panel-b">
+            <div class="form-grid three"><div class="field"><div class="lbl">Name</div><input class="inp" id="catName"></div><div class="field"><div class="lbl">Slug</div><input class="inp" id="catSlug"></div><div class="field"><div class="lbl">Icon</div><input class="inp" id="catIcon" placeholder="fa-tag"></div></div>
+            <div class="actions" style="margin-top:12px"><button class="btn primary" id="addCatBtn"><i class="fa-solid fa-plus"></i> Add category</button></div>
+            <div class="scroll list" id="categoryList" style="margin-top:12px;max-height:300px"></div>
+          </div>
+        </div>
+        <div class="panel" id="section-authors">
+          <div class="panel-h"><div><div class="panel-t">Authors</div><div class="panel-s">People and pages who publish content</div></div></div>
+          <div class="panel-b">
+            <div class="form-grid three"><div class="field"><div class="lbl">Name</div><input class="inp" id="authorName"></div><div class="field"><div class="lbl">Title</div><input class="inp" id="authorTitle"></div><div class="field"><div class="lbl">Slug</div><input class="inp" id="authorSlug"></div></div>
+            <div class="actions" style="margin-top:12px"><button class="btn primary" id="addAuthorBtn"><i class="fa-solid fa-plus"></i> Add author</button></div>
+            <div class="scroll list" id="authorList" style="margin-top:12px;max-height:300px"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="section-analytics" style="margin-top:14px">
+        <div class="panel-h"><div><div class="panel-t">Analytics</div><div class="panel-s">Realtime overview of the content library</div></div></div>
+        <div class="panel-b">
+          <div class="cards" id="analyticsRow" style="grid-template-columns:repeat(6,1fr)"></div>
+          <div class="chart-grid" style="margin-top:12px">
+            <div class="chart-box"><div class="panel-s" style="margin-bottom:8px">Status mix</div><canvas id="statusChart"></canvas></div>
+            <div class="chart-box"><div class="panel-s" style="margin-bottom:8px">Type mix</div><canvas id="typeChart"></canvas></div>
+          </div>
+          <div class="panel" style="margin-top:14px;border-radius:22px;overflow:hidden">
+            <div class="panel-h"><div><div class="panel-t">Reader reports</div><div class="panel-s">Messages sent from the content page</div></div><div class="pills"><span class="pill" id="openReportCount">0 open</span></div></div>
+            <div class="panel-b"><div class="scroll list" id="reportList" style="max-height:320px"></div></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+<datalist id="categoryList"></datalist>
+<datalist id="authorList"></datalist>
+<script type="module">
+import { auth, provider, signInWithPopup, onAuthStateChanged, signOut, db, storage, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, where, getDoc, getDocs, serverTimestamp, increment, ref, uploadBytesResumable, getDownloadURL } from './firebase.js';
+
+const ADMIN_EMAILS = ['untitledworld9@gmail.com','ayushgupt640@gmail.com'];
+const COLL = { CONTENT:'content', CATEGORIES:'categories', AUTHORS:'authors', SUBADMINS:'subAdmins', METRICS:'contentMetrics', REPORTS:'contentReports' };
+const state = { user:null, role:'guest', content:[], categories:[], authors:[], selected:null, filter:'all', search:'', charts:{}, loading:true, metrics:{}, reports:[] };
+const $ = (id) => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>\"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const ms = v => v?.toDate ? v.toDate().getTime() : (typeof v === 'number' ? v : 0);
+function metricFor(item){ return state.metrics?.[item.id] || { views:Number(item.views||0), downloads:Number(item.downloads||0), likes:Number(item.likes||0), dislikes:Number(item.dislikes||0), reports:Number(item.reports||0) }; }
+function routeFor(item){ const type = String(item.type || item.category || 'blog').toLowerCase(); const map = { note:'notes', notes:'notes', pdf:'formula-sheet', article:'blog', news:'news', college:'college', announcement:'exam-update', resource:'guide', guide:'guide' }; const prefix = map[type] || 'blog'; return `/${prefix}/${encodeURIComponent(item.slug || item.id || 'content')}`; }
+function reportCountFor(item){ const id = item.id; return state.reports.filter(r => !r.resolved && (r.contentId === id || r.slug === item.slug)).length; }
+
+function toast(msg, type='info'){
+  const el = $('toast'); el.textContent = msg; el.style.display = 'block'; el.style.borderColor = type==='bad' ? 'rgba(255,79,106,.28)' : type==='warn' ? 'rgba(255,184,48,.28)' : 'var(--line)';
+  clearTimeout(toast._t); toast._t = setTimeout(()=>el.style.display='none', 1800);
+}
+function themeInit(){
+  const saved = localStorage.getItem('theme'); const sys = matchMedia('(prefers-color-scheme: dark)').matches; const theme = (!saved || saved === 'system') ? (sys ? 'dark' : 'light') : saved; document.documentElement.setAttribute('data-theme', theme);
+  $('themeBtn').onclick = () => { const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', next); localStorage.setItem('theme', next); if(window.__repaintCharts) window.__repaintCharts(); };
+}
+function isVisible(item){ if(!item) return false; if(item.expiresAt && ms(item.expiresAt) && Date.now() > ms(item.expiresAt)) return false; return true; }
+function itemMatches(item, term){ if(!term) return true; const bag = [item.title,item.description,item.body,item.category,item.type,item.slot,item.author,item.slug,item.seoTitle,item.seoDesc,item.fileUrl,item.externalUrl, ...(Array.isArray(item.tags)?item.tags:[]), ...(Array.isArray(item.keywords)?item.keywords:[])].join(' ').toLowerCase(); return bag.includes(term.toLowerCase()); }
+function filtered(){ return state.content.filter(isVisible).filter(it => { if(state.filter==='all') return true; if(state.filter==='published') return it.status==='published'; if(state.filter==='draft') return it.status==='draft'; if(state.filter==='scheduled') return it.status==='scheduled'; if(state.filter==='featured') return !!it.featured; if(state.filter==='pinned') return !!it.pinned; const bag = [it.status,it.slot,it.type,it.category, ...(Array.isArray(it.tags)?it.tags:[])].join(' ').toLowerCase(); return bag.includes(state.filter); }).filter(it => itemMatches(it, state.search)).sort((a,b)=>{ const p = (b.pinned?1:0) - (a.pinned?1:0); if(p) return p; const f=(b.featured?1:0)-(a.featured?1:0); if(f) return f; const pr=(a.priority ?? 999) - (b.priority ?? 999); if(pr) return pr; return ms(b.createdAt)-ms(a.createdAt); }); }
+function statCard(label, value, sub, icon){ return `<div class="stat"><div class="k">${label}</div><div class="v">${value}</div><div class="s"><i class="fa-solid ${icon}"></i> ${sub}</div></div>`; }
+function typeIcon(item){ const t = String(item.type||item.category||'').toLowerCase(); if(t.includes('pdf')) return 'fa-file-pdf'; if(t.includes('note')) return 'fa-pen-to-square'; if(t.includes('news')||t.includes('ann')) return 'fa-bullhorn'; if(t.includes('article')) return 'fa-file-lines'; if(t.includes('college')) return 'fa-graduation-cap'; return 'fa-layer-group'; }
+function card(item){ return `<div class="row" data-id="${item.id}"><div class="thumb"><i class="fa-solid ${typeIcon(item)}"></i></div><div class="rbody"><strong>${esc(item.title || 'Untitled')}</strong><small>${esc(item.description || 'No description')} </small><div class="meta"><span>${esc(item.status || 'draft')}</span><span>${esc(item.slot || 'latest')}</span><span>${esc(item.category || 'uncategorized')}</span><span>${item.pinned ? 'pinned' : 'normal'}</span><span>${metricFor(item).views || 0} views</span><span>${metricFor(item).downloads || 0} downloads</span><span>${reportCountFor(item)} reports</span></div></div><div class="actions"><button class="act soft" data-act="edit">Edit</button><button class="act ${item.status==='published' ? 'good' : 'warn'}" data-act="pub">${item.status==='published' ? 'Published' : 'Publish'}</button><button class="act ${item.featured ? 'warn' : 'soft'}" data-act="feat">${item.featured ? 'Featured' : 'Feature'}</button><button class="act ${item.pinned ? 'warn' : 'soft'}" data-act="pin">${item.pinned ? 'Pinned' : 'Pin'}</button><button class="act bad" data-act="del">Delete</button></div></div>`; }
+function loadForm(item){
+  state.selected = item?.id || null;
+  $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on');
+  const o = item || {};
+  $('fTitle').value = o.title || ''; $('fSlug').value = o.slug || ''; $('fType').value = o.type || 'note'; $('fCategory').value = o.category || ''; $('fAuthor').value = o.author || ''; $('fPriority').value = o.priority ?? 50; $('fSlot').value = o.slot || 'latest'; $('fVisibility').value = o.visibility || 'public'; $('fStatus').value = o.status || 'draft'; $('fDesc').value = o.description || ''; $('fBody').value = o.body || ''; $('fTags').value = Array.isArray(o.tags) ? o.tags.join(', ') : ''; $('fThumb').value = o.thumbnailUrl || ''; $('fFile').value = o.fileUrl || ''; $('fExt').value = o.externalUrl || ''; $('fSeoTitle').value = o.seoTitle || ''; $('fSeoDesc').value = o.seoDesc || ''; $('fKeywords').value = Array.isArray(o.keywords) ? o.keywords.join(', ') : ''; $('fBoost').value = Number(o.boostScore || 0); $('fSchedule').value = o.scheduledAt?.toDate ? toLocal(o.scheduledAt.toDate()) : ''; $('fExpiry').value = o.expiresAt?.toDate ? toLocal(o.expiresAt.toDate()) : ''; $('fFeatured').classList.toggle('on', !!o.featured); $('fPinned').classList.toggle('on', !!o.pinned); $('fSearchable').classList.toggle('on', o.searchable !== false); $('feedControls').style.display = o.id ? 'block' : 'none'; $('selectedPill').textContent = o.id ? (o.title || 'Selected item') : 'No item selected'; if($('urlPreview')) $('urlPreview').textContent = o.externalUrl || o.fileUrl || o.thumbnailUrl ? 'URL loaded. You can fetch it again to refresh metadata.' : 'Paste a URL and fetch metadata / preview.'; if(o.id){ $('feedTitle').value = o.title || ''; $('feedSlot').value = o.slot || 'latest'; $('feedPriority').value = o.priority ?? 50; renderSlotPreview(o); }
+}
+function clearForm(){ state.selected = null; ['fTitle','fSlug','fCategory','fAuthor','fDesc','fBody','fTags','fThumb','fFile','fExt','fSeoTitle','fSeoDesc','fKeywords','fSchedule','fExpiry'].forEach(id => $(id).value=''); $('fType').value='note'; $('fSlot').value='latest'; $('fVisibility').value='public'; $('fStatus').value='draft'; $('fPriority').value=50; $('fBoost').value=0; $('fFeatured').classList.remove('on'); $('fPinned').classList.remove('on'); $('fSearchable').classList.add('on'); $('feedControls').style.display='none'; $('selectedPill').textContent='No item selected'; $('feedTitle').value=''; $('feedSlot').value='latest'; $('feedPriority').value=50; }
+function toLocal(d){ const z = n => String(n).padStart(2,'0'); const yr=d.getFullYear(), mo=z(d.getMonth()+1), da=z(d.getDate()), hr=z(d.getHours()), mi=z(d.getMinutes()); return `${yr}-${mo}-${da}T${hr}:${mi}`; }
+function parseLocal(v){ return v ? new Date(v).getTime() : null; }
+function splitTags(v){ return String(v||'').split(',').map(s=>s.trim()).filter(Boolean); }
+function toggleSwitch(el){ el.classList.toggle('on'); }
+
+async function fetchUrlPreview(){
+  const raw = $('fExt').value.trim();
+  const out = $('urlPreview');
+  if(!raw){ toast('Paste a URL first', 'warn'); return; }
+  let url;
+  try{ url = new URL(raw); }catch{ toast('That does not look like a valid URL', 'bad'); return; }
+
+  const lower = raw.toLowerCase();
+  let hint = 'Link';
+  let preview = '';
+
+  if(/youtu\.be|youtube\.com/.test(lower)){
+    hint = 'YouTube';
+    const id = url.hostname.includes('youtu.be') ? url.pathname.replace('/','') : url.searchParams.get('v') || '';
+    if(id) preview = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    if(!$('fTitle').value.trim()) $('fTitle').value = 'YouTube Video';
+    if(!$('fDesc').value.trim()) $('fDesc').value = 'YouTube video preview';
+    if(!$('fType').value || $('fType').value === 'note') $('fType').value = 'resource';
+    if(preview && !$('fThumb').value.trim()) $('fThumb').value = preview;
+  } else if(/\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(lower)){
+    hint = 'Image';
+    if(!$('fType').value || $('fType').value === 'note') $('fType').value = 'resource';
+    if(!$('fTitle').value.trim()) $('fTitle').value = decodeURIComponent((url.pathname.split('/').pop() || 'image').replace(/\.[^.]+$/,''));
+    if(!$('fDesc').value.trim()) $('fDesc').value = 'Image preview';
+    if(!$('fThumb').value.trim()) $('fThumb').value = raw;
+  } else if(/\.pdf(\?|$)/i.test(lower)){
+    hint = 'PDF';
+    if(!$('fType').value || $('fType').value === 'note') $('fType').value = 'pdf';
+    if(!$('fTitle').value.trim()) $('fTitle').value = decodeURIComponent((url.pathname.split('/').pop() || 'pdf').replace(/\.[^.]+$/,''));
+    if(!$('fDesc').value.trim()) $('fDesc').value = 'PDF file';
+    if(!$('fFile').value.trim()) $('fFile').value = raw;
+  } else {
+    // Best-effort fetch for readable pages (same-origin or CORS-enabled)
+    try {
+      const res = await fetch(raw, { method:'GET', mode:'cors' });
+      const html = await res.text();
+      const title = (html.match(/<title[^>]*>(.*?)<\/title>/i)?.[1] || '').replace(/\s+/g,' ').trim();
+      const desc = (html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1] || html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)?.[1] || '').replace(/\s+/g,' ').trim();
+      const ogImg = (html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] || '').trim();
+      if(title && !$('fTitle').value.trim()) $('fTitle').value = title;
+      if(desc && !$('fDesc').value.trim()) $('fDesc').value = desc;
+      if(ogImg && !$('fThumb').value.trim()) $('fThumb').value = ogImg;
+      hint = title ? 'Fetched page metadata' : 'Link metadata read';
+    } catch (e) {
+      if(!$('fTitle').value.trim()) $('fTitle').value = decodeURIComponent((url.pathname.split('/').pop() || url.hostname).replace(/[-_]+/g,' ').replace(/\.[^.]+$/,''));
+      if(!$('fDesc').value.trim()) $('fDesc').value = 'External link';
+      hint = 'Link (metadata blocked by CORS)';
+    }
+    if(!$('fType').value || $('fType').value === 'note') $('fType').value = 'resource';
+  }
+
+  if(out) out.textContent = `${hint} ready — use it as a content source, preview or reference.`;
+  toast('URL analysed', 'good');
+}
+
+async function uploadToStorage(file, folder){
+  const path = `${folder}/${Date.now()}-${file.name}`;
+  const r = ref(storage, path);
+  await new Promise((resolve, reject) => { const task = uploadBytesResumable(r, file); task.on('state_changed', null, reject, resolve); });
+  return await getDownloadURL(r);
+}
+
+async function saveContent(targetStatus){
+  const title = $('fTitle').value.trim(); if(!title){ toast('Title required', 'bad'); return; }
+  const payload = {
+    title,
+    slug: $('fSlug').value.trim() || title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''),
+    type: $('fType').value,
+    category: $('fCategory').value.trim(),
+    author: $('fAuthor').value.trim(),
+    description: $('fDesc').value.trim(),
+    body: $('fBody').value.trim(),
+    tags: splitTags($('fTags').value),
+    priority: Number($('fPriority').value || 50),
+    slot: $('fSlot').value,
+    visibility: $('fVisibility').value,
+    status: targetStatus || $('fStatus').value,
+    thumbnailUrl: $('fThumb').value.trim(),
+    fileUrl: $('fFile').value.trim(),
+    externalUrl: $('fExt').value.trim(),
+    seoTitle: $('fSeoTitle').value.trim(),
+    seoDesc: $('fSeoDesc').value.trim(),
+    keywords: splitTags($('fKeywords').value),
+    boostScore: Number($('fBoost').value || 0),
+    featured: $('fFeatured').classList.contains('on'),
+    pinned: $('fPinned').classList.contains('on'),
+    searchable: $('fSearchable').classList.contains('on'),
+    scheduledAt: parseLocal($('fSchedule').value),
+    expiresAt: parseLocal($('fExpiry').value),
+    updatedAt: serverTimestamp(),
+    updatedBy: state.user?.email || 'admin'
+  };
+  if(!payload.category) payload.category = payload.type;
+  if(!payload.slug) payload.slug = payload.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  if(payload.scheduledAt) payload.scheduledAt = new Date(payload.scheduledAt);
+  if(payload.expiresAt) payload.expiresAt = new Date(payload.expiresAt);
+  if(state.selected){ await updateDoc(doc(db, COLL.CONTENT, state.selected), payload); await setDoc(doc(db, COLL.METRICS, state.selected), { contentId: state.selected, slug: payload.slug, title: payload.title, type: payload.type, category: payload.category, thumbnailUrl: payload.thumbnailUrl || '', updatedAt: serverTimestamp() }, { merge:true }); toast('Updated'); }
+  else { payload.createdAt = serverTimestamp(); payload.views = 0; payload.saves = 0; const docRef = await addDoc(collection(db, COLL.CONTENT), payload); await setDoc(doc(db, COLL.METRICS, docRef.id), { contentId: docRef.id, slug: payload.slug, title: payload.title, type: payload.type, category: payload.category, thumbnailUrl: payload.thumbnailUrl || '', views:0, downloads:0, likes:0, dislikes:0, reports:0, updatedAt: serverTimestamp() }, { merge:true }); toast('Saved'); }
+  clearForm();
+}
+async function uploadAndSet(inputId, field){ const file = $(inputId).files?.[0]; if(!file){ toast('Choose a file first', 'warn'); return; } const url = await uploadToStorage(file, field); $(field==='thumb' ? 'fThumb' : 'fFile').value = url; toast('Upload complete'); }
+
+function openDrawer(item){
+  $('drawerTitle').textContent = item.title || 'Untitled'; $('drawerSub').textContent = `${item.status || 'draft'} • ${item.slot || 'latest'} • ${item.category || 'uncategorized'}`;
+  $('drawerBody').innerHTML = `
+    <div class="badge" style="margin-bottom:12px"><i class="fa-solid ${typeIcon(item)}"></i> ${esc(item.type || 'content')}</div>
+    <div style="font-family:var(--fontD);font-size:22px;font-weight:800;line-height:1.15">${esc(item.title || 'Untitled')}</div>
+    <div class="tiny" style="margin-top:8px;white-space:pre-wrap;line-height:1.7">${esc(item.description || '')}</div>
+    <div class="meta" style="margin-top:12px">${['status','slot','category','author'].map(k=>`<span>${esc(item[k] || k)}</span>`).join('')}<span>${item.featured ? 'featured' : 'normal'}</span><span>${item.pinned ? 'pinned' : 'open'}</span><span>${metricFor(item).views || 0} views</span><span>${metricFor(item).downloads || 0} downloads</span><span>${reportCountFor(item)} reports</span></div>
+    <div class="pills" style="margin-top:12px">${(item.tags||[]).map(t=>`<span class="pill" style="text-transform:none;letter-spacing:0">${esc(t)}</span>`).join('')}</div>
+    <div class="actions" style="margin-top:14px;justify-content:flex-start">
+      <button class="btn primary" id="drawerEdit"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+      <button class="btn good" id="drawerPublish"><i class="fa-solid fa-bolt"></i> Publish</button>
+      <button class="btn warn" id="drawerFeature"><i class="fa-solid fa-star"></i> Toggle feature</button>
+      <button class="btn warn" id="drawerPin"><i class="fa-solid fa-thumbtack"></i> Toggle pin</button>
+      <button class="btn soft" id="drawerDuplicate"><i class="fa-regular fa-copy"></i> Duplicate</button>
+      <button class="btn bad" id="drawerDelete"><i class="fa-solid fa-trash"></i> Delete</button>
+      <a class="btn soft" href="${esc(routeFor(item))}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open live</a>
+    </div>
+    <div class="tiny" style="margin-top:14px">URL: ${esc(item.externalUrl || item.fileUrl || '')}</div>
+  `;
+  $('drawer').classList.add('on'); $('drawerMask').classList.add('on');
+  $('drawerEdit').onclick = () => { loadForm(item); $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on'); }; 
+  $('drawerPublish').onclick = async () => { await updateDoc(doc(db, COLL.CONTENT, item.id), { status:'published', updatedAt:serverTimestamp() }); toast('Published'); };
+  $('drawerFeature').onclick = async () => { await updateDoc(doc(db, COLL.CONTENT, item.id), { featured: !item.featured, updatedAt:serverTimestamp() }); toast('Feature toggled'); };
+  $('drawerPin').onclick = async () => { await updateDoc(doc(db, COLL.CONTENT, item.id), { pinned: !item.pinned, updatedAt:serverTimestamp() }); toast('Pin toggled'); };
+  $('drawerDuplicate').onclick = async () => { const copy = {...item}; delete copy.id; copy.title = `${copy.title || 'Untitled'} (copy)`; copy.status='draft'; copy.createdAt=serverTimestamp(); copy.updatedAt=serverTimestamp(); copy.views=0; copy.saves=0; await addDoc(collection(db, COLL.CONTENT), copy); toast('Duplicated'); };
+  $('drawerDelete').onclick = async () => { if(confirm('Delete this item?')){ await deleteDoc(doc(db, COLL.CONTENT, item.id)); toast('Deleted'); $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on'); } };
+}
+
+function renderStats(){
+  const published = state.content.filter(i=>i.status==='published').length;
+  const drafts = state.content.filter(i=>i.status==='draft').length;
+  const scheduled = state.content.filter(i=>i.status==='scheduled').length;
+  const featured = state.content.filter(i=>i.featured).length;
+  const pinned = state.content.filter(i=>i.pinned).length;
+  const updates = state.content.filter(i=>['news','announcement','college'].includes(String(i.type||'').toLowerCase())).length;
+  $('statsRow').innerHTML = [
+    statCard('Total uploads', state.content.length, 'All items', 'fa-layer-group'),
+    statCard('Published', published, 'Visible to app', 'fa-check-circle'),
+    statCard('Drafts', drafts, 'Awaiting publish', 'fa-file-pen'),
+    statCard('Scheduled', scheduled, 'Timed release', 'fa-clock'),
+    statCard('Featured', featured, 'Hero / premium feed', 'fa-star'),
+    statCard('Pinned', pinned, 'Fixed at top', 'fa-thumbtack'),
+    statCard('Reports', state.reports.filter(r=>!r.resolved).length, 'Needs attention', 'fa-flag')
+  ].join('');
+  $('liveCountPill').textContent = `${published} live`;
+  $('draftCountPill').textContent = `${drafts} drafts`;
+  $('analyticsRow').innerHTML = [
+    statCard('Content', state.content.length, 'Library size', 'fa-box-archive'),
+    statCard('Types', new Set(state.content.map(i=>i.type||'content')).size, 'Different formats', 'fa-shapes'),
+    statCard('Categories', state.categories.length, 'Managed chips', 'fa-tags'),
+    statCard('Authors', state.authors.length, 'Known publishers', 'fa-user-pen'),
+    statCard('Updates', updates, 'News / alerts', 'fa-bullhorn'),
+    statCard('Selected', state.selected ? 1 : 0, 'Editing state', 'fa-cursor')
+  ].join('');
+}
+
+function renderCharts(){
+  const statusData = ['draft','scheduled','published','archived'].map(x => state.content.filter(i=>i.status===x).length);
+  const typeMap = ['note','pdf','article','news','college','announcement','resource'].map(x => state.content.filter(i => String(i.type||'').toLowerCase()===x).length);
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const color = isLight ? 'rgba(15,23,42,.82)' : 'rgba(255,255,255,.80)';
+  Chart.defaults.color = color;
+  Chart.defaults.font.family = `'Manrope', sans-serif`;
+  const grid = isLight ? 'rgba(15,23,42,.08)' : 'rgba(255,255,255,.05)';
+  if(state.charts.status) state.charts.status.destroy();
+  if(state.charts.type) state.charts.type.destroy();
+  state.charts.status = new Chart($('statusChart'), { type:'doughnut', data:{ labels:['Draft','Scheduled','Published','Archived'], datasets:[{ data:statusData, backgroundColor:['#ffb830','#00e0ff','#00e5a0','#ff4f6a'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, boxHeight:10, usePointStyle:true, pointStyle:'circle' } } } } });
+  state.charts.type = new Chart($('typeChart'), { type:'bar', data:{ labels:['Note','PDF','Article','News','College','Ann.','Res.'], datasets:[{ data:typeMap, backgroundColor:['#00e0ff','#7c5cfc','#00e5a0','#ff4f6a','#ffb830','#4f46e5','#8b5cf6'], borderRadius:8, borderSkipped:false }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ color:grid }, ticks:{ color:color } }, y:{ beginAtZero:true, grid:{ color:grid }, ticks:{ color:color } } } } });
+  window.__repaintCharts = renderCharts;
+}
+
+function renderTopViewed(){
+  const host = $('topViewedList');
+  const items = [...state.content].sort((a,b)=> (metricFor(b).views||0) - (metricFor(a).views||0)).slice(0,6);
+  host.innerHTML = items.length ? items.map(i => `<div class="row" data-id="${i.id}"><div class="thumb"><i class="fa-solid ${typeIcon(i)}"></i></div><div class="rbody"><strong>${esc(i.title || 'Untitled')}</strong><small>${esc(i.description || '')}</small><div class="meta"><span>${metricFor(i).views||0} views</span><span>${metricFor(i).downloads||0} downloads</span><span>${metricFor(i).likes||0} likes</span></div></div><div class="right">Open</div></div>`).join('') : `<div class="empty"><i class="fa-regular fa-chart-simple"></i>No views data yet.</div>`;
+}
+function renderReports(){
+  const host = $('reportList');
+  if(!host) return;
+  const items = state.reports.filter(r => !r.resolved).slice(0, 8);
+  host.innerHTML = items.length ? items.map(r => `<div class="row" data-report="${esc(r.id)}"><div class="thumb"><i class="fa-regular fa-flag"></i></div><div class="rbody"><strong>${esc(r.title || 'Untitled')}</strong><small>${esc(r.issueType || 'report')} · ${esc(r.note || '')}</small><div class="meta"><span>${esc(r.reporterName || 'Guest')}</span><span>${esc(r.category || 'content')}</span><span>${esc(r.slug || '')}</span></div></div><div class="actions"><button class="act good" data-act="resolveReport">Resolve</button><button class="act bad" data-act="delReport">Delete</button></div></div>`).join('') : `<div class="empty"><i class="fa-regular fa-flag"></i>No open reports.</div>`;
+  host.querySelectorAll('[data-act="resolveReport"]').forEach(btn => btn.onclick = async (e) => { const row = e.target.closest('[data-report]'); if(!row) return; await updateDoc(doc(db, COLL.REPORTS, row.dataset.report), { resolved:true, resolvedAt: serverTimestamp() }); toast('Report resolved'); });
+  host.querySelectorAll('[data-act="delReport"]').forEach(btn => btn.onclick = async (e) => { const row = e.target.closest('[data-report]'); if(!row) return; if(confirm('Delete this report?')){ await deleteDoc(doc(db, COLL.REPORTS, row.dataset.report)); toast('Report deleted'); } });
+}
+function renderLibrary(){
+  const host = $('libraryList');
+  const items = filtered();
+  host.innerHTML = items.length ? items.map(card).join('') : '';
+  $('libraryEmpty').style.display = items.length ? 'none' : 'block';
+}
+function renderCategories(){
+  $('categoryList').innerHTML = state.categories.map(c => `<div class="row" data-cat="${esc(c.id)}"><div class="thumb"><i class="fa-solid ${esc(c.icon || 'fa-tag')}"></i></div><div class="rbody"><strong>${esc(c.name || c.slug || 'Category')}</strong><small>${esc(c.slug || '')}</small></div><div class="actions"><button class="act soft" data-act="editCat">Edit</button><button class="act bad" data-act="delCat">Delete</button></div></div>`).join('') || '<div class="empty"><i class="fa-solid fa-tags"></i>No categories yet.</div>';
+  $('categoryList').querySelectorAll('[data-act="delCat"]').forEach(btn => btn.onclick = async (e) => { const row = e.target.closest('[data-cat]'); if(!row) return; await deleteDoc(doc(db, COLL.CATEGORIES, row.dataset.cat)); toast('Category deleted'); });
+  $('categoryList').querySelectorAll('[data-act="editCat"]').forEach(btn => btn.onclick = (e) => { const row = e.target.closest('[data-cat]'); const cat = state.categories.find(c=>c.id===row.dataset.cat); if(cat){ $('catName').value = cat.name || ''; $('catSlug').value = cat.slug || ''; $('catIcon').value = cat.icon || 'fa-tag'; toast('Category loaded'); } });
+  $('categoryList').querySelectorAll('.row').forEach(row => row.onclick = () => { const cat = state.categories.find(c=>c.id===row.dataset.cat); if(cat){ $('catName').value = cat.name || ''; $('catSlug').value = cat.slug || ''; $('catIcon').value = cat.icon || 'fa-tag'; } });
+}
+function renderAuthors(){
+  $('authorList').innerHTML = state.authors.map(a => `<div class="row" data-author="${esc(a.id)}"><div class="thumb"><i class="fa-solid fa-user-pen"></i></div><div class="rbody"><strong>${esc(a.name || 'Author')}</strong><small>${esc(a.title || a.slug || '')}</small></div><div class="actions"><button class="act soft" data-act="editAuthor">Edit</button><button class="act bad" data-act="delAuthor">Delete</button></div></div>`).join('') || '<div class="empty"><i class="fa-regular fa-user"></i>No authors yet.</div>';
+  $('authorList').querySelectorAll('[data-act="delAuthor"]').forEach(btn => btn.onclick = async (e) => { const row = e.target.closest('[data-author]'); if(!row) return; await deleteDoc(doc(db, COLL.AUTHORS, row.dataset.author)); toast('Author deleted'); });
+  $('authorList').querySelectorAll('[data-act="editAuthor"]').forEach(btn => btn.onclick = (e) => { const row = e.target.closest('[data-author]'); const a = state.authors.find(c=>c.id===row.dataset.author); if(a){ $('authorName').value = a.name || ''; $('authorTitle').value = a.title || ''; $('authorSlug').value = a.slug || ''; toast('Author loaded'); } });
+  $('authorList').querySelectorAll('.row').forEach(row => row.onclick = () => { const a = state.authors.find(c=>c.id===row.dataset.author); if(a){ $('authorName').value = a.name || ''; $('authorTitle').value = a.title || ''; $('authorSlug').value = a.slug || ''; } });
+}
+function renderSlotPreview(item){
+  const items = state.content.filter(x => x.slot === item.slot || x.featured === item.featured || x.pinned === item.pinned).slice(0,6);
+  $('slotPreview').innerHTML = items.map(i => `<span class="pill" title="${esc(i.title||'')}">${esc(i.title || 'Untitled')}</span>`).join('') || '<span class="pill">No items in this slot yet</span>';
+}
+function renderFeedControls(){ if(state.selected){ const item = state.content.find(i=>i.id===state.selected); if(item){ $('feedControls').style.display='block'; $('feedTitle').value=item.title || ''; $('feedSlot').value=item.slot || 'latest'; $('feedPriority').value=item.priority ?? 50; renderSlotPreview(item); } } }
+function renderAll(){
+  state.categories.forEach(c => {});
+  $('categoryList').innerHTML = '';
+  $('authorList').innerHTML = '';
+  renderStats(); renderCharts(); renderTopViewed(); renderLibrary(); renderCategories(); renderAuthors(); renderFeedControls(); renderReports(); if($('openReportCount')) $('openReportCount').textContent = `${state.reports.filter(r=>!r.resolved).length} open`;
+  $('categoryList').innerHTML && $('categoryList').scrollTop;
+}
+
+async function addCategory(){ const name=$('catName').value.trim(); if(!name) return toast('Category name required','bad'); const slug=$('catSlug').value.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g,'-'); await addDoc(collection(db, COLL.CATEGORIES), { name, slug, icon:$('catIcon').value.trim() || 'fa-tag', order: Date.now(), createdAt: serverTimestamp(), updatedAt: serverTimestamp() }); $('catName').value=''; $('catSlug').value=''; $('catIcon').value='fa-tag'; toast('Category added'); }
+async function addAuthor(){ const name=$('authorName').value.trim(); if(!name) return toast('Author name required','bad'); const slug=$('authorSlug').value.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g,'-'); await addDoc(collection(db, COLL.AUTHORS), { name, title:$('authorTitle').value.trim(), slug, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }); $('authorName').value=''; $('authorTitle').value=''; $('authorSlug').value=''; toast('Author added'); }
+async function applyFeed(){ if(!state.selected) return toast('Select content first','warn'); const patch = { slot:$('feedSlot').value, priority:Number($('feedPriority').value||50), updatedAt: serverTimestamp() }; await updateDoc(doc(db, COLL.CONTENT, state.selected), patch); toast('Feed slot applied'); }
+
+function sectionHideAll(){ ['overview','studio','library','feed','categories','authors','analytics'].forEach(id => { const sec = $('section-' + id); if(sec) sec.style.display = 'none'; }); }
+function showSec(id){ sectionHideAll(); $('section-'+id).style.display = 'block'; document.querySelectorAll('.nav button[data-sec]').forEach(b => b.classList.toggle('active', b.dataset.sec===id)); document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active')); }
+
+function bindUI(){
+  $('toggleSidebar').onclick = () => $('sidebar').classList.toggle('on');
+  $('drawerMask').onclick = () => { $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on'); $('sidebar').classList.remove('on'); };
+  $('closeDrawer').onclick = () => { $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on'); };
+  $('signInBtn').onclick = async () => { try { await signInWithPopup(auth, provider); } catch(e){ $('authError').textContent = e.message; } };
+  $('logoutBtn').onclick = async () => { if(confirm('Logout from admin panel?')) await signOut(auth); };
+  $('newContentBtn').onclick = () => { clearForm(); showSec('studio'); };
+  $('resetFormBtn').onclick = () => clearForm();
+  $('saveDraftBtn').onclick = () => saveContent('draft');
+  $('publishBtn').onclick = () => saveContent('published');
+  $('scheduleBtn').onclick = () => saveContent('scheduled');
+  $('uploadThumbBtn').onclick = () => $('thumbInput').click();
+  $('fetchUrlBtn').onclick = fetchUrlPreview;
+  $('fExt').addEventListener('blur', () => { if($('fExt').value.trim()) fetchUrlPreview().catch(()=>{}); });
+  $('uploadFileBtn').onclick = () => $('fileInput').click();
+  $('thumbInput').onchange = async () => { if($('thumbInput').files?.[0]){ $('fThumb').value = await uploadToStorage($('thumbInput').files[0], 'thumbs'); toast('Thumbnail uploaded'); } };
+  $('fileInput').onchange = async () => { if($('fileInput').files?.[0]){ $('fFile').value = await uploadToStorage($('fileInput').files[0], 'files'); toast('File uploaded'); } };
+  $('addCatBtn').onclick = addCategory; $('addAuthorBtn').onclick = addAuthor; $('applyFeedBtn').onclick = applyFeed; $('selectInEditorBtn').onclick = () => { if(state.selected){ const it = state.content.find(x=>x.id===state.selected); if(it) loadForm(it); } };
+  $('resetSelected').onclick = (e) => { e.preventDefault(); state.selected = null; $('feedControls').style.display='none'; $('selectedPill').textContent='No item selected'; toast('Selection cleared'); };
+  $('openLibraryFromOverview').onclick = (e) => { e.preventDefault(); showSec('library'); };
+  $('searchLibrary').oninput = () => { state.search = $('searchLibrary').value.trim(); renderLibrary(); renderTopViewed(); };
+  $('statusTabs').addEventListener('click', e => { const btn = e.target.closest('.tab'); if(!btn) return; document.querySelectorAll('#statusTabs .tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); state.filter = btn.dataset.status; renderLibrary(); });
+  document.querySelectorAll('.nav button[data-sec]').forEach(btn => btn.onclick = () => showSec(btn.dataset.sec));
+  showSec('overview');
+  ['fFeatured','fPinned','fSearchable'].forEach(id => $(id).onclick = () => toggleSwitch($(id)));
+  $('drawerMask').addEventListener('click', ()=>{ if(!$('drawer').classList.contains('on')) return; $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on'); });
+  document.addEventListener('click', (e) => {
+    const row = e.target.closest('.row[data-id]');
+    if(!row) return;
+    const item = state.content.find(x => x.id === row.dataset.id); if(!item) return;
+    if(e.target.closest('[data-act="edit"]')) return loadForm(item);
+    if(e.target.closest('[data-act="pub"]')) return updateDoc(doc(db, COLL.CONTENT, item.id), { status:'published', updatedAt:serverTimestamp() }).then(()=>toast('Published'));
+    if(e.target.closest('[data-act="feat"]')) return updateDoc(doc(db, COLL.CONTENT, item.id), { featured: !item.featured, updatedAt:serverTimestamp() }).then(()=>toast('Feature toggled'));
+    if(e.target.closest('[data-act="pin"]')) return updateDoc(doc(db, COLL.CONTENT, item.id), { pinned: !item.pinned, updatedAt:serverTimestamp() }).then(()=>toast('Pin toggled'));
+    if(e.target.closest('[data-act="del"]')) return confirm('Delete item?') && deleteDoc(doc(db, COLL.CONTENT, item.id)).then(()=>toast('Deleted'));
+    state.selected = item.id; loadForm(item); openDrawer(item); $('feedControls').style.display='block'; $('selectedPill').textContent = item.title || 'Selected item';
+  });
+  $('drawerMask').addEventListener('click', ()=> closeDrawer());
+  document.querySelectorAll('.panel, .stat, .row, .card').forEach(()=>{});
+}
+function closeDrawer(){ $('drawer').classList.remove('on'); $('drawerMask').classList.remove('on'); }
+
+function roleOk(user){ return ADMIN_EMAILS.includes(user.email); }
+
+function initListeners(){
+  onSnapshot(query(collection(db, COLL.CONTENT)), snap => {
+    state.content = snap.docs.map(d => ({ id:d.id, ...d.data() })); state.loading = false; renderAll();
+  }, err => { console.warn(err); state.loading = false; renderAll(); });
+  onSnapshot(query(collection(db, COLL.METRICS)), snap => {
+    state.metrics = {}; snap.docs.forEach(d => { state.metrics[d.id] = d.data() || {}; }); renderAll();
+  }, () => {});
+  onSnapshot(query(collection(db, COLL.REPORTS), orderBy('createdAt', 'desc')), snap => {
+    state.reports = snap.docs.map(d => ({ id:d.id, ...d.data() })); renderAll();
+  }, () => {});
+  onSnapshot(query(collection(db, COLL.CATEGORIES), orderBy('order')), snap => { state.categories = snap.docs.map(d => ({ id:d.id, ...d.data() })); renderAll(); }, () => {});
+  onSnapshot(query(collection(db, COLL.AUTHORS), orderBy('name')), snap => { state.authors = snap.docs.map(d => ({ id:d.id, ...d.data() })); renderAll(); }, () => {});
+}
+
+onAuthStateChanged(auth, async user => {
+  if(!user){ $('authGate').style.display='flex'; $('authLoading').style.display='none'; return; }
+  $('authLoading').style.display='flex'; $('authGate').style.display='none';
+  let allowed = roleOk(user);
+  if(!allowed){ try{ const sub = await getDoc(doc(db, COLL.SUBADMINS, user.email)); const role = sub.exists() ? sub.data().role : null; allowed = role === 'sub-admin' || role === 'both'; }catch{} }
+  if(!allowed){ $('authLoading').style.display='none'; $('authGate').style.display='flex'; $('authError').textContent = 'This account does not have Content Hub Admin access.'; await signOut(auth); return; }
+  state.user = user; state.role = user.email; $('authLoading').style.display='none'; $('authGate').style.display='none'; $('roleTag').textContent = user.displayName || user.email;
+  $('drawerTitle').textContent = 'Selected item';
+  bindUI(); initListeners();
+});
+
+</script>
+</body>
+</html>
