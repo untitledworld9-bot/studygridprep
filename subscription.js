@@ -41,6 +41,32 @@ const LS_KEYS = {
 const USERS_COLL = 'users';
 
 // ------------------------------------------------------------
+//  AUTH READY — resolves once Firebase Auth has finished restoring
+//  the saved session (fires on the very first onAuthStateChanged
+//  callback, whether that resolves to a user or null).
+//
+//  ✅ ROOT-CAUSE FIX: getUserId() reads auth.currentUser synchronously.
+//  On page load, Firebase Auth restores the persisted session
+//  asynchronously, so auth.currentUser is still null for a brief
+//  moment. Any code that called getUserId() during that window (the
+//  dashboard sidebar badge, subscription.html's init()) got the
+//  random per-device fallback id instead of the real UID, subscribed
+//  to the WRONG Firestore doc, and the UI stayed stuck on "Free Plan"
+//  until something else happened to re-run after auth was ready
+//  (e.g. a manual login or tap). Waiting on this promise before
+//  computing the userId fixes it at the source for every caller.
+// ------------------------------------------------------------
+let _authReadyDone = false;
+let _resolveAuthReady;
+const _authReadyPromise = new Promise((resolve) => { _resolveAuthReady = resolve; });
+auth.onAuthStateChanged(() => {
+  if (!_authReadyDone) {
+    _authReadyDone = true;
+    _resolveAuthReady();
+  }
+});
+
+// ------------------------------------------------------------
 //  USER ID — stable per device, overridden by Firebase UID
 // ------------------------------------------------------------
 
@@ -183,6 +209,7 @@ export function initSubscriptionSync(onUpdate) {
   if (!syncInFlight) {
     syncInFlight = (async () => {
       try {
+        await _authReadyPromise; // wait for real UID before touching Firestore
         const userId  = getUserId();
         const remote  = await readRemote(userId);
 
@@ -269,31 +296,47 @@ function _fireProActivationNotification(plan, trialExpiry) {
  */
 export function watchSubscription(onUpdate, opts = {}) {
   const silent = !!opts.silent;
-  const userId = getUserId();
-  const ref = doc(db, USERS_COLL, userId);
-  let _prevIsSubscribed = getLocalSubscriptionState().isSubscribed;
-  return onSnapshot(ref, (snap) => {
-    if (!snap.exists()) return;
-    const data = snap.data();
-    const state = applyExpiryLocal({
-      isSubscribed: !!data.isSubscribed,
-      trialExpiry:  data.trialExpiry || null,
-      freeMockUsed: !!data.freeMockUsed,
-      trialUsed:    deriveTrialUsed(data),
-      plan:         data.plan || null,
-      payPending:   !!data.payPending
-    });
-    writeLocal(state);
+  let unsub = null;
+  let cancelled = false;
 
-    // Fire PWA notification when subscription just became active
-    if (!silent && !_prevIsSubscribed && state.isSubscribed) {
-      _fireProActivationNotification(data.plan || 'trial', state.trialExpiry);
-    }
-    _prevIsSubscribed = state.isSubscribed;
-    if (typeof onUpdate === 'function') onUpdate(state, { source: 'remote-live' });
-  }, (err) => {
-    console.warn('Subscription listener error:', err);
-  });
+  (async () => {
+    // Wait for Firebase Auth to finish restoring the session — otherwise
+    // getUserId() below can resolve to the wrong fallback id (see the
+    // AUTH READY comment above) and this listener ends up watching a
+    // Firestore doc that isn't the user's real subscription record.
+    await _authReadyPromise;
+    if (cancelled) return;
+
+    const userId = getUserId();
+    const ref = doc(db, USERS_COLL, userId);
+    let _prevIsSubscribed = getLocalSubscriptionState().isSubscribed;
+    unsub = onSnapshot(ref, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      const state = applyExpiryLocal({
+        isSubscribed: !!data.isSubscribed,
+        trialExpiry:  data.trialExpiry || null,
+        freeMockUsed: !!data.freeMockUsed,
+        trialUsed:    deriveTrialUsed(data),
+        plan:         data.plan || null,
+        payPending:   !!data.payPending
+      });
+      writeLocal(state);
+
+      // Fire PWA notification when subscription just became active
+      if (!silent && !_prevIsSubscribed && state.isSubscribed) {
+        _fireProActivationNotification(data.plan || 'trial', state.trialExpiry);
+      }
+      _prevIsSubscribed = state.isSubscribed;
+      if (typeof onUpdate === 'function') onUpdate(state, { source: 'remote-live' });
+    }, (err) => {
+      console.warn('Subscription listener error:', err);
+    });
+  })();
+
+  // Return an unsubscribe function immediately — safe even before the
+  // real onSnapshot listener attaches, since `cancelled` guards it.
+  return () => { cancelled = true; if (unsub) unsub(); };
 }
 
 // ------------------------------------------------------------
