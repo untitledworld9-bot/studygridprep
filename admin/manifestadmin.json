@@ -2,8 +2,8 @@
   "name": "Study Grid Admin Panel",
   "short_name": "SGP Admin",
   "id": "study-grid-admin-panel",
-  "description": "Study Grid Prep Admin Control Panel",
-  "start_url": "/admin/SGPAdmin-main",
+  "description": "Study Grid Prep Admin Control Panel Hub",
+  "start_url": "/admin/admin-panels.html",
   "scope": "/admin/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -23,6 +23,6 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": ["productivity", "utilities", "education"],
   "lang": "en"
 }
