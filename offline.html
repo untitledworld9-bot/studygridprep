@@ -5,375 +5,197 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Offline – Study Grid Prep</title>
 <link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<!-- Theme — matches dashboard-home.html -->
 <script>
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  var theme = (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
   document.documentElement.setAttribute("data-theme", theme);
 })();
-
-window.matchMedia("(prefers-color-scheme: dark)")
-.addEventListener("change", function(e){
-  if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
-  }
-});
 </script>
 
 <style>html{ visibility:hidden; } html[data-theme]{ visibility:visible; }</style>
 
 <style>
-/* ── DESIGN TOKENS — exact match dashboard-home.html ── */
 :root {
-  --bg:        #F0F2F8;
-  --surface:   #FFFFFF;
-  --surface2:  #F4F6FB;
-  --border:    #E2E8F2;
-  --text:      #0F172A;
-  --text2:     #5A6785;
-  --text3:     #94A3B8;
-  --accent:    #5B5BF6;
-  --accent2:   #7C3AED;
-  --green:     #10B981;
-  --orange:    #F97316;
-  --red:       #EF4444;
-  --header-bg: rgba(240,242,248,0.97);
-  --shadow-sm: 0 1px 6px rgba(0,0,0,0.07);
-  --shadow:    0 4px 16px rgba(0,0,0,0.09);
-  --shadow-md: 0 8px 28px rgba(0,0,0,0.12);
-  --t: 0.2s ease;
+  --bg:      #F0F2F8;
+  --surface: #FFFFFF;
+  --border:  #E2E8F2;
+  --text:    #0F172A;
+  --text2:   #5A6785;
+  --text3:   #94A3B8;
+  --accent:  #5B5BF6;
+  --red:     #EF4444;
+  --green:   #10B981;
 }
 [data-theme="dark"] {
-  --bg:        #0D1120;
-  --surface:   #151E32;
-  --surface2:  #1A2440;
-  --border:    rgba(255,255,255,0.08);
-  --text:      #E8F0FE;
-  --text2:     #8B9EC8;
-  --text3:     #3D5080;
-  --header-bg: rgba(13,17,32,0.97);
-  --shadow-sm: 0 1px 6px rgba(0,0,0,0.35);
-  --shadow:    0 4px 16px rgba(0,0,0,0.4);
-  --shadow-md: 0 8px 32px rgba(0,0,0,0.55);
+  --bg:      #0D1120;
+  --surface: #151E32;
+  --border:  rgba(255,255,255,0.08);
+  --text:    #E8F0FE;
+  --text2:   #8B9EC8;
+  --text3:   #3D5080;
 }
 
 *, *::before, *::after {
   box-sizing: border-box; margin: 0; padding: 0;
   font-family: 'Poppins', sans-serif;
   -webkit-tap-highlight-color: transparent;
-  user-select: none; -webkit-user-select: none;
 }
 
-html {
+html, body {
   background: var(--bg);
-  overscroll-behavior: none;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overscroll-behavior: none;
-  animation: pageIn 0.25s ease;
 }
-@keyframes pageIn { from { opacity:0; } to { opacity:1; } }
-
-/* ── HEADER — same structure as dashboard-home ── */
-.off-header {
-  position: sticky; top: 0; width: 100%;
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-sm);
-  z-index: 9999;
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 18px;
-}
-.off-header-icon {
-  width: 36px; height: 36px; border-radius: 11px;
-  overflow: hidden; flex-shrink: 0;
-  box-shadow: 0 3px 10px rgba(91,91,246,0.2);
-  background: var(--surface2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; color: var(--accent);
-}
-.off-header-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.off-header-text { flex: 1; min-width: 0; }
-.off-header-name {
-  font-size: 15px; font-weight: 700; color: var(--text);
-  line-height: 1; letter-spacing: -0.1px;
-}
-.off-header-sub {
-  font-size: 10.5px; color: var(--text3); margin-top: 2px; font-weight: 500;
-}
-.off-status-badge {
-  display: flex; align-items: center; gap: 5px;
-  padding: 5px 11px; border-radius: 50px;
-  background: rgba(239,68,68,0.10);
-  border: 1.5px solid rgba(239,68,68,0.25);
-  font-size: 11px; font-weight: 700; color: var(--red);
-  flex-shrink: 0;
-}
-.off-status-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--red);
-  animation: dotBlink 1.4s ease-in-out infinite;
-}
-@keyframes dotBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
-
-/* ── MAIN SCROLL AREA ── */
-.off-body {
-  flex: 1;
-  display: flex; flex-direction: column;
-  align-items: center;
-  padding: 24px 18px 36px 18px;
-  gap: 12px;
-  max-width: 420px; margin: 0 auto; width: 100%;
+body {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px;
+  color: var(--text);
 }
 
-/* ── NO SIGNAL ILLUSTRATION AREA ── */
-.off-signal-area {
-  width: 100%;
+.off-logo {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 28px;
+}
+.off-logo img { width: 32px; height: 32px; border-radius: 9px; }
+.off-logo span { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+
+.off-card {
+  width: 100%; max-width: 360px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 32px 24px 28px;
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center; gap: 0;
-  box-shadow: var(--shadow);
-  position: relative; overflow: hidden;
-}
-[data-theme="light"] .off-signal-area { background: #fff; }
-
-/* Subtle top accent bar — same pattern as dashboard cards */
-.off-signal-area::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, #EF4444, #F97316, #EF4444);
-  border-radius: 22px 22px 0 0;
+  border-radius: 20px;
+  padding: 36px 28px 30px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.10);
 }
 
-.off-icon-wrap {
-  width: 64px; height: 64px; border-radius: 18px;
-  background: rgba(239,68,68,0.08);
-  border: 1.5px solid rgba(239,68,68,0.18);
+.off-icon-circle {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: rgba(239,68,68,0.10);
   display: flex; align-items: center; justify-content: center;
   font-size: 26px; color: var(--red);
-  margin-bottom: 20px;
-  animation: iconFloat 3s ease-in-out infinite;
-}
-@keyframes iconFloat {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
+  margin-bottom: 22px;
 }
 
 .off-title {
-  font-size: 20px; font-weight: 800; color: var(--text);
-  letter-spacing: -0.3px; margin-bottom: 7px;
-}
-.off-sub {
-  font-size: 13px; color: var(--text2); line-height: 1.65;
-  margin-bottom: 24px; max-width: 270px;
+  font-size: 20px; font-weight: 800; line-height: 1.3;
+  margin-bottom: 22px;
 }
 
-/* Retry button — same gradient as dashboard accent buttons */
-.off-retry-btn {
-  width: 100%;
-  padding: 13px 20px;
-  background: linear-gradient(135deg, #5B5BF6, #7C3AED);
-  color: #fff; border: none; border-radius: 13px;
-  font-size: 14px; font-weight: 700; cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-  box-shadow: 0 5px 16px rgba(91,91,246,0.32);
-  display: flex; align-items: center; justify-content: center; gap: 9px;
+.off-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 700; font-family: inherit;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.off-retry-btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(91,91,246,0.2); }
+.off-btn:active { transform: scale(0.97); }
+.off-btn:disabled { opacity: 0.7; }
 
-/* ── SECTION LABEL — same style as dashboard sections ── */
-.off-section-label {
-  font-size: 10px; font-weight: 700; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.9px;
-  display: flex; align-items: center; gap: 5px;
-  align-self: flex-start; padding: 0 2px;
-}
-.off-section-label i { font-size: 9px; }
-
-/* ── OFFLINE TOOLS GRID (shown in PWA + always) ── */
-.off-tools-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px; width: 100%;
+.off-avail-label {
+  width: 100%; max-width: 360px;
+  font-size: 10.5px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin: 22px 0 8px 4px;
 }
 
-.off-tool-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 16px 14px 14px;
-  display: flex; flex-direction: column; gap: 10px;
-  text-decoration: none; cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: var(--shadow-sm);
-  position: relative; overflow: hidden;
-}
-[data-theme="light"] .off-tool-card { background: #fff; }
-.off-tool-card:active { transform: scale(0.96); box-shadow: none; }
-
-/* Subtle top accent per card */
-.off-tool-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2.5px;
-  border-radius: 18px 18px 0 0;
-}
-.off-tool-card-focus { border-color: rgba(16,185,129,0.20); }
-.off-tool-card-focus::before { background: #10B981; }
-.off-tool-card-todo  { border-color: rgba(91,91,246,0.20); }
-.off-tool-card-todo::before  { background: #5B5BF6; }
-
-.off-tool-icon {
-  width: 40px; height: 40px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 17px; flex-shrink: 0;
-}
-.off-tool-card-focus .off-tool-icon { background: rgba(249,115,22,0.12); }
-.off-tool-card-todo  .off-tool-icon { background: rgba(91,91,246,0.12); }
-
-.off-tool-name {
-  font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2;
-}
-.off-tool-sub {
-  font-size: 10.5px; color: var(--text2); font-weight: 500; margin-top: 2px;
-}
-.off-tool-arrow {
-  position: absolute; bottom: 12px; right: 14px;
-  font-size: 11px; color: var(--text3);
-}
-
-/* ── INFO STRIP ── */
-.off-info-strip {
-  width: 100%;
+.off-avail-row {
+  width: 100%; max-width: 360px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 13px 16px;
-  display: flex; align-items: center; gap: 10px;
-  box-shadow: var(--shadow-sm);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 11px;
+  text-decoration: none; color: inherit;
+  margin-bottom: 8px;
+  transition: transform 0.12s ease;
 }
-[data-theme="light"] .off-info-strip { background: #fff; }
-.off-info-icon-wrap {
-  width: 32px; height: 32px; border-radius: 9px;
-  background: rgba(16,185,129,0.10);
+.off-avail-row:active { transform: scale(0.98); }
+
+.off-avail-icon {
+  width: 34px; height: 34px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.off-info-icon-wrap i { color: var(--green); font-size: 13px; }
-.off-info-strip-text {
-  font-size: 12px; color: var(--text2); line-height: 1.55; font-weight: 500;
+.off-avail-icon.focus { background: rgba(249,115,22,0.12); }
+.off-avail-icon.todo  { background: rgba(91,91,246,0.12); }
+
+.off-avail-name { flex: 1; font-size: 13px; font-weight: 700; }
+
+.off-avail-badge {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 700; color: var(--green, #10B981);
+  flex-shrink: 0;
 }
-.off-info-strip-text strong { color: var(--text); font-weight: 600; }
+.off-avail-badge i { font-size: 11px; }
+
+.off-footer {
+  margin-top: 18px; font-size: 11.5px; color: var(--text3);
+}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="off-header">
-  <div class="off-header-icon">
-    <img src="/icon-512.png" alt="Study Grid Prep" onerror="this.style.display='none';this.parentNode.innerHTML='<i class=\'fa-solid fa-graduation-cap\'></i>'">
-  </div>
-  <div class="off-header-text">
-    <div class="off-header-name">Study Grid Prep</div>
-    <div class="off-header-sub">Your exam partner</div>
-  </div>
-  <div class="off-status-badge">
-    <div class="off-status-dot"></div>
-    Offline
-  </div>
-</header>
-
-<!-- MAIN -->
-<div class="off-body">
-
-  <!-- Main offline card -->
-  <div class="off-signal-area">
-    <div class="off-icon-wrap">
-      <i class="fa-solid fa-wifi-slash"></i>
-    </div>
-    <div class="off-title">No Internet Connection</div>
-    <div class="off-sub">Check your network connection and try again. Your progress is saved locally.</div>
-    <button class="off-retry-btn" id="retryBtn" onclick="retryConnection()">
-      <i class="fa-solid fa-rotate-right" id="retryIcon"></i>
-      <span id="retryText">Try Again</span>
-    </button>
-  </div>
-
-  <!-- Available offline tools -->
-  <div class="off-section-label" id="toolsLabel">
-    <i class="fa-solid fa-bolt"></i>Available Offline
-  </div>
-  <div class="off-tools-grid" id="offlineTools">
-    <a href="/focus.html" class="off-tool-card off-tool-card-focus">
-      <div class="off-tool-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="13" r="8" stroke="#F97316" stroke-width="2"/>
-          <polyline points="12,9 12,13 14.5,13" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
-          <line x1="10" y1="3" x2="14" y2="3" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
-          <line x1="12" y1="3" x2="12" y2="5" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div>
-        <div class="off-tool-name">Focus Timer</div>
-        <div class="off-tool-sub">Study sessions work offline</div>
-      </div>
-      <i class="fa-solid fa-chevron-right off-tool-arrow"></i>
-    </a>
-    <a href="/todo.html" class="off-tool-card off-tool-card-todo">
-      <div class="off-tool-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(91,91,246,0.1)" stroke="#5B5BF6" stroke-width="1.5"/>
-          <polyline points="8,12 10.5,14.5 16,9" stroke="#5B5BF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="8" y1="8" x2="10" y2="8" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="8" y1="16" x2="10" y2="16" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div>
-        <div class="off-tool-name">To-do List</div>
-        <div class="off-tool-sub">Tasks saved on device</div>
-      </div>
-      <i class="fa-solid fa-chevron-right off-tool-arrow"></i>
-    </a>
-  </div>
-
-  <!-- Info strip -->
-  <div class="off-info-strip">
-    <div class="off-info-icon-wrap">
-      <i class="fa-solid fa-circle-check"></i>
-    </div>
-    <div class="off-info-strip-text">
-      <strong>Auto-reconnect on.</strong> App will reload automatically when your connection is restored.
-    </div>
-  </div>
-
+<div class="off-logo">
+  <img src="/icon-192.png" alt="" onerror="this.style.display='none'">
+  <span>Study Grid Prep</span>
 </div>
 
+<div class="off-card">
+  <div class="off-icon-circle">
+    <i class="fa-solid fa-wifi"></i>
+  </div>
+  <div class="off-title">No internet connection</div>
+  <button class="off-btn" id="retryBtn" onclick="retryConnection()">
+    <span id="retryText">Try Again</span>
+  </button>
+</div>
+
+<div class="off-avail-label">Available Offline</div>
+
+<a href="/focus.html" class="off-avail-row" id="row-focus">
+  <div class="off-avail-icon focus">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="13" r="8" stroke="#F97316" stroke-width="2"/>
+      <polyline points="12,9 12,13 14.5,13" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
+      <line x1="10" y1="3" x2="14" y2="3" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12" y1="3" x2="12" y2="5" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="off-avail-name">Focus Timer</div>
+  <div class="off-avail-badge" id="badge-focus">
+    <i class="fa-solid fa-circle-notch fa-spin"></i> Checking...
+  </div>
+</a>
+
+<a href="/todo.html" class="off-avail-row" id="row-todo">
+  <div class="off-avail-icon todo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(91,91,246,0.1)" stroke="#5B5BF6" stroke-width="1.5"/>
+      <polyline points="8,12 10.5,14.5 16,9" stroke="#5B5BF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="8" y1="8" x2="10" y2="8" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="8" y1="16" x2="10" y2="16" stroke="#5B5BF6" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="off-avail-name">To-do List</div>
+  <div class="off-avail-badge" id="badge-todo">
+    <i class="fa-solid fa-circle-notch fa-spin"></i> Checking...
+  </div>
+</a>
+
+<div class="off-footer">Your progress is saved on this device</div>
+
 <script>
-// Where to send the user once reconnected: the page they were on before
-// going offline (set by offline-guard.js), falling back to the dashboard.
 function _returnDestination() {
   try {
     return sessionStorage.getItem('sgp_offline_from') || '/dashboard-home.html';
@@ -382,15 +204,11 @@ function _returnDestination() {
   }
 }
 
-// Retry with loading state
 function retryConnection() {
   var btn = document.getElementById('retryBtn');
-  var icon = document.getElementById('retryIcon');
   var text = document.getElementById('retryText');
 
   btn.disabled = true;
-  btn.style.opacity = '0.75';
-  icon.className = 'fa-solid fa-spinner fa-spin';
   text.textContent = 'Checking...';
 
   setTimeout(function() {
@@ -398,25 +216,59 @@ function retryConnection() {
       window.location.replace(_returnDestination());
     } else {
       btn.disabled = false;
-      btn.style.opacity = '1';
-      icon.className = 'fa-solid fa-rotate-right';
       text.textContent = 'Try Again';
     }
-  }, 1400);
+  }, 1200);
 }
 
-// Auto-redirect on reconnect
 window.addEventListener('online', function() {
   window.location.replace(_returnDestination());
 });
 
-// Polling fallback for Android WebView
 var poll = setInterval(function() {
   if (navigator.onLine) {
     clearInterval(poll);
     window.location.replace(_returnDestination());
   }
 }, 2000);
+
+// ✅ Check REAL cache status — don't just claim "Downloaded" statically.
+async function checkAvailability(path, badgeId, rowSelector) {
+  var badge = document.getElementById(badgeId);
+  var row = document.querySelector(rowSelector);
+  try {
+    var match = await caches.match(path, { ignoreSearch: true });
+    if (match) {
+      badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Downloaded';
+      badge.style.color = 'var(--green)';
+      // Cached — let the tap navigate normally; the Service Worker will
+      // serve it straight from cache even with no connection.
+    } else {
+      badge.innerHTML = '<i class="fa-regular fa-circle"></i> Not saved yet';
+      badge.style.color = 'var(--text3)';
+      // Not actually cached — navigating now (while offline) would just
+      // hit the browser's own raw error page. Block the tap here instead
+      // and explain, rather than letting it fail silently.
+      row.addEventListener('click', function(e) {
+        if (!navigator.onLine) {
+          e.preventDefault();
+          alert('This page hasn\'t been saved for offline use yet. Open it once while connected to the internet to enable this.');
+        }
+      });
+    }
+  } catch (e) {
+    badge.innerHTML = '<i class="fa-regular fa-circle"></i> Not saved yet';
+    badge.style.color = 'var(--text3)';
+  }
+}
+
+if ('caches' in window) {
+  checkAvailability('/focus.html', 'badge-focus', '#row-focus');
+  checkAvailability('/todo.html', 'badge-todo', '#row-todo');
+} else {
+  document.getElementById('badge-focus').innerHTML = '<i class="fa-regular fa-circle"></i> Unknown';
+  document.getElementById('badge-todo').innerHTML = '<i class="fa-regular fa-circle"></i> Unknown';
+}
 </script>
 
 </body>
