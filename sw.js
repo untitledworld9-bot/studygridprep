@@ -27,7 +27,7 @@ messaging.onBackgroundMessage(function(payload) {
 });
 
 // ─────────────────────────────────────────────────────────────
-const CACHE = "sgp-cache-v13";
+const CACHE = "sgp-cache-v14";
 
 // ✅ Sirf wahi files jo 100% exist karti hain
 const ASSETS = [
@@ -99,7 +99,18 @@ self.addEventListener("fetch", event => {
           return res;
         })
         .catch(async () => {
-          const cached = await caches.match(req, { ignoreSearch: true });
+          // ✅ FIX: Cloudflare Pages serves "clean" URLs (e.g. /profile
+          // instead of /profile.html), but ASSETS above are cached under
+          // their real .html filenames. An exact-URL cache lookup for
+          // the clean URL was missing, so try the .html version too
+          // before falling all the way back to the generic offline page.
+          let cached = await caches.match(req, { ignoreSearch: true });
+          if (!cached) {
+            const url = new URL(req.url);
+            if (!url.pathname.endsWith(".html") && !url.pathname.endsWith("/")) {
+              cached = await caches.match(url.pathname + ".html", { ignoreSearch: true });
+            }
+          }
           if (cached) return cached;
 
           const offlinePage = await caches.match("/offline.html");
@@ -135,20 +146,6 @@ self.addEventListener("fetch", event => {
 // ── MESSAGE ──────────────────────────────────────────────────
 const scheduledNotifications = new Map();
 
-// ✅ FIX (root cause of "app fully closed → no notification"):
-// setTimeout inside a Service Worker only survives while the SW stays
-// alive in memory. The browser is free to terminate an idle SW after a
-// short period (usually well under a minute), which silently wipes out
-// any pending setTimeout — that's exactly why the reminder fired when the
-// app was merely backgrounded (SW still warm) but not when it was fully
-// closed/swiped away (SW got killed, timer gone with it).
-//
-// The Notification Triggers API (TimestampTrigger) hands the scheduling
-// off to the browser/OS itself, so it survives SW termination and even
-// a full app close. It's supported on Chrome/Edge for installed PWAs on
-// Android (desktop support is limited). We use it when available and
-// fall back to the old in-memory setTimeout otherwise, so nothing breaks
-// on browsers that don't support it — they just keep today's behavior.
 const supportsTrigger = typeof TimestampTrigger !== "undefined";
 
 self.addEventListener("message", event => {
@@ -173,7 +170,6 @@ self.addEventListener("message", event => {
     const { id = "default", endTime, title, body, url } = data;
     const delay = endTime - Date.now();
 
-    // Cancel any earlier one scheduled under the same id
     if (scheduledNotifications.has(id)) {
       const ex = scheduledNotifications.get(id);
       if (ex.timeout) clearTimeout(ex.timeout);
@@ -184,8 +180,6 @@ self.addEventListener("message", event => {
     if (delay <= 0) return;
 
     if (supportsTrigger) {
-      // ✅ OS-level scheduled notification — fires even if the SW was
-      // terminated or the app fully closed in the meantime.
       event.waitUntil(
         self.registration.showNotification(title || "Study Grid Prep", {
           body: body || "",
@@ -201,8 +195,6 @@ self.addEventListener("message", event => {
       return;
     }
 
-    // Fallback (browsers without Notification Triggers support) — same
-    // as before: reliable only while the SW/tab stays alive.
     event.waitUntil(new Promise(resolve => {
       const timeout = setTimeout(async () => {
         await self.registration.showNotification(title || "Study Grid Prep", {
@@ -230,7 +222,6 @@ self.addEventListener("message", event => {
       if (ex.resolve) ex.resolve();
       scheduledNotifications.delete(id);
     }
-    // Also cancel any already-scheduled Triggers-API notification with this tag
     if (supportsTrigger) {
       self.registration.getNotifications({ tag: id }).then(list => {
         list.forEach(n => n.close());
