@@ -3,6 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ═══ PWA EMBED DETECTION (must run before paint) ═══
+     When Study Grid Prep's Content Hub opens this page inside its own
+     in-app panel it appends ?pwa=1 to the URL. In that mode we hide the
+     site chrome (navbar, FAQ, footer, chatbot) and any CTA blocks inside
+     the article, since the hub already provides its own back/report bar
+     and action row. Direct/public visits (no ?pwa=1) are unaffected. -->
+<script>
+(function(){
+  var isEmbed = new URLSearchParams(location.search).get('pwa') === '1';
+  if(isEmbed) document.documentElement.classList.add('sgp-embed');
+  window.__sgpEmbed = isEmbed;
+})();
+</script>
+<style>
+html.sgp-embed nav.navbar,
+html.sgp-embed .mobile-menu,
+html.sgp-embed .faq-section,
+html.sgp-embed .dark-footer-block,
+html.sgp-embed #sgpChatBtn,
+html.sgp-embed #sgpNotif,
+html.sgp-embed .sgp-chat-window,
+html.sgp-embed .article-cta-block{
+  display:none !important;
+}
+html.sgp-embed .article-hero{ padding-top:20px; }
+</style>
+
 <title id="csTitleTag">Study Grid Prep</title>
 <meta id="csMetaDesc" name="description" content="">
 <link id="csCanonical" rel="canonical" href="">
@@ -174,7 +202,9 @@
 </div>
 
 <script type="module">
-import { db, collection, query, where, getDocs, limit } from "/firebase.js";
+import { db, collection, query, where, getDocs, limit, doc, setDoc, increment, serverTimestamp } from "/firebase.js";
+
+const isEmbed = window.__sgpEmbed === true;
 
 // ── domain detection: 'online' or 'info' ──
 const domain = location.hostname.includes("studygridprep.info") ? "info" : "online";
@@ -190,6 +220,39 @@ function getTypeAndSlugFromPath() {
 function escHtml(str) {
   if (typeof str !== "string") return str ?? "";
   return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+// ── View counter — increments once per real page load, whether the
+//    page is opened directly in a browser or embedded in the app panel.
+//    (The app panel itself never writes to contentMetrics — this is the
+//    single source of truth, so views can never double-count.) ──
+async function bumpView(id, content) {
+  if (!id) return;
+  try {
+    await setDoc(doc(db, "contentMetrics", id), {
+      contentId: id,
+      slug: content.slug || "",
+      title: content.title || "",
+      type: content.type || "",
+      category: content.category || "",
+      thumbnailUrl: content.thumbnailUrl || "",
+      views: increment(1),
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (e) { console.warn("view bump failed", e); }
+}
+
+// ── Tell the parent app panel (if any) that content finished rendering,
+//    or that it errored out, and keep it informed of our real height so
+//    it can size its iframe without a nested scrollbar. ──
+function notifyParent(type, extra) {
+  if (window.self === window.top) return; // not embedded, nothing to tell
+  try { window.parent.postMessage(Object.assign({ type }, extra || {}), "*"); } catch (e) {}
+}
+function reportHeight() {
+  if (window.self === window.top) return;
+  const h = document.documentElement.scrollHeight;
+  notifyParent("sgp-embed-height", { height: h });
 }
 
 function blocksToHtml(blocks) {
@@ -308,7 +371,7 @@ function renderNotFound(reason = "") {
 
 async function init() {
   const { typeHint, slug } = getTypeAndSlugFromPath();
-  if (!slug) { renderNotFound("No slug found in URL path."); return; }
+  if (!slug) { renderNotFound("No slug found in URL path."); notifyParent("sgp-content-error", { reason: "no-slug" }); return; }
 
   try {
     const snap = await getDocs(query(
@@ -319,19 +382,33 @@ async function init() {
     ));
     if (snap.empty) {
       renderNotFound(`No published content found with slug "${slug}" (searched path segment: "${typeHint}", domain: "${domain}"). Check the slug matches exactly and status is "published".`);
+      notifyParent("sgp-content-error", { reason: "not-found", slug });
       return;
     }
 
-    const content = snap.docs[0].data();
+    const docSnap = snap.docs[0];
+    const content = docSnap.data();
     if (!(content.destinations || []).includes(domain)) {
       renderNotFound(`Content found, but its destinations are [${(content.destinations || []).join(", ")}] — this domain ("${domain}") isn't included.`);
+      notifyParent("sgp-content-error", { reason: "wrong-destination", slug });
       return;
     }
 
     renderContent(content);
+    bumpView(docSnap.id, content);
+    notifyParent("sgp-content-loaded", { id: docSnap.id, slug: content.slug || slug, title: content.title || "" });
+
+    // Report real height once layout settles, then keep watching for
+    // late-loading images/tables so the parent panel can resize with us.
+    requestAnimationFrame(() => setTimeout(reportHeight, 60));
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => reportHeight()).observe(document.getElementById("csRenderRoot"));
+    }
+    window.addEventListener("resize", reportHeight);
   } catch (e) {
     console.error("Content render error:", e);
     renderNotFound(`${e.name}: ${e.message}`);
+    notifyParent("sgp-content-error", { reason: "exception", message: e.message });
   }
 }
 
