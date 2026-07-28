@@ -43,8 +43,6 @@
 })();
 </script>
 
-<script src="/offline-guard.js"></script>
-
 <style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2112,8 +2110,8 @@ body { padding-bottom: 64px; }
   <button class="nav-tab active" id="nav-home" onclick="goHome(this)">
     <i class="fa-solid fa-house"></i><span>Home</span>
   </button>
-  <button class="nav-tab" id="nav-playlist" onclick="location.href='playlist.html'">
-    <i class="fa-brands fa-youtube"></i><span>Playlist</span>
+  <button class="nav-tab" id="nav-playlist" onclick="location.href='content-hub.html'">
+    <i class="fa-solid fa-layer-group"></i><span>Hub</span>
   </button>
   <button class="nav-tab" id="nav-lb" onclick="location.href='mainleaderboard.html'">
     <i class="fa-solid fa-trophy"></i><span>Leaderboard</span>
@@ -2144,7 +2142,7 @@ body { padding-bottom: 64px; }
   pointer-events:none;
 ">
   <i class="fa-solid fa-house"></i>
-  <i class="fa-brands fa-youtube"></i>
+  <i class="fa-solid fa-layer-group"></i>
   <i class="fa-solid fa-trophy"></i>
   <i class="fa-regular fa-circle-user"></i>
   <i class="fa-solid fa-fire"></i>
@@ -3833,7 +3831,7 @@ function skipGoal(){
 <script>
 // ── SPA BOTTOM NAV — kept for backward compat (iframe wraps still exist for any external calls)
 const PAGE_URLS = {
-  playlist:    'playlist.html',
+  playlist:    'content-hub.html',
   leaderboard: 'mainleaderboard.html',
   profile:     'profile.html'
 };
