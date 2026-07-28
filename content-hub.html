@@ -287,7 +287,6 @@ const state = {
   recentSearches: JSON.parse(localStorage.getItem('ch_recent_searches') || '[]'),
   recentOpen: JSON.parse(localStorage.getItem('ch_recent_open') || '[]'),
   loading: true,
-  pullStart: 0,
   currentPage: 'hub',
   metrics: {}
 };
@@ -380,12 +379,60 @@ function shortDate(v){
   return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
 }
 function ms(v){ return v?.toDate ? v.toDate().getTime() : (typeof v === 'number' ? v : 0); }
-const ROUTE_PREFIX = { blog:'blog', notes:'notes', note:'notes', pdf:'formula-sheet', 'formula-sheet':'formula-sheet', formulaSheet:'formula-sheet', pyq:'pyq', mock:'mock', mockTest:'mock', news:'news', 'exam-update':'exam-update', examUpdate:'exam-update', college:'college', collegeArticle:'college', career:'career', careerGuide:'career', guide:'guide', article:'blog', resource:'guide' };
+const TYPE_META = {
+  note:            { prefix:'notes',           icon:'fa-pen-to-square',        label:'Notes' },
+  notes:           { prefix:'notes',           icon:'fa-pen-to-square',        label:'Notes' },
+  article:         { prefix:'blog',            icon:'fa-file-lines',           label:'Article' },
+  blog:            { prefix:'blog',            icon:'fa-file-lines',           label:'Blog' },
+  news:            { prefix:'news',            icon:'fa-bullhorn',             label:'News' },
+  announcement:    { prefix:'news',            icon:'fa-bullhorn',             label:'Announcement' },
+  examUpdate:      { prefix:'exam-update',     icon:'fa-bell',                 label:'Exam Update' },
+  'exam-update':   { prefix:'exam-update',     icon:'fa-bell',                 label:'Exam Update' },
+  formulaSheet:    { prefix:'formula-sheet',   icon:'fa-square-root-variable', label:'Formula Sheet' },
+  'formula-sheet': { prefix:'formula-sheet',   icon:'fa-square-root-variable', label:'Formula Sheet' },
+  pdf:             { prefix:'formula-sheet',   icon:'fa-file-pdf',             label:'PDF' },
+  mockTest:        { prefix:'mock',            icon:'fa-list-check',           label:'Mock Test' },
+  mock:            { prefix:'mock',            icon:'fa-list-check',           label:'Mock Test' },
+  questionBank:    { prefix:'pyq',             icon:'fa-circle-question',      label:'Question Bank' },
+  pyq:             { prefix:'pyq',             icon:'fa-clock-rotate-left',    label:'PYQ' },
+  college:         { prefix:'college',         icon:'fa-graduation-cap',       label:'College' },
+  collegeArticle:  { prefix:'college',         icon:'fa-graduation-cap',       label:'College' },
+  admission:       { prefix:'college',         icon:'fa-door-open',            label:'Admission' },
+  university:      { prefix:'college',         icon:'fa-university',           label:'University' },
+  counselling:     { prefix:'college',         icon:'fa-comments',             label:'Counselling' },
+  career:          { prefix:'career',          icon:'fa-briefcase',            label:'Career' },
+  scholarship:     { prefix:'career',          icon:'fa-award',                label:'Scholarship' },
+  govtJob:         { prefix:'career',          icon:'fa-landmark',             label:'Government Job' },
+  privateJob:      { prefix:'career',          icon:'fa-building',             label:'Private Job' },
+  recruitment:     { prefix:'career',          icon:'fa-users',                label:'Recruitment' },
+  studyMaterial:   { prefix:'guide',           icon:'fa-book',                 label:'Study Material' },
+  resource:        { prefix:'guide',           icon:'fa-toolbox',              label:'Resource' },
+  guide:           { prefix:'guide',           icon:'fa-map',                  label:'Guide' },
+  tutorial:        { prefix:'guide',           icon:'fa-chalkboard-user',      label:'Tutorial' },
+  playlist:        { prefix:'guide',           icon:'fa-list',                 label:'Playlist' },
+  download:        { prefix:'formula-sheet',   icon:'fa-download',             label:'Download' },
+  notice:          { prefix:'exam-update',     icon:'fa-thumbtack',            label:'Notice' },
+  result:          { prefix:'exam-update',     icon:'fa-trophy',               label:'Result' },
+  cutoff:          { prefix:'exam-update',     icon:'fa-chart-line',           label:'Cutoff' },
+  answerKey:       { prefix:'exam-update',     icon:'fa-key',                  label:'Answer Key' },
+  syllabus:        { prefix:'guide',           icon:'fa-list-ol',              label:'Syllabus' },
+  book:            { prefix:'guide',           icon:'fa-book-open',            label:'Book' },
+  magazine:        { prefix:'blog',            icon:'fa-newspaper',            label:'Magazine' },
+  currentAffairs:  { prefix:'news',            icon:'fa-globe',                label:'Current Affairs' },
+  editorial:       { prefix:'blog',            icon:'fa-pen-nib',              label:'Editorial' },
+  opinion:         { prefix:'blog',            icon:'fa-comment-dots',         label:'Opinion' },
+  research:        { prefix:'guide',           icon:'fa-flask',                label:'Research' },
+  video:           { prefix:'guide',           icon:'fa-video',                label:'Video' },
+  externalLink:    { prefix:'guide',           icon:'fa-link',                 label:'External Link' },
+  internalLink:    { prefix:'guide',           icon:'fa-link',                 label:'Internal Link' }
+};
+function typeMeta(item){
+  const key = String(item.type || item.category || 'blog');
+  return TYPE_META[key] || TYPE_META[key.toLowerCase()] || { prefix:'blog', icon:'fa-layer-group', label: key.replace(/([A-Z])/g,' $1').replace(/-/g,' ').trim() || 'Content' };
+}
 function routeFor(item){
   const slug = encodeURIComponent(item.slug || item.id || 'content');
-  const type = String(item.type || item.category || 'blog').toLowerCase();
-  const prefix = ROUTE_PREFIX[type] || 'blog';
-  return `/${prefix}/${slug}`;
+  return `/${typeMeta(item).prefix}/${slug}`;
 }
 function metricFor(id){ return state.metrics?.[id] || { views:0, downloads:0, likes:0, dislikes:0, reports:0 }; }
 function metricBits(id){ const m = metricFor(id); return [`${m.views || 0} views`, `${m.downloads || 0} downloads`, `${m.likes || 0} likes`]; }
@@ -478,18 +525,8 @@ async function submitReport(item){
     toast('Report sent — thank you');
   } catch(e){ console.warn(e); toast('Could not send report'); }
 }
-function iconFor(item){
-  const t = (item.type || item.category || '').toLowerCase();
-  if (t.includes('pdf')) return 'fa-regular fa-file-pdf';
-  if (t.includes('note')) return 'fa-solid fa-pen-to-square';
-  if (t.includes('news') || t.includes('ann')) return 'fa-solid fa-bullhorn';
-  if (t.includes('article')) return 'fa-solid fa-file-lines';
-  if (t.includes('college')) return 'fa-solid fa-graduation-cap';
-  return 'fa-solid fa-layer-group';
-}
-function typeLabel(item){
-  return (item.type || item.category || 'Content').toString().replace(/-/g,' ');
-}
+function iconFor(item){ return 'fa-solid ' + typeMeta(item).icon; }
+function typeLabel(item){ return typeMeta(item).label; }
 function matches(item, term){
   if(!term) return true;
   const bag = bagFor(item);
@@ -834,11 +871,26 @@ async function boot(){
   });
 
   const main = $('mainScroll');
-  main.addEventListener('touchstart', () => { state.pullStart = main.scrollTop; }, {passive:true});
-  main.addEventListener('touchmove', () => {
-    if(main.scrollTop <= 0){ $('pullHint').style.height = '24px'; $('pullHint').textContent = 'Pull to refresh'; }
+  let pullActive = false, pullStartY = 0, pullDeltaY = 0;
+  const PULL_THRESHOLD = 72;
+  main.addEventListener('touchstart', (e) => {
+    pullActive = main.scrollTop <= 0;
+    pullStartY = pullActive ? e.touches[0].clientY : 0;
+    pullDeltaY = 0;
   }, {passive:true});
-  main.addEventListener('touchend', () => { if(main.scrollTop <= 0 && state.pullStart <= 0){ location.reload(); } $('pullHint').style.height = '0'; }, {passive:true});
+  main.addEventListener('touchmove', (e) => {
+    if(!pullActive || main.scrollTop > 0) return;
+    pullDeltaY = Math.max(0, e.touches[0].clientY - pullStartY);
+    if(pullDeltaY > 4){
+      $('pullHint').style.height = Math.min(pullDeltaY * 0.5, 56) + 'px';
+      $('pullHint').textContent = pullDeltaY > PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh';
+    }
+  }, {passive:true});
+  main.addEventListener('touchend', () => {
+    if(pullActive && pullDeltaY > PULL_THRESHOLD && main.scrollTop <= 0){ location.reload(); }
+    pullActive = false; pullDeltaY = 0;
+    $('pullHint').style.height = '0';
+  }, {passive:true});
   main.addEventListener('scroll', () => {
     if(state.currentPage !== 'hub') return;
     const remaining = main.scrollHeight - main.scrollTop - main.clientHeight;
@@ -917,8 +969,5 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-eruda.init();
 </body>
 </html>
