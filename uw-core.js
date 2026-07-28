@@ -139,26 +139,29 @@ async function updateStreak() {
     return count;
   }
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toDateString();
+  // ✅ ROOT-CAUSE FIX: compute streakHistory first, then derive the streak
+  // NUMBER from it (same logic as dashboard-home.html), instead of doing
+  // independent +1/reset math here. Two separate code paths incrementing
+  // a shared counter (this one, and dashboard-home.html's) is exactly what
+  // caused the streak to jump straight from 0 to 2 in one day — deriving
+  // from the history array everywhere makes both paths always agree.
+  const updatedHistory = firestoreHistory.includes(todayISO)
+    ? firestoreHistory
+    : [...firestoreHistory, todayISO].slice(-90);
 
-  if (last === yesterdayStr) {
-    count++; // Consecutive day — increment
-  } else if (last === "") {
-    count = 1; // First ever streak
-  } else {
-    count = 1; // Streak broken — reset to 1 for today
+  const histSet = new Set(updatedHistory);
+  count = 0;
+  let cursor = new Date();
+  while (true) {
+    const iso = cursor.toISOString().slice(0, 10);
+    if (histSet.has(iso)) {
+      count++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else break;
   }
 
   localStorage.setItem(STREAK_KEY,      String(count));
   localStorage.setItem(STREAK_DATE_KEY, today);
-
-  // ✅ FIX: keep streakHistory in sync too — dashboard's week-popup and daily
-  // streak popup both read this array, so without it they looked "stuck".
-  const updatedHistory = firestoreHistory.includes(todayISO)
-    ? firestoreHistory
-    : [...firestoreHistory, todayISO].slice(-90);
 
   window.dispatchEvent(new CustomEvent("uw_streak_changed", { detail: { streak: count } }));
   // ✅ FIX: also write lastActiveDate so dashboard-home.html's break-detection

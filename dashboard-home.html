@@ -3516,27 +3516,37 @@ onAuthStateChanged(auth, async user => {
     // FIX: lastStreakDate===todayStr means streak already counted today (could be from todo.html)
     const streakAlreadyCountedToday = (d.lastStreakDate===todayStr);
     // FIX: goalKey localStorage stale hone ki problem — Firestore ka lastStreakDate use karo
-    const goalAlreadyDone = streakAlreadyCountedToday && alreadyHasStreakToday;
+    const goalAlreadyDone = streakAlreadyCountedToday || alreadyHasStreakToday;
     if(dailyXP>=10 && !goalAlreadyDone){
       // Set goalKey to prevent duplicate within same session
       localStorage.setItem(goalKey,"1");
-
-      const yesterdayStr=new Date(Date.now()-86400000).toDateString();
-      const lsd=d.lastStreakDate||"";
-
-      let newStreak;
-      if(lsd===todayStr){
-        newStreak=d.streak||1;
-      } else if(lsd===yesterdayStr){
-        newStreak=(d.streak||0)+1;
-      } else {
-        newStreak=1;
-      }
 
       // Add today to streakHistory (ISO date string)
       const todayISO=new Date().toISOString().slice(0,10);
       const hist=(d.streakHistory||[]);
       const updatedHist=hist.includes(todayISO)?hist:[...hist,todayISO].slice(-90);
+
+      // ✅ ROOT-CAUSE FIX: previously newStreak was computed as (d.streak||0)+1
+      // whenever lastStreakDate===yesterday. But d.streak is a separately
+      // stored counter that can drift out of sync with the REAL history
+      // (e.g. todo.html's uw-core.js already wrote today's entry first, or
+      // an old bug/manual reset left a stale value) — so it could jump
+      // straight to 2 even though streakHistory only actually has ONE real
+      // day in it. Deriving the number directly from streakHistory (the
+      // same array the popups render as fire/cross dots) makes the count
+      // self-healing: it always matches exactly what's visually shown, no
+      // matter what the old `streak` field said or how many code paths
+      // (todo.html, playlist.html, dashboard) touched it today.
+      const histSet = new Set(updatedHist);
+      let newStreak = 0;
+      let cursor = new Date();
+      while (true) {
+        const iso = cursor.toISOString().slice(0,10);
+        if (histSet.has(iso)) {
+          newStreak++;
+          cursor.setDate(cursor.getDate() - 1);
+        } else break;
+      }
 
       const streakNotif={icon:'🔥',title:`Daily Goal Complete! ${newStreak}-day streak!`,ts:Date.now(),date:todayISO};
       const xpNotif={icon:'⭐',title:`You earned 10+ XP today. Keep it up!`,ts:Date.now()-1,date:todayISO};
