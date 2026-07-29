@@ -344,3 +344,52 @@ footer { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 32px 5%; t
   .hamburger { display: none; }
   .mobile-menu { display: none; }
 }
+
+/* ═══════════════════════════════════════════════
+   11. DARK MODE — same tokens, dark values.
+   Applied via the `sgp-dark` class on <html>. content-render.html
+   sets this automatically to match whichever theme is active in the
+   Study Grid Prep app (passed in as ?theme=dark on the embedded URL),
+   and falls back to the OS's prefers-color-scheme on a direct/public
+   visit. Because almost everything above is built on these custom
+   properties, this one block re-themes the whole article/nav/FAQ
+   without touching any other rule.
+   ═══════════════════════════════════════════════ */
+html.sgp-dark {
+  --primary: #7C7CFA;
+  --primary-light: rgba(124,124,250,0.14);
+  --primary-hover: #9393FB;
+  --accent: #22D3EE;
+  --accent-light: rgba(34,211,238,0.12);
+  --teal: #2DD4BF;
+  --teal-light: rgba(45,212,191,0.1);
+  --orange: #FB923C;
+  --orange-light: rgba(251,146,60,0.1);
+  --violet: #A78BFA;
+  --violet-light: rgba(167,139,250,0.1);
+  --rose: #FB7185;
+  --rose-light: rgba(251,113,133,0.1);
+  --amber: #FBBF24;
+  --amber-light: rgba(251,191,36,0.1);
+  --success: #34D399;
+  --text-primary: #E8F0FE;
+  --text-secondary: #AAB6D3;
+  --text-muted: #6B7AA0;
+  --bg: #0D1120;
+  --bg-soft: #151E32;
+  --bg-muted: #1A2440;
+  --border: rgba(255,255,255,0.08);
+  --border-soft: rgba(255,255,255,0.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+  --shadow-md: 0 10px 24px -4px rgba(0,0,0,0.45), 0 4px 8px -2px rgba(0,0,0,0.3);
+  --shadow-lg: 0 24px 40px -8px rgba(0,0,0,0.5);
+  --hero-glow-1: rgba(124,124,250,0.16);
+  --hero-glow-2: rgba(34,211,238,0.09);
+  --hero-glow-3: rgba(167,139,250,0.09);
+}
+html.sgp-dark .navbar { background: rgba(13,17,32,0.9); }
+html.sgp-dark .mobile-menu { background: rgba(13,17,32,0.97); }
+html.sgp-dark .faq-item { background: var(--bg-soft); }
+html.sgp-dark .btn-cta-white { background: #1A2440; color: var(--text-primary); }
+html.sgp-dark img:not([src*=".svg"]) { filter: brightness(0.92) contrast(1.02); }

@@ -15,6 +15,13 @@
   var isEmbed = new URLSearchParams(location.search).get('pwa') === '1';
   if(isEmbed) document.documentElement.classList.add('sgp-embed');
   window.__sgpEmbed = isEmbed;
+
+  // Theme: when opened inside the app panel, match whatever theme is
+  // currently active there (?theme=dark|light). On a direct/public visit
+  // (no hint from the app) fall back to the OS's light/dark preference.
+  var themeParam = new URLSearchParams(location.search).get('theme');
+  var isDark = themeParam ? themeParam === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(isDark) document.documentElement.classList.add('sgp-dark');
 })();
 </script>
 <style>
@@ -29,12 +36,14 @@ html.sgp-embed .article-cta-block{
   display:none !important;
 }
 html.sgp-embed .article-hero{ padding-top:20px; }
+html.sgp-dark{ background:#0D1120; }
 </style>
 
 <title id="csTitleTag">Study Grid Prep</title>
 <meta id="csMetaDesc" name="description" content="">
 <link id="csCanonical" rel="canonical" href="">
 <meta id="csRobots" name="robots" content="index,follow">
+<meta id="csKeywords" name="keywords" content="">
 
 <meta id="csOgTitle" property="og:title" content="">
 <meta id="csOgDesc" property="og:description" content="">
@@ -270,7 +279,7 @@ function blocksToHtml(blocks) {
       case "image": {
         const widthMap = { small: "40%", medium: "65%", full: "100%" };
         const w = widthMap[b.size] || "100%";
-        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:${w};max-width:100%;border-radius:var(--radius);margin:20px auto;display:block;" loading="lazy" />`;
+        return `<img src="${escHtml(b.url)}" alt="${escHtml(b.alt)}" style="width:${w};max-width:100%;border-radius:var(--radius);margin:20px auto;display:block;" loading="lazy" onerror="this.style.display='none'" />`;
       }
       case "table": {
         const rows = (b.csv || "").split("\n").filter(Boolean).map(r => r.split(",").map(c => c.trim()));
@@ -305,17 +314,27 @@ function setMeta(content) {
   const title = seo.metaTitle || content.title;
   const desc = seo.metaDescription || "";
   const url = seo.canonicalUrl || location.href;
+  const tags = Array.isArray(content.tags) ? content.tags : [];
+  const keywords = Array.isArray(content.keywords) ? content.keywords : [];
+  const keywordList = [...new Set([...(seo.keywords || []), ...keywords, ...tags, content.category, content.type].filter(Boolean))];
 
   document.getElementById("csTitleTag").textContent = title + " | Study Grid Prep";
   document.getElementById("csMetaDesc").setAttribute("content", desc);
   document.getElementById("csCanonical").setAttribute("href", url);
   document.getElementById("csRobots").setAttribute("content", seo.robots || "index,follow");
+  document.getElementById("csKeywords").setAttribute("content", keywordList.join(", "));
   document.getElementById("csOgTitle").setAttribute("content", title);
   document.getElementById("csOgDesc").setAttribute("content", desc);
   document.getElementById("csOgUrl").setAttribute("content", url);
   if (seo.ogImage) document.getElementById("csOgImage").setAttribute("content", seo.ogImage);
   document.getElementById("csTwTitle").setAttribute("content", title);
   document.getElementById("csTwDesc").setAttribute("content", desc);
+  keywordList.slice(0, 15).forEach(k => {
+    const m = document.createElement("meta");
+    m.setAttribute("property", "article:tag");
+    m.setAttribute("content", k);
+    document.head.appendChild(m);
+  });
 
   // JSON-LD: Article + Breadcrumb + FAQ (if any faq blocks exist)
   const faqBlocks = (content.data?.blocks || []).filter(b => b.type === "faq");
@@ -324,6 +343,7 @@ function setMeta(content) {
     "@type": "Article",
     "headline": content.title,
     "description": desc,
+    "keywords": keywordList.join(", "),
     "author": { "@type": "Organization", "name": "Study Grid Prep" },
     "publisher": { "@type": "Organization", "name": "Study Grid Prep" },
     "mainEntityOfPage": url
