@@ -996,8 +996,19 @@ function toast(msg){
 }
 
 /* ───────── Rendering ───────── */
+function getThumbUrl(item){
+  if(item.thumbnailUrl) return item.thumbnailUrl;
+  if(item.imageUrl) return item.imageUrl;
+  if(item.seo?.ogImage) return item.seo.ogImage;
+  const blocks = item.data?.blocks;
+  if(Array.isArray(blocks)){
+    const imgBlock = blocks.find(b => b.type === 'image' && b.url);
+    if(imgBlock) return imgBlock.url;
+  }
+  return '';
+}
 function previewHTML(item){
-  const url = item.thumbnailUrl || item.imageUrl || '';
+  const url = getThumbUrl(item);
   const icon = iconFor(item);
   return url
     ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(item.title||'Preview')}" loading="lazy" onerror="this.outerHTML='<i class=&quot;${icon}&quot;></i>'">`
@@ -1047,33 +1058,21 @@ function feedCardHTML(item, i){
 }
 function pinnedCardHTML(item){
   const m = metricFor(item.id);
-  const saved = state.saved.has(item.id), liked = state.liked.has(item.id);
   return `<div class="hub-pinned-card" data-id="${item.id}">
     <div class="hub-pinned-ic">${previewHTML(item)}</div>
     <div class="hub-pinned-title">${escapeHtml(item.title || 'Untitled')}</div>
     <div class="hub-pinned-meta">${m.views||0} views · ${shortDate(item.createdAt)}</div>
-    <div class="mini-row" onclick="event.stopPropagation()">
-      <button class="mini-act sm ${saved?'on':''}" data-mini-act="save" data-id="${item.id}" title="Save"><i class="fa-${saved?'solid':'regular'} fa-bookmark"></i></button>
-      <button class="mini-act sm ${liked?'on-good':''}" data-mini-act="like" data-id="${item.id}" title="Like"><i class="fa-${liked?'solid':'regular'} fa-thumbs-up"></i></button>
-      <button class="mini-act sm" data-mini-act="share" data-id="${item.id}" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
-    </div>
   </div>`;
 }
 function featuredCardHTML(item){
   const m = metricFor(item.id);
-  const saved = state.saved.has(item.id), liked = state.liked.has(item.id);
-  const url = item.thumbnailUrl || item.imageUrl || '';
+  const url = getThumbUrl(item);
   const bgStyle = url ? `background-image:linear-gradient(180deg, rgba(30,20,90,0.15), rgba(20,10,70,0.85)), url('${escapeHtml(url)}'); background-size:cover; background-position:center;` : '';
   return `<div class="hub-featured-card" data-id="${item.id}" style="${bgStyle}">
     <div class="hub-featured-badge"><i class="fa-solid fa-star"></i> ${escapeHtml(typeLabel(item))}</div>
     <div class="hub-featured-title">${escapeHtml(item.title || 'Untitled')}</div>
     <div class="hub-featured-desc">${escapeHtml(item.description || '')}</div>
     <div class="hub-featured-meta"><span><i class="fa-regular fa-eye"></i> ${m.views||0} views</span><span>${shortDate(item.createdAt)}</span></div>
-    <div class="mini-row" onclick="event.stopPropagation()">
-      <button class="mini-act sm light ${saved?'on':''}" data-mini-act="save" data-id="${item.id}" title="Save"><i class="fa-${saved?'solid':'regular'} fa-bookmark"></i></button>
-      <button class="mini-act sm light ${liked?'on-good':''}" data-mini-act="like" data-id="${item.id}" title="Like"><i class="fa-${liked?'solid':'regular'} fa-thumbs-up"></i></button>
-      <button class="mini-act sm light" data-mini-act="share" data-id="${item.id}" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
-    </div>
   </div>`;
 }
 function skeletons(count, cls){ return Array.from({length:count}).map(()=>`<div class="skel ${cls}"></div>`).join(''); }

@@ -22,6 +22,11 @@
   var themeParam = new URLSearchParams(location.search).get('theme');
   var isDark = themeParam ? themeParam === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   if(isDark) document.documentElement.classList.add('sgp-dark');
+
+  var meta = document.createElement('meta');
+  meta.name = 'theme-color';
+  meta.content = isDark ? '#0D1120' : '#ffffff';
+  document.head.appendChild(meta);
 })();
 </script>
 <style>
@@ -366,9 +371,13 @@ function renderContent(content) {
   setMeta(content);
   const root = document.getElementById("csRenderRoot");
   const heroStyle = typeof window.heroAccentStyle === "function" ? window.heroAccentStyle(content.accentColor) : "";
+  // In embed mode the hub's own back button is how you leave this article —
+  // the breadcrumb should never navigate the iframe itself to "/", since
+  // that would trap the whole homepage inside the small content panel.
+  const homeCrumb = isEmbed ? `<span>Home</span>` : `<a href="/">Home</a>`;
   root.innerHTML = `
     <div class="article-hero" style="${heroStyle}">
-      <div class="article-breadcrumb"><a href="/">Home</a><span>/</span>${escHtml(content.type || "")}</div>
+      <div class="article-breadcrumb">${homeCrumb}<span>/</span>${escHtml(content.type || "")}</div>
       <h1>${escHtml(content.title)}</h1>
       ${content.authorName ? `<p style="font-size:13px;color:var(--text-muted);margin-top:-8px;">By ${escHtml(content.authorName)}</p>` : ""}
     </div>
@@ -379,11 +388,12 @@ function renderContent(content) {
 }
 
 function renderNotFound(reason = "") {
+  const homeBtn = isEmbed ? "" : `<a href="/" class="btn-primary-nav">Go Home</a>`;
   document.getElementById("csRenderRoot").innerHTML = `
     <div style="padding:120px 5%;text-align:center;">
       <h1 style="font-family:var(--font);font-size:28px;margin-bottom:12px;">Page not found</h1>
       <p style="color:var(--text-secondary);margin-bottom:24px;">This content isn't available yet.</p>
-      <a href="/" class="btn-primary-nav">Go Home</a>
+      ${homeBtn}
       ${reason ? `<div style="margin-top:40px;max-width:600px;margin-left:auto;margin-right:auto;padding:14px 18px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;text-align:left;font-family:monospace;font-size:12.5px;color:#991B1B;word-break:break-word;">DEBUG: ${reason}</div>` : ""}
     </div>
   `;
