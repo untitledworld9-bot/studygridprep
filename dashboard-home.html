@@ -3376,42 +3376,38 @@ onAuthStateChanged(auth, async user => {
   // missedDay: lastStreakDate set tha, aaj nahi, kal bhi nahi → streak break
   const missedDay = lastStreakDate && lastStreakDate !== today && lastStreakDate !== yesterday;
 
-  if(lastActive!==today){
-    if(streakDoneToday){
-      // Streak already earned today (possibly via playlist.html/todo.html) —
-      // just resync lastActiveDate, never break a streak that's valid today.
-      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
-    } else if(missedDay && hadStreakBefore){
-      // ✅ FIX (root cause): break detection must depend ONLY on lastStreakDate
-      // (the last day the goal was actually completed), never on lastActiveDate
-      // (the last day the app was merely opened). The old code checked
-      // lastActive===yesterday FIRST and treated that as "still fine", so a
-      // user who opens the app every day but skips the goal for several days
-      // kept sliding lastActiveDate forward daily and the streak never broke.
-      // missedDay is true only when lastStreakDate is 2+ days old, which is
-      // the real signal that the streak is broken — so it now takes priority.
-      streak = 0;
-      await updateDoc(userRef,{streak:0, lastActiveDate:today}).catch(()=>{});
-      localStorage.setItem("uw_streak","0");
-      // Show streak break popup (once per day) — immediately, no extra delay
-      const breakKey="streakBreakShown_"+today;
-      if(!localStorage.getItem(breakKey)){
-        localStorage.setItem(breakKey,"1");
-        setTimeout(()=>{ if(window.showStreakBreakPopup) window.showStreakBreakPopup(); }, 1200);
-      }
-    } else {
-      // lastStreakDate is today/yesterday/empty (streak still valid or never
-      // started) — just refresh lastActiveDate, no streak change.
-      await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
+  // ✅ ROOT-CAUSE FIX: previously this whole break-check was gated behind
+  // `if(lastActive !== today)`. If ANYTHING else (e.g. a presence/online
+  // tracker that stamps lastActiveDate on every app open, regardless of
+  // whether the daily goal was completed) had already set lastActiveDate
+  // to today before this code ran, the ENTIRE break-check got skipped —
+  // so the streak just kept showing its old value forever, even across
+  // several genuinely missed days. Break-detection must never depend on
+  // lastActiveDate; it now always runs based purely on lastStreakDate.
+  if(streakDoneToday){
+    // Streak already earned today (possibly via playlist.html/todo.html) —
+    // nothing to do here.
+  } else if(missedDay && hadStreakBefore){
+    // Real gap: lastStreakDate is 2+ days old — reset, regardless of
+    // whatever lastActiveDate says.
+    streak = 0;
+    await updateDoc(userRef,{streak:0}).catch(()=>{});
+    localStorage.setItem("uw_streak","0");
+    // Show streak break popup (once per day) — immediately, no extra delay
+    const breakKey="streakBreakShown_"+today;
+    if(!localStorage.getItem(breakKey)){
+      localStorage.setItem(breakKey,"1");
+      setTimeout(()=>{ if(window.showStreakBreakPopup) window.showStreakBreakPopup(); }, 1200);
     }
-    localStorage.setItem("uw_streak",streak);
-    document.getElementById("headerStreakNum").textContent=streak;
-    const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=streak;
-  } else {
-    // Same day — streak already set from Firestore above, just update UI
-    document.getElementById("headerStreakNum").textContent=streak;
-    const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=streak;
   }
+  // Resync lastActiveDate separately — this is just presence bookkeeping
+  // and must never gate or influence the break-check above.
+  if(lastActive!==today){
+    await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
+  }
+  localStorage.setItem("uw_streak",streak);
+  document.getElementById("headerStreakNum").textContent=streak;
+  const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=streak;
 
   // Store streakHistory and streak globally for week popup
   window._currentStreak = streak;
