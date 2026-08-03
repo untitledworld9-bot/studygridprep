@@ -90,7 +90,7 @@ body{
   background:var(--bg); color:var(--text); min-height:100vh;
   padding-bottom:84px; animation:pageIn 0.25s ease;
   user-select:none; -webkit-user-select:none;
-  overscroll-behavior-y:none;
+  overscroll-behavior-y:none; touch-action:pan-y;
 }
 @keyframes pageIn{ from{opacity:0;} to{opacity:1;} }
 ::-webkit-scrollbar{ display:none; }
@@ -303,6 +303,7 @@ header.hub-header{
   transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   box-shadow:0 2px 10px rgba(0,0,0,0.04);
   opacity:0; transform:translateY(14px); animation:cardSlide 0.4s ease forwards;
+  touch-action:pan-y;
 }
 @keyframes cardSlide{ to{ opacity:1; transform:translateY(0); } }
 .feed-card::before{
@@ -592,7 +593,7 @@ body.panel-open .pwa-bottom-nav{ display:none; }
 <div class="hub-chip-row" id="categoryChips"></div>
 
 <div class="hub-quicklinks" id="quickLinksRow">
-  <a class="hub-quicklink notes" href="notes.html">
+  <a class="hub-quicklink notes" href="notes-hub.html">
     <i class="fa-solid fa-book-open"></i>
     <span>Notes</span>
     <small>Exam · Class · Chapter</small>
@@ -964,13 +965,13 @@ function toggleSave(id){
 }
 async function recordDownload(item){ await bumpMetric(item,'downloads',1); }
 async function shareItem(item){
-  const url = location.origin + routeFor(item);
+  const url = location.origin + '/content.html?id=' + encodeURIComponent(item.id);
   const shareData = { title: item.title || 'Study Grid Prep', text: item.description || '', url };
   if(navigator.share){ try{ await navigator.share(shareData); return; }catch{} }
   try{ await navigator.clipboard.writeText(url); toast('Link copied'); }catch{ toast('Could not share'); }
 }
 async function copyLink(item){
-  const url = location.origin + routeFor(item);
+  const url = location.origin + '/content.html?id=' + encodeURIComponent(item.id);
   try{ await navigator.clipboard.writeText(url); toast('Link copied'); }catch{ toast('Could not copy link'); }
 }
 async function submitReport(item){
@@ -1188,6 +1189,7 @@ function renderAll(){
   if(state.loading) return;
   renderCategoryChips();
   const searching = !!state.searchTerm.trim();
+  $('quickLinksRow').style.display = searching ? 'none' : '';
   $('searchResultsSection').style.display = searching ? 'block' : 'none';
   $('featuredSection').style.display = searching ? 'none' : '';
   $('pinnedSection').style.display = searching ? 'none' : '';
@@ -1213,138 +1215,16 @@ function renderAll(){
    scrollbar, and it alone writes the view count once it finishes
    loading — the hub never increments views itself, so liking/saving/
    sharing can never accidentally bump the view counter. */
-let panelOpen = false;
-let panelViewedOnce = false;
-
-function bottomBarHTML(content){
-  const saved = state.saved.has(content.id), liked = state.liked.has(content.id), disliked = state.disliked.has(content.id);
-  const m = metricFor(content.id);
-  return `
-    <button class="panel-bar-btn ${saved?'on':''}" data-act="toggleSave"><i class="fa-${saved?'solid':'regular'} fa-bookmark"></i><span>${saved?'Saved':'Save'}</span></button>
-    <button class="panel-bar-btn ${liked?'on-good':''}" data-act="like"><i class="fa-${liked?'solid':'regular'} fa-thumbs-up"></i><span>${m.likes||0}</span></button>
-    <button class="panel-bar-btn ${disliked?'on-bad':''}" data-act="dislike"><i class="fa-${disliked?'solid':'regular'} fa-thumbs-down"></i><span>Dislike</span></button>
-    <button class="panel-bar-btn" data-act="share"><i class="fa-solid fa-share-nodes"></i><span>Share</span></button>
-    <button class="panel-bar-btn" data-act="copyLink"><i class="fa-solid fa-copy"></i><span>Copy link</span></button>
-  `;
+/* ───────── Opening content — real navigation, not an overlay ─────────
+   Tapping any card now navigates to content.html?id=... (a real page
+   with its own back button, action bar, views/likes, related/featured
+   sections) instead of opening an iframe overlay. This is also exactly
+   what gets shared/copied, so a shared link and an in-app tap both land
+   on the same experience. */
+function openContent(item){
+  recordOpen(item);
+  location.href = `content.html?id=${encodeURIComponent(item.id)}`;
 }
-function secondaryActionsHTML(content){
-  const m = metricFor(content.id);
-  const extBtn = content.externalUrl ? `<button class="icon-act" data-act="openExternal"><i class="fa-solid fa-link"></i> Link</button>` : '';
-  const dlBtn = content.fileUrl ? `<button class="icon-act" data-act="download"><i class="fa-solid fa-arrow-down"></i> Download <span class="ct">${m.downloads||0}</span></button>` : '';
-  return dlBtn + extBtn;
-}
-function wireBottomBar(content){
-  const host = $('panelBottomBar');
-  host.querySelector('[data-act="toggleSave"]').onclick = () => { toggleSave(content.id); refreshPanelChrome(content); };
-  host.querySelector('[data-act="like"]').onclick = () => toggleLike(content, () => refreshPanelChrome(content));
-  host.querySelector('[data-act="dislike"]').onclick = () => toggleDislike(content, () => refreshPanelChrome(content));
-  host.querySelector('[data-act="share"]').onclick = () => shareItem(content);
-  host.querySelector('[data-act="copyLink"]').onclick = () => copyLink(content);
-}
-function wireSecondaryActions(content){
-  const host = $('panelSecondaryActions');
-  const dl = host.querySelector('[data-act="download"]');
-  if(dl) dl.onclick = () => { recordDownload(content); window.open(content.fileUrl, '_blank', 'noopener'); };
-  const extEl = host.querySelector('[data-act="openExternal"]');
-  if(extEl) extEl.onclick = () => window.open(content.externalUrl, '_blank', 'noopener');
-}
-function updatePanelViewsBadge(content){
-  const m = metricFor(content.id);
-  $('panelViewsBadge').innerHTML = `<i class="fa-regular fa-eye"></i> ${m.views||0}`;
-}
-function refreshPanelChrome(content){
-  $('panelBottomBar').innerHTML = bottomBarHTML(content);
-  wireBottomBar(content);
-  $('panelSecondaryActions').innerHTML = secondaryActionsHTML(content);
-  wireSecondaryActions(content);
-  updatePanelViewsBadge(content);
-}
-function renderPanelBelow(content){
-  const tags = Array.isArray(content.tags) ? content.tags : [];
-  const keywords = Array.isArray(content.keywords) ? content.keywords : [];
-
-  refreshPanelChrome(content);
-
-  const related = state.content
-    .filter(it => it.id !== content.id && visibilityOk(it))
-    .map(it => ({ it, score: itemScore(it, [content.category, ...tags, ...keywords].filter(Boolean).join(' ')) }))
-    .sort((a,b)=>b.score-a.score).slice(0,4).map(x=>x.it);
-  $('panelRelatedSection').style.display = related.length ? 'block' : 'none';
-  $('panelRelatedList').innerHTML = related.map(relatedCardHTML).join('');
-  $('panelRelatedList').querySelectorAll('[data-id]').forEach(el => el.onclick = () => {
-    const it = state.content.find(x => x.id === el.dataset.id);
-    if(it) openPanel(it);
-  });
-
-  const featured = state.content.filter(visibilityOk).filter(matchesFilter).filter(i => i.id !== content.id && (i.featured || String(i.slot||'').toLowerCase()==='featured')).slice(0,6);
-  $('panelFeaturedSection').style.display = featured.length ? 'block' : 'none';
-  $('panelFeaturedList').innerHTML = featured.map(featuredCardHTML).join('');
-  $('panelFeaturedList').querySelectorAll('[data-id]').forEach(el => el.onclick = () => {
-    const it = state.content.find(x => x.id === el.dataset.id);
-    if(it) openPanel(it);
-  });
-}
-
-function resolvedAppTheme(){
-  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-}
-function openPanel(content){
-  recordOpen(content);
-  panelViewedOnce = false;
-  $('panelReportBox').style.display = 'none';
-  $('panelInfoBtn').classList.remove('on');
-  $('panelTopTitle').textContent = content.title || 'Content';
-
-  const video = videoEmbed(content);
-  const videoWrap = $('panelVideoWrap');
-  if(video && video.kind !== 'external'){
-    videoWrap.style.display = 'block';
-    videoWrap.innerHTML = video.kind === 'iframe'
-      ? `<iframe src="${escapeHtml(video.src)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
-      : `<video src="${escapeHtml(video.src)}" controls playsinline></video>`;
-  } else {
-    videoWrap.style.display = 'none';
-    videoWrap.innerHTML = '';
-  }
-  if(video && video.kind === 'external'){
-    setTimeout(() => window.open(video.src, '_blank', 'noopener'), 50);
-  }
-
-  const iframe = $('panelIframe');
-  iframe.style.opacity = '0';
-  iframe.style.height = '480px';
-  $('panelLoading').style.display = 'flex';
-  iframe.src = location.origin + routeFor(content) + '?pwa=1&theme=' + resolvedAppTheme();
-
-  renderPanelBelow(content);
-
-  if(!panelOpen){
-    panelOpen = true;
-    $('panelMask').classList.add('on');
-    $('contentPanel').classList.add('on');
-    document.body.classList.add('panel-open');
-  }
-  state.currentPanelItem = content;
-  $('panelScroll').scrollTop = 0;
-}
-function closePanel(){
-  panelOpen = false;
-  $('panelMask').classList.remove('on');
-  $('contentPanel').classList.remove('on');
-  document.body.classList.remove('panel-open');
-  setTimeout(() => { $('panelIframe').src = 'about:blank'; }, 300);
-  state.currentPanelItem = null;
-}
-function relatedCardHTML(it){
-  return `<div class="sheet-related-card" data-id="${it.id}">
-    <div class="sheet-related-thumb">${previewHTML(it)}</div>
-    <div class="sheet-related-body">
-      <div class="sheet-related-title">${escapeHtml(it.title || 'Untitled')}</div>
-      <div class="sheet-related-sub">${escapeHtml(typeLabel(it))} · ${shortDate(it.createdAt)}</div>
-    </div>
-  </div>`;
-}
-
 /* ───────── Search debounce ───────── */
 let searchDebounce;
 function applySearch(){
@@ -1409,7 +1289,7 @@ function boot(){
   $('panelBackBtn').onclick = closePanel;
   $('panelInfoBtn').onclick = toggleReportForm;
   $('reportSubmitBtn').onclick = () => { if(state.currentPanelItem) submitReport(state.currentPanelItem); };
-  document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if(panelOpen) closePanel(); else if($('filterSheet').classList.contains('on')) closeFilterSheet(); } });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('filterSheet').classList.contains('on')) closeFilterSheet(); });
 
   // Listen to the embedded content-render.html page: it alone counts
   // views and tells us when it's loaded / errored / resized.
@@ -1441,9 +1321,9 @@ function boot(){
       return;
     }
     const card = e.target.closest('[data-id]');
-    if(card && !card.closest('#contentPanel')){
+    if(card){
       const item = state.content.find(x => x.id === card.dataset.id);
-      if(item) openPanel(item);
+      if(item) openContent(item);
     }
   });
 
@@ -1464,7 +1344,6 @@ function boot(){
     state.metrics = {};
     snap.docs.forEach(d => { const v = d.data(); state.metrics[d.id] = { views:v.views||0, downloads:v.downloads||0, likes:v.likes||0, dislikes:v.dislikes||0, reports:v.reports||0 }; });
     renderAll();
-    if(panelOpen && state.currentPanelItem) updatePanelViewsBadge(state.currentPanelItem);
   }, () => {});
 
   onSnapshot(query(collection(db,'categories')), snap => {

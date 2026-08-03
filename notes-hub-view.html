@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Download Notes - Study Grid Prep</title>
+
+<script>
+(function(){
+  if(!localStorage.getItem("userName")){
+    document.documentElement.style.display='none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.getElementById("metaThemeColor");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+  }
+  applyTheme(resolveTheme());
+})();
+</script>
+<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root{
+  --bg:#F0F2F8; --surface:#FFFFFF; --surface2:#F4F6FB; --border:#E2E8F2;
+  --text:#0F172A; --text2:#5A6785; --text3:#94A3B8;
+  --accent:#5B5BF6; --header-bg:rgba(255,255,255,0.97); --nav-bg:rgba(255,255,255,0.99);
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
+}
+[data-theme="dark"]{
+  --bg:#0D1120; --surface:#151E32; --surface2:#1A2440; --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE; --text2:#8B9EC8; --text3:#3D5080;
+  --header-bg:rgba(13,17,32,0.97); --nav-bg:rgba(13,17,32,0.98);
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; background:var(--bg); overflow:hidden; }
+body{ color:var(--text); display:flex; flex-direction:column; }
+
+header{ display:flex; align-items:center; gap:10px; padding:14px 16px; background:var(--header-bg); border-bottom:1px solid var(--border); flex-shrink:0; box-shadow:var(--shadow-sm); }
+.icon-btn{ width:38px; height:38px; border-radius:12px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); font-size:15px; cursor:pointer; flex-shrink:0; }
+.icon-btn:active{ transform:scale(0.9); }
+.hdr-title{ flex:1; min-width:0; font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; color:var(--text2); }
+.dl-open-btn{ background:#16A34A; color:#fff; border:none; }
+
+.viewer-wrap{ flex:1; position:relative; overflow:hidden; }
+.viewer-wrap iframe{ width:100%; height:100%; border:none; }
+.loading{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:var(--bg); }
+.spinner{ width:26px; height:26px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .7s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.loading-text{ font-size:12px; color:var(--text3); font-weight:600; }
+
+.bottom-bar{ display:flex; align-items:center; justify-content:space-between; padding:12px 18px; background:var(--nav-bg); border-top:1px solid var(--border); flex-shrink:0; backdrop-filter:blur(20px); }
+.bb-metric{ display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text2); }
+.bb-share{ display:flex; align-items:center; gap:7px; padding:9px 16px; border-radius:12px; background:var(--surface2); border:1px solid var(--border); font-size:12.5px; font-weight:700; color:var(--text); cursor:pointer; }
+.bb-share:active{ transform:scale(0.95); }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="icon-btn" id="backBtn"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-title" id="hdrTitle">Loading…</div>
+  <button class="icon-btn dl-open-btn" id="dlOpenBtn" title="Open in Drive"><i class="fa-solid fa-download"></i></button>
+</header>
+
+<div class="viewer-wrap">
+  <div class="loading" id="loadingState"><div class="spinner"></div><div class="loading-text">Opening PDF…</div></div>
+  <iframe id="viewerFrame" style="opacity:0;" title="Notes PDF"></iframe>
+</div>
+
+<div class="bottom-bar">
+  <span class="bb-metric"><i class="fa-regular fa-eye"></i> <span id="bbViews">0</span></span>
+  <span class="bb-metric"><i class="fa-solid fa-download"></i> <span id="bbDownloads">0</span></span>
+  <button class="bb-share" id="bbShareBtn"><i class="fa-solid fa-share-nodes"></i> Share</button>
+</div>
+
+<script type="module">
+async function loadFirebase(){
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  for (const src of candidates) { try { return await import(src); } catch (e) {} }
+  throw new Error('firebase.js not found');
+}
+const { db, doc, getDoc, setDoc, increment, serverTimestamp, onSnapshot } = await loadFirebase();
+const $ = id => document.getElementById(id);
+
+function driveEmbedUrl(url){
+  const m = (url||'').match(/\/d\/([a-zA-Z0-9_-]+)/) || (url||'').match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if(m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return url; // any other host — load as-is
+}
+
+const noteId = new URLSearchParams(location.search).get('id');
+if(!noteId){
+  $("hdrTitle").textContent = "Not found";
+  $("loadingState").innerHTML = `<div style="text-align:center;color:var(--text3);font-size:12.5px;padding:0 24px;">No note specified.</div>`;
+} else {
+  boot();
+}
+
+async function boot(){
+  $("backBtn").onclick = () => history.length > 1 ? history.back() : location.href = 'notes-hub.html';
+
+  let note;
+  try {
+    const snap = await getDoc(doc(db, 'notes', noteId));
+    if(!snap.exists()){ $("hdrTitle").textContent = "Not found"; return; }
+    note = snap.data();
+  } catch(e){ $("hdrTitle").textContent = "Couldn't load"; return; }
+
+  $("hdrTitle").textContent = note.chapterName || 'Notes';
+  const embedUrl = driveEmbedUrl(note.pdfUrl);
+  const iframe = $("viewerFrame");
+  iframe.src = embedUrl;
+  iframe.onload = () => { $("loadingState").style.display = 'none'; iframe.style.opacity = '1'; };
+  // Fallback: some hosts never fire onload cleanly inside an iframe — reveal after a beat regardless.
+  setTimeout(() => { $("loadingState").style.display = 'none'; iframe.style.opacity = '1'; }, 2500);
+
+  $("dlOpenBtn").onclick = () => { bump('downloads'); window.open(note.pdfUrl, '_blank', 'noopener'); };
+
+  $("bbShareBtn").onclick = async () => {
+    const url = location.href;
+    const shareData = { title: note.chapterName || 'Study Grid Prep Notes', url };
+    if(navigator.share){ try{ await navigator.share(shareData); return; }catch{} }
+    try{ await navigator.clipboard.writeText(url); toastMsg('Link copied'); }catch{}
+  };
+
+  onSnapshot(doc(db, 'contentMetrics', noteId), snap => {
+    const v = snap.data();
+    $("bbViews").textContent = v?.views || 0;
+    $("bbDownloads").textContent = v?.downloads || 0;
+  }, () => {});
+
+  bump('views');
+}
+
+async function bump(field){
+  try {
+    await setDoc(doc(db, 'contentMetrics', noteId), {
+      contentId: noteId, title: $("hdrTitle").textContent, type: 'notes',
+      [field]: increment(1), updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch(e){ console.warn('metric bump failed', e); }
+}
+function toastMsg(msg){
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);padding:10px 16px;border-radius:12px;font-size:12.5px;font-weight:600;color:var(--text);z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.15);';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Notes - Study Grid Prep</title>
+
+<script>
+(function(){
+  if(!localStorage.getItem("userName")){
+    document.documentElement.style.display='none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.getElementById("metaThemeColor");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+  }
+  applyTheme(resolveTheme());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){
+    if(localStorage.getItem("theme") === "system") applyTheme(resolveTheme());
+  });
+})();
+</script>
+<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root{
+  --bg:#F0F2F8; --surface:#FFFFFF; --surface2:#F4F6FB; --border:#E2E8F2;
+  --text:#0F172A; --text2:#5A6785; --text3:#94A3B8;
+  --accent:#5B5BF6; --accent2:#7C3AED;
+  --header-bg:rgba(255,255,255,0.97); --nav-bg:rgba(255,255,255,0.99);
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.05); --shadow:0 4px 16px rgba(15,23,42,0.06); --shadow-md:0 8px 32px rgba(15,23,42,0.10);
+  --t:0.2s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"]{
+  --bg:#0D1120; --surface:#151E32; --surface2:#1A2440; --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE; --text2:#8B9EC8; --text3:#3D5080;
+  --header-bg:rgba(13,17,32,0.97); --nav-bg:rgba(13,17,32,0.98);
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.35); --shadow:0 4px 16px rgba(0,0,0,0.4); --shadow-md:0 8px 32px rgba(0,0,0,0.55);
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+html{ background:var(--bg); overflow-x:hidden; }
+body{ background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:84px; user-select:none; -webkit-user-select:none; }
+::-webkit-scrollbar{ display:none; } * { scrollbar-width:none; }
+button{ font-family:inherit; } a{ color:inherit; text-decoration:none; }
+
+header{ display:flex; align-items:center; gap:10px; padding:14px 18px 12px; background:var(--header-bg); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:500; backdrop-filter:blur(20px); box-shadow:var(--shadow-sm); }
+.back-btn{ width:38px; height:38px; border-radius:12px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); font-size:15px; cursor:pointer; }
+.back-btn:active{ transform:scale(0.9); }
+.hdr-title{ font-size:16.5px; font-weight:800; }
+.hdr-sub{ font-size:11px; color:var(--text2); margin-top:1px; }
+
+.search-wrap{ padding:14px 18px 0; }
+.search-box{ display:flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:11px 14px; }
+.search-box:focus-within{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,91,246,0.10); }
+.search-box i{ color:var(--text3); font-size:14px; }
+.search-box input{ flex:1; min-width:0; border:none; outline:none; background:transparent; font-size:13.5px; color:var(--text); font-weight:500; }
+
+.section{ padding:18px 18px 0; }
+.section-title{ font-size:14.5px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.section-title i{ color:var(--accent); }
+
+.exam-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.exam-card{ border-radius:18px; padding:20px 16px; cursor:pointer; transition:transform .15s ease; color:#fff; position:relative; overflow:hidden; min-height:96px; display:flex; flex-direction:column; justify-content:flex-end; }
+.exam-card:active{ transform:scale(0.96); }
+.exam-card.jee{ background:linear-gradient(135deg,#5B5BF6,#7C3AED); }
+.exam-card.neet{ background:linear-gradient(135deg,#16A34A,#0D9488); }
+.exam-card.cuet{ background:linear-gradient(135deg,#EA580C,#DB2777); }
+.exam-card.boards{ background:linear-gradient(135deg,#0EA5E9,#4F46E5); }
+.exam-card i{ position:absolute; top:14px; right:14px; font-size:20px; opacity:.5; }
+.exam-card-name{ font-size:16px; font-weight:800; }
+.exam-card-sub{ font-size:11px; opacity:.85; margin-top:2px; }
+
+.class-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+.class-tab{ flex:1; padding:11px; border-radius:14px; border:1.5px solid var(--border); background:var(--surface); font-weight:700; font-size:13px; color:var(--text2); cursor:pointer; text-align:center; }
+.class-tab.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.chapter-row{ display:flex; align-items:center; gap:12px; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; cursor:pointer; transition:transform .15s ease, border-color .2s; }
+.chapter-row:active{ transform:scale(0.98); }
+.chapter-num{ width:38px; height:38px; border-radius:11px; background:rgba(91,91,246,0.1); color:var(--accent); font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.chapter-body{ flex:1; min-width:0; }
+.chapter-name{ font-size:13.5px; font-weight:700; }
+.chapter-meta{ font-size:10.5px; color:var(--text3); margin-top:2px; }
+.dl-btn{ width:38px; height:38px; border-radius:11px; background:#EF4444; color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+
+.empty{ text-align:center; padding:40px 20px; color:var(--text3); }
+.empty i{ font-size:28px; margin-bottom:10px; opacity:.5; }
+
+.pwa-bottom-nav{ position:fixed; bottom:0; left:0; width:100%; height:64px; background:var(--nav-bg); backdrop-filter:blur(24px); display:flex; justify-content:space-around; align-items:center; z-index:10002; border-top:1px solid var(--border); }
+.nav-tab{ display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text3); font-size:10px; gap:3px; padding:5px 8px; border-radius:14px; min-width:52px; flex:1; cursor:pointer; border:none; background:none; }
+.nav-tab i{ font-size:20px; } .nav-tab.active{ color:#5B5BF6; }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="location.href='content-hub.html'"><i class="fa-solid fa-arrow-left"></i></button>
+  <div>
+    <div class="hdr-title">Notes</div>
+    <div class="hdr-sub">JEE · NEET · CUET · Boards</div>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Search chapter, exam, class…">
+  </div>
+</div>
+
+<div id="examView">
+  <div class="section">
+    <div class="section-title"><i class="fa-solid fa-book-open"></i> Choose an exam</div>
+    <div class="exam-grid">
+      <div class="exam-card jee" onclick="openExam('jee')"><i class="fa-solid fa-atom"></i><div class="exam-card-name">JEE</div><div class="exam-card-sub">Main &amp; Advanced notes</div></div>
+      <div class="exam-card neet" onclick="openExam('neet')"><i class="fa-solid fa-dna"></i><div class="exam-card-name">NEET</div><div class="exam-card-sub">Physics · Chem · Bio</div></div>
+      <div class="exam-card cuet" onclick="openExam('cuet')"><i class="fa-solid fa-graduation-cap"></i><div class="exam-card-name">CUET</div><div class="exam-card-sub">UG entrance notes</div></div>
+      <div class="exam-card boards" onclick="openExam('boards')"><i class="fa-solid fa-school"></i><div class="exam-card-name">Boards</div><div class="exam-card-sub">Class 11 &amp; 12</div></div>
+    </div>
+  </div>
+  <div class="section" id="searchResultsSection" style="display:none;">
+    <div class="section-title"><i class="fa-solid fa-magnifying-glass"></i> Search results</div>
+    <div id="searchResultsList"></div>
+  </div>
+</div>
+
+<div id="chapterView" style="display:none;">
+  <div class="section">
+    <div class="section-title" id="examTitle"></div>
+    <div class="class-tabs" id="classTabs"></div>
+    <div id="chapterList"></div>
+  </div>
+</div>
+
+<div class="pwa-bottom-nav">
+  <button class="nav-tab" onclick="location.href='dashboard-home.html'"><i class="fa-solid fa-house"></i><span>Home</span></button>
+  <button class="nav-tab active" onclick="location.href='content-hub.html'"><i class="fa-solid fa-layer-group"></i><span>Hub</span></button>
+  <button class="nav-tab" onclick="location.href='mainleaderboard.html'"><i class="fa-solid fa-trophy"></i><span>Leaderboard</span></button>
+  <button class="nav-tab" onclick="location.href='profile.html'"><i class="fa-regular fa-circle-user"></i><span>Profile</span></button>
+</div>
+
+<script type="module">
+async function loadFirebase(){
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  for (const src of candidates) { try { return await import(src); } catch (e) {} }
+  throw new Error('firebase.js not found');
+}
+const { db, collection, query, where, onSnapshot } = await loadFirebase();
+const $ = id => document.getElementById(id);
+
+const EXAM_LABELS = { jee: "JEE", neet: "NEET", cuet: "CUET", boards: "Boards" };
+const CLASS_LABELS = { "11th": "Class 11", "12th": "Class 12" };
+let allNotes = [];
+let currentExam = null, currentClass = "11th";
+
+function escapeHtml(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+function chapterRowHTML(n){
+  return `<div class="chapter-row" data-id="${n.id}">
+    <div class="chapter-num">Ch ${n.chapterNumber ?? '—'}</div>
+    <div class="chapter-body">
+      <div class="chapter-name">${escapeHtml(n.chapterName)}</div>
+      <div class="chapter-meta">${EXAM_LABELS[n.examId]||n.examId} · ${CLASS_LABELS[n.className]||n.className}</div>
+    </div>
+    <div class="dl-btn"><i class="fa-solid fa-download"></i></div>
+  </div>`;
+}
+
+window.openExam = function(examId){
+  currentExam = examId;
+  $("examView").style.display = "none";
+  $("chapterView").style.display = "block";
+  $("examTitle").innerHTML = `<i class="fa-solid fa-book-open"></i> ${EXAM_LABELS[examId]} Notes`;
+  $("classTabs").innerHTML = Object.entries(CLASS_LABELS).map(([v,l]) =>
+    `<button class="class-tab ${currentClass===v?'active':''}" onclick="setClass('${v}')">${l}</button>`).join("");
+  renderChapters();
+};
+window.setClass = function(v){ currentClass = v; $("classTabs").querySelectorAll('.class-tab').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); renderChapters(); };
+window.goBackToExams = function(){ $("chapterView").style.display="none"; $("examView").style.display="block"; };
+
+function renderChapters(){
+  const list = allNotes.filter(n => n.examId === currentExam && n.className === currentClass)
+    .sort((a,b) => (a.chapterNumber||0) - (b.chapterNumber||0));
+  if(!list.length){
+    $("chapterList").innerHTML = `<div class="empty"><i class="fa-regular fa-folder-open"></i><div>No chapters published yet</div></div>`;
+    return;
+  }
+  $("chapterList").innerHTML = list.map(chapterRowHTML).join("");
+  wireChapterClicks();
+}
+function wireChapterClicks(){
+  document.querySelectorAll(".chapter-row").forEach(el => {
+    el.onclick = () => location.href = `notes-hub-view.html?id=${encodeURIComponent(el.dataset.id)}`;
+  });
+}
+
+let searchDebounce;
+$("searchInput").addEventListener("input", () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    const term = $("searchInput").value.trim().toLowerCase();
+    if(!term){
+      $("searchResultsSection").style.display = "none";
+      $("chapterView").style.display = "none";
+      $("examView").style.display = "block";
+      return;
+    }
+    $("chapterView").style.display = "none";
+    $("examView").style.display = "block";
+    $("searchResultsSection").style.display = "block";
+    const results = allNotes.filter(n => `${n.chapterName} ${EXAM_LABELS[n.examId]} ${CLASS_LABELS[n.className]}`.toLowerCase().includes(term));
+    $("searchResultsList").innerHTML = results.length ? results.map(chapterRowHTML).join("") : `<div class="empty"><i class="fa-regular fa-face-frown"></i><div>No chapters found</div></div>`;
+    wireChapterClicks();
+  }, 200);
+});
+
+onSnapshot(query(collection(db,'notes'), where('status','==','published')), snap => {
+  allNotes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if(currentExam) renderChapters();
+});
+</script>
+
+</body>
+</html>
