@@ -28,7 +28,7 @@ import {
 
 const AP = {
   expandedEmail: null,
-  activeTab: "sub-admin",   // "sub-admin" | "mock-admin"
+  activeTab: "sub-admin",   // "sub-admin" | "mock-admin" | "content-admin"
   search: "",
   cache: { subAdmins: [], allActivity: [] }
 };
@@ -64,11 +64,15 @@ function timeAgo(ms) {
 }
 const ACTION_LABELS = {
   login:                 { icon: "fa-right-to-bracket",     label: "Logged in" },
+  logout:                { icon: "fa-right-from-bracket",   label: "Logged out" },
   content_create:        { icon: "fa-plus",                 label: "Created content" },
   content_update:        { icon: "fa-pen",                  label: "Updated content" },
+  content_publish:       { icon: "fa-bullhorn",              label: "Published content" },
+  content_delete:        { icon: "fa-trash",                label: "Deleted content" },
   media_upload:          { icon: "fa-image",                label: "Uploaded media" },
   media_delete:          { icon: "fa-trash",                label: "Deleted media" },
   report_sent:           { icon: "fa-flag",                 label: "Sent report" },
+  report_resolved:       { icon: "fa-circle-check",         label: "Resolved a content report" },
   test_create:           { icon: "fa-file-circle-plus",     label: "Created a test" },
   test_ai_create:        { icon: "fa-wand-magic-sparkles",  label: "Created a test with AI" },
   test_draft_save:       { icon: "fa-floppy-disk",          label: "Saved test as draft" },
@@ -79,9 +83,10 @@ const ACTION_LABELS = {
   notification_broadcast:{ icon: "fa-tower-broadcast",      label: "Sent a broadcast" }
 };
 const ROLE_LABELS = {
-  "sub-admin":  { label: "Sub-Admin",  color: "var(--accent-cyan, #00e0ff)" },
-  "mock-admin": { label: "Mock-Admin", color: "var(--accent-violet, #7c5cfc)" },
-  "both":       { label: "Both",       color: "var(--accent-green, #00e5a0)" }
+  "sub-admin":     { label: "Sub-Admin",       color: "var(--accent-cyan, #00e0ff)" },
+  "mock-admin":    { label: "Mock-Admin",      color: "var(--accent-violet, #7c5cfc)" },
+  "content-admin": { label: "Content Hub Admin", color: "var(--accent-amber, #ffb830)" },
+  "both":          { label: "Both",            color: "var(--accent-green, #00e5a0)" }
 };
 
 // ============================================================
@@ -154,13 +159,14 @@ window.apSetTab = apSetTab;
 window.apSetSearch = apSetSearch;
 
 function apUpdateTabButtons() {
-  ["sub-admin", "mock-admin"].forEach(tab => {
+  ["sub-admin", "mock-admin", "content-admin"].forEach(tab => {
     const btn = $("apTab-" + tab);
     if (!btn) return;
     const active = AP.activeTab === tab;
-    btn.style.background = active ? "rgba(0,224,255,.1)" : "";
-    btn.style.borderColor = active ? "var(--accent-cyan, #00e0ff)" : "";
-    btn.style.color = active ? "var(--accent-cyan, #00e0ff)" : "";
+    const color = ROLE_LABELS[tab].color;
+    btn.style.background = active ? `color-mix(in srgb, ${color} 10%, transparent)` : "";
+    btn.style.borderColor = active ? color : "";
+    btn.style.color = active ? color : "";
   });
 }
 
@@ -289,7 +295,7 @@ async function apAppoint() {
       role,
       appointedAt: serverTimestamp()
     });
-    const panelName = role === "both" ? "Sub-Admin and Mock-Admin panels" : role === "mock-admin" ? "Mock-Admin panel" : "Sub-Admin panel";
+    const panelName = role === "both" ? "Sub-Admin and Mock-Admin panels" : role === "mock-admin" ? "Mock-Admin panel" : role === "content-admin" ? "Content Hub Admin panel" : "Sub-Admin panel";
     apToast(`${name} appointed — they can now log in to the ${panelName}`, "success");
     $("apName").value = "";
     $("apEmail").value = "";

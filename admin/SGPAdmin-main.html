@@ -2834,26 +2834,30 @@
         <select class="form-input" id="apRole">
           <option value="sub-admin" selected>Sub-Admin</option>
           <option value="mock-admin">Mock-Admin</option>
-          <option value="both">Both Admin</option>
+          <option value="content-admin">Content Hub Admin</option>
+          <option value="both">Both Admin (Sub + Mock)</option>
         </select>
       </div>
       <button class="btn btn-primary" onclick="apAppoint()" style="margin-top:16px;">
         <i class="fa-solid fa-user-plus"></i> Appoint
       </button>
       <p style="font-size:12px;color:var(--text-muted);margin-top:12px;">
-        Sub-Admin opens <strong>sub-admin.html</strong> (full dashboard). Mock-Admin opens <strong>admin-mock.html</strong> (mock test tools only). Both Admin gets access to both panels — sign in with this exact Google account, access is granted automatically.
+        Sub-Admin opens <strong>sub-admin.html</strong> (full dashboard). Mock-Admin opens <strong>admin-mock.html</strong> (mock test tools only). Content Hub Admin opens <strong>content-hub-admin.html</strong> (content, notes, college info, users, and issue reports for the Content Hub). Both Admin gets Sub-Admin + Mock-Admin — sign in with this exact Google account, access is granted automatically.
       </p>
     </div>
 
     <div class="form-panel">
       <div class="form-panel-title">Currently Appointed <span class="pill">Activity — last 30 days</span></div>
 
-      <div class="tabs" style="display:flex;gap:8px;margin-bottom:16px;">
+      <div class="tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
         <button class="btn btn-outline btn-sm" id="apTab-sub-admin" onclick="apSetTab('sub-admin')">
           <i class="fa-solid fa-user-shield"></i> Sub-Admin
         </button>
         <button class="btn btn-outline btn-sm" id="apTab-mock-admin" onclick="apSetTab('mock-admin')">
           <i class="fa-solid fa-list-check"></i> Mock-Admin
+        </button>
+        <button class="btn btn-outline btn-sm" id="apTab-content-admin" onclick="apSetTab('content-admin')">
+          <i class="fa-solid fa-layer-group"></i> Content Hub Admin
         </button>
       </div>
 

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Study Grid Prep — Content Hub Admin</title>
+  <link rel="manifest" href="/admin/manifestadmin.json">
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="theme-color" content="#07080d" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — identical to sub-admin.html / admin-mock.html
+       so this panel feels like the same family of tools.
+    ============================================================ */
+    :root {
+      --bg-void:       #07080d;
+      --bg-panel:      #0d0f18;
+      --bg-card:       #111420;
+      --bg-card-hover: #161b2e;
+      --bg-input:      #0f1220;
+      --border:        rgba(255,255,255,.06);
+      --border-glow:   rgba(0,224,255,.18);
+
+      --accent-cyan:   #00e0ff;
+      --accent-violet: #7c5cfc;
+      --accent-green:  #00e5a0;
+      --accent-amber:  #ffb830;
+      --accent-red:    #ff4f6a;
+
+      --text-primary:  #eef0ff;
+      --text-secondary:#8890b0;
+      --text-muted:    #4a5070;
+
+      --sidebar-w:     260px;
+      --radius-lg:     16px;
+      --radius-md:     10px;
+      --radius-sm:     6px;
+
+      --shadow-card:   0 4px 32px rgba(0,0,0,.45);
+      --shadow-glow:   0 0 24px rgba(0,224,255,.12);
+
+      --font-display:  'Syne', sans-serif;
+      --font-body:     'Manrope', sans-serif;
+      --font-mono:     'DM Mono', monospace;
+    }
+    [data-theme="light"] {
+      --bg-void:       #f1f5f9;
+      --bg-panel:      #ffffff;
+      --bg-card:       #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input:      #ffffff;
+      --border:        #e2e8f0;
+      --border-glow:   rgba(79,70,229,.15);
+
+      --accent-cyan:   #4F46E5;
+      --accent-violet: #7C3AED;
+      --accent-green:  #059669;
+      --accent-amber:  #D97706;
+      --accent-red:    #DC2626;
+
+      --text-primary:  #0f172a;
+      --text-secondary:#475569;
+      --text-muted:    #94a3b8;
+
+      --shadow-card:   0 4px 24px rgba(15,23,42,.08);
+      --shadow-glow:   0 0 24px rgba(79,70,229,.08);
+    }
+    html { transition: background-color .25s ease; }
+    body { transition: background-color .25s ease, color .25s ease; }
+
+    .theme-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 4px; }
+    .theme-toggle-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .theme-switch { position: relative; width: 42px; height: 24px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 99px; cursor: pointer; flex-shrink: 0; }
+    .theme-switch-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent-cyan); transition: transform .22s cubic-bezier(0.4,0,0.2,1); }
+    [data-theme="light"] .theme-switch-knob { transform: translateX(18px); }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; overflow: hidden;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* ============================================================  AUTH GATE  */
+    #authGate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-void);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .auth-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 48px 40px; width: 380px;
+      text-align: center; box-shadow: var(--shadow-card), var(--shadow-glow);
+      animation: fadeSlideUp .5s ease both;
+    }
+    .auth-logo {
+      font-family: var(--font-display); font-size: 22px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-amber), var(--accent-violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;
+    }
+    .auth-sub { font-size: 12px; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 36px; }
+    .auth-google-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius-md); color: var(--text-primary);
+      font-family: var(--font-body); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all .18s ease;
+    }
+    .auth-google-btn:hover { border-color: var(--accent-amber); }
+    .auth-google-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .auth-error { color: var(--accent-red); font-size: 12px; margin-top: 16px; min-height: 18px; }
+
+    /* ============================================================  SIDEBAR  */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--bg-panel); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 0; overflow: hidden; flex-shrink: 0;
+      transition: width .3s ease; height: 100vh; height: 100dvh;
+    }
+    .sidebar-header { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo {
+      font-family: var(--font-display); font-size: 16px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-amber), var(--accent-violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block;
+    }
+    .sidebar-role { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-top: 3px; }
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .nav-section-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .15em; padding: 16px 8px 6px; font-weight: 600; }
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: var(--radius-md);
+      background: none; border: none; color: var(--text-secondary);
+      font-family: var(--font-body); font-size: 13.5px; font-weight: 500;
+      cursor: pointer; transition: all .18s ease; width: 100%; text-align: left; white-space: nowrap;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,.05); color: var(--text-primary); }
+    .nav-btn.active { background: rgba(255,184,48,.08); color: var(--accent-amber); border: 1px solid rgba(255,184,48,.15); }
+    .nav-btn .nav-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
+    .nav-badge { margin-left: auto; background: var(--accent-red); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; min-width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+    .admin-profile { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-md); background: rgba(255,255,255,.03); }
+    .admin-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-amber), var(--accent-violet)); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--bg-void); flex-shrink: 0; }
+    .admin-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .admin-email { font-size: 10px; color: var(--text-muted); }
+    .logout-btn { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: color .2s; }
+    .logout-btn:hover { color: var(--accent-red); }
+
+    /* ============================================================  MAIN  */
+    .main { flex: 1; overflow-y: auto; padding: 28px 32px; background: var(--bg-void); height: 100vh; height: 100dvh; -webkit-overflow-scrolling: touch; }
+    .section { display: none; }
+    .section.active { display: block; animation: fadeSlideUp .35s ease both; }
+    .section-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+    .section-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+    .section-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .live-dot { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: var(--accent-green); background: rgba(0,229,160,.1); border: 1px solid rgba(0,229,160,.2); padding: 5px 12px; border-radius: 99px; font-weight: 600; }
+    .live-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-green); animation: pulse 1.5s ease infinite; }
+
+    /* ============================================================  STAT CARDS  */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden; transition: border-color .2s, transform .2s; cursor: default; }
+    .stat-card:hover { border-color: var(--border-glow); transform: translateY(-2px); }
+    .stat-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--card-glow, transparent); opacity: .6; pointer-events: none; }
+    .stat-card.cyan  { --card-glow: radial-gradient(ellipse at top right, rgba(0,224,255,.07), transparent 60%); }
+    .stat-card.violet{ --card-glow: radial-gradient(ellipse at top right, rgba(124,92,252,.07), transparent 60%); }
+    .stat-card.green { --card-glow: radial-gradient(ellipse at top right, rgba(0,229,160,.07), transparent 60%); }
+    .stat-card.amber { --card-glow: radial-gradient(ellipse at top right, rgba(255,184,48,.07), transparent 60%); }
+    .stat-card.red   { --card-glow: radial-gradient(ellipse at top right, rgba(255,79,106,.07), transparent 60%); }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px; }
+    .stat-card.cyan   .stat-icon { background: rgba(0,224,255,.1);   color: var(--accent-cyan);   }
+    .stat-card.violet .stat-icon { background: rgba(124,92,252,.1);  color: var(--accent-violet); }
+    .stat-card.green  .stat-icon { background: rgba(0,229,160,.1);   color: var(--accent-green);  }
+    .stat-card.amber  .stat-icon { background: rgba(255,184,48,.1);  color: var(--accent-amber);  }
+    .stat-card.red    .stat-icon { background: rgba(255,79,106,.1);  color: var(--accent-red);    }
+    .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+    .stat-value { font-family: var(--font-display); font-size: 32px; font-weight: 800; margin: 6px 0 4px; }
+    .stat-card.cyan   .stat-value { color: var(--accent-cyan);   }
+    .stat-card.violet .stat-value { color: var(--accent-violet); }
+    .stat-card.green  .stat-value { color: var(--accent-green);  }
+    .stat-card.amber  .stat-value { color: var(--accent-amber);  }
+    .stat-card.red    .stat-value { color: var(--accent-red);    }
+    .stat-delta { font-size: 11px; color: var(--text-muted); }
+
+    /* ============================================================  FORM PANELS  */
+    .form-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; }
+    .form-panel-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pill { font-size: 10px; padding: 3px 9px; border-radius: 99px; background: rgba(255,184,48,.1); color: var(--accent-amber); border: 1px solid rgba(255,184,48,.2); font-weight: 600; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px 14px; color: var(--text-primary); font-family: var(--font-body); font-size: 13px;
+      outline: none; transition: border-color .2s, box-shadow .2s; width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent-amber); box-shadow: 0 0 0 3px rgba(255,184,48,.08); }
+    .form-select { cursor: pointer; }
+    .form-select option { background: var(--bg-card); }
+    .form-textarea { resize: vertical; min-height: 90px; }
+    .form-input[type="color"] { padding: 4px; height: 42px; cursor: pointer; }
+
+    /* ============================================================  BUTTONS  */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: var(--radius-md); border: none; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .18s ease; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent-amber), #e09000); color: var(--bg-void); }
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-violet { background: linear-gradient(135deg, var(--accent-violet), #5a3fd0); color: white; }
+    .btn-violet:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-cyan { background: linear-gradient(135deg, var(--accent-cyan), #00a8cc); color: var(--bg-void); }
+    .btn-cyan:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-danger { background: linear-gradient(135deg, var(--accent-red), #cc2a3e); color: white; }
+    .btn-danger:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--text-muted); color: var(--text-primary); }
+    .btn-sm { padding: 7px 14px; font-size: 12px; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+    .btn-toggle { background: var(--bg-input); color: var(--text-muted); border: 1.5px solid var(--border); }
+    .btn-toggle.on-pin { background: rgba(255,79,106,.12); color: var(--accent-red); border-color: rgba(255,79,106,.3); }
+    .btn-toggle.on-feat { background: rgba(255,184,48,.12); color: var(--accent-amber); border-color: rgba(255,184,48,.3); }
+
+    /* ============================================================  TOAST / MODAL  */
+    #toastContainer { position: fixed; bottom: 28px; right: 28px; display: flex; flex-direction: column; gap: 10px; z-index: 10000; }
+    .toast { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: var(--shadow-card); animation: toastIn .3s ease both; }
+    .toast.removing { animation: toastOut .3s ease both; }
+    .toast-icon { font-size: 18px; }
+    .toast-text { font-size: 13px; font-weight: 500; }
+    .toast.success { border-left: 3px solid var(--accent-green); }
+    .toast.error   { border-left: 3px solid var(--accent-red);   }
+    .toast.info    { border-left: 3px solid var(--accent-cyan);  }
+    .toast.warning { border-left: 3px solid var(--accent-amber); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); z-index: 9500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s; padding: 20px; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; width: 90%; max-width: 640px; max-height: 88vh; overflow-y: auto; transform: translateY(16px); transition: transform .25s; box-shadow: var(--shadow-card); }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+    .modal-body { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin: 16px 0 24px; }
+    .modal-footer { display: flex; gap: 12px; justify-content: flex-end; }
+
+    /* ============================================================  TABLE ROWS  */
+    .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; background: var(--bg-card); gap: 12px; flex-wrap: wrap; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state-text { font-size: 14px; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.2); border-top-color: var(--bg-void); border-radius: 50%; animation: spin .6s linear infinite; }
+
+    /* content row specific */
+    .content-thumb { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: var(--bg-input); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 16px; }
+    .content-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+    .content-metrics-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+    .content-metric { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .trend-badge { font-size: 10px; font-weight: 800; color: var(--bg-void); background: var(--accent-amber); padding: 2px 8px; border-radius: 99px; }
+    .block-editor-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; }
+    .block-icon-btn { width: 30px; height: 30px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; transition: color .15s, border-color .15s; }
+    .block-icon-btn:hover:not(:disabled) { color: var(--text-primary); border-color: var(--text-muted); }
+    .block-icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .block-icon-btn.danger:hover { color: var(--accent-red); border-color: var(--accent-red); }
+    .block-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .block-type-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent-violet); }
+    .block-remove-btn { background: none; border: none; color: var(--accent-red); cursor: pointer; font-size: 14px; }
+    .coming-soon { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+    .coming-soon i { font-size: 46px; margin-bottom: 16px; color: var(--accent-violet); opacity: .6; }
+    .coming-soon h3 { font-family: var(--font-display); font-size: 20px; color: var(--text-primary); margin-bottom: 8px; }
+    .coming-soon p { font-size: 13px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 4px; }
+
+    /* ============================================================  RESPONSIVE  */
+    .sidebar-backdrop { display: none; }
+    .mobile-topbar { display: none; }
+    @media (max-width: 1024px) {
+      .sidebar { position: fixed; z-index: 8000; transform: translateX(-100%); width: 260px; }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 7999; }
+      .sidebar-backdrop.open { display: block; }
+      .mobile-topbar { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 500; }
+      .mobile-menu-btn { width: 38px; height: 38px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); font-size: 16px; cursor: pointer; }
+      body { flex-direction: column; overflow: auto; }
+      .main { height: auto; padding: 20px 16px; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 1025px) { .sidebar-backdrop, .mobile-topbar { display: none !important; } }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================  AUTH GATE  -->
+<div id="authGate">
+  <div class="auth-box">
+    <div class="auth-logo">Content Hub Admin</div>
+    <div class="auth-sub">Study Grid Prep</div>
+    <button class="auth-google-btn" onclick="signInWithGoogleContentAdmin()">
+      <i class="fa-brands fa-google"></i> Continue with Google
+    </button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+<div id="authLoading" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg-void);align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div class="spinner" style="width:32px;height:32px;border-width:3px;border-top-color:var(--accent-amber);"></div>
+  <div style="color:var(--text-muted);font-size:13px;">Checking access…</div>
+</div>
+
+<!-- ============================================================  MOBILE TOPBAR  -->
+<div class="mobile-topbar">
+  <button class="mobile-menu-btn" onclick="toggleMobileSidebar()"><i class="fa-solid fa-bars"></i></button>
+  <div class="sidebar-logo" style="font-size:14px;">Content Hub Admin</div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
+
+<!-- ============================================================  SIDEBAR  -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-logo">Content Hub Admin</span>
+    <div class="sidebar-role">Study Grid Prep</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-btn active" data-section="dashboard" onclick="goSection('dashboard')"><i class="fa-solid fa-chart-line nav-icon"></i><span>Dashboard</span></button>
+
+    <div class="nav-section-label">Content</div>
+    <button class="nav-btn" data-section="studio" onclick="goSection('studio')"><i class="fa-solid fa-pen-nib nav-icon"></i><span>Content Studio</span></button>
+    <button class="nav-btn" data-section="notes" onclick="goSection('notes')"><i class="fa-solid fa-book-open nav-icon"></i><span>Notes</span></button>
+    <button class="nav-btn" data-section="college" onclick="goSection('college')"><i class="fa-solid fa-graduation-cap nav-icon"></i><span>College Info</span></button>
+
+    <div class="nav-section-label">People</div>
+    <button class="nav-btn" data-section="users" onclick="goSection('users')"><i class="fa-solid fa-users nav-icon"></i><span>User Explore</span></button>
+    <button class="nav-btn" data-section="issues" onclick="goSection('issues')"><i class="fa-solid fa-flag nav-icon"></i><span>Issues</span><span class="nav-badge" id="issuesBadge" style="display:none;">0</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="theme-toggle-row">
+      <span class="theme-toggle-label"><i class="fa-solid fa-moon"></i> Theme</span>
+      <div class="theme-switch" onclick="toggleTheme()"><div class="theme-switch-knob"></div></div>
+    </div>
+    <div class="admin-profile">
+      <div class="admin-avatar" id="adminAvatarSidebar">?</div>
+      <div style="flex:1;min-width:0;">
+        <div class="admin-name" id="adminNameSidebar">—</div>
+        <div class="admin-email" id="adminEmailSidebar" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+      </div>
+      <button class="logout-btn" onclick="chaLogout()" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- ============================================================  MAIN  -->
+<main class="main" id="mainContent">
+
+  <!-- ───────── DASHBOARD ───────── -->
+  <section class="section active" id="section-dashboard">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Dashboard</div>
+        <div class="section-subtitle">Content Hub at a glance</div>
+      </div>
+      <span class="live-dot">Live</span>
+    </div>
+
+    <div class="cards-grid">
+      <div class="stat-card cyan"><div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div><div class="stat-label">Published</div><div class="stat-value" id="statPublished">—</div><div class="stat-delta" id="statTotalSub">of — total</div></div>
+      <div class="stat-card green"><div class="stat-icon"><i class="fa-regular fa-eye"></i></div><div class="stat-label">Total Views</div><div class="stat-value" id="statViews">—</div><div class="stat-delta">across all content</div></div>
+      <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-thumbs-up"></i></div><div class="stat-label">Most Liked</div><div class="stat-value" id="statMostLikedCount">—</div><div class="stat-delta" id="statMostLikedTitle">—</div></div>
+      <div class="stat-card violet"><div class="stat-icon"><i class="fa-solid fa-fire"></i></div><div class="stat-label">Most Viewed</div><div class="stat-value" id="statMostViewedCount">—</div><div class="stat-delta" id="statMostViewedTitle">—</div></div>
+      <div class="stat-card red"><div class="stat-icon"><i class="fa-solid fa-flag"></i></div><div class="stat-label">Open Issues</div><div class="stat-value" id="statOpenIssues">—</div><div class="stat-delta">awaiting review</div></div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">
+        Trending <span class="pill">Top 10</span>
+        <select class="form-select" id="trendFilter" style="margin-left:auto;width:auto;padding:8px 12px;font-size:12px;" onchange="renderTrending()">
+          <option value="views">Most viewed</option>
+          <option value="likes">Most liked</option>
+          <option value="dislikes">Most disliked</option>
+          <option value="saved">Most saved</option>
+        </select>
+      </div>
+      <div id="trendingList"></div>
+    </div>
+  </section>
+
+  <!-- ───────── CONTENT STUDIO ───────── -->
+  <section class="section" id="section-studio">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Content Studio</div>
+        <div class="section-subtitle">Create, edit, and publish everything the Content Hub shows</div>
+      </div>
+      <button class="btn btn-primary" onclick="openContentEditor(null)"><i class="fa-solid fa-plus"></i> New Content</button>
+    </div>
+
+    <div class="form-panel" style="margin-bottom:16px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <input class="form-input" id="studioSearch" placeholder="Search title, slug, tag…" style="flex:2;min-width:200px;" oninput="renderContentList()">
+        <select class="form-select" id="studioStatusFilter" style="flex:1;min-width:140px;" onchange="renderContentList()">
+          <option value="all">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+        <select class="form-select" id="studioSortBy" style="flex:1;min-width:140px;" onchange="renderContentList()">
+          <option value="recent">Newest first</option>
+          <option value="views">Most viewed</option>
+          <option value="likes">Most liked</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="studioList"></div>
+  </section>
+
+  <!-- ───────── NOTES ───────── -->
+  <section class="section" id="section-notes">
+    <div class="section-header">
+      <div><div class="section-title">Notes</div><div class="section-subtitle">JEE / NEET / CUET / Boards — organized by class → chapter</div></div>
+      <button class="btn btn-primary" onclick="openChapterEditor(null)"><i class="fa-solid fa-plus"></i> Add Chapter</button>
+    </div>
+
+    <div class="form-panel">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="notesExamTabs"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;" id="notesClassTabs"></div>
+      <div id="notesChapterList"></div>
+    </div>
+  </section>
+
+  <!-- ───────── COLLEGE INFO (placeholder shell) ───────── -->
+  <section class="section" id="section-college">
+    <div class="section-header"><div><div class="section-title">College Info</div><div class="section-subtitle">Placements, cutoffs, fee structure — searchable college pages</div></div></div>
+    <div class="form-panel"><div class="coming-soon">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <h3>College Info — next build</h3>
+      <p>College name/tags/SEO + placements/cutoffs/fee-structure fields, with a searchable public panel. Coming as its own pass.</p>
+    </div></div>
+  </section>
+
+  <!-- ───────── USER EXPLORE (placeholder shell) ───────── -->
+  <section class="section" id="section-users">
+    <div class="section-header"><div><div class="section-title">User Explore</div><div class="section-subtitle">Search a user, see their last 10 content interactions</div></div></div>
+    <div class="form-panel"><div class="coming-soon">
+      <i class="fa-solid fa-users"></i>
+      <h3>User Explore — next build</h3>
+      <p>Heads up: today the Content Hub tracks saved/liked/disliked <em>locally on each device</em>, not per-account in Firestore — so "last 10 views/likes" per user needs a small schema addition (a per-user interactions log) before this page can show real data. I'll build both together.</p>
+    </div></div>
+  </section>
+
+  <!-- ───────── ISSUES (placeholder shell) ───────── -->
+  <section class="section" id="section-issues">
+    <div class="section-header"><div><div class="section-title">Issues</div><div class="section-subtitle">Reports filed from the Content Hub's "Report an issue" button</div></div></div>
+    <div class="form-panel"><div class="coming-soon">
+      <i class="fa-solid fa-flag"></i>
+      <h3>Issues board — next build</h3>
+      <p>Sequential report list, a detail popup (reason + admin note), mark-resolved with a notification back to the reporter. Coming as its own pass.</p>
+    </div></div>
+  </section>
+
+</main>
+
+<div id="toastContainer"></div>
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<script type="module">
+import {
+  db, auth, provider as googleProvider, signInWithPopup, onAuthStateChanged, signOut,
+  collection, query, where, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, serverTimestamp, increment, orderBy, limit
+} from "/firebase.js";
+
+const $ = (id) => document.getElementById(id);
+let CURRENT_USER = null;
+let CURRENT_ROLE = null;
+
+const state = {
+  content: [],
+  categories: [],
+  authors: [],
+  metrics: {},
+  reports: [],
+  notes: [],
+  editingId: null,
+  blocks: []
+};
+
+/* ═══════════════════════ AUTH ═══════════════════════ */
+window.signInWithGoogleContentAdmin = async function () {
+  $("authError").textContent = "";
+  const btn = document.querySelector(".auth-google-btn");
+  btn.disabled = true;
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    await checkContentAdminAccess(result.user);
+  } catch (e) {
+    $("authError").textContent = "Sign-in failed. Try again.";
+    btn.disabled = false;
+  }
+};
+
+async function checkContentAdminAccess(user) {
+  $("authGate").style.display = "none";
+  $("authLoading").style.display = "flex";
+  try {
+    const email = user.email;
+    const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
+    let role = null;
+    if (ADMIN_EMAILS.includes(email)) {
+      role = "admin";
+    } else {
+      const snap = await getDoc(doc(db, "subAdmins", email));
+      if (snap.exists()) {
+        const r = snap.data().role;
+        if (r === "content-admin" || r === "both") role = r;
+      }
+    }
+    if (!role) {
+      await signOut(auth);
+      $("authLoading").style.display = "none";
+      $("authGate").style.display = "flex";
+      $("authError").textContent = "This Google account doesn't have Content Hub Admin access.";
+      document.querySelector(".auth-google-btn").disabled = false;
+      return;
+    }
+    CURRENT_USER = user;
+    CURRENT_ROLE = role;
+    $("adminNameSidebar").textContent = user.displayName || email.split("@")[0];
+    $("adminEmailSidebar").textContent = email;
+    $("adminAvatarSidebar").textContent = (user.displayName || email)[0].toUpperCase();
+    $("authLoading").style.display = "none";
+    logActivity("login", "Signed in to Content Hub Admin");
+    bootData();
+  } catch (e) {
+    console.error(e);
+    $("authLoading").style.display = "none";
+    $("authGate").style.display = "flex";
+    $("authError").textContent = "Something went wrong checking access.";
+  }
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user) checkContentAdminAccess(user);
+});
+
+window.chaLogout = async function () {
+  logActivity("logout", "Signed out of Content Hub Admin");
+  await signOut(auth);
+  location.reload();
+};
+
+async function logActivity(action, detail) {
+  if (!CURRENT_USER) return;
+  try {
+    await addDoc(collection(db, "activityLogs"), {
+      email: CURRENT_USER.email, name: CURRENT_USER.displayName || "", role: "content-admin",
+      action, detail: detail || "", createdAt: serverTimestamp()
+    });
+  } catch (e) { /* non-fatal */ }
+}
+
+/* ═══════════════════════ NAV / THEME ═══════════════════════ */
+window.goSection = function (name) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  $("section-" + name).classList.add("active");
+  document.querySelector(`.nav-btn[data-section="${name}"]`).classList.add("active");
+  if (window.innerWidth <= 1024) toggleMobileSidebar(false);
+};
+window.toggleMobileSidebar = function (force) {
+  const open = typeof force === "boolean" ? force : !$("sidebar").classList.contains("mobile-open");
+  $("sidebar").classList.toggle("mobile-open", open);
+  $("sidebarBackdrop").classList.toggle("open", open);
+};
+window.toggleTheme = function () {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const next = isLight ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next === "dark" ? "" : "light");
+  localStorage.setItem("cha-theme", next);
+};
+(function initTheme() {
+  const saved = localStorage.getItem("cha-theme");
+  if (saved === "light") document.documentElement.setAttribute("data-theme", "light");
+})();
+
+/* ═══════════════════════ TOAST ═══════════════════════ */
+function toast(msg, type = "info") {
+  const icons = { success: "fa-circle-check", error: "fa-circle-xmark", info: "fa-circle-info", warning: "fa-triangle-exclamation" };
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="fa-solid ${icons[type]} toast-icon" style="color:var(--accent-${type === "success" ? "green" : type === "error" ? "red" : type === "warning" ? "amber" : "cyan"});"></i><div class="toast-text">${msg}</div>`;
+  $("toastContainer").appendChild(el);
+  setTimeout(() => { el.classList.add("removing"); setTimeout(() => el.remove(), 300); }, 3200);
+}
+window.closeModal = function () { $("modalOverlay").classList.remove("open"); setTimeout(() => $("modalOverlay").innerHTML = "", 200); };
+function openModal(html) { $("modalOverlay").innerHTML = html; $("modalOverlay").classList.add("open"); }
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m])); }
+
+/* ═══════════════════════ DATA ═══════════════════════ */
+function bootData() {
+  onSnapshot(query(collection(db, "content")), snap => {
+    state.content = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDashboard(); renderTrending(); renderContentList();
+  });
+  onSnapshot(query(collection(db, "contentMetrics")), snap => {
+    state.metrics = {};
+    snap.docs.forEach(d => { const v = d.data(); state.metrics[d.id] = { views: v.views || 0, downloads: v.downloads || 0, likes: v.likes || 0, dislikes: v.dislikes || 0, reports: v.reports || 0 }; });
+    renderDashboard(); renderTrending(); renderContentList();
+  });
+  onSnapshot(query(collection(db, "categories")), snap => { state.categories = snap.docs.map(d => ({ id: d.id, ...d.data() })); });
+  onSnapshot(query(collection(db, "authors")), snap => { state.authors = snap.docs.map(d => ({ id: d.id, ...d.data() })); });
+  onSnapshot(query(collection(db, "notes")), snap => {
+    state.notes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (typeof renderChapterList === "function") renderChapterList();
+  });
+  onSnapshot(query(collection(db, "contentReports"), where("status", "==", "pending")), snap => {
+    state.reports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    $("statOpenIssues").textContent = state.reports.length;
+    const badge = $("issuesBadge");
+    if (state.reports.length) { badge.style.display = "inline-block"; badge.textContent = state.reports.length; }
+    else badge.style.display = "none";
+  });
+}
+
+function metricFor(id) { return state.metrics[id] || { views: 0, downloads: 0, likes: 0, dislikes: 0, reports: 0 }; }
+
+function renderDashboard() {
+  const published = state.content.filter(c => c.status === "published");
+  $("statPublished").textContent = published.length;
+  $("statTotalSub").textContent = `of ${state.content.length} total`;
+  const totalViews = Object.values(state.metrics).reduce((s, m) => s + (m.views || 0), 0);
+  $("statViews").textContent = totalViews.toLocaleString();
+
+  let mostLiked = null, mostViewed = null;
+  state.content.forEach(c => {
+    const m = metricFor(c.id);
+    if (!mostLiked || m.likes > metricFor(mostLiked.id).likes) mostLiked = c;
+    if (!mostViewed || m.views > metricFor(mostViewed.id).views) mostViewed = c;
+  });
+  $("statMostLikedCount").textContent = mostLiked ? metricFor(mostLiked.id).likes : 0;
+  $("statMostLikedTitle").textContent = mostLiked ? mostLiked.title : "No content yet";
+  $("statMostViewedCount").textContent = mostViewed ? metricFor(mostViewed.id).views : 0;
+  $("statMostViewedTitle").textContent = mostViewed ? mostViewed.title : "No content yet";
+}
+
+window.renderTrending = function () {
+  const field = $("trendFilter").value; // views | likes | dislikes | saved
+  let list;
+  if (field === "saved") {
+    // "Saved" is tracked locally per-device by the Hub, not in Firestore —
+    // fall back to views as the closest proxy until a saves counter exists.
+    list = state.content.slice().sort((a, b) => metricFor(b.id).views - metricFor(a.id).views);
+  } else {
+    list = state.content.slice().sort((a, b) => metricFor(b.id)[field] - metricFor(a.id)[field]);
+  }
+  list = list.slice(0, 10);
+  if (!list.length) { $("trendingList").innerHTML = `<div class="empty-state"><div class="empty-state-icon"><i class="fa-regular fa-folder-open"></i></div><div class="empty-state-text">No content yet</div></div>`; return; }
+  $("trendingList").innerHTML = list.map((c, i) => {
+    const m = metricFor(c.id);
+    return `<div class="tx-row">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+        <span class="trend-badge">#${i + 1}</span>
+        <div style="min-width:0;">
+          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${esc(c.title || "Untitled")}</div>
+          <div class="content-metrics-row">
+            <span class="content-metric"><i class="fa-regular fa-eye"></i> ${m.views||0}</span>
+            <span class="content-metric"><i class="fa-solid fa-thumbs-up"></i> ${m.likes||0}</span>
+            <span class="content-metric"><i class="fa-solid fa-thumbs-down"></i> ${m.dislikes||0}</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="openContentEditor('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+    </div>`;
+  }).join("");
+};
+
+/* ═══════════════════════ CONTENT STUDIO — LIST ═══════════════════════ */
+window.renderContentList = function () {
+  const term = ($("studioSearch")?.value || "").trim().toLowerCase();
+  const statusFilter = $("studioStatusFilter")?.value || "all";
+  const sortBy = $("studioSortBy")?.value || "recent";
+
+  let list = state.content.filter(c => {
+    if (statusFilter !== "all" && c.status !== statusFilter) return false;
+    if (!term) return true;
+    const bag = [c.title, c.slug, c.category, c.type, ...(c.tags || [])].join(" ").toLowerCase();
+    return bag.includes(term);
+  });
+
+  const trendRank = new Map(state.content.slice().sort((a, b) => metricFor(b.id).views - metricFor(a.id).views).slice(0, 20).map((c, i) => [c.id, i + 1]));
+
+  list.sort((a, b) => {
+    if (sortBy === "views") return metricFor(b.id).views - metricFor(a.id).views;
+    if (sortBy === "likes") return metricFor(b.id).likes - metricFor(a.id).likes;
+    const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+    const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+    return tb - ta;
+  });
+
+  if (!list.length) {
+    $("studioList").innerHTML = `<div class="form-panel"><div class="empty-state"><div class="empty-state-icon"><i class="fa-regular fa-folder-open"></i></div><div class="empty-state-text">No content matches — try New Content or clear filters</div></div></div>`;
+    return;
+  }
+
+  $("studioList").innerHTML = list.map(c => {
+    const m = metricFor(c.id);
+    const rank = trendRank.get(c.id);
+    const thumb = c.thumbnailUrl ? `<img src="${esc(c.thumbnailUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-file-lines\\'></i>'">` : `<i class="fa-solid fa-file-lines"></i>`;
+    return `<div class="tx-row">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">
+        <div class="content-thumb">${thumb}</div>
+        <div style="min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            ${rank ? `<span class="trend-badge">#${rank} trending</span>` : ""}
+            <span class="pill" style="background:${c.status === "published" ? "rgba(0,229,160,.1)" : "rgba(255,184,48,.1)"};color:${c.status === "published" ? "var(--accent-green)" : "var(--accent-amber)"};">${esc(c.status || "draft")}</span>
+          </div>
+          <div style="font-weight:700;font-size:13.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;">${esc(c.title || "Untitled")}</div>
+          <div class="content-metrics-row">
+            <span class="content-metric"><i class="fa-regular fa-eye"></i> ${m.views||0}</span>
+            <span class="content-metric"><i class="fa-solid fa-thumbs-up"></i> ${m.likes||0}</span>
+            <span class="content-metric"><i class="fa-solid fa-thumbs-down"></i> ${m.dislikes||0}</span>
+            <span class="content-metric"><i class="fa-solid fa-download"></i> ${m.downloads||0}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-toggle btn-sm ${c.pinned ? "on-pin" : ""}" onclick="toggleFlag('${c.id}','pinned',${!c.pinned})" title="Pinned"><i class="fa-solid fa-thumbtack"></i></button>
+        <button class="btn btn-toggle btn-sm ${c.featured ? "on-feat" : ""}" onclick="toggleFlag('${c.id}','featured',${!c.featured})" title="Featured"><i class="fa-solid fa-star"></i></button>
+        <button class="btn btn-outline btn-sm" onclick="openContentEditor('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteContent('${c.id}','${esc(c.title||"this")}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join("");
+};
+
+window.toggleFlag = async function (id, field, value) {
+  try { await updateDoc(doc(db, "content", id), { [field]: value }); toast(`${field} ${value ? "on" : "off"}`, "success"); logActivity("content_update", `Set ${field}=${value} on content`); }
+  catch (e) { toast("Couldn't update — check permissions", "error"); }
+};
+
+window.deleteContent = function (id, title) {
+  openModal(`
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-title">Delete content? <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body">This will permanently remove <strong>${esc(title)}</strong>. This can't be undone.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteContent('${id}')">Delete</button>
+      </div>
+    </div>
+  `);
+};
+window.confirmDeleteContent = async function (id) {
+  try { await deleteDoc(doc(db, "content", id)); toast("Content deleted", "success"); logActivity("content_delete", `Deleted content ${id}`); closeModal(); }
+  catch (e) { toast("Delete failed — check permissions", "error"); }
+};
+
+/* ═══════════════════════ CONTENT STUDIO — EDITOR ═══════════════════════ */
+const CONTENT_TYPES = [
+  ["notes", "Notes"], ["blog", "Article / Blog"], ["news", "News"], ["examUpdate", "Exam Update"],
+  ["formulaSheet", "Formula Sheet"], ["mockTest", "Mock Test"], ["pyq", "PYQ"], ["college", "College"],
+  ["career", "Career"], ["studyMaterial", "Study Material / Guide"]
+];
+const BLOCK_TYPES = [
+  ["heading", "Heading"], ["paragraph", "Paragraph"], ["tip", "Tip Box"], ["image", "Image"],
+  ["table", "Table"], ["faq", "FAQ Block"], ["cta", "CTA Block"],
+  ["downloadButton", "Download Button"], ["alsoRead", "Also Read"]
+];
+
+function blockFieldsHTML(b, i) {
+  switch (b.type) {
+    case "heading": return `
+      <select class="form-select" style="margin-bottom:8px;" onchange="state.blocks[${i}].level=+this.value">
+        ${[1,2,3].map(l => `<option value="${l}" ${b.level==l?"selected":""}>H${l}</option>`).join("")}
+      </select>
+      <input class="form-input" placeholder="Heading text" value="${esc(b.text)}" oninput="state.blocks[${i}].text=this.value">`;
+    case "paragraph": return `<textarea class="form-textarea" placeholder="Paragraph text — plain URLs anywhere in here become clickable automatically" oninput="state.blocks[${i}].text=this.value">${esc(b.text)}</textarea>`;
+    case "tip": return `
+      <select class="form-select" style="margin-bottom:8px;" onchange="state.blocks[${i}].tone=this.value">
+        ${["info","warning","success"].map(t => `<option value="${t}" ${b.tone===t?"selected":""}>${t}</option>`).join("")}
+      </select>
+      <textarea class="form-textarea" placeholder="Tip text" oninput="state.blocks[${i}].text=this.value">${esc(b.text)}</textarea>`;
+    case "image": return `
+      <input class="form-input" placeholder="Image URL" style="margin-bottom:8px;" value="${esc(b.url)}" oninput="state.blocks[${i}].url=this.value">
+      <input class="form-input" placeholder="Alt text" style="margin-bottom:8px;" value="${esc(b.alt)}" oninput="state.blocks[${i}].alt=this.value">
+      <select class="form-select" onchange="state.blocks[${i}].size=this.value">
+        ${["small","medium","full"].map(s => `<option value="${s}" ${b.size===s?"selected":""}>${s}</option>`).join("")}
+      </select>`;
+    case "table": return `<textarea class="form-textarea" placeholder="CSV — first row is the header&#10;Course,Fee&#10;BTech,120000" oninput="state.blocks[${i}].csv=this.value">${esc(b.csv)}</textarea>`;
+    case "faq": return `<textarea class="form-textarea" placeholder='One per line as Question | Answer' oninput="updateFaqBlock(${i}, this.value)" style="min-height:120px;">${(b.items||[]).map(it=>`${it.q} | ${it.a}`).join("\n")}</textarea>`;
+    case "cta": return `
+      <input class="form-input" placeholder="Heading text" style="margin-bottom:8px;" value="${esc(b.text)}" oninput="state.blocks[${i}].text=this.value">
+      <input class="form-input" placeholder="Button label" style="margin-bottom:8px;" value="${esc(b.buttonLabel)}" oninput="state.blocks[${i}].buttonLabel=this.value">
+      <input class="form-input" placeholder="Button link (/login.html, etc.)" value="${esc(b.href)}" oninput="state.blocks[${i}].href=this.value">
+      <p style="font-size:11px;color:var(--text-muted);margin-top:6px;"><i class="fa-solid fa-circle-info"></i> Hidden automatically inside the Content Hub app — public page only.</p>`;
+    // ── Download button — heading only shows, URL never does. Opens
+    // externally when tapped inside the app (any host: Drive, etc). ──
+    case "downloadButton": return `
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <input class="form-input" type="color" style="width:56px;flex-shrink:0;" value="${b.color||"#5B5BF6"}" oninput="state.blocks[${i}].color=this.value">
+        <input class="form-input" placeholder="Button heading — e.g. Download PDF" value="${esc(b.heading)}" oninput="state.blocks[${i}].heading=this.value">
+      </div>
+      <input class="form-input" placeholder="Download URL — any host (Drive, etc.)" value="${esc(b.url)}" oninput="state.blocks[${i}].url=this.value">`;
+    // ── Also read — colored text link to related reading. Public page
+    // only; hidden inside the Content Hub (which has its own Related
+    // Content section already). ──
+    case "alsoRead": return `
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <input class="form-input" type="color" style="width:56px;flex-shrink:0;" value="${b.color||"#4F46E5"}" oninput="state.blocks[${i}].color=this.value">
+        <input class="form-input" placeholder="Link text — e.g. Also read: AKTU counselling guide" value="${esc(b.text)}" oninput="state.blocks[${i}].text=this.value">
+      </div>
+      <input class="form-input" placeholder="URL (shown as the text above, never the raw link)" value="${esc(b.url)}" oninput="state.blocks[${i}].url=this.value">
+      <p style="font-size:11px;color:var(--text-muted);margin-top:6px;"><i class="fa-solid fa-circle-info"></i> Public page only — hidden inside the Content Hub app.</p>`;
+    default: return "";
+  }
+}
+window.updateFaqBlock = function (i, raw) {
+  state.blocks[i].items = raw.split("\n").filter(Boolean).map(line => {
+    const [q, ...rest] = line.split("|");
+    return { q: (q || "").trim(), a: rest.join("|").trim() };
+  });
+};
+window.addBlock = function (type) {
+  const defaults = {
+    heading: { type: "heading", level: 2, text: "" },
+    paragraph: { type: "paragraph", text: "" },
+    tip: { type: "tip", tone: "info", text: "" },
+    image: { type: "image", url: "", alt: "", size: "full" },
+    table: { type: "table", csv: "" },
+    faq: { type: "faq", items: [] },
+    cta: { type: "cta", text: "", buttonLabel: "", href: "" },
+    downloadButton: { type: "downloadButton", color: "#5B5BF6", heading: "", url: "" },
+    alsoRead: { type: "alsoRead", color: "#4F46E5", text: "", url: "" }
+  };
+  state.blocks.push(defaults[type]);
+  renderBlockEditor();
+};
+window.removeBlock = function (i) { state.blocks.splice(i, 1); renderBlockEditor(); };
+window.moveBlock = function (i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= state.blocks.length) return;
+  [state.blocks[i], state.blocks[j]] = [state.blocks[j], state.blocks[i]];
+  renderBlockEditor();
+};
+const BLOCK_LABELS = { heading: "Heading", paragraph: "Paragraph", tip: "Tip Box", image: "Image", table: "Table", faq: "FAQ Block", cta: "CTA Block", downloadButton: "Download Button", alsoRead: "Also Read" };
+function renderBlockEditor() {
+  const host = $("blockEditorList");
+  if (!host) return;
+  host.innerHTML = state.blocks.map((b, i) => `
+    <div class="block-editor-item">
+      <div class="block-editor-head">
+        <span class="block-type-label">${BLOCK_LABELS[b.type] || b.type}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="block-icon-btn" onclick="moveBlock(${i},-1)" title="Move up" ${i===0?"disabled":""}><i class="fa-solid fa-arrow-up"></i></button>
+          <button class="block-icon-btn" onclick="moveBlock(${i},1)" title="Move down" ${i===state.blocks.length-1?"disabled":""}><i class="fa-solid fa-arrow-down"></i></button>
+          <button class="block-icon-btn danger" onclick="removeBlock(${i})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      ${blockFieldsHTML(b, i)}
+    </div>`).join("") || `<div style="color:var(--text-muted);font-size:12.5px;padding:12px 0;">No blocks yet — add one below.</div>`;
+}
+
+window.openContentEditor = function (id) {
+  state.editingId = id;
+  const c = id ? state.content.find(x => x.id === id) : null;
+  state.blocks = (c?.data?.blocks ? JSON.parse(JSON.stringify(c.data.blocks)) : []);
+
+  openModal(`
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-title">${id ? "Edit content" : "New content"} <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body" style="margin-top:0;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="cfTitle" value="${esc(c?.title)}"></div>
+          <div class="form-group"><label class="form-label">Slug</label><input class="form-input" id="cfSlug" value="${esc(c?.slug)}" placeholder="auto from title if blank"></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group"><label class="form-label">Type</label>
+            <select class="form-select" id="cfType">${CONTENT_TYPES.map(([v,l]) => `<option value="${v}" ${c?.type===v?"selected":""}>${l}</option>`).join("")}</select>
+          </div>
+          <div class="form-group"><label class="form-label">Category</label>
+            <input class="form-input" id="cfCategory" list="cfCategoryList" value="${esc(c?.category)}">
+            <datalist id="cfCategoryList">${state.categories.map(cat => `<option value="${esc(cat.name||cat.slug)}">`).join("")}</datalist>
+          </div>
+          <div class="form-group"><label class="form-label">Author</label>
+            <input class="form-input" id="cfAuthor" list="cfAuthorList" value="${esc(c?.authorName)}">
+            <datalist id="cfAuthorList">${state.authors.map(a => `<option value="${esc(a.name)}">`).join("")}</datalist>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="cfDescription" style="min-height:60px;">${esc(c?.description)}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Thumbnail URL</label><input class="form-input" id="cfThumbnail" value="${esc(c?.thumbnailUrl)}"></div>
+          <div class="form-group"><label class="form-label">Tags (comma separated)</label><input class="form-input" id="cfTags" value="${esc((c?.tags||[]).join(", "))}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Keywords / SEO (comma separated)</label><input class="form-input" id="cfKeywords" value="${esc((c?.keywords||[]).join(", "))}"></div>
+
+        <div style="display:flex;gap:10px;margin:6px 0 18px;">
+          <button type="button" class="btn btn-toggle ${c?.featured?"on-feat":""}" id="cfFeaturedBtn" onclick="this.classList.toggle('on-feat')"><i class="fa-solid fa-star"></i> Featured</button>
+          <button type="button" class="btn btn-toggle ${c?.pinned?"on-pin":""}" id="cfPinnedBtn" onclick="this.classList.toggle('on-pin')"><i class="fa-solid fa-thumbtack"></i> Pinned</button>
+        </div>
+
+        <div class="form-panel-title" style="font-size:13px;margin-bottom:12px;">Content Blocks</div>
+        <div id="blockEditorList"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 20px;">
+          ${BLOCK_TYPES.map(([v,l]) => `<button type="button" class="btn btn-outline btn-sm" onclick="addBlock('${v}')"><i class="fa-solid fa-plus"></i> ${l}</button>`).join("")}
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Status</label>
+            <select class="form-select" id="cfStatus">
+              <option value="draft" ${c?.status==="draft"?"selected":""}>Draft</option>
+              <option value="published" ${c?.status==="published"?"selected":""}>Published</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Destinations</label>
+            <div style="display:flex;gap:16px;padding-top:10px;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;"><input type="checkbox" id="cfDestOnline" ${(c?.destinations||["online"]).includes("online")?"checked":""}> studygridprep.online</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;"><input type="checkbox" id="cfDestInfo" ${(c?.destinations||[]).includes("info")?"checked":""}> studygridprep.info</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveContent()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+      </div>
+    </div>
+  `);
+  renderBlockEditor();
+};
+
+function slugify(str) { return String(str||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
+
+window.saveContent = async function () {
+  const title = $("cfTitle").value.trim();
+  if (!title) return toast("Title is required", "warning");
+  const destinations = [];
+  if ($("cfDestOnline").checked) destinations.push("online");
+  if ($("cfDestInfo").checked) destinations.push("info");
+
+  const payload = {
+    title,
+    slug: slugify($("cfSlug").value || title),
+    type: $("cfType").value,
+    category: $("cfCategory").value.trim(),
+    authorName: $("cfAuthor").value.trim(),
+    description: $("cfDescription").value.trim(),
+    thumbnailUrl: $("cfThumbnail").value.trim(),
+    tags: $("cfTags").value.split(",").map(s => s.trim()).filter(Boolean),
+    keywords: $("cfKeywords").value.split(",").map(s => s.trim()).filter(Boolean),
+    featured: $("cfFeaturedBtn").classList.contains("on-feat"),
+    pinned: $("cfPinnedBtn").classList.contains("on-pin"),
+    status: $("cfStatus").value,
+    destinations,
+    data: { blocks: state.blocks },
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (state.editingId) {
+      await updateDoc(doc(db, "content", state.editingId), payload);
+      logActivity("content_update", `Updated "${title}"`);
+      toast("Content updated", "success");
+    } else {
+      payload.createdAt = serverTimestamp();
+      await addDoc(collection(db, "content"), payload);
+      logActivity(payload.status === "published" ? "content_publish" : "content_create", `${payload.status === "published" ? "Published" : "Created"} "${title}"`);
+      toast("Content saved", "success");
+    }
+    closeModal();
+  } catch (e) {
+    console.error(e);
+    toast("Save failed — check permissions", "error");
+  }
+};
+
+/* ═══════════════════════ NOTES — exam → class → chapter ═══════════════════════ */
+const EXAMS = [
+  ["jee", "JEE"], ["neet", "NEET"], ["cuet", "CUET"], ["boards", "Boards"]
+];
+const CLASSES = [["11th", "Class 11"], ["12th", "Class 12"]];
+const notesUi = { exam: "jee", cls: "11th" };
+
+function renderNotesTabs() {
+  $("notesExamTabs").innerHTML = EXAMS.map(([v, l]) => `
+    <button class="btn ${notesUi.exam === v ? "btn-primary" : "btn-outline"} btn-sm" onclick="setNotesExam('${v}')">${l}</button>`).join("");
+  $("notesClassTabs").innerHTML = CLASSES.map(([v, l]) => `
+    <button class="btn ${notesUi.cls === v ? "btn-cyan" : "btn-outline"} btn-sm" onclick="setNotesClass('${v}')">${l}</button>`).join("");
+}
+window.setNotesExam = function (v) { notesUi.exam = v; renderNotesTabs(); renderChapterList(); };
+window.setNotesClass = function (v) { notesUi.cls = v; renderNotesTabs(); renderChapterList(); };
+
+window.renderChapterList = function () {
+  const list = state.notes
+    .filter(n => n.examId === notesUi.exam && n.className === notesUi.cls)
+    .sort((a, b) => (a.chapterNumber||0) - (b.chapterNumber||0));
+
+  if (!list.length) {
+    $("notesChapterList").innerHTML = `<div class="empty-state"><div class="empty-state-icon"><i class="fa-regular fa-folder-open"></i></div><div class="empty-state-text">No chapters yet for ${EXAMS.find(e=>e[0]===notesUi.exam)[1]} · ${CLASSES.find(c=>c[0]===notesUi.cls)[1]}</div></div>`;
+    return;
+  }
+  $("notesChapterList").innerHTML = list.map(n => {
+    const m = metricFor(n.id);
+    return `<div class="tx-row">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+        <span class="trend-badge" style="background:var(--accent-violet);">Ch ${n.chapterNumber ?? "—"}</span>
+        <div style="min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="pill" style="background:${n.status === "published" ? "rgba(0,229,160,.1)" : "rgba(255,184,48,.1)"};color:${n.status === "published" ? "var(--accent-green)" : "var(--accent-amber)"};">${esc(n.status || "draft")}</span>
+          </div>
+          <div style="font-weight:700;font-size:13.5px;margin-top:4px;">${esc(n.chapterName || "Untitled chapter")}</div>
+          <div class="content-metrics-row">
+            <span class="content-metric"><i class="fa-regular fa-eye"></i> ${m.views||0}</span>
+            <span class="content-metric"><i class="fa-solid fa-download"></i> ${m.downloads||0}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="openChapterEditor('${n.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteChapter('${n.id}','${esc(n.chapterName||"this chapter")}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join("");
+};
+
+window.openChapterEditor = function (id) {
+  const n = id ? state.notes.find(x => x.id === id) : null;
+  openModal(`
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-title">${id ? "Edit chapter" : "Add chapter"} <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body" style="margin-top:0;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Exam</label>
+            <select class="form-select" id="chExam">${EXAMS.map(([v,l]) => `<option value="${v}" ${(n?.examId||notesUi.exam)===v?"selected":""}>${l}</option>`).join("")}</select>
+          </div>
+          <div class="form-group"><label class="form-label">Class</label>
+            <select class="form-select" id="chClass">${CLASSES.map(([v,l]) => `<option value="${v}" ${(n?.className||notesUi.cls)===v?"selected":""}>${l}</option>`).join("")}</select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Chapter no.</label><input class="form-input" type="number" id="chNumber" value="${n?.chapterNumber ?? ""}"></div>
+          <div class="form-group" style="grid-column:span 1;"><label class="form-label">Status</label>
+            <select class="form-select" id="chStatus">
+              <option value="draft" ${n?.status==="draft"?"selected":""}>Draft</option>
+              <option value="published" ${n?.status==="published"?"selected":""}>Published</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Chapter / title</label><input class="form-input" id="chName" value="${esc(n?.chapterName)}"></div>
+        <div class="form-group"><label class="form-label">PDF URL (Google Drive or any host)</label><input class="form-input" id="chPdfUrl" value="${esc(n?.pdfUrl)}"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveChapter('${id||""}')"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+      </div>
+    </div>
+  `);
+};
+
+window.saveChapter = async function (id) {
+  const chapterName = $("chName").value.trim();
+  if (!chapterName) return toast("Chapter title is required", "warning");
+  const payload = {
+    examId: $("chExam").value,
+    className: $("chClass").value,
+    chapterNumber: $("chNumber").value ? +$("chNumber").value : null,
+    chapterName,
+    pdfUrl: $("chPdfUrl").value.trim(),
+    status: $("chStatus").value,
+    updatedAt: serverTimestamp()
+  };
+  try {
+    if (id) {
+      await updateDoc(doc(db, "notes", id), payload);
+      logActivity("content_update", `Updated note chapter "${chapterName}"`);
+    } else {
+      payload.createdAt = serverTimestamp();
+      await addDoc(collection(db, "notes"), payload);
+      logActivity("content_create", `Added note chapter "${chapterName}"`);
+    }
+    toast("Chapter saved", "success");
+    closeModal();
+  } catch (e) { console.error(e); toast("Save failed — check permissions", "error"); }
+};
+window.deleteChapter = function (id, name) {
+  openModal(`
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-title">Delete chapter? <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body">This will permanently remove <strong>${esc(name)}</strong>.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteChapter('${id}')">Delete</button>
+      </div>
+    </div>
+  `);
+};
+window.confirmDeleteChapter = async function (id) {
+  try { await deleteDoc(doc(db, "notes", id)); toast("Chapter deleted", "success"); closeModal(); }
+  catch (e) { toast("Delete failed", "error"); }
+};
+
+renderNotesTabs();
+</script>
+
+</body>
+</html>
