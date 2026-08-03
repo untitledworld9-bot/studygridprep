@@ -207,6 +207,19 @@ header.hub-header{
 .filter-type-chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
 
 
+/* ─── QUICK LINKS ─── */
+.hub-quicklinks{ display:flex; gap:10px; padding:14px 18px 4px; overflow-x:auto; touch-action:pan-x; overscroll-behavior-x:contain; }
+.hub-quicklink{
+  flex-shrink:0; min-width:150px; display:flex; flex-direction:column; gap:3px;
+  padding:14px 16px; border-radius:16px; color:#fff; position:relative;
+  transition:transform 0.15s ease;
+}
+.hub-quicklink:active{ transform:scale(0.96); }
+.hub-quicklink.notes{ background:linear-gradient(135deg,#16A34A,#0D9488); }
+.hub-quicklink i{ font-size:18px; margin-bottom:4px; opacity:.9; }
+.hub-quicklink span{ font-size:13.5px; font-weight:800; }
+.hub-quicklink small{ font-size:10px; opacity:.8; font-weight:600; }
+
 /* ─── CHIPS ─── */
 .hub-chip-row{
   display:flex; gap:8px; overflow-x:auto; padding:12px 18px 4px;
@@ -577,6 +590,14 @@ body.panel-open .pwa-bottom-nav{ display:none; }
 
 <!-- ─── CATEGORY CHIPS ─── -->
 <div class="hub-chip-row" id="categoryChips"></div>
+
+<div class="hub-quicklinks" id="quickLinksRow">
+  <a class="hub-quicklink notes" href="notes.html">
+    <i class="fa-solid fa-book-open"></i>
+    <span>Notes</span>
+    <small>Exam · Class · Chapter</small>
+  </a>
+</div>
 
 <main id="mainScroll">
 

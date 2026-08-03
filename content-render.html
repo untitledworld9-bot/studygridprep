@@ -37,10 +37,19 @@ html.sgp-embed .dark-footer-block,
 html.sgp-embed #sgpChatBtn,
 html.sgp-embed #sgpNotif,
 html.sgp-embed .sgp-chat-window,
-html.sgp-embed .article-cta-block{
+html.sgp-embed .article-cta-block,
+html.sgp-standalone nav.navbar,
+html.sgp-standalone .mobile-menu,
+html.sgp-standalone .faq-section,
+html.sgp-standalone .dark-footer-block,
+html.sgp-standalone #sgpChatBtn,
+html.sgp-standalone #sgpNotif,
+html.sgp-standalone .sgp-chat-window,
+html.sgp-standalone .article-cta-block{
   display:none !important;
 }
-html.sgp-embed .article-hero{ padding-top:20px; }
+html.sgp-embed .article-hero,
+html.sgp-standalone .article-hero{ padding-top:20px; }
 html.sgp-dark{ background:#0D1120; }
 </style>
 
@@ -67,6 +76,40 @@ html.sgp-dark{ background:#0D1120; }
 <link rel="stylesheet" href="/design-system.css">
 </head>
 <body>
+
+<!-- ═══ STANDALONE APP BAR — shown only when this page is opened
+     directly inside the installed PWA (not via the Hub's iframe).
+     Mirrors the Content Hub panel's own back/views/report bar so a
+     shared link feels like part of the app, not the marketing site. ═══ -->
+<div id="sgpStandaloneBar" style="display:none;">
+  <button id="sgpStandaloneBack" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+  <div id="sgpStandaloneTitle">Study Grid Prep</div>
+  <span id="sgpStandaloneViews"><i class="fa-regular fa-eye"></i> 0</span>
+  <button id="sgpStandaloneInfo" aria-label="Report an issue"><i class="fa-solid fa-info"></i></button>
+</div>
+<div id="sgpStandaloneReportMask"></div>
+<div id="sgpStandaloneReportBox">
+  <div style="font-weight:800;font-size:14px;margin-bottom:10px;color:var(--text-primary);">Report an issue</div>
+  <select id="sgpStandaloneReportType">
+    <option value="broken">Broken link / file</option>
+    <option value="wrong">Wrong information</option>
+    <option value="spam">Spam or irrelevant</option>
+    <option value="other">Other</option>
+  </select>
+  <textarea id="sgpStandaloneReportNote" placeholder="What's wrong with this?"></textarea>
+  <button id="sgpStandaloneReportSubmit">Send report</button>
+</div>
+<style>
+#sgpStandaloneBar{ display:flex; align-items:center; gap:10px; padding:14px 16px; background:var(--bg-soft); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:500; }
+#sgpStandaloneBar button{ width:36px; height:36px; border-radius:11px; flex-shrink:0; background:var(--bg-muted); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-primary); font-size:14px; cursor:pointer; }
+#sgpStandaloneTitle{ flex:1; min-width:0; font-size:13.5px; font-weight:700; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+#sgpStandaloneViews{ display:flex; align-items:center; gap:5px; flex-shrink:0; font-size:11px; font-weight:700; color:var(--text-secondary); background:var(--bg-muted); border:1px solid var(--border); padding:6px 10px; border-radius:20px; }
+#sgpStandaloneReportMask{ display:none; position:fixed; inset:0; z-index:9990; background:rgba(0,0,0,0.5); }
+#sgpStandaloneReportBox{ display:none; position:fixed; left:16px; right:16px; bottom:16px; z-index:9991; max-width:480px; margin:0 auto; background:var(--bg-soft); border:1px solid var(--border); border-radius:18px; padding:16px; }
+#sgpStandaloneReportBox select, #sgpStandaloneReportBox textarea{ width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:12px; padding:10px 12px; font-size:12.5px; color:var(--text-primary); font-family:inherit; outline:none; margin-bottom:8px; }
+#sgpStandaloneReportBox textarea{ min-height:64px; resize:vertical; }
+#sgpStandaloneReportBox button{ width:100%; padding:11px; border-radius:12px; border:none; background:linear-gradient(135deg,#4F46E5,#06B6D4); color:#fff; font-weight:700; font-size:13px; cursor:pointer; }
+</style>
 
 <!-- ═══ NAVBAR (identical on every page) ═══ -->
 <nav class="navbar">
@@ -216,9 +259,17 @@ html.sgp-dark{ background:#0D1120; }
 </div>
 
 <script type="module">
-import { db, collection, query, where, getDocs, limit, doc, setDoc, increment, serverTimestamp } from "/firebase.js";
+import { db, collection, query, where, getDocs, limit, doc, setDoc, increment, serverTimestamp, onSnapshot } from "/firebase.js";
 
 const isEmbed = window.__sgpEmbed === true;
+// Installed PWA, opened directly (not through the Hub's iframe) — e.g. a
+// shared link tapped on a phone that already has the app installed. Chrome/
+// Android hands standalone-scope navigations like this to the installed
+// app's own window, so this page needs to look and behave like the rest
+// of the app (its own back/views/report bar) instead of the marketing site.
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isAppLike = isEmbed || isStandalone;
+if (isStandalone && !isEmbed) document.documentElement.classList.add("sgp-standalone");
 
 // ── domain detection: 'online' or 'info' ──
 const domain = location.hostname.includes("studygridprep.info") ? "info" : "online";
@@ -269,17 +320,33 @@ function reportHeight() {
   notifyParent("sgp-embed-height", { height: h });
 }
 
+// ── Auto-linkify: turn bare URLs found inside article text into real,
+//    clickable links — any domain, no admin markup needed. Runs on
+//    already-escaped text, so it's safe against injection. ──
+const URL_RE = /((https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?'")\]])/gi;
+function linkify(escapedText) {
+  return escapedText.replace(URL_RE, (m) => {
+    const href = m.startsWith("http") ? m : "https://" + m;
+    // Inside the app (embedded panel or installed standalone PWA) a plain
+    // target="_blank" can get trapped in the same webview, so route the
+    // tap through window.open() instead — that reliably hands off to the
+    // real browser. On a normal public page visit, a plain link is fine.
+    const clickHandler = isAppLike ? ` onclick="event.preventDefault();window.open('${href.replace(/'/g,"%27")}','_blank','noopener');"` : "";
+    return `<a href="${href}" class="sgp-auto-link" target="_blank" rel="noopener noreferrer"${clickHandler}>${m}</a>`;
+  });
+}
+
 function blocksToHtml(blocks) {
   return (blocks || []).map(b => {
     switch (b.type) {
       case "heading":
-        return `<h${b.level}>${escHtml(b.text)}</h${b.level}>`;
+        return `<h${b.level}>${linkify(escHtml(b.text))}</h${b.level}>`;
       case "paragraph":
-        return `<p>${escHtml(b.text)}</p>`;
+        return `<p>${linkify(escHtml(b.text))}</p>`;
       case "tip": {
         const toneColor = { info: "var(--primary)", warning: "var(--amber)", success: "var(--teal)" }[b.tone] || "var(--primary)";
         const toneBg = { info: "var(--primary-light)", warning: "var(--amber-light)", success: "var(--teal-light)" }[b.tone] || "var(--primary-light)";
-        return `<div class="tip-box" style="border-color:${toneColor};background:${toneBg};"><p>${escHtml(b.text)}</p></div>`;
+        return `<div class="tip-box" style="border-color:${toneColor};background:${toneBg};"><p>${linkify(escHtml(b.text))}</p></div>`;
       }
       case "image": {
         const widthMap = { small: "40%", medium: "65%", full: "100%" };
@@ -291,7 +358,7 @@ function blocksToHtml(blocks) {
         const [head, ...body] = rows;
         return `<table style="width:100%;border-collapse:collapse;margin:20px 0;">
           <thead><tr>${(head||[]).map(h=>`<th style="text-align:left;padding:8px;border-bottom:2px solid var(--border);font-family:var(--font);">${escHtml(h)}</th>`).join("")}</tr></thead>
-          <tbody>${body.map(r=>`<tr>${r.map(c=>`<td style="padding:8px;border-bottom:1px solid var(--border-soft);">${escHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+          <tbody>${body.map(r=>`<tr>${r.map(c=>`<td style="padding:8px;border-bottom:1px solid var(--border-soft);">${linkify(escHtml(c))}</td>`).join("")}</tr>`).join("")}</tbody>
         </table>`;
       }
       case "faq":
@@ -301,13 +368,36 @@ function blocksToHtml(blocks) {
               ${escHtml(it.q)}
               <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
             </button>
-            <div class="faq-a"><p>${escHtml(it.a)}</p></div>
+            <div class="faq-a"><p>${linkify(escHtml(it.a))}</p></div>
           </div>`).join("")}</div>`;
       case "cta":
         return `<div class="article-cta-block" style="background:linear-gradient(135deg,var(--primary),var(--accent));">
           <h3>${escHtml(b.text)}</h3>
           <a href="${escHtml(b.href)}" class="btn-cta-white" style="color:var(--primary);">${escHtml(b.buttonLabel)}</a>
         </div>`;
+      // ── Download button — just a heading + colored button, the URL
+      // itself is never shown. Inside the app it always hands off to an
+      // external browser/app so downloads work the same as a native share.
+      case "downloadButton": {
+        const color = b.color || "#5B5BF6";
+        const dlHandler = isAppLike
+          ? ` onclick="event.preventDefault();window.open('${escHtml(b.url||"").replace(/'/g,"%27")}','_blank','noopener');"`
+          : "";
+        return `<a href="${escHtml(b.url||"#")}" target="_blank" rel="noopener noreferrer"${dlHandler}
+          style="display:flex;align-items:center;justify-content:center;gap:10px;margin:24px 0;padding:15px 20px;border-radius:14px;background:${color};color:#fff;font-family:var(--font);font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 8px 20px ${color}55;">
+          <i class="fa-solid fa-download"></i> ${escHtml(b.heading || "Download")}
+        </a>`;
+      }
+      // ── Also read — a colored text link to related reading. Public
+      // page only: hidden inside the Content Hub's own panel, since the
+      // hub already has its own "Related content" section for this.
+      case "alsoRead": {
+        if (isAppLike) return "";
+        const color = b.color || "#4F46E5";
+        return `<p style="margin:18px 0;"><i class="fa-solid fa-book-open" style="color:${color};margin-right:8px;"></i>
+          <a href="${escHtml(b.url||"#")}" style="color:${color};font-weight:700;text-decoration:none;border-bottom:1.5px solid ${color}55;">${escHtml(b.text || "Also read")}</a>
+        </p>`;
+      }
       default:
         return "";
     }
@@ -427,19 +517,62 @@ async function init() {
     renderContent(content);
     bumpView(docSnap.id, content);
     notifyParent("sgp-content-loaded", { id: docSnap.id, slug: content.slug || slug, title: content.title || "" });
+    setupStandaloneBar(docSnap.id, content);
 
     // Report real height once layout settles, then keep watching for
     // late-loading images/tables so the parent panel can resize with us.
-    requestAnimationFrame(() => setTimeout(reportHeight, 60));
+    [60, 300, 1000, 2500].forEach(delay => setTimeout(reportHeight, delay));
     if (window.ResizeObserver) {
       new ResizeObserver(() => reportHeight()).observe(document.getElementById("csRenderRoot"));
     }
+    window.addEventListener("load", reportHeight);
     window.addEventListener("resize", reportHeight);
   } catch (e) {
     console.error("Content render error:", e);
     renderNotFound(`${e.name}: ${e.message}`);
     notifyParent("sgp-content-error", { reason: "exception", message: e.message });
   }
+}
+
+function setupStandaloneBar(contentId, content) {
+  if (!isStandalone || isEmbed) return;
+  const bar = document.getElementById("sgpStandaloneBar");
+  bar.style.display = "flex";
+  document.getElementById("sgpStandaloneTitle").textContent = content.title || "Study Grid Prep";
+
+  document.getElementById("sgpStandaloneBack").onclick = () => {
+    if (window.history.length > 1) window.history.back();
+    else location.href = "/content-hub.html";
+  };
+
+  const viewsEl = document.getElementById("sgpStandaloneViews");
+  onSnapshot(doc(db, "contentMetrics", contentId), snap => {
+    const v = snap.data();
+    viewsEl.innerHTML = `<i class="fa-regular fa-eye"></i> ${v?.views || 0}`;
+  }, () => {});
+
+  const mask = document.getElementById("sgpStandaloneReportMask");
+  const box = document.getElementById("sgpStandaloneReportBox");
+  const toggleReport = () => {
+    const show = box.style.display !== "block";
+    box.style.display = show ? "block" : "none";
+    mask.style.display = show ? "block" : "none";
+  };
+  document.getElementById("sgpStandaloneInfo").onclick = toggleReport;
+  mask.onclick = toggleReport;
+  document.getElementById("sgpStandaloneReportSubmit").onclick = async () => {
+    const note = document.getElementById("sgpStandaloneReportNote").value.trim();
+    if (!note) return;
+    try {
+      await setDoc(doc(collection(db, "contentReports")), {
+        contentId, slug: content.slug || "", title: content.title || "", type: content.type || "", category: content.category || "",
+        issueType: document.getElementById("sgpStandaloneReportType").value,
+        note, pageUrl: location.href, status: "pending", createdAt: serverTimestamp()
+      });
+      document.getElementById("sgpStandaloneReportNote").value = "";
+      toggleReport();
+    } catch (e) { console.warn("report failed", e); }
+  };
 }
 
 init();

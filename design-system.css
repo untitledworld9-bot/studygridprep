@@ -165,6 +165,7 @@ body {
 .article-body ul, .article-body ol { padding-left: 22px; margin-bottom: 20px; }
 .article-body li { font-size: 15.5px; color: var(--text-secondary); line-height: 1.78; margin-bottom: 8px; }
 .article-body strong { color: var(--text-primary); font-weight: 600; }
+.article-body a.sgp-auto-link, .article-body a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; word-break: break-word; }
 
 .tip-box { display: flex; gap: 14px; align-items: flex-start; border-radius: var(--radius); padding: 18px 20px; margin: 28px 0; border: 1px solid; }
 .tip-box p { margin: 0; font-size: 14.5px; line-height: 1.7; }
