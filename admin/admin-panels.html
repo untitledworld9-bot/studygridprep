@@ -246,6 +246,27 @@
 
       .grid { gap: 16px; }
     }
+      /* ── SUCCESS CARD (Content Hub) ── */
+.card.success {
+  background: rgba(34, 197, 94, 0.03);
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
+.card.success:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.card.success .icon {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.card.success .btn {
+  background: #22c55e;
+}
+
+.card:nth-child(5) { animation-delay: 2.1s; }
   </style>
 </head>
 <body>
@@ -290,6 +311,19 @@
         <div class="chips"><span>Users</span><span>Reports</span><span>Push</span><span>Content</span><span>Manage</span></div>
         <div class="btn">Open Panel</div>
       </a>
+
+      <!-- Content Hub Admin -->
+<a class="card success" href="https://studygridprep.online/admin/admin-panels">
+  <div class="icon"><i class="fa-solid fa-layer-group"></i></div>
+  <div class="title">Content Hub</div>
+  <div class="chips">
+    <span>Content</span>
+    <span>Notes</span>
+    <span>PYQ</span>
+    <span>Library</span>
+  </div>
+  <div class="btn">Open Panel</div>
+</a>
 
       <!-- Media Studio -->
       <a class="card" href="/admin/admin-media">
