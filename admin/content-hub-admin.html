@@ -250,6 +250,15 @@
 
     /* ============================================================  TABLE ROWS  */
     .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; background: var(--bg-card); gap: 12px; flex-wrap: wrap; }
+    .tx-row-main { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 260px; }
+    .tx-row-info { min-width: 0; flex: 1; }
+    .tx-row-title { font-weight: 700; font-size: 13.5px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .tx-row-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .tx-index { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); flex-shrink: 0; width: 20px; text-align: center; }
+    @media (max-width: 640px) {
+      .tx-row { flex-direction: column; align-items: stretch; }
+      .tx-row-actions { justify-content: flex-end; }
+    }
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
     .empty-state-text { font-size: 14px; }
@@ -668,10 +677,11 @@ window.renderTrending = function () {
   $("trendingList").innerHTML = list.map((c, i) => {
     const m = metricFor(c.id);
     return `<div class="tx-row">
-      <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+      <div class="tx-row-main">
+        <span class="tx-index">${i + 1}</span>
         <span class="trend-badge">#${i + 1}</span>
-        <div style="min-width:0;">
-          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${esc(c.title || "Untitled")}</div>
+        <div class="tx-row-info">
+          <div class="tx-row-title">${esc(c.title || "Untitled")}</div>
           <div class="content-metrics-row">
             <span class="content-metric"><i class="fa-regular fa-eye"></i> ${m.views||0}</span>
             <span class="content-metric"><i class="fa-solid fa-thumbs-up"></i> ${m.likes||0}</span>
@@ -712,19 +722,20 @@ window.renderContentList = function () {
     return;
   }
 
-  $("studioList").innerHTML = list.map(c => {
+  $("studioList").innerHTML = list.map((c, i) => {
     const m = metricFor(c.id);
     const rank = trendRank.get(c.id);
     const thumb = c.thumbnailUrl ? `<img src="${esc(c.thumbnailUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-file-lines\\'></i>'">` : `<i class="fa-solid fa-file-lines"></i>`;
     return `<div class="tx-row">
-      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">
+      <div class="tx-row-main">
+        <span class="tx-index">${i + 1}</span>
         <div class="content-thumb">${thumb}</div>
-        <div style="min-width:0;">
+        <div class="tx-row-info">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             ${rank ? `<span class="trend-badge">#${rank} trending</span>` : ""}
             <span class="pill" style="background:${c.status === "published" ? "rgba(0,229,160,.1)" : "rgba(255,184,48,.1)"};color:${c.status === "published" ? "var(--accent-green)" : "var(--accent-amber)"};">${esc(c.status || "draft")}</span>
           </div>
-          <div style="font-weight:700;font-size:13.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;">${esc(c.title || "Untitled")}</div>
+          <div class="tx-row-title">${esc(c.title || "Untitled")}</div>
           <div class="content-metrics-row">
             <span class="content-metric"><i class="fa-regular fa-eye"></i> ${m.views||0}</span>
             <span class="content-metric"><i class="fa-solid fa-thumbs-up"></i> ${m.likes||0}</span>
@@ -733,7 +744,7 @@ window.renderContentList = function () {
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <div class="tx-row-actions">
         <button class="btn btn-toggle btn-sm ${c.pinned ? "on-pin" : ""}" onclick="toggleFlag('${c.id}','pinned',${!c.pinned})" title="Pinned"><i class="fa-solid fa-thumbtack"></i></button>
         <button class="btn btn-toggle btn-sm ${c.featured ? "on-feat" : ""}" onclick="toggleFlag('${c.id}','featured',${!c.featured})" title="Featured"><i class="fa-solid fa-star"></i></button>
         <button class="btn btn-outline btn-sm" onclick="openContentEditor('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>

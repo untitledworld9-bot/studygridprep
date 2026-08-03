@@ -249,6 +249,13 @@ function csBlockDefaults(type) {
     case "table":     return { type, csv: "Column A, Column B\nValue 1, Value 2" };
     case "faq":       return { type, items: [{ q: "", a: "" }] };
     case "cta":       return { type, text: "", href: "", buttonLabel: "Get Started" };
+    // Download button — heading text + color show, the URL itself never
+    // does. Opens externally (Drive, any host) when tapped inside the app.
+    case "downloadButton": return { type, color: "#5B5BF6", heading: "Download PDF", url: "" };
+    // Also read — colored text link to related reading. Public page
+    // only; content-render.html hides this block when embedded in the
+    // Content Hub app (which has its own Related Content section).
+    case "alsoRead":  return { type, color: "#4F46E5", text: "Also read: ", url: "" };
     default:          return { type: "paragraph", text: "" };
   }
 }
@@ -285,7 +292,7 @@ function csRenderBlocks() {
   wrap.innerHTML = CS.blocks.map((b, i) => `
     <div class="cs-block-card">
       <div class="cs-block-card-head">
-        <span class="cs-block-type-label">${b.type}</span>
+        <span class="cs-block-type-label">${CS_BLOCK_LABELS[b.type] || b.type}</span>
         <div class="cs-block-actions">
           <button onclick="csMoveBlock(${i},-1)" title="Move up"><i class="fa-solid fa-arrow-up"></i></button>
           <button onclick="csMoveBlock(${i},1)" title="Move down"><i class="fa-solid fa-arrow-down"></i></button>
@@ -341,6 +348,22 @@ function csBlockFieldsHtml(b, i) {
         <input class="form-input" style="margin-bottom:8px;" placeholder="Heading" value="${escHtml(b.text)}" oninput="csUpdateBlock(${i},'text',this.value)" />
         <input class="form-input" style="margin-bottom:8px;" placeholder="Button label" value="${escHtml(b.buttonLabel)}" oninput="csUpdateBlock(${i},'buttonLabel',this.value)" />
         <input class="form-input" placeholder="Button link" value="${escHtml(b.href)}" oninput="csUpdateBlock(${i},'href',this.value)" />`;
+    case "downloadButton":
+      return `
+        <div style="display:flex;gap:10px;margin-bottom:8px;">
+          <input class="form-input" type="color" style="width:56px;flex-shrink:0;padding:4px;" value="${b.color||"#5B5BF6"}" oninput="csUpdateBlock(${i},'color',this.value)" />
+          <input class="form-input" placeholder="Button heading — e.g. Download PDF" value="${escHtml(b.heading)}" oninput="csUpdateBlock(${i},'heading',this.value)" />
+        </div>
+        <input class="form-input" placeholder="Download URL — any host (Google Drive, etc.)" value="${escHtml(b.url)}" oninput="csUpdateBlock(${i},'url',this.value)" />
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">The URL is never shown — only the heading. Opens externally when tapped inside the app.</div>`;
+    case "alsoRead":
+      return `
+        <div style="display:flex;gap:10px;margin-bottom:8px;">
+          <input class="form-input" type="color" style="width:56px;flex-shrink:0;padding:4px;" value="${b.color||"#4F46E5"}" oninput="csUpdateBlock(${i},'color',this.value)" />
+          <input class="form-input" placeholder="Link text — e.g. Also read: AKTU counselling guide" value="${escHtml(b.text)}" oninput="csUpdateBlock(${i},'text',this.value)" />
+        </div>
+        <input class="form-input" placeholder="URL (shown as the text above, never the raw link)" value="${escHtml(b.url)}" oninput="csUpdateBlock(${i},'url',this.value)" />
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Public page only — hidden automatically inside the Content Hub app.</div>`;
     default:
       return "";
   }
@@ -373,7 +396,9 @@ function csBlockFieldsHtml(b, i) {
 //      { "type": "tip", "tone": "info", "text": "..." },
 //      { "type": "table", "csv": "Col A, Col B\nVal 1, Val 2" },
 //      { "type": "faq", "items": [{ "q": "...", "a": "..." }] },
-//      { "type": "cta", "text": "...", "buttonLabel": "...", "href": "..." }
+//      { "type": "cta", "text": "...", "buttonLabel": "...", "href": "..." },
+//      { "type": "downloadButton", "color": "#5B5BF6", "heading": "...", "url": "..." },
+//      { "type": "alsoRead", "color": "#4F46E5", "text": "...", "url": "..." }
 //    ]
 //  }
 //
@@ -399,7 +424,8 @@ function csAiClearLog() {
 
 const CS_BLOCK_LABELS = {
   heading: "Heading", paragraph: "Paragraph", tip: "Tip Box",
-  image: "Image", table: "Table", faq: "FAQ Section", cta: "Call-to-Action"
+  image: "Image", table: "Table", faq: "FAQ Section", cta: "Call-to-Action",
+  downloadButton: "Download Button", alsoRead: "Also Read"
 };
 
 async function csAiRevealBlocks(newBlocks, { replace = false } = {}) {
@@ -551,6 +577,15 @@ function csBlocksToHtml() {
           <h3>${escHtml(b.text)}</h3>
           <a href="${escHtml(b.href)}" class="btn-cta-white" style="color:var(--primary);">${escHtml(b.buttonLabel)}</a>
         </div>`;
+      case "downloadButton":
+        return b.url ? `<a href="${escHtml(b.url)}" target="_blank" rel="noopener noreferrer"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;margin:24px 0;padding:15px 20px;border-radius:14px;background:${b.color||"#5B5BF6"};color:#fff;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 8px 20px ${b.color||"#5B5BF6"}55;">
+          <i class="fa-solid fa-download"></i> ${escHtml(b.heading || "Download")}
+        </a>` : `<div style="padding:14px;border:1.5px dashed var(--border);border-radius:12px;color:var(--text-muted);font-size:12.5px;text-align:center;">Download button — add a URL to preview</div>`;
+      case "alsoRead":
+        return b.url ? `<p style="margin:18px 0;"><i class="fa-solid fa-book-open" style="color:${b.color||"#4F46E5"};margin-right:8px;"></i>
+          <a href="${escHtml(b.url)}" style="color:${b.color||"#4F46E5"};font-weight:700;text-decoration:none;border-bottom:1.5px solid ${b.color||"#4F46E5"}55;">${escHtml(b.text || "Also read")}</a>
+        </p>` : `<div style="padding:14px;border:1.5px dashed var(--border);border-radius:12px;color:var(--text-muted);font-size:12.5px;text-align:center;">Also-read link — add a URL to preview</div>`;
       default:
         return "";
     }
