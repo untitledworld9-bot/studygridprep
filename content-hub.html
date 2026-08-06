@@ -1283,29 +1283,7 @@ function boot(){
   // Type filter sheet
   $('filterBtn').onclick = openFilterSheet;
   $('filterSheetMask').onclick = closeFilterSheet;
-
-  // Content panel controls
-  $('panelMask').onclick = closePanel;
-  $('panelBackBtn').onclick = closePanel;
-  $('panelInfoBtn').onclick = toggleReportForm;
-  $('reportSubmitBtn').onclick = () => { if(state.currentPanelItem) submitReport(state.currentPanelItem); };
   document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('filterSheet').classList.contains('on')) closeFilterSheet(); });
-
-  // Listen to the embedded content-render.html page: it alone counts
-  // views and tells us when it's loaded / errored / resized.
-  window.addEventListener('message', (e) => {
-    if(!e.data || typeof e.data !== 'object') return;
-    if(e.data.type === 'sgp-content-loaded'){
-      $('panelLoading').style.display = 'none';
-      $('panelIframe').style.opacity = '1';
-      panelViewedOnce = true;
-    } else if(e.data.type === 'sgp-content-error'){
-      $('panelLoading').style.display = 'none';
-      $('panelIframe').style.opacity = '1';
-    } else if(e.data.type === 'sgp-embed-height' && e.data.height){
-      $('panelIframe').style.height = Math.max(320, e.data.height) + 'px';
-    }
-  });
 
   document.body.addEventListener('click', (e) => {
     const miniAct = e.target.closest('[data-mini-act]');

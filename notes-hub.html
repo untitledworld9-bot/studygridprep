@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Notes - Study Grid Prep</title>
 
+<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+
 <script>
 (function(){
   if(!localStorage.getItem("userName")){
@@ -31,7 +33,6 @@
   });
 })();
 </script>
-<meta id="metaThemeColor" name="theme-color" content="#ffffff">
 <style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -123,7 +124,7 @@ header{ display:flex; align-items:center; gap:10px; padding:14px 18px 12px; back
 </div>
 
 <div id="examView">
-  <div class="section">
+  <div class="section" id="examChooserSection">
     <div class="section-title"><i class="fa-solid fa-book-open"></i> Choose an exam</div>
     <div class="exam-grid">
       <div class="exam-card jee" onclick="openExam('jee')"><i class="fa-solid fa-atom"></i><div class="exam-card-name">JEE</div><div class="exam-card-sub">Main &amp; Advanced notes</div></div>
@@ -148,7 +149,6 @@ header{ display:flex; align-items:center; gap:10px; padding:14px 18px 12px; back
 
 <div class="pwa-bottom-nav">
   <button class="nav-tab" onclick="location.href='dashboard-home.html'"><i class="fa-solid fa-house"></i><span>Home</span></button>
-  <button class="nav-tab active" onclick="location.href='content-hub.html'"><i class="fa-solid fa-layer-group"></i><span>Hub</span></button>
   <button class="nav-tab" onclick="location.href='mainleaderboard.html'"><i class="fa-solid fa-trophy"></i><span>Leaderboard</span></button>
   <button class="nav-tab" onclick="location.href='profile.html'"><i class="fa-regular fa-circle-user"></i><span>Profile</span></button>
 </div>
@@ -213,14 +213,14 @@ $("searchInput").addEventListener("input", () => {
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(() => {
     const term = $("searchInput").value.trim().toLowerCase();
-    if(!term){
-      $("searchResultsSection").style.display = "none";
-      $("chapterView").style.display = "none";
-      $("examView").style.display = "block";
-      return;
-    }
     $("chapterView").style.display = "none";
     $("examView").style.display = "block";
+    if(!term){
+      $("searchResultsSection").style.display = "none";
+      $("examChooserSection").style.display = "";
+      return;
+    }
+    $("examChooserSection").style.display = "none";
     $("searchResultsSection").style.display = "block";
     const results = allNotes.filter(n => `${n.chapterName} ${EXAM_LABELS[n.examId]} ${CLASS_LABELS[n.className]}`.toLowerCase().includes(term));
     $("searchResultsList").innerHTML = results.length ? results.map(chapterRowHTML).join("") : `<div class="empty"><i class="fa-regular fa-face-frown"></i><div>No chapters found</div></div>`;
