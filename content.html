@@ -375,8 +375,19 @@ function wireInfo(c){
   };
 }
 
+function getThumbUrl(it){
+  if(it.thumbnailUrl) return it.thumbnailUrl;
+  if(it.imageUrl) return it.imageUrl;
+  if(it.seo?.ogImage) return it.seo.ogImage;
+  const blocks = it.data?.blocks;
+  if(Array.isArray(blocks)){
+    const imgBlock = blocks.find(b => b.type === 'image' && b.url);
+    if(imgBlock) return imgBlock.url;
+  }
+  return '';
+}
 function previewHtml(it){
-  const url = it.thumbnailUrl || it.imageUrl || '';
+  const url = getThumbUrl(it);
   return url ? `<img src="${esc(url)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${typeMeta(it).icon}\\'></i>'">` : `<i class="fa-solid ${typeMeta(it).icon}"></i>`;
 }
 function renderRelated(c){
@@ -400,8 +411,11 @@ function renderFeatured(c){
   const featured = state.all.filter(it => it.id !== c.id && it.featured).slice(0,6);
   if(!featured.length) return;
   $("featuredSection").style.display = 'block';
-  $("featuredList").innerHTML = featured.map(it => `
-    <div class="featured-card" data-id="${it.id}"><div class="featured-title">${esc(it.title||'Untitled')}</div></div>`).join('');
+  $("featuredList").innerHTML = featured.map(it => {
+    const url = getThumbUrl(it);
+    const bgStyle = url ? `background-image:linear-gradient(180deg, rgba(30,20,90,0.15), rgba(20,10,70,0.85)), url('${esc(url)}'); background-size:cover; background-position:center;` : '';
+    return `<div class="featured-card" data-id="${it.id}" style="${bgStyle}"><div class="featured-title">${esc(it.title||'Untitled')}</div></div>`;
+  }).join('');
   $("featuredList").querySelectorAll('[data-id]').forEach(el => el.onclick = () => { location.href = `content.html?id=${el.dataset.id}`; });
 }
 </script>
