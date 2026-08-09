@@ -281,6 +281,38 @@
     .coming-soon { text-align: center; padding: 80px 20px; color: var(--text-muted); }
     .coming-soon i { font-size: 46px; margin-bottom: 16px; color: var(--accent-violet); opacity: .6; }
     .coming-soon h3 { font-family: var(--font-display); font-size: 20px; color: var(--text-primary); margin-bottom: 8px; }
+
+    /* ── Content Studio (content-studio.js) — shared with sub-admin.html / SGPAdmin-main.html ── */
+    .cs-editor-grid { display: grid; grid-template-columns: 1fr 480px; gap: 20px; align-items: start; }
+    .cs-editor-right { position: sticky; top: 20px; }
+    .cs-preview-frame-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; height: 720px; background: #fff; }
+    .cs-preview-frame { width: 100%; height: 100%; border: none; }
+    .cs-block-card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; background: var(--bg-card); }
+    .cs-block-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .cs-block-type-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-cyan); }
+    .cs-block-actions { display: flex; gap: 6px; }
+    .cs-block-actions button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 4px 6px; border-radius: 6px; }
+    .cs-block-actions button:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+    .cs-ai-log { min-height: 60px; max-height: 180px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); }
+    .cs-ai-line { padding: 3px 0; animation: fadeSlideUp 0.3s ease; }
+    .cs-ai-prompt-echo { color: var(--accent-cyan); font-weight: 600; }
+    .cs-ai-stop { color: var(--accent-amber); }
+    .cs-ai-done { color: var(--accent-green); font-weight: 600; }
+    .cs-ai-error { color: var(--accent-red); }
+    .badge { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; text-transform: capitalize; }
+    .badge-gray { background: rgba(255,255,255,.06); color: var(--text-muted); }
+    .badge-green { background: rgba(0,229,160,.1); color: var(--accent-green); }
+    .badge-amber { background: rgba(255,184,48,.1); color: var(--accent-amber); }
+    .table-scroll { overflow-x: auto; max-height: 480px; overflow-y: auto; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .admin-table th { text-align: left; padding: 10px 12px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-card); }
+    .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .admin-table tr:hover td { background: var(--bg-card-hover); }
+    @media (max-width: 1100px) {
+      .cs-editor-grid { grid-template-columns: 1fr; }
+      .cs-editor-right { position: static; }
+      .cs-preview-frame-wrap { height: 480px; }
+    }
     .coming-soon p { font-size: 13px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
 
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -409,28 +441,242 @@
     <div class="section-header">
       <div>
         <div class="section-title">Content Studio</div>
-        <div class="section-subtitle">Create, edit, and publish everything the Content Hub shows</div>
+        <div class="section-subtitle">Blog, Notes, Guides &amp; more — one editor, publish to any domain</div>
       </div>
-      <button class="btn btn-primary" onclick="openContentEditor(null)"><i class="fa-solid fa-plus"></i> New Content</button>
-    </div>
-
-    <div class="form-panel" style="margin-bottom:16px;">
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <input class="form-input" id="studioSearch" placeholder="Search title, slug, tag…" style="flex:2;min-width:200px;" oninput="renderContentList()">
-        <select class="form-select" id="studioStatusFilter" style="flex:1;min-width:140px;" onchange="renderContentList()">
-          <option value="all">All statuses</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-        </select>
-        <select class="form-select" id="studioSortBy" style="flex:1;min-width:140px;" onchange="renderContentList()">
-          <option value="recent">Newest first</option>
-          <option value="views">Most viewed</option>
-          <option value="likes">Most liked</option>
-        </select>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn btn-outline" id="csListBtn" onclick="csShowList()">
+          <i class="fa-solid fa-list"></i> All Content <span id="csTotalCount" class="badge badge-gray" style="margin-left:6px;">0</span>
+        </button>
+        <button class="btn btn-primary" onclick="csNewContent()">
+          <i class="fa-solid fa-plus"></i> New Content
+        </button>
       </div>
     </div>
 
-    <div id="studioList"></div>
+    <!-- ── LIST VIEW ── -->
+    <div id="csListView">
+      <div class="form-panel">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;" id="csFilterCountLine">0 items total</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-select" id="csFilterType" onchange="csRenderList()">
+              <option value="">All Types</option>
+              <option value="blog">Blog</option>
+              <option value="notes">Study Notes</option>
+              <option value="formulaSheet">Formula Sheet</option>
+              <option value="news">News</option>
+              <option value="examUpdate">Exam Update</option>
+              <option value="collegeArticle">College Article</option>
+              <option value="careerGuide">Career Guide</option>
+              <option value="landingPage">Landing Page</option>
+              <option value="featurePage">Feature Page</option>
+              <option value="staticPage">Static Page</option>
+              <option value="faq">FAQ Page</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="csFilterStatus" onchange="csRenderList()">
+              <option value="">All</option>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="scheduled">Scheduled</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2;">
+            <label class="form-label">Search</label>
+            <input class="form-input" id="csSearch" placeholder="Search by title or slug…" oninput="csRenderList()" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-panel">
+        <div id="csTableWrap">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="empty-state-text">No content yet — click "New Content" to create the first piece.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EDITOR VIEW ── -->
+    <div id="csEditorView" style="display:none;">
+      <div class="cs-editor-grid">
+
+        <!-- LEFT: form + block editor -->
+        <div class="cs-editor-left">
+
+          <div class="form-panel">
+            <div class="form-panel-title">Details</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Content Type</label>
+                <select class="form-select" id="csType">
+                  <option value="blog">Blog</option>
+                  <option value="notes">Study Notes</option>
+                  <option value="formulaSheet">Formula Sheet</option>
+                  <option value="news">News</option>
+                  <option value="examUpdate">Exam Update</option>
+                  <option value="collegeArticle">College Article</option>
+                  <option value="careerGuide">Career Guide</option>
+                  <option value="landingPage">Landing Page</option>
+                  <option value="featurePage">Feature Page</option>
+                  <option value="staticPage">Static Page</option>
+                  <option value="faq">FAQ Page</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="csStatus">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="scheduled">Scheduled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="csTitle" placeholder="JEE Main 2027 Complete Preparation Guide" oninput="csOnTitleInput()" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Slug</label>
+              <input class="form-input" id="csSlug" placeholder="jee-main-2027-preparation-guide" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="csCategory">
+                  <option value="">No category</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tags (comma separated)</label>
+                <input class="form-input" id="csTags" placeholder="jee-main, 2027, syllabus" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Hero Accent Color</label>
+              <select class="form-select" id="csAccentColor" onchange="csRenderPreview()">
+                <option value="primary">Indigo (default)</option>
+                <option value="accent">Cyan</option>
+                <option value="teal">Teal</option>
+                <option value="violet">Violet</option>
+                <option value="orange">Orange</option>
+                <option value="rose">Rose</option>
+                <option value="amber">Amber</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Author</label>
+              <select class="form-select" id="csAuthor">
+                <option value="">No author selected</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Publish To</label>
+              <div style="display:flex;gap:16px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+                  <input type="checkbox" id="csDestOnline" checked /> studygridprep.online
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+                  <input type="checkbox" id="csDestInfo" /> studygridprep.info
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-panel">
+            <div class="form-panel-title">SEO <span class="pill">Auto-fillable</span></div>
+            <div class="form-group">
+              <label class="form-label">Meta Title</label>
+              <input class="form-input" id="csMetaTitle" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Meta Description</label>
+              <textarea class="form-textarea" id="csMetaDesc" rows="2" maxlength="160"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Keywords (comma separated)</label>
+              <input class="form-input" id="csKeywords" />
+            </div>
+            <button class="btn btn-outline" onclick="csAutoFillSeo()">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fill from content
+            </button>
+          </div>
+
+          <div class="form-panel">
+            <div class="form-panel-title">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Content Studio
+              <span class="pill">Groq</span>
+            </div>
+            <div class="cs-ai-log" id="csAiLog"></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;">
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('continue')">Continue</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('improve')">Improve</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('rewrite')">Rewrite</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('expand')">Expand</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('shorten')">Shorten</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('seo')">SEO Optimize</button>
+              <button class="btn btn-outline btn-sm" onclick="csAiQuickAction('grammar')">Fix Grammar</button>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <textarea class="form-textarea" id="csAiPrompt" rows="2" placeholder="e.g. Write a complete JEE Main 2027 preparation guide with syllabus, strategy and FAQs"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <button class="btn btn-primary" id="csAiSendBtn" onclick="csAiGenerate('generate')">
+                <i class="fa-solid fa-paper-plane"></i> Generate
+              </button>
+              <button class="btn btn-outline" id="csAiStopBtn" onclick="csAiStop()" disabled>
+                <i class="fa-solid fa-stop"></i> Stop
+              </button>
+            </div>
+          </div>
+
+          <div class="form-panel">
+            <div class="form-panel-title">Content Blocks</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('heading')">+ Heading</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('paragraph')">+ Paragraph</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('tip')">+ Tip Box</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('image')">+ Image</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('table')">+ Table</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('faq')">+ FAQ Block</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('cta')">+ CTA Block</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('downloadButton')">+ Download Button</button>
+              <button class="btn btn-outline btn-sm" onclick="csAddBlock('alsoRead')">+ Also Read</button>
+            </div>
+            <div id="csBlockList"></div>
+          </div>
+
+          <div style="display:flex;gap:12px;">
+            <button class="btn btn-primary" onclick="csSaveContent('draft')">
+              <i class="fa-solid fa-floppy-disk"></i> Save Draft
+            </button>
+            <button class="btn btn-primary" onclick="csSaveContent('published')" style="background:var(--accent-green);">
+              <i class="fa-solid fa-circle-check"></i> Publish
+            </button>
+            <button class="btn btn-outline" onclick="csShowList()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: live preview -->
+        <div class="cs-editor-right">
+          <div class="form-panel-title" style="padding:0 0 10px;">Live Preview</div>
+          <div class="cs-preview-frame-wrap">
+            <iframe id="csPreviewFrame" class="cs-preview-frame"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </section>
 
   <!-- ───────── NOTES ───────── -->
@@ -550,6 +796,7 @@ async function checkContentAdminAccess(user) {
     $("authLoading").style.display = "none";
     logActivity("login", "Signed in to Content Hub Admin");
     bootData();
+    if (window.initContentStudio) window.initContentStudio();
   } catch (e) {
     console.error(e);
     $("authLoading").style.display = "none";
@@ -611,6 +858,7 @@ function toast(msg, type = "info") {
   $("toastContainer").appendChild(el);
   setTimeout(() => { el.classList.add("removing"); setTimeout(() => el.remove(), 300); }, 3200);
 }
+window.toast = toast;
 window.closeModal = function () { $("modalOverlay").classList.remove("open"); setTimeout(() => $("modalOverlay").innerHTML = "", 200); };
 function openModal(html) { $("modalOverlay").innerHTML = html; $("modalOverlay").classList.add("open"); }
 function esc(s) { return String(s ?? "").replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m])); }
@@ -619,12 +867,12 @@ function esc(s) { return String(s ?? "").replace(/[&<>"]/g, m => ({ "&": "&amp;"
 function bootData() {
   onSnapshot(query(collection(db, "content")), snap => {
     state.content = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderDashboard(); renderTrending(); renderContentList();
+    renderDashboard(); renderTrending();
   });
   onSnapshot(query(collection(db, "contentMetrics")), snap => {
     state.metrics = {};
     snap.docs.forEach(d => { const v = d.data(); state.metrics[d.id] = { views: v.views || 0, downloads: v.downloads || 0, likes: v.likes || 0, dislikes: v.dislikes || 0, reports: v.reports || 0 }; });
-    renderDashboard(); renderTrending(); renderContentList();
+    renderDashboard(); renderTrending();
   });
   onSnapshot(query(collection(db, "categories")), snap => { state.categories = snap.docs.map(d => ({ id: d.id, ...d.data() })); });
   onSnapshot(query(collection(db, "authors")), snap => { state.authors = snap.docs.map(d => ({ id: d.id, ...d.data() })); });
@@ -689,310 +937,11 @@ window.renderTrending = function () {
           </div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="openContentEditor('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+      <button class="btn btn-outline btn-sm" onclick="goSection('studio');csEditContent('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
     </div>`;
   }).join("");
 };
 
-/* ═══════════════════════ CONTENT STUDIO — LIST ═══════════════════════ */
-window.renderContentList = function () {
-  const term = ($("studioSearch")?.value || "").trim().toLowerCase();
-  const statusFilter = $("studioStatusFilter")?.value || "all";
-  const sortBy = $("studioSortBy")?.value || "recent";
-
-  let list = state.content.filter(c => {
-    if (statusFilter !== "all" && c.status !== statusFilter) return false;
-    if (!term) return true;
-    const bag = [c.title, c.slug, c.category, c.type, ...(c.tags || [])].join(" ").toLowerCase();
-    return bag.includes(term);
-  });
-
-  const trendRank = new Map(state.content.slice().sort((a, b) => metricFor(b.id).views - metricFor(a.id).views).slice(0, 20).map((c, i) => [c.id, i + 1]));
-
-  list.sort((a, b) => {
-    if (sortBy === "views") return metricFor(b.id).views - metricFor(a.id).views;
-    if (sortBy === "likes") return metricFor(b.id).likes - metricFor(a.id).likes;
-    const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-    const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-    return tb - ta;
-  });
-
-  if (!list.length) {
-    $("studioList").innerHTML = `<div class="form-panel"><div class="empty-state"><div class="empty-state-icon"><i class="fa-regular fa-folder-open"></i></div><div class="empty-state-text">No content matches — try New Content or clear filters</div></div></div>`;
-    return;
-  }
-
-  $("studioList").innerHTML = list.map((c, i) => {
-    const m = metricFor(c.id);
-    const rank = trendRank.get(c.id);
-    const thumb = c.thumbnailUrl ? `<img src="${esc(c.thumbnailUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-file-lines\\'></i>'">` : `<i class="fa-solid fa-file-lines"></i>`;
-    return `<div class="tx-row">
-      <div class="tx-row-main">
-        <span class="tx-index">${i + 1}</span>
-        <div class="content-thumb">${thumb}</div>
-        <div class="tx-row-info">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            ${rank ? `<span class="trend-badge">#${rank} trending</span>` : ""}
-            <span class="pill" style="background:${c.status === "published" ? "rgba(0,229,160,.1)" : "rgba(255,184,48,.1)"};color:${c.status === "published" ? "var(--accent-green)" : "var(--accent-amber)"};">${esc(c.status || "draft")}</span>
-          </div>
-          <div class="tx-row-title">${esc(c.title || "Untitled")}</div>
-          <div class="content-metrics-row">
-            <span class="content-metric"><i class="fa-regular fa-eye"></i> ${m.views||0}</span>
-            <span class="content-metric"><i class="fa-solid fa-thumbs-up"></i> ${m.likes||0}</span>
-            <span class="content-metric"><i class="fa-solid fa-thumbs-down"></i> ${m.dislikes||0}</span>
-            <span class="content-metric"><i class="fa-solid fa-download"></i> ${m.downloads||0}</span>
-          </div>
-        </div>
-      </div>
-      <div class="tx-row-actions">
-        <button class="btn btn-toggle btn-sm ${c.pinned ? "on-pin" : ""}" onclick="toggleFlag('${c.id}','pinned',${!c.pinned})" title="Pinned"><i class="fa-solid fa-thumbtack"></i></button>
-        <button class="btn btn-toggle btn-sm ${c.featured ? "on-feat" : ""}" onclick="toggleFlag('${c.id}','featured',${!c.featured})" title="Featured"><i class="fa-solid fa-star"></i></button>
-        <button class="btn btn-outline btn-sm" onclick="openContentEditor('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteContent('${c.id}','${esc(c.title||"this")}')"><i class="fa-solid fa-trash"></i></button>
-      </div>
-    </div>`;
-  }).join("");
-};
-
-window.toggleFlag = async function (id, field, value) {
-  try { await updateDoc(doc(db, "content", id), { [field]: value }); toast(`${field} ${value ? "on" : "off"}`, "success"); logActivity("content_update", `Set ${field}=${value} on content`); }
-  catch (e) { toast("Couldn't update — check permissions", "error"); }
-};
-
-window.deleteContent = function (id, title) {
-  openModal(`
-    <div class="modal-box" style="max-width:420px;">
-      <div class="modal-title">Delete content? <button class="modal-close" onclick="closeModal()">&times;</button></div>
-      <div class="modal-body">This will permanently remove <strong>${esc(title)}</strong>. This can't be undone.</div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-danger" onclick="confirmDeleteContent('${id}')">Delete</button>
-      </div>
-    </div>
-  `);
-};
-window.confirmDeleteContent = async function (id) {
-  try { await deleteDoc(doc(db, "content", id)); toast("Content deleted", "success"); logActivity("content_delete", `Deleted content ${id}`); closeModal(); }
-  catch (e) { toast("Delete failed — check permissions", "error"); }
-};
-
-/* ═══════════════════════ CONTENT STUDIO — EDITOR ═══════════════════════ */
-const CONTENT_TYPES = [
-  ["notes", "Notes"], ["blog", "Article / Blog"], ["news", "News"], ["examUpdate", "Exam Update"],
-  ["formulaSheet", "Formula Sheet"], ["mockTest", "Mock Test"], ["pyq", "PYQ"], ["college", "College"],
-  ["career", "Career"], ["studyMaterial", "Study Material / Guide"]
-];
-const BLOCK_TYPES = [
-  ["heading", "Heading"], ["paragraph", "Paragraph"], ["tip", "Tip Box"], ["image", "Image"],
-  ["table", "Table"], ["faq", "FAQ Block"], ["cta", "CTA Block"],
-  ["downloadButton", "Download Button"], ["alsoRead", "Also Read"]
-];
-
-function blockFieldsHTML(b, i) {
-  switch (b.type) {
-    case "heading": return `
-      <select class="form-select" style="margin-bottom:8px;" onchange="state.blocks[${i}].level=+this.value">
-        ${[1,2,3].map(l => `<option value="${l}" ${b.level==l?"selected":""}>H${l}</option>`).join("")}
-      </select>
-      <input class="form-input" placeholder="Heading text" value="${esc(b.text)}" oninput="state.blocks[${i}].text=this.value">`;
-    case "paragraph": return `<textarea class="form-textarea" placeholder="Paragraph text — plain URLs anywhere in here become clickable automatically" oninput="state.blocks[${i}].text=this.value">${esc(b.text)}</textarea>`;
-    case "tip": return `
-      <select class="form-select" style="margin-bottom:8px;" onchange="state.blocks[${i}].tone=this.value">
-        ${["info","warning","success"].map(t => `<option value="${t}" ${b.tone===t?"selected":""}>${t}</option>`).join("")}
-      </select>
-      <textarea class="form-textarea" placeholder="Tip text" oninput="state.blocks[${i}].text=this.value">${esc(b.text)}</textarea>`;
-    case "image": return `
-      <input class="form-input" placeholder="Image URL" style="margin-bottom:8px;" value="${esc(b.url)}" oninput="state.blocks[${i}].url=this.value">
-      <input class="form-input" placeholder="Alt text" style="margin-bottom:8px;" value="${esc(b.alt)}" oninput="state.blocks[${i}].alt=this.value">
-      <select class="form-select" onchange="state.blocks[${i}].size=this.value">
-        ${["small","medium","full"].map(s => `<option value="${s}" ${b.size===s?"selected":""}>${s}</option>`).join("")}
-      </select>`;
-    case "table": return `<textarea class="form-textarea" placeholder="CSV — first row is the header&#10;Course,Fee&#10;BTech,120000" oninput="state.blocks[${i}].csv=this.value">${esc(b.csv)}</textarea>`;
-    case "faq": return `<textarea class="form-textarea" placeholder='One per line as Question | Answer' oninput="updateFaqBlock(${i}, this.value)" style="min-height:120px;">${(b.items||[]).map(it=>`${it.q} | ${it.a}`).join("\n")}</textarea>`;
-    case "cta": return `
-      <input class="form-input" placeholder="Heading text" style="margin-bottom:8px;" value="${esc(b.text)}" oninput="state.blocks[${i}].text=this.value">
-      <input class="form-input" placeholder="Button label" style="margin-bottom:8px;" value="${esc(b.buttonLabel)}" oninput="state.blocks[${i}].buttonLabel=this.value">
-      <input class="form-input" placeholder="Button link (/login.html, etc.)" value="${esc(b.href)}" oninput="state.blocks[${i}].href=this.value">
-      <p style="font-size:11px;color:var(--text-muted);margin-top:6px;"><i class="fa-solid fa-circle-info"></i> Hidden automatically inside the Content Hub app — public page only.</p>`;
-    // ── Download button — heading only shows, URL never does. Opens
-    // externally when tapped inside the app (any host: Drive, etc). ──
-    case "downloadButton": return `
-      <div style="display:flex;gap:10px;margin-bottom:8px;">
-        <input class="form-input" type="color" style="width:56px;flex-shrink:0;" value="${b.color||"#5B5BF6"}" oninput="state.blocks[${i}].color=this.value">
-        <input class="form-input" placeholder="Button heading — e.g. Download PDF" value="${esc(b.heading)}" oninput="state.blocks[${i}].heading=this.value">
-      </div>
-      <input class="form-input" placeholder="Download URL — any host (Drive, etc.)" value="${esc(b.url)}" oninput="state.blocks[${i}].url=this.value">`;
-    // ── Also read — colored text link to related reading. Public page
-    // only; hidden inside the Content Hub (which has its own Related
-    // Content section already). ──
-    case "alsoRead": return `
-      <div style="display:flex;gap:10px;margin-bottom:8px;">
-        <input class="form-input" type="color" style="width:56px;flex-shrink:0;" value="${b.color||"#4F46E5"}" oninput="state.blocks[${i}].color=this.value">
-        <input class="form-input" placeholder="Link text — e.g. Also read: AKTU counselling guide" value="${esc(b.text)}" oninput="state.blocks[${i}].text=this.value">
-      </div>
-      <input class="form-input" placeholder="URL (shown as the text above, never the raw link)" value="${esc(b.url)}" oninput="state.blocks[${i}].url=this.value">
-      <p style="font-size:11px;color:var(--text-muted);margin-top:6px;"><i class="fa-solid fa-circle-info"></i> Public page only — hidden inside the Content Hub app.</p>`;
-    default: return "";
-  }
-}
-window.updateFaqBlock = function (i, raw) {
-  state.blocks[i].items = raw.split("\n").filter(Boolean).map(line => {
-    const [q, ...rest] = line.split("|");
-    return { q: (q || "").trim(), a: rest.join("|").trim() };
-  });
-};
-window.addBlock = function (type) {
-  const defaults = {
-    heading: { type: "heading", level: 2, text: "" },
-    paragraph: { type: "paragraph", text: "" },
-    tip: { type: "tip", tone: "info", text: "" },
-    image: { type: "image", url: "", alt: "", size: "full" },
-    table: { type: "table", csv: "" },
-    faq: { type: "faq", items: [] },
-    cta: { type: "cta", text: "", buttonLabel: "", href: "" },
-    downloadButton: { type: "downloadButton", color: "#5B5BF6", heading: "", url: "" },
-    alsoRead: { type: "alsoRead", color: "#4F46E5", text: "", url: "" }
-  };
-  state.blocks.push(defaults[type]);
-  renderBlockEditor();
-};
-window.removeBlock = function (i) { state.blocks.splice(i, 1); renderBlockEditor(); };
-window.moveBlock = function (i, dir) {
-  const j = i + dir;
-  if (j < 0 || j >= state.blocks.length) return;
-  [state.blocks[i], state.blocks[j]] = [state.blocks[j], state.blocks[i]];
-  renderBlockEditor();
-};
-const BLOCK_LABELS = { heading: "Heading", paragraph: "Paragraph", tip: "Tip Box", image: "Image", table: "Table", faq: "FAQ Block", cta: "CTA Block", downloadButton: "Download Button", alsoRead: "Also Read" };
-function renderBlockEditor() {
-  const host = $("blockEditorList");
-  if (!host) return;
-  host.innerHTML = state.blocks.map((b, i) => `
-    <div class="block-editor-item">
-      <div class="block-editor-head">
-        <span class="block-type-label">${BLOCK_LABELS[b.type] || b.type}</span>
-        <div style="display:flex;gap:4px;">
-          <button class="block-icon-btn" onclick="moveBlock(${i},-1)" title="Move up" ${i===0?"disabled":""}><i class="fa-solid fa-arrow-up"></i></button>
-          <button class="block-icon-btn" onclick="moveBlock(${i},1)" title="Move down" ${i===state.blocks.length-1?"disabled":""}><i class="fa-solid fa-arrow-down"></i></button>
-          <button class="block-icon-btn danger" onclick="removeBlock(${i})" title="Delete"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>
-      ${blockFieldsHTML(b, i)}
-    </div>`).join("") || `<div style="color:var(--text-muted);font-size:12.5px;padding:12px 0;">No blocks yet — add one below.</div>`;
-}
-
-window.openContentEditor = function (id) {
-  state.editingId = id;
-  const c = id ? state.content.find(x => x.id === id) : null;
-  state.blocks = (c?.data?.blocks ? JSON.parse(JSON.stringify(c.data.blocks)) : []);
-
-  openModal(`
-    <div class="modal-box" style="max-width:720px;">
-      <div class="modal-title">${id ? "Edit content" : "New content"} <button class="modal-close" onclick="closeModal()">&times;</button></div>
-      <div class="modal-body" style="margin-top:0;">
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="cfTitle" value="${esc(c?.title)}"></div>
-          <div class="form-group"><label class="form-label">Slug</label><input class="form-input" id="cfSlug" value="${esc(c?.slug)}" placeholder="auto from title if blank"></div>
-        </div>
-        <div class="form-row-3">
-          <div class="form-group"><label class="form-label">Type</label>
-            <select class="form-select" id="cfType">${CONTENT_TYPES.map(([v,l]) => `<option value="${v}" ${c?.type===v?"selected":""}>${l}</option>`).join("")}</select>
-          </div>
-          <div class="form-group"><label class="form-label">Category</label>
-            <input class="form-input" id="cfCategory" list="cfCategoryList" value="${esc(c?.category)}">
-            <datalist id="cfCategoryList">${state.categories.map(cat => `<option value="${esc(cat.name||cat.slug)}">`).join("")}</datalist>
-          </div>
-          <div class="form-group"><label class="form-label">Author</label>
-            <input class="form-input" id="cfAuthor" list="cfAuthorList" value="${esc(c?.authorName)}">
-            <datalist id="cfAuthorList">${state.authors.map(a => `<option value="${esc(a.name)}">`).join("")}</datalist>
-          </div>
-        </div>
-        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="cfDescription" style="min-height:60px;">${esc(c?.description)}</textarea></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Thumbnail URL</label><input class="form-input" id="cfThumbnail" value="${esc(c?.thumbnailUrl)}"></div>
-          <div class="form-group"><label class="form-label">Tags (comma separated)</label><input class="form-input" id="cfTags" value="${esc((c?.tags||[]).join(", "))}"></div>
-        </div>
-        <div class="form-group"><label class="form-label">Keywords / SEO (comma separated)</label><input class="form-input" id="cfKeywords" value="${esc((c?.keywords||[]).join(", "))}"></div>
-
-        <div style="display:flex;gap:10px;margin:6px 0 18px;">
-          <button type="button" class="btn btn-toggle ${c?.featured?"on-feat":""}" id="cfFeaturedBtn" onclick="this.classList.toggle('on-feat')"><i class="fa-solid fa-star"></i> Featured</button>
-          <button type="button" class="btn btn-toggle ${c?.pinned?"on-pin":""}" id="cfPinnedBtn" onclick="this.classList.toggle('on-pin')"><i class="fa-solid fa-thumbtack"></i> Pinned</button>
-        </div>
-
-        <div class="form-panel-title" style="font-size:13px;margin-bottom:12px;">Content Blocks</div>
-        <div id="blockEditorList"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 20px;">
-          ${BLOCK_TYPES.map(([v,l]) => `<button type="button" class="btn btn-outline btn-sm" onclick="addBlock('${v}')"><i class="fa-solid fa-plus"></i> ${l}</button>`).join("")}
-        </div>
-
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Status</label>
-            <select class="form-select" id="cfStatus">
-              <option value="draft" ${c?.status==="draft"?"selected":""}>Draft</option>
-              <option value="published" ${c?.status==="published"?"selected":""}>Published</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Destinations</label>
-            <div style="display:flex;gap:16px;padding-top:10px;">
-              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;"><input type="checkbox" id="cfDestOnline" ${(c?.destinations||["online"]).includes("online")?"checked":""}> studygridprep.online</label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;"><input type="checkbox" id="cfDestInfo" ${(c?.destinations||[]).includes("info")?"checked":""}> studygridprep.info</label>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveContent()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
-      </div>
-    </div>
-  `);
-  renderBlockEditor();
-};
-
-function slugify(str) { return String(str||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
-
-window.saveContent = async function () {
-  const title = $("cfTitle").value.trim();
-  if (!title) return toast("Title is required", "warning");
-  const destinations = [];
-  if ($("cfDestOnline").checked) destinations.push("online");
-  if ($("cfDestInfo").checked) destinations.push("info");
-
-  const payload = {
-    title,
-    slug: slugify($("cfSlug").value || title),
-    type: $("cfType").value,
-    category: $("cfCategory").value.trim(),
-    authorName: $("cfAuthor").value.trim(),
-    description: $("cfDescription").value.trim(),
-    thumbnailUrl: $("cfThumbnail").value.trim(),
-    tags: $("cfTags").value.split(",").map(s => s.trim()).filter(Boolean),
-    keywords: $("cfKeywords").value.split(",").map(s => s.trim()).filter(Boolean),
-    featured: $("cfFeaturedBtn").classList.contains("on-feat"),
-    pinned: $("cfPinnedBtn").classList.contains("on-pin"),
-    status: $("cfStatus").value,
-    destinations,
-    data: { blocks: state.blocks },
-    updatedAt: serverTimestamp()
-  };
-
-  try {
-    if (state.editingId) {
-      await updateDoc(doc(db, "content", state.editingId), payload);
-      logActivity("content_update", `Updated "${title}"`);
-      toast("Content updated", "success");
-    } else {
-      payload.createdAt = serverTimestamp();
-      await addDoc(collection(db, "content"), payload);
-      logActivity(payload.status === "published" ? "content_publish" : "content_create", `${payload.status === "published" ? "Published" : "Created"} "${title}"`);
-      toast("Content saved", "success");
-    }
-    closeModal();
-  } catch (e) {
-    console.error(e);
-    toast("Save failed — check permissions", "error");
-  }
-};
 
 /* ═══════════════════════ NOTES — exam → class → chapter ═══════════════════════ */
 const EXAMS = [
@@ -1121,6 +1070,12 @@ window.confirmDeleteChapter = async function (id) {
 
 renderNotesTabs();
 </script>
+
+<!-- Shared with sub-admin.html / SGPAdmin-main.html — same Content Studio,
+     same AI generation, same block editor, same save/publish logic. This
+     file must live in the same folder as this page (and firebase.js /
+     activity-log.js one level up) for its relative imports to resolve. -->
+<script type="module" src="content-studio.js"></script>
 
 </body>
 </html>
