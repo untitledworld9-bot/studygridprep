@@ -228,6 +228,7 @@
     .btn-toggle { background: var(--bg-input); color: var(--text-muted); border: 1.5px solid var(--border); }
     .btn-toggle.on-pin { background: rgba(255,79,106,.12); color: var(--accent-red); border-color: rgba(255,79,106,.3); }
     .btn-toggle.on-feat { background: rgba(255,184,48,.12); color: var(--accent-amber); border-color: rgba(255,184,48,.3); }
+    .cs-flag-on { background: rgba(255,184,48,.12) !important; color: var(--accent-amber) !important; border-color: rgba(255,184,48,.35) !important; }
 
     /* ============================================================  TOAST / MODAL  */
     #toastContainer { position: fixed; bottom: 28px; right: 28px; display: flex; flex-direction: column; gap: 10px; z-index: 10000; }
@@ -313,6 +314,18 @@
       .cs-editor-right { position: static; }
       .cs-preview-frame-wrap { height: 480px; }
     }
+
+    /* ── Media Library (media-library.js) — shared with sub-admin.html / SGPAdmin-main.html ── */
+    .ml-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+    .ml-card { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-card); }
+    .ml-thumb { width: 100%; height: 120px; background-size: cover; background-position: center; background-color: var(--bg-card-hover); }
+    .ml-meta { padding: 8px 10px 0; }
+    .ml-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ml-size { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .ml-actions { display: flex; gap: 6px; padding: 8px 10px 10px; }
+    .ml-progress-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 12.5px; color: var(--text-secondary); }
+    .ml-progress-bar { flex: 1; height: 6px; background: var(--bg-card-hover); border-radius: 4px; overflow: hidden; }
+    .ml-progress-fill { height: 100%; background: var(--accent-cyan); transition: width 0.2s ease; }
     .coming-soon p { font-size: 13px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
 
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -380,6 +393,10 @@
     <button class="nav-btn" data-section="studio" onclick="goSection('studio')"><i class="fa-solid fa-pen-nib nav-icon"></i><span>Content Studio</span></button>
     <button class="nav-btn" data-section="notes" onclick="goSection('notes')"><i class="fa-solid fa-book-open nav-icon"></i><span>Notes</span></button>
     <button class="nav-btn" data-section="college" onclick="goSection('college')"><i class="fa-solid fa-graduation-cap nav-icon"></i><span>College Info</span></button>
+
+    <div class="nav-section-label">Media</div>
+    <button class="nav-btn" data-section="media" onclick="goSection('media')"><i class="fa-solid fa-images nav-icon"></i><span>Media Library</span></button>
+    <button class="nav-btn" data-section="taxonomy" onclick="goSection('taxonomy')"><i class="fa-solid fa-tags nav-icon"></i><span>Categories &amp; Authors</span></button>
 
     <div class="nav-section-label">People</div>
     <button class="nav-btn" data-section="users" onclick="goSection('users')"><i class="fa-solid fa-users nav-icon"></i><span>User Explore</span></button>
@@ -703,6 +720,108 @@
     </div></div>
   </section>
 
+  <!-- ───────── MEDIA LIBRARY ───────── -->
+  <section class="section" id="section-media">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Media Library</div>
+        <div class="section-subtitle">Upload and manage images used across all content</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Upload</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Folder</label>
+          <input class="form-input" id="mlUploadFolder" value="general" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Choose Images</label>
+          <input type="file" id="mlFileInput" accept="image/*" multiple onchange="mlHandleUpload(this.files)" />
+        </div>
+      </div>
+      <div id="mlUploadProgress"></div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Search</label>
+          <input class="form-input" id="mlSearch" placeholder="Search by filename or alt text…" oninput="mlRender()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Folder</label>
+          <select class="form-select" id="mlFolderFilter" onchange="mlRender()">
+            <option value="">All Folders</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="ml-grid" id="mlGrid">
+        <div class="empty-state"><div class="empty-state-text">No media uploaded yet.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── CATEGORIES & AUTHORS ───────── -->
+  <section class="section" id="section-taxonomy">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Categories &amp; Authors</div>
+        <div class="section-subtitle">Manage the taxonomy used across Content Studio</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Categories</div>
+      <div id="txCategoryForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input class="form-input" id="txCategoryName" placeholder="JEE" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Slug</label>
+            <input class="form-input" id="txCategorySlug" placeholder="jee" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="txCategorySaveBtn" onclick="txSaveCategory()">
+            <i class="fa-solid fa-plus"></i> Add Category
+          </button>
+          <button class="btn btn-outline" onclick="txResetCategoryForm()">Clear</button>
+        </div>
+      </div>
+      <div id="txCategoryList" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Authors</div>
+      <div id="txAuthorForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input class="form-input" id="txAuthorName" placeholder="Ayush" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio (optional)</label>
+            <input class="form-input" id="txAuthorBio" placeholder="Founder, Study Grid Prep" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="txAuthorSaveBtn" onclick="txSaveAuthor()">
+            <i class="fa-solid fa-plus"></i> Add Author
+          </button>
+          <button class="btn btn-outline" onclick="txResetAuthorForm()">Clear</button>
+        </div>
+      </div>
+      <div id="txAuthorList" style="margin-top:16px;"></div>
+    </div>
+  </section>
+
   <!-- ───────── USER EXPLORE (placeholder shell) ───────── -->
   <section class="section" id="section-users">
     <div class="section-header"><div><div class="section-title">User Explore</div><div class="section-subtitle">Search a user, see their last 10 content interactions</div></div></div>
@@ -734,6 +853,7 @@ import {
   collection, query, where, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc,
   onSnapshot, serverTimestamp, increment, orderBy, limit
 } from "/firebase.js";
+import { sgpLogActivity } from "../activity-log.js";
 
 const $ = (id) => document.getElementById(id);
 let CURRENT_USER = null;
@@ -794,9 +914,16 @@ async function checkContentAdminAccess(user) {
     $("adminEmailSidebar").textContent = email;
     $("adminAvatarSidebar").textContent = (user.displayName || email)[0].toUpperCase();
     $("authLoading").style.display = "none";
-    logActivity("login", "Signed in to Content Hub Admin");
+    // Required for sgpLogActivity to actually write anything — it's a
+    // silent no-op otherwise (see activity-log.js). This also matches
+    // the exact flag sub-admin-auth.js sets, so anything elsewhere that
+    // checks it behaves consistently for Content Hub Admin too.
+    window.IS_SUB_ADMIN = true;
+    sgpLogActivity("login", "Signed in to Content Hub Admin");
     bootData();
     if (window.initContentStudio) window.initContentStudio();
+    if (window.initMediaLibrary) window.initMediaLibrary();
+    if (window.initTaxonomy) window.initTaxonomy();
   } catch (e) {
     console.error(e);
     $("authLoading").style.display = "none";
@@ -810,20 +937,10 @@ onAuthStateChanged(auth, (user) => {
 });
 
 window.chaLogout = async function () {
-  logActivity("logout", "Signed out of Content Hub Admin");
+  sgpLogActivity("logout", "Signed out of Content Hub Admin");
   await signOut(auth);
   location.reload();
 };
-
-async function logActivity(action, detail) {
-  if (!CURRENT_USER) return;
-  try {
-    await addDoc(collection(db, "activityLogs"), {
-      email: CURRENT_USER.email, name: CURRENT_USER.displayName || "", role: "content-admin",
-      action, detail: detail || "", createdAt: serverTimestamp()
-    });
-  } catch (e) { /* non-fatal */ }
-}
 
 /* ═══════════════════════ NAV / THEME ═══════════════════════ */
 window.goSection = function (name) {
@@ -1041,11 +1158,11 @@ window.saveChapter = async function (id) {
   try {
     if (id) {
       await updateDoc(doc(db, "notes", id), payload);
-      logActivity("content_update", `Updated note chapter "${chapterName}"`);
+      sgpLogActivity("content_update", `Updated note chapter "${chapterName}"`);
     } else {
       payload.createdAt = serverTimestamp();
       await addDoc(collection(db, "notes"), payload);
-      logActivity("content_create", `Added note chapter "${chapterName}"`);
+      sgpLogActivity("content_create", `Added note chapter "${chapterName}"`);
     }
     toast("Chapter saved", "success");
     closeModal();
@@ -1076,6 +1193,8 @@ renderNotesTabs();
      file must live in the same folder as this page (and firebase.js /
      activity-log.js one level up) for its relative imports to resolve. -->
 <script type="module" src="content-studio.js"></script>
+<script type="module" src="media-library.js"></script>
+<script type="module" src="taxonomy.js"></script>
 
 </body>
 </html>

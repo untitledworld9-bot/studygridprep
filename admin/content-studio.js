@@ -12,7 +12,7 @@
 
 import {
   db, auth, collection, addDoc, doc, updateDoc, deleteDoc,
-  getDocs, getDoc, query, orderBy, limit, serverTimestamp
+  getDocs, getDoc, query, orderBy, limit, serverTimestamp, onSnapshot
 } from "../firebase.js";
 import { sgpLogActivity } from "../activity-log.js";
 
@@ -50,12 +50,27 @@ function slugify(text) {
 // ── state ──
 const CS = {
   allContent: [],
+  metrics: {},
   blocks: [],
   editingId: null,
   slugTouchedManually: false,
   aiGenerating: false,
   aiAbort: null
 };
+
+// Live engagement metrics (views/likes/dislikes/downloads) from the
+// Content Hub — same contentMetrics/{contentId} docs it writes to.
+// Subscribed once at module load so the list can show them regardless
+// of which admin surface (sub-admin / main admin / content hub admin)
+// this file is loaded from.
+onSnapshot(collection(db, "contentMetrics"), snap => {
+  CS.metrics = {};
+  snap.docs.forEach(d => {
+    const v = d.data();
+    CS.metrics[d.id] = { views: v.views || 0, likes: v.likes || 0, dislikes: v.dislikes || 0, downloads: v.downloads || 0 };
+  });
+  if (document.getElementById("csTableWrap")) csRenderList();
+}, () => {});
 
 // ============================================================
 //  LIST VIEW
@@ -140,26 +155,49 @@ function csRenderList() {
     <div class="table-scroll">
     <table class="admin-table" style="min-width:640px;">
       <thead><tr>
-        <th>Title</th><th>Type</th><th>Status</th><th>Destinations</th><th>Updated</th><th style="min-width:90px;">Actions</th>
+        <th>Title</th><th>Type</th><th>Status</th><th>Engagement</th><th>Destinations</th><th>Updated</th><th style="min-width:130px;">Actions</th>
       </tr></thead>
       <tbody>
-        ${rows.map(c => `
+        ${rows.map(c => {
+          const m = CS.metrics[c.id] || { views: 0, likes: 0, dislikes: 0 };
+          return `
           <tr>
             <td><strong>${escHtml(c.title || "(untitled)")}</strong><br><span style="color:var(--text-muted);font-size:12px;">/${escHtml(c.slug || "")}</span></td>
             <td>${escHtml(c.type || "-")}</td>
             <td><span class="badge badge-${c.status === "published" ? "green" : c.status === "scheduled" ? "amber" : "gray"}">${escHtml(c.status || "draft")}</span></td>
+            <td style="white-space:nowrap;font-size:12px;color:var(--text-secondary);">
+              <i class="fa-regular fa-eye"></i> ${m.views} &nbsp;
+              <i class="fa-solid fa-thumbs-up"></i> ${m.likes} &nbsp;
+              <i class="fa-solid fa-thumbs-down"></i> ${m.dislikes}
+            </td>
             <td>${(c.destinations || []).map(d => `<span class="pill">${escHtml(d)}</span>`).join(" ")}</td>
             <td>${c.updatedAt?.seconds ? new Date(c.updatedAt.seconds * 1000).toLocaleDateString() : "-"}</td>
             <td style="white-space:nowrap;">
+              <button class="btn btn-outline btn-sm ${c.pinned ? "cs-flag-on" : ""}" onclick="csToggleFlag('${c.id}','pinned',${!c.pinned})" title="Pinned" style="margin-right:4px;"><i class="fa-solid fa-thumbtack"></i></button>
+              <button class="btn btn-outline btn-sm ${c.featured ? "cs-flag-on" : ""}" onclick="csToggleFlag('${c.id}','featured',${!c.featured})" title="Featured" style="margin-right:6px;"><i class="fa-solid fa-star"></i></button>
               <button class="btn btn-outline btn-sm" onclick="csEditContent('${c.id}')" style="margin-right:6px;"><i class="fa-solid fa-pen"></i></button>
               <button class="btn btn-outline btn-sm" onclick="csDeleteContent('${c.id}')"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
-        `).join("")}
+        `;}).join("")}
       </tbody>
     </table>
     </div>`;
 }
+
+async function csToggleFlag(id, field, value) {
+  try {
+    await updateDoc(doc(db, COLL_CONTENT, id), { [field]: value });
+    const item = CS.allContent.find(c => c.id === id);
+    if (item) item[field] = value;
+    csRenderList();
+    csToast(`${field === "pinned" ? "Pinned" : "Featured"} ${value ? "on" : "off"}`, "success");
+    sgpLogActivity("content_update", `Set ${field}=${value} on "${item?.title || id}"`);
+  } catch (e) {
+    csToast("Couldn't update — check permissions", "error");
+  }
+}
+window.csToggleFlag = csToggleFlag;
 
 // ============================================================
 //  EDITOR VIEW — open / new / edit
