@@ -712,12 +712,19 @@
 
   <!-- ───────── COLLEGE INFO (placeholder shell) ───────── -->
   <section class="section" id="section-college">
-    <div class="section-header"><div><div class="section-title">College Info</div><div class="section-subtitle">Placements, cutoffs, fee structure — searchable college pages</div></div></div>
-    <div class="form-panel"><div class="coming-soon">
-      <i class="fa-solid fa-graduation-cap"></i>
-      <h3>College Info — next build</h3>
-      <p>College name/tags/SEO + placements/cutoffs/fee-structure fields, with a searchable public panel. Coming as its own pass.</p>
-    </div></div>
+    <div class="section-header">
+      <div>
+        <div class="section-title">College Info</div>
+        <div class="section-subtitle">Placements, cutoffs, fee structure — searchable college pages</div>
+      </div>
+      <button class="btn btn-primary" onclick="openCollegeEditor(null)"><i class="fa-solid fa-plus"></i> New College</button>
+    </div>
+
+    <div class="form-panel">
+      <input class="form-input" id="collegeSearch" placeholder="Search by college name or tag…" oninput="renderCollegeList()">
+    </div>
+
+    <div id="collegeList"></div>
   </section>
 
   <!-- ───────── MEDIA LIBRARY ───────── -->
@@ -822,24 +829,43 @@
     </div>
   </section>
 
-  <!-- ───────── USER EXPLORE (placeholder shell) ───────── -->
+  <!-- ───────── USER EXPLORE ───────── -->
   <section class="section" id="section-users">
-    <div class="section-header"><div><div class="section-title">User Explore</div><div class="section-subtitle">Search a user, see their last 10 content interactions</div></div></div>
-    <div class="form-panel"><div class="coming-soon">
-      <i class="fa-solid fa-users"></i>
-      <h3>User Explore — next build</h3>
-      <p>Heads up: today the Content Hub tracks saved/liked/disliked <em>locally on each device</em>, not per-account in Firestore — so "last 10 views/likes" per user needs a small schema addition (a per-user interactions log) before this page can show real data. I'll build both together.</p>
-    </div></div>
+    <div class="section-header">
+      <div>
+        <div class="section-title">User Explore</div>
+        <div class="section-subtitle">Search a user and see what's known about their Content Hub activity</div>
+      </div>
+      <span class="live-dot" id="onlineCountBadge">— online</span>
+    </div>
+
+    <div class="form-panel">
+      <input class="form-input" id="userSearch" placeholder="Search by name or email…" oninput="renderUserResults()">
+    </div>
+
+    <div class="form-panel">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+        <i class="fa-solid fa-circle-info"></i> Saved/liked/disliked items are currently tracked locally on each person's device, not per-account in Firestore — so per-user interaction history isn't available yet. Views/likes/dislikes you see elsewhere in this panel are aggregate counts per piece of content, not per user.
+      </div>
+    </div>
+
+    <div id="userResultsList"></div>
   </section>
 
-  <!-- ───────── ISSUES (placeholder shell) ───────── -->
+  <!-- ───────── ISSUES ───────── -->
   <section class="section" id="section-issues">
-    <div class="section-header"><div><div class="section-title">Issues</div><div class="section-subtitle">Reports filed from the Content Hub's "Report an issue" button</div></div></div>
-    <div class="form-panel"><div class="coming-soon">
-      <i class="fa-solid fa-flag"></i>
-      <h3>Issues board — next build</h3>
-      <p>Sequential report list, a detail popup (reason + admin note), mark-resolved with a notification back to the reporter. Coming as its own pass.</p>
-    </div></div>
+    <div class="section-header">
+      <div>
+        <div class="section-title">Issues</div>
+        <div class="section-subtitle">Reports filed from the Content Hub's "Report an issue" button</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <input class="form-input" id="issueSearch" placeholder="Search by content title…" oninput="renderIssuesList()">
+    </div>
+
+    <div id="issuesList"></div>
   </section>
 
 </main>
@@ -865,9 +891,13 @@ const state = {
   authors: [],
   metrics: {},
   reports: [],
+  allReports: [],
+  collegeInfo: [],
+  users: [],
   notes: [],
   editingId: null,
-  blocks: []
+  blocks: [],
+  editingCollegeId: null
 };
 
 /* ═══════════════════════ AUTH ═══════════════════════ */
@@ -997,13 +1027,26 @@ function bootData() {
     state.notes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     if (typeof renderChapterList === "function") renderChapterList();
   });
-  onSnapshot(query(collection(db, "contentReports"), where("status", "==", "pending")), snap => {
-    state.reports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  onSnapshot(query(collection(db, "contentReports")), snap => {
+    state.allReports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.reports = state.allReports.filter(r => r.status === "pending");
     $("statOpenIssues").textContent = state.reports.length;
     const badge = $("issuesBadge");
     if (state.reports.length) { badge.style.display = "inline-block"; badge.textContent = state.reports.length; }
     else badge.style.display = "none";
+    renderIssuesList();
   });
+  onSnapshot(query(collection(db, "collegeInfo")), snap => {
+    state.collegeInfo = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCollegeList();
+  });
+  onSnapshot(query(collection(db, "users")), snap => {
+    state.users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderUserResults();
+  }, () => {});
+  onSnapshot(query(collection(db, "liveUsers")), snap => {
+    $("onlineCountBadge").textContent = `${snap.size} online`;
+  }, () => {});
 }
 
 function metricFor(id) { return state.metrics[id] || { views: 0, downloads: 0, likes: 0, dislikes: 0, reports: 0 }; }
@@ -1186,6 +1229,231 @@ window.confirmDeleteChapter = async function (id) {
 };
 
 renderNotesTabs();
+/* ═══════════════════════ COLLEGE INFO ═══════════════════════ */
+window.renderCollegeList = function () {
+  const host = $("collegeList");
+  if (!host) return;
+  const term = ($("collegeSearch")?.value || "").trim().toLowerCase();
+  const list = (state.collegeInfo || []).filter(c => !term || `${c.name} ${(c.tags || []).join(" ")}`.toLowerCase().includes(term));
+  if (!list.length) {
+    host.innerHTML = `<div class="form-panel"><div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="empty-state-text">No colleges added yet.</div></div></div>`;
+    return;
+  }
+  host.innerHTML = `<div class="form-panel"><div id="collegeRows"></div></div>`;
+  $("collegeRows").innerHTML = list.map(c => `
+    <div class="tx-row">
+      <div class="tx-row-main">
+        <div class="tx-row-info">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="pill" style="background:${c.status === "published" ? "rgba(0,229,160,.1)" : "rgba(255,184,48,.1)"};color:${c.status === "published" ? "var(--accent-green)" : "var(--accent-amber)"};">${esc(c.status || "draft")}</span>
+          </div>
+          <div class="tx-row-title">${esc(c.name || "Untitled college")}</div>
+          <div class="content-metrics-row">${(c.tags || []).slice(0, 5).map(t => `<span class="content-metric">#${esc(t)}</span>`).join("")}</div>
+        </div>
+      </div>
+      <div class="tx-row-actions">
+        <button class="btn btn-outline btn-sm" onclick="openCollegeEditor('${c.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCollege('${c.id}','${esc(c.name || "this college")}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`).join("");
+};
+
+window.openCollegeEditor = function (id) {
+  state.editingCollegeId = id;
+  const c = id ? state.collegeInfo.find(x => x.id === id) : null;
+  openModal(`
+    <div class="modal-box" style="max-width:640px;">
+      <div class="modal-title">${id ? "Edit college" : "New college"} <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body" style="margin-top:0;">
+        <div class="form-group"><label class="form-label">College name</label><input class="form-input" id="clgName" value="${esc(c?.name)}"></div>
+        <div class="form-group"><label class="form-label">Tags (comma separated — drives search)</label><input class="form-input" id="clgTags" value="${esc((c?.tags || []).join(", "))}" placeholder="IIT, Delhi, Engineering"></div>
+
+        <div class="form-panel-title" style="font-size:13px;margin-top:6px;">SEO</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Meta title</label><input class="form-input" id="clgMetaTitle" value="${esc(c?.seo?.metaTitle)}"></div>
+          <div class="form-group"><label class="form-label">Meta keywords</label><input class="form-input" id="clgKeywords" value="${esc((c?.seo?.keywords || []).join(", "))}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Meta description</label><textarea class="form-textarea" id="clgMetaDesc" rows="2">${esc(c?.seo?.metaDescription)}</textarea></div>
+
+        <div class="form-panel-title" style="font-size:13px;">Placements</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Average package</label><input class="form-input" id="clgAvgPkg" value="${esc(c?.placements?.avgPackage)}" placeholder="₹12 LPA"></div>
+          <div class="form-group"><label class="form-label">Highest package</label><input class="form-input" id="clgHighPkg" value="${esc(c?.placements?.highestPackage)}" placeholder="₹52 LPA"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Top recruiters (comma separated)</label><input class="form-input" id="clgRecruiters" value="${esc((c?.placements?.topRecruiters || []).join(", "))}"></div>
+
+        <div class="form-panel-title" style="font-size:13px;">Cutoffs <span class="pill">CSV — Course,Category,Rank</span></div>
+        <div class="form-group"><textarea class="form-textarea" id="clgCutoffs" rows="3" placeholder="Course,Category,Closing Rank&#10;CSE,General,150&#10;ECE,OBC,890">${esc(c?.cutoffsCsv)}</textarea></div>
+
+        <div class="form-panel-title" style="font-size:13px;">Fee Structure <span class="pill">CSV — Course,Fee</span></div>
+        <div class="form-group"><textarea class="form-textarea" id="clgFees" rows="3" placeholder="Course,Annual Fee&#10;BTech,220000">${esc(c?.feesCsv)}</textarea></div>
+
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="clgStatus">
+            <option value="draft" ${c?.status === "draft" ? "selected" : ""}>Draft</option>
+            <option value="published" ${c?.status === "published" ? "selected" : ""}>Published</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCollege()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+      </div>
+    </div>
+  `);
+};
+
+window.saveCollege = async function () {
+  const name = $("clgName").value.trim();
+  if (!name) return toast("College name is required", "warning");
+  const payload = {
+    name,
+    tags: $("clgTags").value.split(",").map(s => s.trim()).filter(Boolean),
+    seo: {
+      metaTitle: $("clgMetaTitle").value.trim(),
+      metaDescription: $("clgMetaDesc").value.trim(),
+      keywords: $("clgKeywords").value.split(",").map(s => s.trim()).filter(Boolean)
+    },
+    placements: {
+      avgPackage: $("clgAvgPkg").value.trim(),
+      highestPackage: $("clgHighPkg").value.trim(),
+      topRecruiters: $("clgRecruiters").value.split(",").map(s => s.trim()).filter(Boolean)
+    },
+    cutoffsCsv: $("clgCutoffs").value,
+    feesCsv: $("clgFees").value,
+    status: $("clgStatus").value,
+    updatedAt: serverTimestamp()
+  };
+  try {
+    if (state.editingCollegeId) {
+      await updateDoc(doc(db, "collegeInfo", state.editingCollegeId), payload);
+      sgpLogActivity("content_update", `Updated college "${name}"`);
+    } else {
+      payload.createdAt = serverTimestamp();
+      await addDoc(collection(db, "collegeInfo"), payload);
+      sgpLogActivity("content_create", `Added college "${name}"`);
+    }
+    toast("College saved", "success");
+    closeModal();
+  } catch (e) { console.error(e); toast("Save failed — check permissions", "error"); }
+};
+window.deleteCollege = function (id, name) {
+  openModal(`
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-title">Delete college? <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body">This will permanently remove <strong>${esc(name)}</strong>.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteCollege('${id}')">Delete</button>
+      </div>
+    </div>
+  `);
+};
+window.confirmDeleteCollege = async function (id) {
+  try { await deleteDoc(doc(db, "collegeInfo", id)); toast("College deleted", "success"); closeModal(); }
+  catch (e) { toast("Delete failed", "error"); }
+};
+
+/* ═══════════════════════ USER EXPLORE ═══════════════════════ */
+window.renderUserResults = function () {
+  const host = $("userResultsList");
+  if (!host) return;
+  const term = ($("userSearch")?.value || "").trim().toLowerCase();
+  if (!term) { host.innerHTML = ""; return; }
+  const list = (state.users || []).filter(u => `${u.name || ""} ${u.email || ""}`.toLowerCase().includes(term)).slice(0, 20);
+  if (!list.length) {
+    host.innerHTML = `<div class="form-panel"><div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-user-slash"></i></div><div class="empty-state-text">No matching users.</div></div></div>`;
+    return;
+  }
+  host.innerHTML = `<div class="form-panel"><div id="userRows"></div></div>`;
+  $("userRows").innerHTML = list.map(u => `
+    <div class="tx-row">
+      <div class="tx-row-main">
+        <div class="tx-row-info">
+          <div class="tx-row-title">${esc(u.name || u.email || "Unnamed user")}</div>
+          <div class="content-metrics-row">
+            <span class="content-metric"><i class="fa-regular fa-envelope"></i> ${esc(u.email || "—")}</span>
+            ${u.streak ? `<span class="content-metric"><i class="fa-solid fa-fire"></i> ${u.streak} day streak</span>` : ""}
+          </div>
+        </div>
+      </div>
+    </div>`).join("");
+};
+
+/* ═══════════════════════ ISSUES BOARD ═══════════════════════ */
+window.renderIssuesList = function () {
+  const host = $("issuesList");
+  if (!host) return;
+  const term = ($("issueSearch")?.value || "").trim().toLowerCase();
+  const list = (state.allReports || []).filter(r => !term || (r.title || "").toLowerCase().includes(term))
+    .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  if (!list.length) {
+    host.innerHTML = `<div class="form-panel"><div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-flag"></i></div><div class="empty-state-text">No issues reported yet.</div></div></div>`;
+    return;
+  }
+  host.innerHTML = `<div class="form-panel"><div id="issueRows"></div></div>`;
+  $("issueRows").innerHTML = list.map(r => `
+    <div class="tx-row">
+      <div class="tx-row-main">
+        <div class="tx-row-info">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="pill" style="background:${r.status === "resolved" ? "rgba(0,229,160,.1)" : "rgba(255,79,106,.1)"};color:${r.status === "resolved" ? "var(--accent-green)" : "var(--accent-red)"};">${esc(r.status || "pending")}</span>
+            <span class="content-metric">${esc(r.issueType || "other")}</span>
+          </div>
+          <div class="tx-row-title">${esc(r.title || "Untitled content")}</div>
+          <div class="content-metrics-row"><span class="content-metric">${esc((r.note || "").slice(0, 80))}${(r.note || "").length > 80 ? "…" : ""}</span></div>
+        </div>
+      </div>
+      <div class="tx-row-actions">
+        <button class="btn btn-outline btn-sm" onclick="openIssueDetail('${r.id}')"><i class="fa-solid fa-eye"></i> View</button>
+      </div>
+    </div>`).join("");
+};
+
+window.openIssueDetail = function (id) {
+  const r = state.allReports.find(x => x.id === id);
+  if (!r) return;
+  openModal(`
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-title">Issue detail <button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body" style="margin-top:0;">
+        <div class="form-group"><label class="form-label">Content</label><div style="font-weight:700;">${esc(r.title || "Untitled")}</div></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Issue type</label><div>${esc(r.issueType || "other")}</div></div>
+          <div class="form-group"><label class="form-label">Status</label><div>${esc(r.status || "pending")}</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason</label><div style="white-space:pre-wrap;">${esc(r.note || "—")}</div></div>
+        ${r.pageUrl ? `<div class="form-group"><label class="form-label">Page</label><a href="${esc(r.pageUrl)}" target="_blank" style="color:var(--accent-cyan);word-break:break-all;">${esc(r.pageUrl)}</a></div>` : ""}
+        ${r.adminNote ? `<div class="form-group"><label class="form-label">Admin note (previous)</label><div>${esc(r.adminNote)}</div></div>` : ""}
+        <div class="form-group"><label class="form-label">Admin note</label><textarea class="form-textarea" id="issueAdminNote" rows="2" placeholder="What you did / why resolved…"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        ${r.status !== "resolved" ? `<button class="btn btn-primary" onclick="resolveIssue('${r.id}')" style="background:var(--accent-green);"><i class="fa-solid fa-circle-check"></i> Mark Resolved</button>` : ""}
+      </div>
+    </div>
+  `);
+};
+
+window.resolveIssue = async function (id) {
+  const r = state.allReports.find(x => x.id === id);
+  const adminNote = $("issueAdminNote")?.value.trim() || "";
+  try {
+    await updateDoc(doc(db, "contentReports", id), { status: "resolved", adminNote, resolvedAt: serverTimestamp() });
+    if (r?.reporterName) {
+      await addDoc(collection(db, "notifications"), {
+        recipientName: r.reporterName,
+        title: "Your report was resolved",
+        message: `Thanks for flagging "${r.title || "content"}" — it's been reviewed and resolved.${adminNote ? " Note: " + adminNote : ""}`,
+        read: false, createdAt: serverTimestamp()
+      });
+    }
+    sgpLogActivity("report_resolved", `Resolved report on "${r?.title || id}"`);
+    toast("Marked resolved", "success");
+    closeModal();
+  } catch (e) { console.error(e); toast("Couldn't resolve — check permissions", "error"); }
+};
+
 </script>
 
 <!-- Shared with sub-admin.html / SGPAdmin-main.html — same Content Studio,
