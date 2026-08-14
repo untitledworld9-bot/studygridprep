@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Colleges - Study Grid Prep</title>
+
+<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+
+<script>
+(function(){
+  if(!localStorage.getItem("userName")){
+    document.documentElement.style.display='none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.getElementById("metaThemeColor");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+  }
+  applyTheme(resolveTheme());
+})();
+</script>
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root{
+  --bg:#F0F2F8; --surface:#FFFFFF; --surface2:#F4F6FB; --border:#E2E8F2;
+  --text:#0F172A; --text2:#5A6785; --text3:#94A3B8;
+  --accent:#5B5BF6; --header-bg:rgba(255,255,255,0.97); --nav-bg:rgba(255,255,255,0.99);
+  --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
+}
+[data-theme="dark"]{
+  --bg:#0D1120; --surface:#151E32; --surface2:#1A2440; --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE; --text2:#8B9EC8; --text3:#3D5080;
+  --header-bg:rgba(13,17,32,0.97); --nav-bg:rgba(13,17,32,0.98);
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+html{ background:var(--bg); overflow-x:hidden; }
+body{ background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:84px; user-select:none; -webkit-user-select:none; touch-action:pan-y; }
+::-webkit-scrollbar{ display:none; } * { scrollbar-width:none; }
+button{ font-family:inherit; } a{ color:inherit; text-decoration:none; }
+
+header{ display:flex; align-items:center; gap:10px; padding:14px 18px 12px; background:var(--header-bg); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:500; backdrop-filter:blur(20px); box-shadow:var(--shadow-sm); }
+.back-btn{ width:38px; height:38px; border-radius:12px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); font-size:15px; cursor:pointer; }
+.back-btn:active{ transform:scale(0.9); }
+.hdr-title{ font-size:16.5px; font-weight:800; }
+.hdr-sub{ font-size:11px; color:var(--text2); margin-top:1px; }
+
+.search-wrap{ padding:14px 18px 0; }
+.search-box{ display:flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:11px 14px; }
+.search-box:focus-within{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,91,246,0.10); }
+.search-box i{ color:var(--text3); font-size:14px; }
+.search-box input{ flex:1; min-width:0; border:none; outline:none; background:transparent; font-size:13.5px; color:var(--text); font-weight:500; }
+
+.section{ padding:18px 18px 0; }
+.section-title{ font-size:14.5px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.section-title i{ color:var(--accent); }
+
+.college-row{ display:flex; align-items:center; gap:12px; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:13px; margin-bottom:10px; cursor:pointer; transition:transform .15s ease; }
+.college-row:active{ transform:scale(0.98); }
+.college-logo{ width:48px; height:48px; border-radius:13px; flex-shrink:0; overflow:hidden; background:rgba(234,88,12,0.1); border:1.5px solid rgba(234,88,12,0.2); display:flex; align-items:center; justify-content:center; color:#EA580C; font-size:18px; }
+.college-logo img{ width:100%; height:100%; object-fit:cover; }
+.college-body{ flex:1; min-width:0; }
+.college-name{ font-size:13.5px; font-weight:700; }
+.college-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-top:5px; }
+.college-tag{ font-size:9.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+
+.empty{ text-align:center; padding:40px 20px; color:var(--text3); }
+.empty i{ font-size:28px; margin-bottom:10px; opacity:.5; }
+
+.pwa-bottom-nav{ position:fixed; bottom:0; left:0; width:100%; height:64px; background:var(--nav-bg); backdrop-filter:blur(24px); display:flex; justify-content:space-around; align-items:center; z-index:10002; border-top:1px solid var(--border); }
+.nav-tab{ display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text3); font-size:10px; gap:3px; padding:5px 8px; border-radius:14px; min-width:52px; flex:1; cursor:pointer; border:none; background:none; }
+.nav-tab i{ font-size:20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="location.href='content-hub.html'"><i class="fa-solid fa-arrow-left"></i></button>
+  <div>
+    <div class="hdr-title">Colleges</div>
+    <div class="hdr-sub">Fees · Cutoffs · Placements · Reviews</div>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Search college name or tag…">
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title"><i class="fa-solid fa-graduation-cap"></i> <span id="listTitle">All colleges</span></div>
+  <div id="collegeList"></div>
+</div>
+
+<div class="pwa-bottom-nav">
+  <button class="nav-tab" onclick="location.href='dashboard-home.html'"><i class="fa-solid fa-house"></i><span>Home</span></button>
+  <button class="nav-tab" onclick="location.href='mainleaderboard.html'"><i class="fa-solid fa-trophy"></i><span>Leaderboard</span></button>
+  <button class="nav-tab" onclick="location.href='profile.html'"><i class="fa-regular fa-circle-user"></i><span>Profile</span></button>
+</div>
+
+<script type="module">
+async function loadFirebase(){
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  for (const src of candidates) { try { return await import(src); } catch (e) {} }
+  throw new Error('firebase.js not found');
+}
+const { db, collection, query, where, onSnapshot } = await loadFirebase();
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+let allColleges = [];
+
+function collegeRowHTML(c){
+  return `<div class="college-row" data-id="${c.id}">
+    <div class="college-logo">${c.logoUrl ? `<img src="${esc(c.logoUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-graduation-cap\\'></i>'">` : `<i class="fa-solid fa-graduation-cap"></i>`}</div>
+    <div class="college-body">
+      <div class="college-name">${esc(c.name || 'Untitled college')}</div>
+      <div class="college-tags">${(c.tags||[]).slice(0,4).map(t=>`<span class="college-tag">${esc(t)}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+function render(){
+  const term = $("searchInput").value.trim().toLowerCase();
+  const list = term ? allColleges.filter(c => `${c.name} ${(c.tags||[]).join(' ')}`.toLowerCase().includes(term)) : allColleges;
+  $("listTitle").textContent = term ? `${list.length} result${list.length===1?'':'s'}` : 'All colleges';
+  if(!list.length){
+    $("collegeList").innerHTML = `<div class="empty"><i class="fa-regular fa-folder-open"></i><div>No colleges found</div></div>`;
+    return;
+  }
+  $("collegeList").innerHTML = list.map(collegeRowHTML).join('');
+  $("collegeList").querySelectorAll('[data-id]').forEach(el => {
+    el.onclick = () => location.href = `college.html?id=${encodeURIComponent(el.dataset.id)}`;
+  });
+}
+
+let searchDebounce;
+$("searchInput").addEventListener("input", () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(render, 200);
+});
+
+onSnapshot(query(collection(db,'collegeInfo'), where('status','==','published')), snap => {
+  allColleges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+});
+</script>
+
+</body>
+</html>
