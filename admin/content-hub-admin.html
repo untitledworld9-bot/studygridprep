@@ -897,7 +897,8 @@ const state = {
   notes: [],
   editingId: null,
   blocks: [],
-  editingCollegeId: null
+  editingCollegeId: null,
+  collegeOverviewBlocks: []
 };
 
 /* ═══════════════════════ AUTH ═══════════════════════ */
@@ -1243,6 +1244,7 @@ window.renderCollegeList = function () {
   $("collegeRows").innerHTML = list.map(c => `
     <div class="tx-row">
       <div class="tx-row-main">
+        <div class="content-thumb">${c.logoUrl ? `<img src="${esc(c.logoUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-graduation-cap\\'></i>'">` : `<i class="fa-solid fa-graduation-cap"></i>`}</div>
         <div class="tx-row-info">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <span class="pill" style="background:${c.status === "published" ? "rgba(0,229,160,.1)" : "rgba(255,184,48,.1)"};color:${c.status === "published" ? "var(--accent-green)" : "var(--accent-amber)"};">${esc(c.status || "draft")}</span>
@@ -1261,12 +1263,29 @@ window.renderCollegeList = function () {
 window.openCollegeEditor = function (id) {
   state.editingCollegeId = id;
   const c = id ? state.collegeInfo.find(x => x.id === id) : null;
+  state.collegeOverviewBlocks = c?.overviewBlocks ? JSON.parse(JSON.stringify(c.overviewBlocks)) : [];
   openModal(`
     <div class="modal-box" style="max-width:640px;">
       <div class="modal-title">${id ? "Edit college" : "New college"} <button class="modal-close" onclick="closeModal()">&times;</button></div>
       <div class="modal-body" style="margin-top:0;">
-        <div class="form-group"><label class="form-label">College name</label><input class="form-input" id="clgName" value="${esc(c?.name)}"></div>
-        <div class="form-group"><label class="form-label">Tags (comma separated — drives search)</label><input class="form-input" id="clgTags" value="${esc((c?.tags || []).join(", "))}" placeholder="IIT, Delhi, Engineering"></div>
+        <div class="form-group"><label class="form-label">College name</label><input class="form-input" id="clgName" value="${esc(c?.name)}" placeholder="IIT Madras"></div>
+        <div class="form-group"><label class="form-label">Logo / cover image URL</label><input class="form-input" id="clgLogoUrl" value="${esc(c?.logoUrl)}" placeholder="https://…"></div>
+        <div class="form-group"><label class="form-label">Tags (comma separated — drives search)</label><input class="form-input" id="clgTags" value="${esc((c?.tags || []).join(", "))}" placeholder="IIT, Madras, Engineering"></div>
+
+        <div class="form-panel">
+          <div class="form-panel-title" style="font-size:13px;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Assist <span class="pill">Groq</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+            <i class="fa-solid fa-circle-info"></i> Uses the same AI as Content Studio — a language model, not a live web search, so double-check anything time-sensitive (cutoffs, fees) before publishing.
+          </div>
+          <div class="cs-ai-log" id="clgAiLog"></div>
+          <textarea class="form-textarea" id="clgAiPrompt" rows="2" style="margin-top:10px;" placeholder="e.g. IIT Madras — overview, admission process, campus life">${c?.name ? "" : ""}</textarea>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <button class="btn btn-primary" id="clgAiSendBtn" onclick="clgAiGenerate()"><i class="fa-solid fa-paper-plane"></i> Generate</button>
+            <button class="btn btn-outline" id="clgAiStopBtn" onclick="clgAiStop()" disabled><i class="fa-solid fa-stop"></i> Stop</button>
+          </div>
+        </div>
 
         <div class="form-panel-title" style="font-size:13px;margin-top:6px;">SEO</div>
         <div class="form-row">
@@ -1274,6 +1293,9 @@ window.openCollegeEditor = function (id) {
           <div class="form-group"><label class="form-label">Meta keywords</label><input class="form-input" id="clgKeywords" value="${esc((c?.seo?.keywords || []).join(", "))}"></div>
         </div>
         <div class="form-group"><label class="form-label">Meta description</label><textarea class="form-textarea" id="clgMetaDesc" rows="2">${esc(c?.seo?.metaDescription)}</textarea></div>
+
+        <div class="form-panel-title" style="font-size:13px;">Overview <span class="pill" id="clgOverviewCount">${state.collegeOverviewBlocks.length} blocks</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Filled in by AI Assist above (or leave empty and just use the fields below).</div>
 
         <div class="form-panel-title" style="font-size:13px;">Placements</div>
         <div class="form-row">
@@ -1303,11 +1325,81 @@ window.openCollegeEditor = function (id) {
   `);
 };
 
+/* ── College AI Assist — same Groq worker Content Studio uses, just asked
+   for a "collegeArticle" and mapped onto the college's own fields. ── */
+const COLLEGE_AI_WORKER_URL = "https://sgp-content-ai.untitledworld9.workers.dev";
+let clgAiAbort = null;
+function clgAiLogLine(text, cls) {
+  const log = $("clgAiLog");
+  if (!log) return;
+  const line = document.createElement("div");
+  line.className = "cs-ai-line" + (cls ? " " + cls : "");
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+window.clgAiStop = function () { if (clgAiAbort) clgAiAbort.abort(); };
+window.clgAiGenerate = async function () {
+  const nameField = $("clgName");
+  const promptField = $("clgAiPrompt");
+  const name = nameField.value.trim();
+  const extra = promptField.value.trim();
+  if (!name) return toast("Enter the college name first", "warning");
+  const prompt = extra || `${name} — overview, admission process, campus, and what makes it worth considering`;
+
+  $("clgAiLog").innerHTML = "";
+  clgAiLogLine(`"${prompt}"`, "cs-ai-prompt-echo");
+  $("clgAiSendBtn").setAttribute("disabled", "true");
+  $("clgAiStopBtn").removeAttribute("disabled");
+  clgAiAbort = new AbortController();
+
+  try {
+    const res = await fetch(COLLEGE_AI_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: clgAiAbort.signal,
+      body: JSON.stringify({ prompt, action: "generate", contentType: "collegeArticle", existingTitle: name, existingBlocks: [] })
+    });
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    const data = await res.json();
+
+    if (data.seo) {
+      if (data.seo.metaTitle) $("clgMetaTitle").value = data.seo.metaTitle;
+      if (data.seo.metaDescription) $("clgMetaDesc").value = data.seo.metaDescription;
+      if (data.seo.keywords) $("clgKeywords").value = data.seo.keywords.join(", ");
+    }
+    if (Array.isArray(data.blocks)) {
+      state.collegeOverviewBlocks = data.blocks;
+      $("clgOverviewCount").textContent = `${data.blocks.length} blocks`;
+      // Heuristic: pull any table blocks into the Cutoffs/Fees fields as a
+      // starting point — a table whose header mentions "fee" goes to Fees,
+      // everything else goes to Cutoffs. Always double-check before publishing.
+      data.blocks.filter(b => b.type === "table" && b.csv).forEach(b => {
+        const header = (b.csv.split("\n")[0] || "").toLowerCase();
+        if (header.includes("fee") && !$("clgFees").value.trim()) $("clgFees").value = b.csv;
+        else if (!$("clgCutoffs").value.trim()) $("clgCutoffs").value = b.csv;
+      });
+      const imgBlock = data.blocks.find(b => b.type === "image" && b.url);
+      if (imgBlock && !$("clgLogoUrl").value.trim()) $("clgLogoUrl").value = imgBlock.url;
+      clgAiLogLine(`Filled overview (${data.blocks.length} sections) + SEO. Review before publishing.`, "cs-ai-done");
+    } else {
+      clgAiLogLine("No content returned.", "cs-ai-error");
+    }
+  } catch (e) {
+    clgAiLogLine(e.name === "AbortError" ? "Stopped." : `Error: ${e.message}`, e.name === "AbortError" ? "cs-ai-stop" : "cs-ai-error");
+  } finally {
+    $("clgAiSendBtn").removeAttribute("disabled");
+    $("clgAiStopBtn").setAttribute("disabled", "true");
+    clgAiAbort = null;
+  }
+};
+
 window.saveCollege = async function () {
   const name = $("clgName").value.trim();
   if (!name) return toast("College name is required", "warning");
   const payload = {
     name,
+    logoUrl: $("clgLogoUrl").value.trim(),
     tags: $("clgTags").value.split(",").map(s => s.trim()).filter(Boolean),
     seo: {
       metaTitle: $("clgMetaTitle").value.trim(),
@@ -1321,6 +1413,7 @@ window.saveCollege = async function () {
     },
     cutoffsCsv: $("clgCutoffs").value,
     feesCsv: $("clgFees").value,
+    overviewBlocks: state.collegeOverviewBlocks || [],
     status: $("clgStatus").value,
     updatedAt: serverTimestamp()
   };
