@@ -216,6 +216,7 @@ header.hub-header{
 }
 .hub-quicklink:active{ transform:scale(0.96); }
 .hub-quicklink.notes{ background:linear-gradient(135deg,#16A34A,#0D9488); }
+.hub-quicklink.college{ background:linear-gradient(135deg,#EA580C,#DB2777); }
 .hub-quicklink i{ font-size:18px; margin-bottom:4px; opacity:.9; }
 .hub-quicklink span{ font-size:13.5px; font-weight:800; }
 .hub-quicklink small{ font-size:10px; opacity:.8; font-weight:600; }
@@ -598,6 +599,11 @@ body.panel-open .pwa-bottom-nav{ display:none; }
     <span>Notes</span>
     <small>Exam · Class · Chapter</small>
   </a>
+  <a class="hub-quicklink college" href="college-hub.html">
+    <i class="fa-solid fa-graduation-cap"></i>
+    <span>Colleges</span>
+    <small>Fees · Cutoffs · Reviews</small>
+  </a>
 </div>
 
 <main id="mainScroll">
@@ -747,7 +753,8 @@ const state = {
   metrics: {},
   loading: true,
   showSavedOnly: false,
-  currentPanelItem: null
+  currentPanelItem: null,
+  collegeInfo: []
 };
 
 /* ───────── Type routing (matches content-render.html slug scheme) ───────── */
@@ -1161,15 +1168,42 @@ function searchResultCardHTML(item, term){
     ${actionsRow(item)}
   </article>`;
 }
+function collegeResultCardHTML(c, term){
+  const t = (term||'').trim();
+  const bag = `${c.name} ${(c.tags||[]).join(' ')}`.toLowerCase();
+  let snippet = escapeHtml((c.seo?.metaDescription) || (c.tags||[]).join(' · ') || '');
+  if(t && bag.includes(t.toLowerCase())){
+    const re = new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig');
+    snippet = snippet.replace(re, '<mark>$1</mark>');
+  }
+  return `<article class="feed-card" data-college-id="${c.id}">
+    <div class="feed-card-top">
+      <div class="feed-card-thumb">${c.logoUrl ? `<img src="${escapeHtml(c.logoUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-graduation-cap\\'></i>'">` : '<i class="fa-solid fa-graduation-cap"></i>'}</div>
+      <div class="feed-card-body">
+        <div class="feed-card-badges"><span class="feed-type-badge">College</span></div>
+        <div class="feed-card-title">${escapeHtml(c.name || 'Untitled college')}</div>
+        <div class="search-snippet">${snippet}</div>
+      </div>
+    </div>
+    ${(c.tags||[]).length ? `<div class="feed-card-tags">${c.tags.slice(0,4).map(t=>`<span class="feed-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+  </article>`;
+}
 function renderSearchResults(){
   const term = state.searchTerm.trim();
   const items = filteredItems();
-  $('searchResultsCount').textContent = `${items.length} result${items.length===1?'':'s'}`;
-  if(!items.length){
+  const collegeMatches = (state.collegeInfo||[]).filter(c => c.status === 'published' &&
+    `${c.name} ${(c.tags||[]).join(' ')}`.toLowerCase().includes(term.toLowerCase()));
+  $('searchResultsCount').textContent = `${items.length + collegeMatches.length} result${(items.length+collegeMatches.length)===1?'':'s'}`;
+  if(!items.length && !collegeMatches.length){
     $('searchResultsList').innerHTML = `<div class="hub-empty"><i class="fa-regular fa-face-frown"></i><div class="hub-empty-title">No results for "${escapeHtml(term)}"</div><div class="hub-empty-sub">Try a shorter or different keyword.</div></div>`;
     return;
   }
-  $('searchResultsList').innerHTML = items.slice(0, state.pageSize).map(it => searchResultCardHTML(it, term)).join('');
+  $('searchResultsList').innerHTML =
+    collegeMatches.map(c => collegeResultCardHTML(c, term)).join('') +
+    items.slice(0, state.pageSize).map(it => searchResultCardHTML(it, term)).join('');
+  $('searchResultsList').querySelectorAll('[data-college-id]').forEach(el => {
+    el.onclick = () => location.href = `college.html?id=${encodeURIComponent(el.dataset.collegeId)}`;
+  });
 }
 function renderLatest(){
   const items = filteredItems();
@@ -1328,6 +1362,11 @@ function boot(){
     state.categories = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderAll();
   }, () => renderAll());
+
+  onSnapshot(query(collection(db,'collegeInfo'), where('status','==','published')), snap => {
+    state.collegeInfo = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    if(!state.loading) renderAll();
+  }, () => {});
 
   onSnapshot(query(collection(db,'content'), where('status','==','published')), snap => {
     state.content = snap.docs.map(d => ({ id:d.id, ...d.data() }));

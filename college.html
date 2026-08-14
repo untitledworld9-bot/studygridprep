@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>College - Study Grid Prep</title>
+
+<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+
+<script>
+(function(){
+  if(!localStorage.getItem("userName")){
+    document.documentElement.style.display='none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.getElementById("metaThemeColor");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+  }
+  applyTheme(resolveTheme());
+})();
+</script>
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root{
+  --bg:#F0F2F8; --surface:#FFFFFF; --surface2:#F4F6FB; --border:#E2E8F2;
+  --text:#0F172A; --text2:#5A6785; --text3:#94A3B8; --accent:#5B5BF6; --accent2:#7C3AED;
+  --header-bg:rgba(255,255,255,0.97); --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
+}
+[data-theme="dark"]{
+  --bg:#0D1120; --surface:#151E32; --surface2:#1A2440; --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE; --text2:#8B9EC8; --text3:#3D5080;
+  --header-bg:rgba(13,17,32,0.97); --shadow-sm:0 1px 6px rgba(0,0,0,0.35);
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; background:var(--bg); }
+body{ color:var(--text); display:flex; flex-direction:column; overflow:hidden; touch-action:pan-y; }
+::-webkit-scrollbar{ display:none; } * { scrollbar-width:none; }
+a{ color:inherit; } button{ font-family:inherit; }
+
+header{ display:flex; align-items:center; gap:10px; padding:14px 16px; background:var(--header-bg); border-bottom:1px solid var(--border); flex-shrink:0; box-shadow:var(--shadow-sm); backdrop-filter:blur(20px); }
+.icon-btn{ width:36px; height:36px; border-radius:11px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); font-size:14px; cursor:pointer; flex-shrink:0; }
+.icon-btn:active{ transform:scale(0.9); }
+.hdr-title{ flex:1; min-width:0; font-size:13.5px; font-weight:700; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+
+.scroll-body{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:20px; touch-action:pan-y; }
+
+.clg-hero{ display:flex; gap:14px; align-items:center; padding:20px; background:var(--surface); border-bottom:1px solid var(--border); }
+.clg-logo{ width:64px; height:64px; border-radius:16px; flex-shrink:0; overflow:hidden; background:var(--surface2); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:24px; }
+.clg-logo img{ width:100%; height:100%; object-fit:cover; }
+.clg-name{ font-size:17px; font-weight:800; line-height:1.25; }
+.clg-fee-line{ font-size:12px; color:var(--text2); margin-top:4px; font-weight:600; }
+.clg-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+.clg-tag{ font-size:9.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+
+.clg-tabs{ display:flex; gap:6px; padding:12px 16px; overflow-x:auto; background:var(--surface); border-bottom:1px solid var(--border); touch-action:pan-x; position:sticky; top:0; z-index:5; }
+.clg-tab{ flex-shrink:0; padding:9px 16px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface2); color:var(--text2); font-size:12.5px; font-weight:700; cursor:pointer; }
+.clg-tab.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.clg-section{ display:none; padding:18px 20px; }
+.clg-section.active{ display:block; }
+.clg-section h3{ font-size:15px; font-weight:800; margin-bottom:12px; }
+.clg-body p{ font-size:13.5px; line-height:1.8; color:var(--text); margin-bottom:12px; }
+.clg-body h2, .clg-body h3{ font-size:15px; font-weight:800; margin:16px 0 8px; }
+.tip-box{ border-left:3px solid var(--accent); background:rgba(91,91,246,0.06); border-radius:10px; padding:12px 14px; margin:14px 0; }
+.clg-table{ width:100%; border-collapse:collapse; margin:12px 0; font-size:12.5px; }
+.clg-table th{ text-align:left; padding:8px; border-bottom:2px solid var(--border); font-weight:700; }
+.clg-table td{ padding:8px; border-bottom:1px solid var(--border); }
+.empty-note{ text-align:center; padding:40px 20px; color:var(--text3); font-size:13px; }
+
+.review-box{ background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:14px; margin-bottom:12px; }
+.review-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.review-name{ font-size:12.5px; font-weight:700; }
+.review-stars{ color:#F59E0B; font-size:12px; }
+.review-text{ font-size:13px; color:var(--text2); line-height:1.6; }
+.review-date{ font-size:10px; color:var(--text3); margin-top:6px; }
+.write-review{ background:var(--surface2); border:1.5px solid var(--border); border-radius:16px; padding:14px; margin-bottom:16px; }
+.star-picker{ display:flex; gap:6px; margin-bottom:10px; }
+.star-picker i{ font-size:20px; color:var(--text3); cursor:pointer; }
+.star-picker i.active{ color:#F59E0B; }
+.review-input{ width:100%; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:10px 12px; font-size:12.5px; color:var(--text); font-family:inherit; outline:none; resize:vertical; min-height:60px; }
+.review-submit{ margin-top:10px; padding:10px 16px; border-radius:12px; border:none; background:linear-gradient(135deg,#5B5BF6,#7C3AED); color:#fff; font-weight:700; font-size:12.5px; cursor:pointer; }
+
+.bottom-bar{ display:flex; align-items:center; justify-content:space-around; gap:4px; height:64px; padding:0 8px; background:var(--header-bg); border-top:1px solid var(--border); flex-shrink:0; backdrop-filter:blur(20px); }
+.bar-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; flex:1; min-width:0; padding:6px 4px; border-radius:14px; border:none; background:none; cursor:pointer; color:var(--text3); }
+.bar-btn:active{ transform:scale(0.88); }
+.bar-btn i{ font-size:18px; } .bar-btn span{ font-size:9.5px; font-weight:600; }
+.bar-btn.on{ color:var(--accent); } .bar-btn.on-good{ color:#16A34A; } .bar-btn.on-bad{ color:#EF4444; }
+.spinner{ width:24px; height:24px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .7s linear infinite; margin:60px auto; display:block; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.toast{ position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:9999; padding:12px 18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); font-size:12.5px; font-weight:600; color:var(--text); box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="icon-btn" id="backBtn"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-title" id="hdrTitle">Loading…</div>
+  <span style="width:36px;"></span>
+</header>
+
+<div class="scroll-body" id="scrollBody">
+  <div id="heroWrap"><div class="spinner"></div></div>
+
+  <div class="clg-tabs" id="clgTabs" style="display:none;">
+    <button class="clg-tab active" data-tab="info" onclick="setTab('info')">Info</button>
+    <button class="clg-tab" data-tab="courses" onclick="setTab('courses')">Courses &amp; Fees</button>
+    <button class="clg-tab" data-tab="admission" onclick="setTab('admission')">Admission</button>
+    <button class="clg-tab" data-tab="reviews" onclick="setTab('reviews')">Reviews</button>
+  </div>
+
+  <div class="clg-section active" id="tab-info">
+    <div class="clg-body" id="infoBody"></div>
+  </div>
+  <div class="clg-section" id="tab-courses">
+    <h3>Fee Structure</h3>
+    <div id="feesTableWrap"></div>
+  </div>
+  <div class="clg-section" id="tab-admission">
+    <h3>Cutoffs</h3>
+    <div id="cutoffsTableWrap"></div>
+    <h3 style="margin-top:20px;">Placements</h3>
+    <div id="placementsWrap"></div>
+  </div>
+  <div class="clg-section" id="tab-reviews">
+    <div class="write-review">
+      <div style="font-size:12.5px;font-weight:700;margin-bottom:8px;">Write a review</div>
+      <div class="star-picker" id="starPicker">
+        <i class="fa-solid fa-star" data-v="1"></i><i class="fa-solid fa-star" data-v="2"></i><i class="fa-solid fa-star" data-v="3"></i><i class="fa-solid fa-star" data-v="4"></i><i class="fa-solid fa-star" data-v="5"></i>
+      </div>
+      <textarea class="review-input" id="reviewText" placeholder="Share your experience…"></textarea>
+      <button class="review-submit" id="reviewSubmitBtn"><i class="fa-solid fa-paper-plane"></i> Post review</button>
+    </div>
+    <div id="reviewsList"></div>
+  </div>
+</div>
+
+<div class="bottom-bar" id="bottomBar"></div>
+
+<script type="module">
+async function loadFirebase(){
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  for (const src of candidates) { try { return await import(src); } catch (e) {} }
+  throw new Error('firebase.js not found');
+}
+const { db, doc, getDoc, collection, addDoc, query, where, orderBy, onSnapshot, setDoc, increment, serverTimestamp } = await loadFirebase();
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+const URL_RE = /((https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?'")\]])/gi;
+function linkify(t){ return t.replace(URL_RE, m => `<a href="${m.startsWith('http')?m:'https://'+m}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">${m}</a>`); }
+function blocksToHtml(blocks){
+  return (blocks||[]).map(b => {
+    switch(b.type){
+      case 'heading': return `<h${b.level||2}>${linkify(esc(b.text))}</h${b.level||2}>`;
+      case 'paragraph': return `<p>${linkify(esc(b.text))}</p>`;
+      case 'tip': return `<div class="tip-box"><p>${linkify(esc(b.text))}</p></div>`;
+      case 'image': return b.url ? `<img src="${esc(b.url)}" style="width:100%;border-radius:14px;margin:14px 0;" onerror="this.style.display='none'">` : '';
+      case 'table': return csvToTable(b.csv);
+      default: return '';
+    }
+  }).join('\n');
+}
+function csvToTable(csv){
+  const rows = (csv||'').split('\n').filter(Boolean).map(r => r.split(',').map(c => c.trim()));
+  if(!rows.length) return `<div class="empty-note">No data yet.</div>`;
+  const [head, ...body] = rows;
+  return `<table class="clg-table"><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+const id = new URLSearchParams(location.search).get('id');
+$("backBtn").onclick = () => { location.href = 'content-hub.html'; };
+if(!id){ $("heroWrap").innerHTML = `<div class="empty-note">No college specified.</div>`; }
+else boot();
+
+let currentCollege = null;
+let currentRating = 0;
+const saved = new Set(JSON.parse(localStorage.getItem('ch_saved')||'[]'));
+const liked = new Set(JSON.parse(localStorage.getItem('ch_liked')||'[]'));
+const disliked = new Set(JSON.parse(localStorage.getItem('ch_disliked')||'[]'));
+
+async function boot(){
+  let c;
+  try{
+    const snap = await getDoc(doc(db,'collegeInfo', id));
+    if(!snap.exists()){ $("heroWrap").innerHTML = `<div class="empty-note">This college page isn't available anymore.</div>`; return; }
+    c = { id: snap.id, ...snap.data() };
+  } catch(e){ $("heroWrap").innerHTML = `<div class="empty-note">Couldn't load this page.</div>`; return; }
+  currentCollege = c;
+  $("hdrTitle").textContent = c.name || 'College';
+  document.title = (c.name || 'College') + ' - Study Grid Prep';
+
+  const feeLine = c.feesCsv ? (c.feesCsv.split('\n')[1] || '').split(',').slice(-1)[0] : '';
+  $("heroWrap").innerHTML = `
+    <div class="clg-hero">
+      <div class="clg-logo">${c.logoUrl ? `<img src="${esc(c.logoUrl)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-graduation-cap\\'></i>'">` : `<i class="fa-solid fa-graduation-cap"></i>`}</div>
+      <div style="min-width:0;">
+        <div class="clg-name">${esc(c.name || 'Untitled college')}</div>
+        ${feeLine ? `<div class="clg-fee-line"><i class="fa-solid fa-indian-rupee-sign"></i> Fees from ${esc(feeLine.trim())}</div>` : ''}
+        <div class="clg-tags">${(c.tags||[]).slice(0,5).map(t=>`<span class="clg-tag">${esc(t)}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  $("clgTabs").style.display = 'flex';
+
+  $("infoBody").innerHTML = c.overviewBlocks?.length ? blocksToHtml(c.overviewBlocks) : (c.seo?.metaDescription ? `<p>${linkify(esc(c.seo.metaDescription))}</p>` : `<div class="empty-note">No overview added yet.</div>`);
+  $("feesTableWrap").innerHTML = csvToTable(c.feesCsv);
+  $("cutoffsTableWrap").innerHTML = csvToTable(c.cutoffsCsv);
+  const p = c.placements || {};
+  $("placementsWrap").innerHTML = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
+      ${p.avgPackage ? `<div><div style="font-size:10px;color:var(--text3);">AVERAGE PACKAGE</div><div style="font-weight:800;font-size:15px;">${esc(p.avgPackage)}</div></div>` : ''}
+      ${p.highestPackage ? `<div><div style="font-size:10px;color:var(--text3);">HIGHEST PACKAGE</div><div style="font-weight:800;font-size:15px;">${esc(p.highestPackage)}</div></div>` : ''}
+    </div>
+    ${(p.topRecruiters||[]).length ? `<div class="clg-tags">${p.topRecruiters.map(r=>`<span class="clg-tag">${esc(r)}</span>`).join('')}</div>` : `<div class="empty-note">No placement data yet.</div>`}
+  `;
+
+  renderBottomBar();
+  bumpMetric('views', 1);
+  onSnapshot(doc(db,'contentMetrics', id), snap => {
+    const v = snap.data();
+    window.__clgMetrics = { views: v?.views||0, likes: v?.likes||0, dislikes: v?.dislikes||0 };
+    renderBottomBar();
+  }, ()=>{});
+
+  onSnapshot(query(collection(db,'collegeReviews'), where('collegeId','==', id)), snap => {
+    const reviews = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
+    renderReviews(reviews);
+  }, ()=>{});
+
+  wireReviewForm();
+}
+
+window.setTab = function(name){
+  document.querySelectorAll('.clg-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.clg-tab').forEach(t => t.classList.remove('active'));
+  $("tab-"+name).classList.add('active');
+  document.querySelector(`.clg-tab[data-tab="${name}"]`).classList.add('active');
+};
+
+function renderReviews(reviews){
+  if(!reviews.length){ $("reviewsList").innerHTML = `<div class="empty-note">No reviews yet — be the first.</div>`; return; }
+  $("reviewsList").innerHTML = reviews.map(r => `
+    <div class="review-box">
+      <div class="review-head">
+        <span class="review-name">${esc(r.userName||'Student')}</span>
+        <span class="review-stars">${'★'.repeat(r.rating||0)}${'☆'.repeat(5-(r.rating||0))}</span>
+      </div>
+      <div class="review-text">${esc(r.text||'')}</div>
+      <div class="review-date">${r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString() : ''}</div>
+    </div>`).join('');
+}
+function wireReviewForm(){
+  $("starPicker").querySelectorAll('i').forEach(star => {
+    star.onclick = () => {
+      currentRating = +star.dataset.v;
+      $("starPicker").querySelectorAll('i').forEach(s => s.classList.toggle('active', +s.dataset.v <= currentRating));
+    };
+  });
+  $("reviewSubmitBtn").onclick = async () => {
+    const text = $("reviewText").value.trim();
+    if(!currentRating) return toastMsg('Pick a star rating');
+    if(!text) return toastMsg('Write a few words');
+    try{
+      await addDoc(collection(db,'collegeReviews'), {
+        collegeId: id, userName: localStorage.getItem('userName') || 'Student',
+        rating: currentRating, text, createdAt: serverTimestamp()
+      });
+      $("reviewText").value = ''; currentRating = 0;
+      $("starPicker").querySelectorAll('i').forEach(s => s.classList.remove('active'));
+      toastMsg('Review posted');
+    } catch(e){ toastMsg("Couldn't post — try again"); }
+  };
+}
+
+function renderBottomBar(){
+  const m = window.__clgMetrics || { likes:0 };
+  const isSaved = saved.has(id), isLiked = liked.has(id), isDisliked = disliked.has(id);
+  $("bottomBar").innerHTML = `
+    <button class="bar-btn ${isSaved?'on':''}" id="btnSave"><i class="fa-${isSaved?'solid':'regular'} fa-bookmark"></i><span>Save</span></button>
+    <button class="bar-btn ${isLiked?'on-good':''}" id="btnLike"><i class="fa-${isLiked?'solid':'regular'} fa-thumbs-up"></i><span>${m.likes||0}</span></button>
+    <button class="bar-btn ${isDisliked?'on-bad':''}" id="btnDislike"><i class="fa-${isDisliked?'solid':'regular'} fa-thumbs-down"></i><span>Dislike</span></button>
+    <button class="bar-btn" id="btnReview" onclick="setTab('reviews')"><i class="fa-regular fa-star"></i><span>Review</span></button>
+    <button class="bar-btn" id="btnShare"><i class="fa-solid fa-share-nodes"></i><span>Share</span></button>
+  `;
+  $("btnSave").onclick = () => { toggleSet(saved,'ch_saved',id); renderBottomBar(); toastMsg(saved.has(id)?'Saved':'Removed'); };
+  $("btnLike").onclick = async () => {
+    if(liked.has(id)){ liked.delete(id); await bumpMetric('likes',-1); }
+    else{ liked.add(id); await bumpMetric('likes',1); if(disliked.has(id)){ disliked.delete(id); await bumpMetric('dislikes',-1); } }
+    persist(); renderBottomBar();
+  };
+  $("btnDislike").onclick = async () => {
+    if(disliked.has(id)){ disliked.delete(id); await bumpMetric('dislikes',-1); }
+    else{ disliked.add(id); await bumpMetric('dislikes',1); if(liked.has(id)){ liked.delete(id); await bumpMetric('likes',-1); } }
+    persist(); renderBottomBar();
+  };
+  $("btnShare").onclick = async () => {
+    const url = location.href;
+    const shareData = { title: currentCollege?.name || 'Study Grid Prep', url };
+    if(navigator.share){ try{ await navigator.share(shareData); return; }catch{} }
+    try{ await navigator.clipboard.writeText(url); toastMsg('Link copied'); }catch{}
+  };
+}
+function toggleSet(set, key, val){ if(set.has(val)) set.delete(val); else set.add(val); localStorage.setItem(key, JSON.stringify([...set])); }
+function persist(){ localStorage.setItem('ch_liked', JSON.stringify([...liked])); localStorage.setItem('ch_disliked', JSON.stringify([...disliked])); }
+async function bumpMetric(field, delta){
+  try{
+    await setDoc(doc(db,'contentMetrics', id), {
+      contentId: id, title: currentCollege?.title || currentCollege?.name || '', type: 'collegeArticle',
+      [field]: increment(delta), updatedAt: serverTimestamp()
+    }, { merge:true });
+  } catch(e){ console.warn('metric bump failed', e); }
+}
+function toastMsg(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el = document.createElement('div'); el.className='toast'; el.textContent = msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(), 1800);
+}
+</script>
+
+</body>
+</html>
