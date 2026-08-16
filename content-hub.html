@@ -611,7 +611,7 @@ body.panel-open .pwa-bottom-nav{ display:none; }
   <!-- Search results (shown only while searching; replaces the sections below) -->
   <section class="hub-section" id="searchResultsSection" style="display:none;padding-top:0;">
     <div class="hub-search-results-head" style="padding:0 0 12px;">
-      <div class="hub-search-results-title"><i class="fa-solid fa-magnifying-glass" style="color:var(--accent);margin-right:6px;"></i>Search results</div>
+      <div class="hub-search-results-title" id="searchResultsTitle"><i class="fa-solid fa-magnifying-glass" style="color:var(--accent);margin-right:6px;"></i>Search results</div>
       <span class="hub-search-results-count" id="searchResultsCount"></span>
     </div>
     <div class="hub-feed-list" id="searchResultsList"></div>
@@ -1111,6 +1111,7 @@ function renderCategoryChips(){
   const cats = state.categories.slice().sort((a,b)=>(a.order??999)-(b.order??999));
   host.innerHTML = `<button class="hub-chip ${state.filter==='all'?'active':''}" data-filter="all"><i class="fa-solid fa-border-all"></i> All</button>` +
     (state.saved.size ? `<button class="hub-chip ${state.showSavedOnly?'active':''}" data-filter="__saved"><i class="fa-solid fa-bookmark"></i> Saved</button>` : '') +
+    `<button class="hub-chip ${state.filter==='__colleges'?'active':''}" data-filter="__colleges"><i class="fa-solid fa-graduation-cap"></i> Colleges</button>` +
     cats.map(c => {
       const key = String(c.slug||c.name||'').toLowerCase();
       return `<button class="hub-chip ${state.filter===key?'active':''}" data-filter="${escapeHtml(key)}"><i class="fa-solid ${c.icon||'fa-tag'}"></i> ${escapeHtml(c.name||c.slug||'Category')}</button>`;
@@ -1202,7 +1203,7 @@ function renderSearchResults(){
     collegeMatches.map(c => collegeResultCardHTML(c, term)).join('') +
     items.slice(0, state.pageSize).map(it => searchResultCardHTML(it, term)).join('');
   $('searchResultsList').querySelectorAll('[data-college-id]').forEach(el => {
-    el.onclick = () => location.href = `college.html?id=${encodeURIComponent(el.dataset.collegeId)}`;
+    el.onclick = () => location.href = `college-view.html?id=${encodeURIComponent(el.dataset.collegeId)}`;
   });
 }
 function renderLatest(){

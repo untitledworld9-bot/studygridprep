@@ -145,7 +145,7 @@ function render(){
   }
   $("collegeList").innerHTML = list.map(collegeRowHTML).join('');
   $("collegeList").querySelectorAll('[data-id]').forEach(el => {
-    el.onclick = () => location.href = `college.html?id=${encodeURIComponent(el.dataset.id)}`;
+    el.onclick = () => location.href = `college-view.html?id=${encodeURIComponent(el.dataset.id)}`;
   });
 }
 
