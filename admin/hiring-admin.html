@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hiring Admin – Study Grid Prep</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D1120" id="metaThemeColor">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>html{visibility:hidden;} html[data-theme]{visibility:visible;}</style>
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("hiring-admin-theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  document.documentElement.setAttribute("data-theme", resolveTheme());
+})();
+</script>
+
+<style>
+:root{
+  --bg:#F0F2F8; --panel:#FFFFFF; --card:#FFFFFF; --card-hover:#F4F6FB; --input:#F4F6FB; --border:#E2E8F2;
+  --text:#0F172A; --text2:#5A6785; --text3:#94A3B8;
+  --accent:#5B5BF6; --accent2:#7C3AED;
+  --red:#EF4444; --green:#16A34A; --amber:#F59E0B;
+  --shadow:0 4px 16px rgba(15,23,42,0.06); --shadow-md:0 8px 32px rgba(15,23,42,0.10);
+  --radius:14px; --radius-lg:18px; --sidebar-w:250px;
+  --t:0.18s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"]{
+  --bg:#0D1120; --panel:#141C30; --card:#151E32; --card-hover:#1A2440; --input:#1A2440; --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE; --text2:#8B9EC8; --text3:#4A5C88;
+  --shadow:0 4px 16px rgba(0,0,0,0.4); --shadow-md:0 8px 32px rgba(0,0,0,0.55);
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+html{ background:var(--bg); } body{ background:var(--bg); color:var(--text); min-height:100vh; min-height:100dvh; display:flex; overflow:hidden;
+  padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+html, body{ transition:background-color .2s ease, color .2s ease; }
+::-webkit-scrollbar{ width:5px; height:5px; } ::-webkit-scrollbar-thumb{ background:rgba(120,130,170,0.25); border-radius:4px; }
+
+/* ── AUTH GATE ── */
+#authGate{ position:fixed; inset:0; z-index:9999; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-box{ width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:44px 34px; text-align:center; box-shadow:var(--shadow-md); }
+.auth-mark{ width:52px; height:52px; border-radius:15px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; margin:0 auto 16px; }
+.auth-title{ font-size:18px; font-weight:800; margin-bottom:2px; }
+.auth-sub{ font-size:12px; color:var(--text3); letter-spacing:.05em; text-transform:uppercase; margin-bottom:30px; }
+.auth-google-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:13px; background:var(--input); border:1.5px solid var(--border); border-radius:12px; color:var(--text); font-size:14px; font-weight:700; cursor:pointer; transition:var(--t); }
+.auth-google-btn:hover{ border-color:var(--accent); }
+.auth-google-btn:disabled{ opacity:.5; cursor:not-allowed; }
+.auth-error{ color:var(--red); font-size:12px; margin-top:14px; min-height:16px; }
+#authLoading{ display:none; position:fixed; inset:0; z-index:9999; background:var(--bg); align-items:center; justify-content:center; flex-direction:column; gap:14px; }
+.spinner{ width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ── SIDEBAR ── */
+.mobile-topbar{ display:none; }
+.sidebar{ width:var(--sidebar-w); background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; height:100vh; height:100dvh; }
+.sidebar-header{ padding:22px 18px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.sidebar-mark{ width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; flex-shrink:0; }
+.sidebar-title{ font-size:14px; font-weight:800; line-height:1.2; }
+.sidebar-sub{ font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; }
+.sidebar-nav{ flex:1; padding:14px 10px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
+.nav-section-label{ font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; font-weight:700; padding:14px 10px 6px; }
+.nav-btn{ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:10px; background:none; border:none; color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; transition:var(--t); width:100%; text-align:left; }
+.nav-btn:hover{ background:var(--card-hover); color:var(--text); }
+.nav-btn.active{ background:rgba(91,91,246,0.1); color:var(--accent); }
+.nav-btn i{ width:18px; text-align:center; font-size:14px; }
+.nav-badge{ margin-left:auto; background:var(--red); color:#fff; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:99px; }
+.sidebar-footer{ padding:12px 10px; border-top:1px solid var(--border); }
+.theme-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 10px; margin-bottom:4px; }
+.theme-label{ font-size:12px; color:var(--text2); font-weight:600; display:flex; align-items:center; gap:8px; }
+.theme-switch{ position:relative; width:38px; height:22px; background:var(--input); border:1px solid var(--border); border-radius:99px; cursor:pointer; }
+.theme-knob{ position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--accent); transition:var(--t); }
+[data-theme="light"] .theme-knob{ transform:translateX(16px); }
+.admin-profile{ display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:var(--input); }
+.admin-avatar{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+.admin-name{ font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.admin-email{ font-size:10px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.logout-btn{ margin-left:auto; background:none; border:none; color:var(--text3); cursor:pointer; font-size:15px; }
+.logout-btn:hover{ color:var(--red); }
+.sidebar-backdrop{ display:none; }
+
+/* ── MAIN ── */
+.main{ flex:1; overflow-y:auto; padding:26px 30px; height:100vh; height:100dvh; -webkit-overflow-scrolling:touch; }
+.section{ display:none; } .section.active{ display:block; animation:fadeUp .3s ease both; }
+@keyframes fadeUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+.section-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+.section-title{ font-size:22px; font-weight:800; } .section-sub{ font-size:12.5px; color:var(--text2); margin-top:3px; }
+
+.cards-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:24px; }
+.stat-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); }
+.stat-icon{ width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:12px; background:rgba(91,91,246,0.1); color:var(--accent); }
+.stat-card.green .stat-icon{ background:rgba(22,163,74,0.1); color:var(--green); }
+.stat-card.amber .stat-icon{ background:rgba(245,158,11,0.1); color:var(--amber); }
+.stat-card.red .stat-icon{ background:rgba(239,68,68,0.1); color:var(--red); }
+.stat-label{ font-size:10.5px; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+.stat-value{ font-size:26px; font-weight:800; margin-top:5px; }
+
+.form-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px; margin-bottom:18px; box-shadow:var(--shadow); }
+.form-panel-title{ font-size:14.5px; font-weight:800; margin-bottom:16px; display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.pill{ font-size:9.5px; padding:3px 9px; border-radius:99px; background:rgba(91,91,246,0.1); color:var(--accent); font-weight:700; }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+.form-row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:14px; }
+.form-group{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.form-label{ font-size:10.5px; color:var(--text2); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.form-input, .form-select, .form-textarea{ background:var(--input); border:1.5px solid var(--border); border-radius:10px; padding:11px 13px; color:var(--text); font-size:13px; outline:none; transition:var(--t); width:100%; }
+.form-input:focus, .form-select:focus, .form-textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,91,246,0.08); }
+.form-select{ cursor:pointer; } .form-textarea{ resize:vertical; min-height:80px; }
+.form-hint{ font-size:11px; color:var(--text3); }
+
+.btn{ display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:10px; border:none; font-size:12.5px; font-weight:700; cursor:pointer; transition:var(--t); }
+.btn-primary{ background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+.btn-primary:hover{ opacity:.9; transform:translateY(-1px); }
+.btn-outline{ background:transparent; color:var(--text2); border:1.5px solid var(--border); }
+.btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
+.btn-danger{ background:rgba(239,68,68,0.1); color:var(--red); }
+.btn-danger:hover{ background:var(--red); color:#fff; }
+.btn-green{ background:rgba(22,163,74,0.1); color:var(--green); }
+.btn-green:hover{ background:var(--green); color:#fff; }
+.btn-sm{ padding:7px 13px; font-size:11.5px; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; transform:none !important; }
+
+#toastContainer{ position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:9px; z-index:10000; }
+.toast{ background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; padding:13px 16px; display:flex; align-items:center; gap:10px; min-width:260px; box-shadow:var(--shadow-md); animation:toastIn .25s ease both; font-size:12.5px; font-weight:600; }
+.toast.removing{ animation:toastOut .25s ease both; }
+.toast.success{ border-left-color:var(--green); } .toast.error{ border-left-color:var(--red); } .toast.warning{ border-left-color:var(--amber); }
+@keyframes toastIn{ from{ opacity:0; transform:translateX(24px); } to{ opacity:1; transform:translateX(0); } }
+@keyframes toastOut{ to{ opacity:0; transform:translateX(24px); } }
+
+.modal-overlay{ position:fixed; inset:0; background:rgba(10,14,26,0.6); backdrop-filter:blur(3px); z-index:9500; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; padding:16px; }
+.modal-overlay.open{ opacity:1; pointer-events:all; }
+.modal-box{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:26px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow-md); }
+.modal-title{ font-size:17px; font-weight:800; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+.modal-close{ background:var(--input); border:none; color:var(--text2); font-size:14px; cursor:pointer; width:30px; height:30px; border-radius:50%; }
+.modal-footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+
+.tx-row{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border:1px solid var(--border); border-radius:12px; margin-bottom:9px; background:var(--card); gap:12px; flex-wrap:wrap; }
+.tx-row-info{ min-width:0; flex:1 1 200px; }
+.tx-row-title{ font-weight:700; font-size:13.5px; margin-bottom:2px; }
+.tx-row-sub{ font-size:11.5px; color:var(--text2); }
+.tx-row-actions{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.empty-state{ text-align:center; padding:50px 20px; color:var(--text2); }
+.empty-state i{ font-size:34px; color:var(--text3); display:block; margin-bottom:12px; }
+
+.badge{ display:inline-flex; align-items:center; font-size:10px; font-weight:700; padding:3px 10px; border-radius:99px; }
+.badge-gray{ background:var(--input); color:var(--text2); }
+.badge-green{ background:rgba(22,163,74,0.1); color:var(--green); }
+.badge-red{ background:rgba(239,68,68,0.1); color:var(--red); }
+.badge-amber{ background:rgba(245,158,11,0.1); color:var(--amber); }
+.badge-accent{ background:rgba(91,91,246,0.1); color:var(--accent); }
+
+.q-card{ background:var(--input); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+.q-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.q-index{ font-size:11px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.06em; }
+.q-remove{ background:none; border:none; color:var(--red); cursor:pointer; font-size:14px; }
+.opt-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.opt-row input[type="radio"]{ accent-color:var(--accent); width:16px; height:16px; flex-shrink:0; }
+
+.ai-box{ background:var(--input); border:1px dashed var(--border); border-radius:12px; padding:16px; margin-bottom:18px; }
+.ai-log{ min-height:40px; max-height:150px; overflow-y:auto; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:11.5px; color:var(--text2); margin-top:10px; }
+.ai-line{ padding:2px 0; } .ai-line.done{ color:var(--green); font-weight:600; } .ai-line.err{ color:var(--red); }
+
+.select-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+
+@media (max-width:1024px){
+  .sidebar{ position:fixed; z-index:8000; transform:translateX(-100%); width:250px; transition:transform .25s; }
+  .sidebar.mobile-open{ transform:translateX(0); }
+  .sidebar-backdrop{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:7999; }
+  .sidebar-backdrop.open{ display:block; }
+  .mobile-topbar{ display:flex; align-items:center; gap:12px; padding:13px 16px; background:var(--panel); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:500; }
+  .mobile-menu-btn{ width:36px; height:36px; border-radius:10px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:15px; cursor:pointer; }
+  body{ flex-direction:column; overflow:auto; }
+  .main{ height:auto; padding:18px 14px; }
+  .form-row, .form-row-3{ grid-template-columns:1fr; }
+}
+@media (min-width:1025px){ .sidebar-backdrop, .mobile-topbar{ display:none !important; } }
+</style>
+</head>
+<body>
+
+<div id="authGate">
+  <div class="auth-box">
+    <div class="auth-mark"><i class="fa-solid fa-user-tie"></i></div>
+    <div class="auth-title">Hiring Admin</div>
+    <div class="auth-sub">Study Grid Prep</div>
+    <button class="auth-google-btn" onclick="signInHiringAdmin()"><i class="fa-brands fa-google"></i> Continue with Google</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+<div id="authLoading"><div class="spinner"></div><div style="font-size:12.5px;color:var(--text3);">Checking access…</div></div>
+
+<div class="mobile-topbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+  <div style="font-weight:800;font-size:14px;">Hiring Admin</div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-mark"><i class="fa-solid fa-user-tie"></i></div>
+    <div><div class="sidebar-title">Hiring Admin</div><div class="sidebar-sub">Study Grid Prep</div></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-btn active" data-section="dashboard" onclick="goSection('dashboard')"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
+
+    <div class="nav-section-label">Hiring</div>
+    <button class="nav-btn" data-section="roles" onclick="goSection('roles')"><i class="fa-solid fa-briefcase"></i><span>Test Manager</span></button>
+    <button class="nav-btn" data-section="applicants" onclick="goSection('applicants')"><i class="fa-solid fa-file-lines"></i><span>Applicants</span></button>
+    <button class="nav-btn" data-section="results" onclick="goSection('results')"><i class="fa-solid fa-square-poll-vertical"></i><span>Results</span><span class="nav-badge" id="resultsBadge" style="display:none;">0</span></button>
+
+    <div class="nav-section-label">People</div>
+    <button class="nav-btn" data-section="candidates" onclick="goSection('candidates')"><i class="fa-solid fa-users"></i><span>Registered Users</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="theme-row">
+      <span class="theme-label"><i class="fa-solid fa-moon"></i> Theme</span>
+      <div class="theme-switch" onclick="toggleTheme()"><div class="theme-knob"></div></div>
+    </div>
+    <div class="admin-profile">
+      <div class="admin-avatar" id="adminAvatar">?</div>
+      <div style="flex:1;min-width:0;">
+        <div class="admin-name" id="adminName">—</div>
+        <div class="admin-email" id="adminEmail">—</div>
+      </div>
+      <button class="logout-btn" onclick="hiringAdminLogout()" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section class="section active" id="section-dashboard">
+    <div class="section-header">
+      <div><div class="section-title">Dashboard</div><div class="section-sub">Hiring portal at a glance</div></div>
+    </div>
+    <div class="cards-grid">
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-briefcase"></i></div><div class="stat-label">Open Roles</div><div class="stat-value" id="statOpenRoles">0</div></div>
+      <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-file-lines"></i></div><div class="stat-label">Total Applicants</div><div class="stat-value" id="statApplicants">0</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-clock"></i></div><div class="stat-label">Tests Pending Review</div><div class="stat-value" id="statPending">0</div></div>
+      <div class="stat-card green"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><div class="stat-label">Qualified</div><div class="stat-value" id="statQualified">0</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div class="stat-label">Registered Users</div><div class="stat-value" id="statCandidates">0</div></div>
+    </div>
+    <div class="form-panel">
+      <div class="form-panel-title"><i class="fa-solid fa-list-check"></i> Recent Applications</div>
+      <div id="dashRecentList"><div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div></div>
+    </div>
+  </section>
+
+  <!-- ROLES / TEST MANAGER -->
+  <section class="section" id="section-roles">
+    <div class="section-header">
+      <div><div class="section-title">Test Manager</div><div class="section-sub">Create roles, set eligibility criteria, build the qualifying test</div></div>
+      <button class="btn btn-primary" onclick="openRoleModal()"><i class="fa-solid fa-plus"></i> New Role</button>
+    </div>
+    <div id="rolesList"><div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div></div>
+  </section>
+
+  <!-- APPLICANTS -->
+  <section class="section" id="section-applicants">
+    <div class="section-header">
+      <div><div class="section-title">Applicants</div><div class="section-sub">Everyone who applied, per role</div></div>
+    </div>
+    <div class="select-row">
+      <select class="form-select" id="applicantsRoleFilter" style="max-width:280px;" onchange="renderApplicants()"><option value="all">All Roles</option></select>
+      <select class="form-select" id="applicantsStatusFilter" style="max-width:200px;" onchange="renderApplicants()">
+        <option value="all">All Status</option>
+        <option value="applied">Eligible / Applied</option>
+        <option value="not_eligible">Not Eligible</option>
+        <option value="test_completed">Test Completed</option>
+        <option value="qualified">Qualified</option>
+        <option value="not_qualified">Not Qualified</option>
+      </select>
+      <input class="form-input" id="applicantsSearch" style="max-width:220px;" placeholder="Search name / email" oninput="renderApplicants()">
+    </div>
+    <div id="applicantsList"><div class="empty-state"><i class="fa-solid fa-file-lines"></i>No applicants yet.</div></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="section" id="section-results">
+    <div class="section-header">
+      <div><div class="section-title">Results</div><div class="section-sub">Auto-scored test submissions — review, qualify, and email the outcome</div></div>
+    </div>
+    <div class="select-row">
+      <select class="form-select" id="resultsRoleFilter" style="max-width:320px;" onchange="renderResults()"><option value="all">All Roles</option></select>
+    </div>
+    <div id="resultsList"><div class="empty-state"><i class="fa-solid fa-square-poll-vertical"></i>No completed tests yet.</div></div>
+  </section>
+
+  <!-- CANDIDATES -->
+  <section class="section" id="section-candidates">
+    <div class="section-header">
+      <div><div class="section-title">Registered Users</div><div class="section-sub">Everyone who has signed up on the hiring portal</div></div>
+    </div>
+    <div class="form-panel" style="padding:14px 16px;margin-bottom:14px;">
+      <input class="form-input" id="candidatesSearch" placeholder="Search by name, email or phone…" oninput="renderCandidates()">
+    </div>
+    <div id="candidatesList"><div class="empty-state"><i class="fa-solid fa-users"></i>No registered users yet.</div></div>
+  </section>
+
+</main>
+
+<div id="toastContainer"></div>
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<script type="module">
+/* ================================================================
+   FIREBASE + ACTIVITY LOG LOAD (fallback paths, same pattern as
+   hiring-portal.html, so this file can sit at root or /admin/)
+================================================================ */
+async function loadFirebase(){
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  for (const src of candidates) { try { return await import(src); } catch(e){} }
+  throw new Error('firebase.js not found');
+}
+async function loadActivityLog(){
+  const candidates = ['./activity-log.js','../activity-log.js','/activity-log.js'];
+  for (const src of candidates) { try { return await import(src); } catch(e){} }
+  return { sgpLogActivity: () => {} };
+}
+
+let fb, alog;
+try {
+  fb = await loadFirebase();
+  alog = await loadActivityLog();
+} catch (e) {
+  console.error('Hiring admin init error:', e);
+  document.getElementById('authGate').innerHTML =
+    `<div class="auth-box"><div style="color:var(--red);"><i class="fa-solid fa-triangle-exclamation" style="font-size:22px;display:block;margin-bottom:10px;"></i>Couldn't connect. Please refresh the page.</div></div>`;
+  throw e;
+}
+const {
+  db, auth, provider: googleProvider, signInWithPopup, onAuthStateChanged, signOut,
+  collection, query, where, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, serverTimestamp, orderBy
+} = fb;
+const sgpLogActivity = alog.sgpLogActivity || (() => {});
+
+const $ = (id) => document.getElementById(id);
+let CURRENT_USER = null;
+
+const state = {
+  roles: [],
+  applications: [],
+  candidates: [],
+  editingRoleId: null,
+  criteriaDraft: [],
+  questionsDraft: [],
+};
+
+/* ================================================================
+   AUTH
+================================================================ */
+const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
+
+window.signInHiringAdmin = async function(){
+  $('authError').textContent = '';
+  const btn = document.querySelector('.auth-google-btn');
+  btn.disabled = true;
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    await checkHiringAdminAccess(result.user);
+  } catch (e) {
+    $('authError').textContent = 'Sign-in failed. Try again.';
+    btn.disabled = false;
+  }
+};
+
+async function checkHiringAdminAccess(user){
+  $('authGate').style.display = 'none';
+  $('authLoading').style.display = 'flex';
+  try {
+    const email = user.email;
+    let hasAccess = ADMIN_EMAILS.includes(email);
+    if (!hasAccess) {
+      const snap = await getDoc(doc(db, 'subAdmins', email));
+      if (snap.exists()) {
+        const r = snap.data().role;
+        hasAccess = (r === 'hiring-admin' || r === 'both' || r === 'sub-admin' || !r);
+      }
+    }
+    if (!hasAccess) {
+      await signOut(auth);
+      $('authLoading').style.display = 'none';
+      $('authGate').style.display = 'flex';
+      $('authError').textContent = "This Google account doesn't have Hiring Admin access.";
+      document.querySelector('.auth-google-btn').disabled = false;
+      return;
+    }
+    CURRENT_USER = user;
+    $('adminName').textContent = user.displayName || email.split('@')[0];
+    $('adminEmail').textContent = email;
+    $('adminAvatar').textContent = (user.displayName || email)[0].toUpperCase();
+    $('authLoading').style.display = 'none';
+    window.IS_SUB_ADMIN = true;
+    sgpLogActivity('login', 'Signed in to Hiring Admin');
+    bootData();
+  } catch (e) {
+    console.error(e);
+    $('authLoading').style.display = 'none';
+    $('authGate').style.display = 'flex';
+    $('authError').textContent = 'Something went wrong checking access.';
+  }
+}
+onAuthStateChanged(auth, (user) => { if (user) checkHiringAdminAccess(user); });
+window.hiringAdminLogout = async function(){
+  sgpLogActivity('logout', 'Signed out of Hiring Admin');
+  await signOut(auth);
+  location.reload();
+};
+
+/* ================================================================
+   NAV / THEME / TOAST / MODAL
+================================================================ */
+window.goSection = function(name){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  $('section-' + name).classList.add('active');
+  document.querySelector(`.nav-btn[data-section="${name}"]`).classList.add('active');
+  if (window.innerWidth <= 1024) toggleSidebar(false);
+};
+window.toggleSidebar = function(force){
+  const open = typeof force === 'boolean' ? force : !$('sidebar').classList.contains('mobile-open');
+  $('sidebar').classList.toggle('mobile-open', open);
+  $('sidebarBackdrop').classList.toggle('open', open);
+};
+window.toggleTheme = function(){
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('hiring-admin-theme', next);
+};
+
+function toast(msg, type = 'info'){
+  const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info', warning:'fa-triangle-exclamation' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${esc(msg)}</span>`;
+  $('toastContainer').appendChild(el);
+  setTimeout(() => { el.classList.add('removing'); setTimeout(() => el.remove(), 250); }, 3000);
+}
+window.toast = toast;
+window.closeModal = function(){ $('modalOverlay').classList.remove('open'); setTimeout(() => $('modalOverlay').innerHTML = '', 200); };
+function openModal(html){ $('modalOverlay').innerHTML = html; $('modalOverlay').classList.add('open'); }
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function fmtDate(v){
+  if (!v) return 'Not set';
+  const d = v?.toDate ? v.toDate() : new Date(v);
+  if (isNaN(d.getTime())) return 'Not set';
+  return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function toInputDate(v){
+  if (!v) return '';
+  const d = v?.toDate ? v.toDate() : new Date(v);
+  if (isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ================================================================
+   DATA LOADING
+================================================================ */
+function bootData(){
+  onSnapshot(query(collection(db, 'hiringRoles'), orderBy('createdAt', 'desc')), snap => {
+    state.roles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderRoles(); renderDashboard(); populateRoleFilters(); renderApplicants(); renderResults();
+  }, e => console.error('roles snapshot error', e));
+
+  onSnapshot(collection(db, 'hiringApplications'), snap => {
+    state.applications = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDashboard(); renderApplicants(); renderResults();
+  }, e => console.error('applications snapshot error', e));
+
+  onSnapshot(query(collection(db, 'hiringCandidates'), orderBy('createdAt', 'desc')), snap => {
+    state.candidates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDashboard(); renderCandidates();
+  }, e => console.error('candidates snapshot error', e));
+}
+
+function populateRoleFilters(){
+  const opts = '<option value="all">All Roles</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join('');
+  const a = $('applicantsRoleFilter'), r = $('resultsRoleFilter');
+  const aVal = a.value, rVal = r.value;
+  a.innerHTML = opts; r.innerHTML = opts;
+  if ([...a.options].some(o => o.value === aVal)) a.value = aVal;
+  if ([...r.options].some(o => o.value === rVal)) r.value = rVal;
+}
+
+/* ================================================================
+   DASHBOARD
+================================================================ */
+function renderDashboard(){
+  const openRoles = state.roles.filter(r => r.status === 'open').length;
+  const totalApplicants = state.applications.length;
+  const pending = state.applications.filter(a => a.status === 'test_completed').length;
+  const qualified = state.applications.filter(a => a.status === 'qualified').length;
+  $('statOpenRoles').textContent = openRoles;
+  $('statApplicants').textContent = totalApplicants;
+  $('statPending').textContent = pending;
+  $('statQualified').textContent = qualified;
+  $('statCandidates').textContent = state.candidates.length;
+  $('resultsBadge').style.display = pending > 0 ? 'inline-block' : 'none';
+  $('resultsBadge').textContent = pending;
+
+  const recent = [...state.applications].sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0)).slice(0,8);
+  $('dashRecentList').innerHTML = recent.length ? recent.map(a => {
+    const role = state.roles.find(r => r.id === a.roleId);
+    return `<div class="tx-row"><div class="tx-row-info"><div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div><div class="tx-row-sub">${esc(a.email)} · Applied ${fmtDate(a.appliedAt)}</div></div>${statusBadge(a.status)}</div>`;
+  }).join('') : '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div>';
+}
+
+function statusBadge(status){
+  const map = {
+    not_eligible: ['badge-red','Not Eligible'],
+    applied: ['badge-accent','Applied'],
+    test_completed: ['badge-amber','Test Completed'],
+    qualified: ['badge-green','Qualified'],
+    not_qualified: ['badge-red','Not Qualified'],
+  };
+  const [cls, label] = map[status] || ['badge-gray', status || 'Unknown'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+/* ================================================================
+   ROLES / TEST MANAGER
+================================================================ */
+function renderRoles(){
+  const host = $('rolesList');
+  if (!state.roles.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div>'; return; }
+  host.innerHTML = state.roles.map(r => {
+    const appCount = state.applications.filter(a => a.roleId === r.id).length;
+    return `<div class="tx-row">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(r.title)} <span style="color:var(--text3);font-weight:500;font-size:11.5px;">· ${esc(r.department||'—')}</span></div>
+        <div class="tx-row-sub">${(r.questions||[]).length} question(s) · ${r.vacancy||0} vacancy · ${appCount} applicant(s) · Result on ${fmtDate(r.resultRevealAt)}</div>
+      </div>
+      <div class="tx-row-actions">
+        ${r.status === 'open' ? '<span class="badge badge-green">Open</span>' : '<span class="badge badge-gray">Closed</span>'}
+        <button class="btn btn-outline btn-sm" onclick="openRoleModal('${r.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-outline btn-sm" onclick="openQuestionsModal('${r.id}')"><i class="fa-solid fa-list-check"></i> Questions</button>
+        <button class="btn ${r.status==='open'?'btn-outline':'btn-green'} btn-sm" onclick="toggleRoleStatus('${r.id}')">${r.status==='open'?'Close':'Reopen'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRole('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleRoleStatus = async function(id){
+  const role = state.roles.find(r => r.id === id); if (!role) return;
+  try { await updateDoc(doc(db, 'hiringRoles', id), { status: role.status === 'open' ? 'closed' : 'open' }); toast('Role status updated', 'success'); }
+  catch(e){ console.error(e); toast('Could not update status', 'error'); }
+};
+window.deleteRole = async function(id){
+  if (!confirm('Delete this role permanently? Applications tied to it will remain but lose their role reference.')) return;
+  try { await deleteDoc(doc(db, 'hiringRoles', id)); toast('Role deleted', 'success'); }
+  catch(e){ console.error(e); toast('Could not delete role', 'error'); }
+};
+
+window.openRoleModal = function(id){
+  const role = id ? state.roles.find(r => r.id === id) : null;
+  state.editingRoleId = id || null;
+  state.criteriaDraft = role ? JSON.parse(JSON.stringify(role.criteria || [])) : [];
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-title">${role ? 'Edit Role' : 'New Role'} <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Role Title</label><input class="form-input" id="rfTitle" value="${esc(role?.title||'')}" placeholder="e.g. Content Writer"></div>
+        <div class="form-group"><label class="form-label">Department</label><input class="form-input" id="rfDept" value="${esc(role?.department||'')}" placeholder="e.g. Content Team"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="rfDesc" placeholder="What is this role about?">${esc(role?.description||'')}</textarea></div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Vacancy</label><input class="form-input" type="number" id="rfVacancy" value="${role?.vacancy ?? 1}" min="0"></div>
+        <div class="form-group"><label class="form-label">Test Duration (min)</label><input class="form-input" type="number" id="rfDuration" value="${role?.testDurationMinutes ?? 20}" min="1"></div>
+        <div class="form-group"><label class="form-label">Pass %</label><input class="form-input" type="number" id="rfPass" value="${role?.passPercentage ?? 60}" min="0" max="100"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Card Hover Timing (ms)</label><input class="form-input" type="number" id="rfHover" value="${role?.hoverDurationMs ?? 200}" min="0"></div>
+        <div class="form-group"><label class="form-label">Result Reveal Date &amp; Time</label><input class="form-input" type="datetime-local" id="rfReveal" value="${toInputDate(role?.resultRevealAt)}"></div>
+      </div>
+      <div class="form-panel-title" style="margin-top:6px;">Eligibility Criteria <span class="pill">shown on the role card + apply form</span></div>
+      <div id="criteriaList"></div>
+      <button class="btn btn-outline btn-sm" onclick="addCriteriaRow()"><i class="fa-solid fa-plus"></i> Add Criteria</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRole()"><i class="fa-solid fa-floppy-disk"></i> Save Role</button>
+      </div>
+    </div>
+  `);
+  renderCriteriaList();
+};
+
+function renderCriteriaList(){
+  const host = $('criteriaList'); if (!host) return;
+  if (!state.criteriaDraft.length) { host.innerHTML = '<div class="form-hint" style="margin-bottom:14px;">No criteria added — this role will be open to everyone who applies.</div>'; return; }
+  host.innerHTML = state.criteriaDraft.map((c, i) => `
+    <div class="q-card">
+      <div class="q-card-head"><span class="q-index">Criteria ${i+1}</span><button class="q-remove" onclick="removeCriteriaRow(${i})"><i class="fa-solid fa-trash"></i></button></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Field key</label><input class="form-input" value="${esc(c.field||'')}" oninput="updateCriteria(${i},'field',this.value)" placeholder="e.g. cgpa"></div>
+        <div class="form-group"><label class="form-label">Label (shown to applicant)</label><input class="form-input" value="${esc(c.label||'')}" oninput="updateCriteria(${i},'label',this.value)" placeholder="e.g. Minimum CGPA"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-select" onchange="updateCriteria(${i},'type',this.value)">
+            <option value="text" ${c.type==='text'?'selected':''}>Text</option>
+            <option value="number" ${c.type==='number'?'selected':''}>Number</option>
+            <option value="select" ${c.type==='select'?'selected':''}>Dropdown</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Operator (number only)</label>
+          <select class="form-select" onchange="updateCriteria(${i},'operator',this.value)">
+            <option value=">=" ${c.operator==='>='?'selected':''}>&ge; at least</option>
+            <option value="<=" ${c.operator==='<='?'selected':''}>&le; at most</option>
+            <option value="==" ${c.operator==='=='?'selected':''}>= exactly</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Required value</label><input class="form-input" value="${esc(c.value||'')}" oninput="updateCriteria(${i},'value',this.value)" placeholder="e.g. 7"></div>
+      </div>
+      ${c.type === 'select' ? `<div class="form-group"><label class="form-label">Dropdown options (comma separated)</label><input class="form-input" value="${esc((c.options||[]).join(', '))}" oninput="updateCriteria(${i},'options',this.value.split(',').map(s=>s.trim()).filter(Boolean))"></div>` : ''}
+    </div>
+  `).join('');
+}
+window.addCriteriaRow = function(){ state.criteriaDraft.push({ field:'', label:'', type:'text', operator:'>=', value:'', options:[] }); renderCriteriaList(); };
+window.removeCriteriaRow = function(i){ state.criteriaDraft.splice(i,1); renderCriteriaList(); };
+window.updateCriteria = function(i, key, val){ state.criteriaDraft[i][key] = val; };
+
+window.saveRole = async function(){
+  const title = $('rfTitle').value.trim();
+  if (!title) return toast('Role title is required', 'warning');
+  const revealVal = $('rfReveal').value;
+  const payload = {
+    title,
+    department: $('rfDept').value.trim(),
+    description: $('rfDesc').value.trim(),
+    vacancy: parseInt($('rfVacancy').value) || 0,
+    testDurationMinutes: parseInt($('rfDuration').value) || 20,
+    passPercentage: parseInt($('rfPass').value) || 60,
+    hoverDurationMs: parseInt($('rfHover').value) || 200,
+    resultRevealAt: revealVal ? new Date(revealVal) : null,
+    criteria: state.criteriaDraft.filter(c => c.field && c.label),
+  };
+  try {
+    if (state.editingRoleId) {
+      await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), payload);
+      toast('Role updated', 'success');
+    } else {
+      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', questions:[], createdAt: serverTimestamp() });
+      toast('Role created', 'success');
+    }
+    closeModal();
+  } catch (e) { console.error(e); toast('Could not save role', 'error'); }
+};
+
+/* ================================================================
+   QUESTIONS BUILDER (+ AI Assist)
+================================================================ */
+const AI_WORKER_URL = "https://sgp-content-ai.untitledworld9.workers.dev";
+let qAiAbort = null;
+
+window.openQuestionsModal = function(roleId){
+  const role = state.roles.find(r => r.id === roleId); if (!role) return;
+  state.editingRoleId = roleId;
+  state.questionsDraft = JSON.parse(JSON.stringify(role.questions || []));
+  openModal(`
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-title">${esc(role.title)} — Questions <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+
+      <div class="ai-box">
+        <div class="form-panel-title" style="margin-bottom:10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Assist <span class="pill">Groq</span></div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0;"><label class="form-label">How many questions</label><input class="form-input" id="qAiCount" type="number" value="5" min="1" max="20"></div>
+          <div class="form-group" style="margin-bottom:0;"><label class="form-label">Mostly which answer type</label>
+            <select class="form-select" id="qAiType"><option value="mcq">MCQ</option><option value="integer">Integer</option><option value="text">Text</option><option value="mixed">Mixed</option></select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Extra instructions (optional)</label><textarea class="form-textarea" id="qAiPrompt" placeholder="e.g. focus on grammar and SEO writing basics, medium difficulty"></textarea></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" id="qAiSendBtn" onclick="qAiGenerate()"><i class="fa-solid fa-bolt"></i> Generate</button>
+          <button class="btn btn-outline btn-sm" id="qAiStopBtn" onclick="qAiStop()" disabled>Stop</button>
+        </div>
+        <div class="ai-log" id="qAiLog"></div>
+        <div class="form-hint" style="margin-top:8px;">AI-generated questions are appended below — always review the correct answers before saving.</div>
+      </div>
+
+      <div id="qList"></div>
+      <button class="btn btn-outline btn-sm" onclick="addQuestionRow()"><i class="fa-solid fa-plus"></i> Add Question Manually</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveQuestions()"><i class="fa-solid fa-floppy-disk"></i> Save Questions</button>
+      </div>
+    </div>
+  `);
+  renderQuestionsList();
+};
+
+function blankQuestion(){ return { prompt:'', mediaType:'none', mediaUrl:'', answerType:'mcq', options:['','','',''], correctAnswer:0 }; }
+window.addQuestionRow = function(){ state.questionsDraft.push(blankQuestion()); renderQuestionsList(); };
+window.removeQuestionRow = function(i){ state.questionsDraft.splice(i,1); renderQuestionsList(); };
+window.updateQuestion = function(i, key, val){ state.questionsDraft[i][key] = val; if (key === 'answerType') renderQuestionsList(); };
+window.updateQOption = function(i, oi, val){ state.questionsDraft[i].options[oi] = val; };
+window.setQCorrectMcq = function(i, oi){ state.questionsDraft[i].correctAnswer = oi; renderQuestionsList(); };
+
+function renderQuestionsList(){
+  const host = $('qList'); if (!host) return;
+  if (!state.questionsDraft.length) { host.innerHTML = '<div class="form-hint" style="margin:10px 0;">No questions yet — use AI Assist or add one manually.</div>'; return; }
+  host.innerHTML = state.questionsDraft.map((q, i) => `
+    <div class="q-card">
+      <div class="q-card-head"><span class="q-index">Question ${i+1}</span><button class="q-remove" onclick="removeQuestionRow(${i})"><i class="fa-solid fa-trash"></i></button></div>
+      <div class="form-group"><label class="form-label">Prompt</label><textarea class="form-textarea" oninput="updateQuestion(${i},'prompt',this.value)" placeholder="Question text">${esc(q.prompt)}</textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Media (optional)</label>
+          <select class="form-select" onchange="updateQuestion(${i},'mediaType',this.value)">
+            <option value="none" ${q.mediaType==='none'?'selected':''}>None</option>
+            <option value="image" ${q.mediaType==='image'?'selected':''}>Image URL</option>
+            <option value="video" ${q.mediaType==='video'?'selected':''}>Video URL</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Media URL</label><input class="form-input" value="${esc(q.mediaUrl||'')}" oninput="updateQuestion(${i},'mediaUrl',this.value)" placeholder="https://…" ${q.mediaType==='none'?'disabled':''}></div>
+      </div>
+      <div class="form-group"><label class="form-label">Answer Type</label>
+        <select class="form-select" onchange="updateQuestion(${i},'answerType',this.value)">
+          <option value="mcq" ${q.answerType==='mcq'?'selected':''}>Multiple Choice</option>
+          <option value="integer" ${q.answerType==='integer'?'selected':''}>Integer</option>
+          <option value="text" ${q.answerType==='text'?'selected':''}>Text</option>
+        </select>
+      </div>
+      ${q.answerType === 'mcq' ? `
+        <label class="form-label" style="display:block;margin-bottom:8px;">Options — mark the correct one</label>
+        ${(q.options||['','','','']).map((opt, oi) => `
+          <div class="opt-row">
+            <input type="radio" name="correct-${i}" ${q.correctAnswer===oi?'checked':''} onchange="setQCorrectMcq(${i},${oi})">
+            <input class="form-input" value="${esc(opt)}" oninput="updateQOption(${i},${oi},this.value)" placeholder="Option ${oi+1}">
+          </div>
+        `).join('')}
+      ` : `
+        <div class="form-group"><label class="form-label">Correct Answer</label><input class="form-input" type="${q.answerType==='integer'?'number':'text'}" value="${esc(q.correctAnswer ?? '')}" oninput="updateQuestion(${i},'correctAnswer',${q.answerType==='integer'?'parseFloat(this.value)':'this.value'})"></div>
+      `}
+    </div>
+  `).join('');
+}
+
+window.saveQuestions = async function(){
+  const cleaned = state.questionsDraft.filter(q => q.prompt && q.prompt.trim());
+  try {
+    await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), { questions: cleaned });
+    toast('Questions saved', 'success');
+    closeModal();
+  } catch (e) { console.error(e); toast('Could not save questions', 'error'); }
+};
+
+function qAiLogLine(text, cls){
+  const log = $('qAiLog'); if (!log) return;
+  const line = document.createElement('div');
+  line.className = 'ai-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  log.appendChild(line); log.scrollTop = log.scrollHeight;
+}
+window.qAiStop = function(){ if (qAiAbort) qAiAbort.abort(); };
+window.qAiGenerate = async function(){
+  const role = state.roles.find(r => r.id === state.editingRoleId);
+  const count = Math.max(1, Math.min(20, parseInt($('qAiCount').value) || 5));
+  const typeChoice = $('qAiType').value;
+  const extra = $('qAiPrompt').value.trim();
+  const typeInstruction = typeChoice === 'mixed'
+    ? 'Mix of mcq, integer and text types across the questions.'
+    : `All questions must use TYPE: ${typeChoice}.`;
+  const prompt = `Write ${count} qualifying-test questions for a hiring test for the role "${role.title}" (${role.department || 'general'}). ${extra ? extra + '. ' : ''}${typeInstruction}
+Format EACH question exactly like this, separated by a line containing only ---:
+Q: <question text>
+TYPE: mcq
+A) <option 1>
+B) <option 2>
+C) <option 3>
+D) <option 4>
+ANSWER: <letter>
+---
+For TYPE: integer use "ANSWER: <number>" and no options. For TYPE: text use "ANSWER: <short text>" and no options. Do not add any extra commentary outside this format.`;
+
+  $('qAiLog').innerHTML = '';
+  qAiLogLine(`"${prompt.length > 90 ? prompt.slice(0,90) + '…' : prompt}"`);
+  $('qAiSendBtn').setAttribute('disabled','true');
+  $('qAiStopBtn').removeAttribute('disabled');
+  qAiAbort = new AbortController();
+
+  try {
+    const res = await fetch(AI_WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: qAiAbort.signal,
+      body: JSON.stringify({ prompt, action: 'generate', contentType: 'quiz', existingTitle: role.title, existingBlocks: [] })
+    });
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    const data = await res.json();
+    const rawText = Array.isArray(data.blocks) ? data.blocks.filter(b => b.text).map(b => b.text).join('\n') : (data.text || '');
+    const parsed = parseAiQuestions(rawText);
+    if (parsed.length) {
+      state.questionsDraft.push(...parsed);
+      renderQuestionsList();
+      qAiLogLine(`Added ${parsed.length} question(s) below. Review the correct answers before saving.`, 'done');
+    } else {
+      qAiLogLine("Couldn't parse any questions from the AI response — try again or add manually.", 'err');
+    }
+  } catch (e) {
+    qAiLogLine(e.name === 'AbortError' ? 'Stopped.' : `Error: ${e.message}`, 'err');
+  } finally {
+    $('qAiSendBtn').removeAttribute('disabled');
+    $('qAiStopBtn').setAttribute('disabled','true');
+    qAiAbort = null;
+  }
+};
+
+function parseAiQuestions(raw){
+  if (!raw) return [];
+  const blocks = raw.split(/\n\s*---\s*\n?/).map(b => b.trim()).filter(Boolean);
+  const out = [];
+  for (const block of blocks) {
+    const qMatch = block.match(/Q:\s*(.+)/i);
+    const typeMatch = block.match(/TYPE:\s*(mcq|integer|text)/i);
+    if (!qMatch || !typeMatch) continue;
+    const answerType = typeMatch[1].toLowerCase();
+    const answerMatch = block.match(/ANSWER:\s*(.+)/i);
+    if (!answerMatch) continue;
+    const q = { prompt: qMatch[1].trim(), mediaType:'none', mediaUrl:'', answerType, options:[], correctAnswer:null };
+    if (answerType === 'mcq') {
+      const optLines = [...block.matchAll(/^([A-D])\)\s*(.+)$/gim)];
+      if (optLines.length < 2) continue;
+      q.options = optLines.map(m => m[2].trim());
+      const letter = answerMatch[1].trim()[0].toUpperCase();
+      const idx = 'ABCD'.indexOf(letter);
+      q.correctAnswer = idx >= 0 ? idx : 0;
+    } else if (answerType === 'integer') {
+      const n = parseFloat(answerMatch[1]);
+      if (isNaN(n)) continue;
+      q.correctAnswer = n;
+    } else {
+      q.correctAnswer = answerMatch[1].trim();
+    }
+    out.push(q);
+  }
+  return out;
+}
+
+/* ================================================================
+   APPLICANTS
+================================================================ */
+function renderApplicants(){
+  const host = $('applicantsList'); if (!host) return;
+  const roleFilter = $('applicantsRoleFilter').value;
+  const statusFilter = $('applicantsStatusFilter').value;
+  const search = $('applicantsSearch').value.trim().toLowerCase();
+
+  let list = state.applications.slice();
+  if (roleFilter !== 'all') list = list.filter(a => a.roleId === roleFilter);
+  if (statusFilter !== 'all') list = list.filter(a => a.status === statusFilter);
+  if (search) list = list.filter(a => (a.name||'').toLowerCase().includes(search) || (a.email||'').toLowerCase().includes(search));
+  list.sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0));
+
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-file-lines"></i>No applicants match this filter.</div>'; return; }
+
+  host.innerHTML = list.map(a => {
+    const role = state.roles.find(r => r.id === a.roleId);
+    const criteriaHtml = a.criteriaAnswers && Object.keys(a.criteriaAnswers).length
+      ? Object.entries(a.criteriaAnswers).map(([k,v]) => `<span class="badge badge-gray">${esc(k)}: ${esc(v)}</span>`).join(' ')
+      : '';
+    const skillsHtml = (a.skills||[]).map(s => `<span class="badge badge-accent">${esc(s)}</span>`).join(' ');
+    return `<div class="tx-row" style="align-items:flex-start;">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div>
+        <div class="tx-row-sub">${esc(a.email)} · ${esc(a.phone||'—')} · Applied ${fmtDate(a.appliedAt)}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${criteriaHtml}${skillsHtml}</div>
+      </div>
+      ${statusBadge(a.status)}
+    </div>`;
+  }).join('');
+}
+
+/* ================================================================
+   RESULTS — auto-scoring + qualify/reject + email
+================================================================ */
+function scoreApplication(app, role){
+  const questions = role?.questions || [];
+  const answers = app.answers || [];
+  if (!questions.length) return { correct:0, total:0, percent:0 };
+  let correct = 0;
+  questions.forEach((q, i) => {
+    const given = answers[i];
+    if (given === null || given === undefined) return;
+    if (q.answerType === 'mcq') { if (given === q.correctAnswer) correct++; }
+    else if (q.answerType === 'integer') { if (parseFloat(given) === parseFloat(q.correctAnswer)) correct++; }
+    else { if (String(given).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++; }
+  });
+  const percent = Math.round((correct / questions.length) * 100);
+  return { correct, total: questions.length, percent };
+}
+
+function renderResults(){
+  const host = $('resultsList'); if (!host) return;
+  const roleFilter = $('resultsRoleFilter').value;
+  let list = state.applications.filter(a => ['test_completed','qualified','not_qualified'].includes(a.status));
+  if (roleFilter !== 'all') list = list.filter(a => a.roleId === roleFilter);
+  list.sort((x,y) => (y.testCompletedAt?.seconds||0) - (x.testCompletedAt?.seconds||0));
+
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-square-poll-vertical"></i>No completed tests yet.</div>'; return; }
+
+  host.innerHTML = list.map(a => {
+    const role = state.roles.find(r => r.id === a.roleId);
+    const { correct, total, percent } = scoreApplication(a, role);
+    const passPct = role?.passPercentage ?? 60;
+    const wouldPass = percent >= passPct;
+    return `<div class="tx-row" style="align-items:flex-start;">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div>
+        <div class="tx-row-sub">${esc(a.email)} · Score: <strong>${correct}/${total} (${percent}%)</strong> · Pass mark: ${passPct}% · ${wouldPass ? '<span style="color:var(--green);font-weight:700;">Meets pass mark</span>' : '<span style="color:var(--red);font-weight:700;">Below pass mark</span>'}</div>
+      </div>
+      <div class="tx-row-actions">
+        ${statusBadge(a.status)}
+        ${a.status === 'test_completed' ? `
+          <button class="btn btn-green btn-sm" onclick="finalizeResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Qualify</button>
+          <button class="btn btn-danger btn-sm" onclick="finalizeResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Reject</button>
+        ` : `<button class="btn btn-outline btn-sm" onclick="emailResult('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Result</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.finalizeResult = async function(appId, qualified){
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { status: qualified ? 'qualified' : 'not_qualified', resultDeclaredAt: serverTimestamp() });
+    toast(qualified ? 'Marked as qualified' : 'Marked as not qualified', 'success');
+    emailResult(appId);
+  } catch (e) { console.error(e); toast('Could not update result', 'error'); }
+};
+
+// Opens the admin's email client pre-filled with the outcome — works with
+// zero backend/API keys. For true one-tap automatic sending, wire this up
+// to EmailJS (emailjs.com, free tier) or a Cloudflare Worker + Resend/SendGrid
+// and replace this function's body with that API call.
+window.emailResult = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const qualified = a.status === 'qualified';
+  const subject = `Study Grid Prep — Result for ${role?.title || 'your application'}`;
+  const body = qualified
+    ? `Hi ${a.name},\n\nCongratulations! You have qualified the test for the role of ${role?.title || ''} at Study Grid Prep. Our team will reach out with next steps shortly.\n\nRegards,\nStudy Grid Prep Hiring Team`
+    : `Hi ${a.name},\n\nThank you for taking the qualifying test for ${role?.title || ''} at Study Grid Prep. After review, we won't be moving forward at this time. We appreciate your effort and encourage you to apply for future openings.\n\nRegards,\nStudy Grid Prep Hiring Team`;
+  window.open(`mailto:${encodeURIComponent(a.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+};
+
+/* ================================================================
+   CANDIDATES (registered users)
+================================================================ */
+function renderCandidates(){
+  const host = $('candidatesList'); if (!host) return;
+  const search = $('candidatesSearch').value.trim().toLowerCase();
+  let list = state.candidates.slice();
+  if (search) list = list.filter(c => (c.name||'').toLowerCase().includes(search) || (c.email||'').toLowerCase().includes(search) || (c.phone||'').includes(search));
+
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No registered users match this search.</div>'; return; }
+
+  host.innerHTML = list.map(c => {
+    const appCount = state.applications.filter(a => a.uid === c.id).length;
+    return `<div class="tx-row">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(c.name||'—')}</div>
+        <div class="tx-row-sub">${esc(c.email||'—')} · ${esc(c.phone||'—')} · Joined ${fmtDate(c.createdAt)} · ${appCount} application(s)</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
