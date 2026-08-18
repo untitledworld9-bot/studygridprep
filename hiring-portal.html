@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="icon" href="/icon-192.png" type="image/png">
 <meta name="theme-color" content="#F0F2F8" id="metaThemeColor">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,7 +65,10 @@ button, input, select, textarea{ font-family:inherit; }
 .splash-logo{
   position:absolute; width:30px; height:30px; border-radius:8px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
 }
+.splash-logo img{ width:100%; height:100%; object-fit:cover; }
+.auth-brand-icon img, .sidebar-brand-icon img{ width:100%; height:100%; object-fit:cover; }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 
 /* ============================================================
@@ -81,7 +84,7 @@ button, input, select, textarea{ font-family:inherit; }
 .auth-brand-icon{
   width:36px; height:36px; border-radius:10px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px;
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; overflow:hidden;
 }
 .auth-brand-name{ font-weight:800; font-size:15px; color:var(--text); }
 .auth-brand-sub{ font-size:11px; color:var(--text3); }
@@ -127,7 +130,7 @@ button, input, select, textarea{ font-family:inherit; }
 .sidebar-brand-icon{
   width:32px; height:32px; border-radius:9px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; overflow:hidden;
 }
 .sidebar-brand-name{ font-weight:800; font-size:13.5px; color:var(--text); }
 .sidebar-profile{
@@ -363,7 +366,7 @@ button, input, select, textarea{ font-family:inherit; }
 <div class="screen active" id="screenSplash">
   <div style="position:relative;display:flex;align-items:center;justify-content:center;">
     <div class="splash-ring"></div>
-    <div class="splash-logo"></div>
+    <div class="splash-logo"><img src="/icon-192.png" alt="Study Grid Prep"></div>
   </div>
 </div>
 
@@ -373,7 +376,7 @@ button, input, select, textarea{ font-family:inherit; }
 <div class="screen" id="screenAuth">
   <div class="auth-card">
     <div class="auth-brand">
-      <div class="auth-brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+      <div class="auth-brand-icon"><img src="/icon-192.png" alt="Study Grid Prep"></div>
       <div>
         <div class="auth-brand-name">Study Grid Prep</div>
         <div class="auth-brand-sub">Careers Portal</div>
@@ -435,7 +438,7 @@ button, input, select, textarea{ font-family:inherit; }
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
     <aside class="roles-sidebar" id="rolesSidebar">
       <div class="sidebar-brand">
-        <div class="sidebar-brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+        <div class="sidebar-brand-icon"><img src="/icon-192.png" alt="Study Grid Prep"></div>
         <span class="sidebar-brand-name">Careers</span>
       </div>
 
