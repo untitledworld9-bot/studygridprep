@@ -22,7 +22,10 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged,
-  signOut
+  signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
@@ -50,6 +53,7 @@ export {
   db, auth, provider, messaging,
   getToken, onMessage,
   signInWithPopup, onAuthStateChanged, signOut,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile,
   collection, addDoc, onSnapshot,
   doc, setDoc, updateDoc, increment,
   deleteDoc, query, orderBy, limit,
