@@ -555,9 +555,11 @@ async function loadFirebase(){
 }
 
 // Safety net: if nothing has moved the splash screen along within 8s
-// (network stall, unregistered SW edge case, etc.), show a manual retry
-// instead of spinning forever with no feedback.
-const _splashTimeout = setTimeout(() => {
+// (network stall, unregistered SW edge case, Firestore rule hang, etc.),
+// show a manual retry instead of spinning forever with no feedback.
+// Cleared inside showScreen() the moment we actually leave the splash —
+// covers the WHOLE boot sequence, not just the firebase.js import.
+window._splashTimeout = setTimeout(() => {
   const el = document.getElementById('screenSplash');
   if (el && el.classList.contains('active')) {
     el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--red,#EF4444);">
@@ -571,7 +573,6 @@ const _splashTimeout = setTimeout(() => {
 let fb;
 try {
   fb = await loadFirebase();
-  clearTimeout(_splashTimeout);
 } catch (e) {
   console.error('Hiring portal init error:', e);
   document.getElementById('screenSplash').innerHTML =
@@ -598,6 +599,7 @@ const STATE = {
 };
 
 function showScreen(id){
+  if (id !== 'screenSplash' && window._splashTimeout) { clearTimeout(window._splashTimeout); window._splashTimeout = null; }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
@@ -694,11 +696,16 @@ function onLoggedIn(user, profile){
    BOOT — check existing session
 ================================================================ */
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const snap = await getDoc(doc(db, 'hiringCandidates', user.uid)).catch(() => null);
-    const profile = snap && snap.exists() ? snap.data() : { name: user.displayName, email: user.email };
-    onLoggedIn(user, profile);
-  } else {
+  try {
+    if (user) {
+      const snap = await getDoc(doc(db, 'hiringCandidates', user.uid)).catch(() => null);
+      const profile = snap && snap.exists() ? snap.data() : { name: user.displayName, email: user.email };
+      onLoggedIn(user, profile);
+    } else {
+      showScreen('screenAuth');
+    }
+  } catch (e) {
+    console.error('Boot auth-state handler error:', e);
     showScreen('screenAuth');
   }
 });
