@@ -803,10 +803,14 @@ async function loadData() {
 
     if (lbSnap.exists()) {
       const d = lbSnap.data();
+      // ✅ FIX: studyXP/streak now always come from local storage (same
+      // source mainleaderboard.html's My Rank card uses) instead of the
+      // Firestore leaderboard doc's xp/streak fields — that mismatch was
+      // exactly why this page showed different numbers than the
+      // leaderboard. Only timerXP/focusTime still come from Firestore,
+      // matching mainleaderboard.html exactly.
       timerXP   = d.timerXP   || 0;
       focusTime = d.focusTime || 0;
-      studyXP   = d.xp        || localStudyXP;
-      streak    = d.streak    || localStreak;
     }
 
     const totalXP     = studyXP + timerXP;
