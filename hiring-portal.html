@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Eruda debug console — loads first, independent of anything below. Remove this block once debugging is done. -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 <title>Careers &amp; Roles – Study Grid Prep</title>
 <meta name="description" content="Apply for roles at Study Grid Prep, check your eligibility instantly, and take the qualifying test online.">
 <meta name="robots" content="noindex, nofollow">
@@ -545,14 +548,30 @@ button, input, select, textarea{ font-family:inherit; }
    FIREBASE LOAD
 ================================================================ */
 async function loadFirebase(){
-  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  const v = 'cb=' + Date.now(); // cache-bust — SW/browser can't serve a stale firebase.js
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'].map(p => p + '?' + v);
   for (const src of candidates) { try { return await import(src); } catch(e){} }
   throw new Error('firebase.js not found');
 }
 
+// Safety net: if nothing has moved the splash screen along within 8s
+// (network stall, unregistered SW edge case, etc.), show a manual retry
+// instead of spinning forever with no feedback.
+const _splashTimeout = setTimeout(() => {
+  const el = document.getElementById('screenSplash');
+  if (el && el.classList.contains('active')) {
+    el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--red,#EF4444);">
+      <i class="fa-solid fa-triangle-exclamation" style="font-size:24px;display:block;margin-bottom:10px;"></i>
+      Taking longer than expected.
+      <button onclick="location.reload()" style="display:block;margin:16px auto 0;padding:10px 20px;border:none;border-radius:10px;background:var(--accent,#5B5BF6);color:#fff;font-weight:700;cursor:pointer;">Retry</button>
+    </div>`;
+  }
+}, 8000);
+
 let fb;
 try {
   fb = await loadFirebase();
+  clearTimeout(_splashTimeout);
 } catch (e) {
   console.error('Hiring portal init error:', e);
   document.getElementById('screenSplash').innerHTML =
@@ -1073,9 +1092,5 @@ async function finishTest(){
 }
 window.backToRolesFromSubmit = function(){ showScreen('screenRoles'); };
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-
 </body>
 </html>
