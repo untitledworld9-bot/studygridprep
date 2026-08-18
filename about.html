@@ -138,6 +138,106 @@ p {
 }
 p:last-child { margin-bottom: 0; }
 
+.card-subhead {
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+  color: var(--text-primary);
+  margin: 26px 0 12px;
+}
+.card-subhead:first-child { margin-top: 0; }
+
+.feature-list {
+  list-style: none;
+  margin: 4px 0 20px;
+  padding: 0;
+  display: grid;
+  gap: 11px;
+}
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.feature-list li::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+/* ===== FOUNDER SECTION ===== */
+.founder-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.founder-card:hover {
+  box-shadow: 0 14px 30px -6px rgba(0,0,0,0.10), 0 6px 10px -2px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+.founder-img {
+  width: 92px; height: 92px;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+.founder-info { min-width: 0; }
+.founder-name {
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+}
+.founder-role {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--primary);
+  margin-top: 3px;
+}
+.founder-subrole {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.founder-desc {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+@media (max-width: 600px) {
+  .founder-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+    padding: 28px 20px;
+  }
+  .founder-img { width: 80px; height: 80px; }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -303,13 +403,44 @@ footer {
   <h1>About Study Grid Prep</h1>
 
   <div class="content-card">
-    <p>Study Grid Prep is a distraction-free study platform designed for students preparing for JEE, NEET ,CUET and board exams. Our goal is to make studying simple, focused and effective.</p>
+    <p>Study Grid Prep is a student-focused digital platform built to help students study smarter, stay organized, and access the information that actually matters to them — all from one place. What started as a simple exam-prep tool has grown into a broader platform that supports students through their everyday academic life, not just their exams.</p>
 
-    <p>Here you can track your progress, use study timers, Mock Tests, create playlists from YouTube lectures and Todo List — all in one place.</p>
+    <h2 class="card-subhead">What Study Grid Prep Offers</h2>
+    <p>The platform brings together practical study tools designed for daily use:</p>
+    <ul class="feature-list">
+      <li>Focus Timer to help you study with intent and track your sessions</li>
+      <li>Todo List to plan and stay on top of your daily tasks</li>
+      <li>Study &amp; YouTube Playlists to organize your learning material</li>
+      <li>Progress Tracking to see how consistent you've been over time</li>
+      <li>Mock Tests and other academic tools to help you prepare and practice</li>
+    </ul>
 
-    <p>This platform is built to help students stay consistent, motivated and productive.</p>
+    <h2 class="card-subhead">Content Hub</h2>
+    <p>Alongside these tools, Study Grid Prep now includes a dedicated Content Hub — a single place to stay updated and informed as a student. It brings together:</p>
+    <ul class="feature-list">
+      <li>Educational updates</li>
+      <li>Latest student and news updates</li>
+      <li>College information</li>
+      <li>Notes and study resources</li>
+      <li>Blogs and articles</li>
+      <li>Career and academic information</li>
+      <li>Other useful resources for students</li>
+    </ul>
+
+    <p>Study Grid Prep is built for students preparing for JEE, NEET, CUET, board exams, and beyond — anyone looking for a more focused and organized way to study, along with the information they need to make better academic decisions.</p>
 
     <a href="login.html" class="btn">Get Started →</a>
+  </div>
+
+  <div class="founder-card reveal">
+    <!-- FOUNDER IMAGE URL: Replace the src below with the founder's profile image URL -->
+    <img class="founder-img" src="https://placehold.co/160x160" alt="Ayush Kumar Gupta">
+    <div class="founder-info">
+      <div class="founder-name">Ayush Kumar Gupta</div>
+      <div class="founder-role">Founder, Study Grid Prep</div>
+      <div class="founder-subrole">BTech Student</div>
+      <p class="founder-desc">Building Study Grid Prep to make learning more focused, organized, and accessible for students.</p>
+    </div>
   </div>
 </main>
 
@@ -322,7 +453,7 @@ footer {
     <div class="social-grid reveal">
 
       <div class="social-label">
-        <a href="www.youtube.com/@studygridprep" target="_blank" rel="noopener" class="social-btn yt" aria-label="YouTube">
+        <a href="https://www.youtube.com/@studygridprep" target="_blank" rel="noopener" class="social-btn yt" aria-label="YouTube">
           <svg viewBox="0 0 24 24" fill="currentColor" style="color:#FF0000; width:32px; height:32px;">
             <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
           </svg>
@@ -363,7 +494,7 @@ footer {
       </div>
 
       <div class="social-label">
-        <a href="https://x.com/study gridprep" target="_blank" rel="noopener" class="social-btn tw" aria-label="X (Twitter)">
+        <a href="https://x.com/studygridprep" target="_blank" rel="noopener" class="social-btn tw" aria-label="X (Twitter)">
           <svg viewBox="0 0 24 24" fill="white" style="width:26px;height:26px;">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.632L18.244 2.25Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/>
           </svg>
@@ -378,6 +509,7 @@ footer {
     <div class="footer-logo">Study Grid Prep</div>
     <div class="footer-links">
       <a href="contact.html">Contact Us</a>
+      <a href="blogs.html">Blogs</a>
       <a href="terms.html">Terms</a>
       <a href="privacy.html">Privacy Policy</a>
     </div>
