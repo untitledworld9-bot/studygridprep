@@ -592,6 +592,21 @@ window.openRoleModal = function(id){
         <div class="form-group"><label class="form-label">Card Hover Timing (ms)</label><input class="form-input" type="number" id="rfHover" value="${role?.hoverDurationMs ?? 200}" min="0"></div>
         <div class="form-group"><label class="form-label">Result Reveal Date &amp; Time</label><input class="form-input" type="datetime-local" id="rfReveal" value="${toInputDate(role?.resultRevealAt)}"></div>
       </div>
+      <div class="form-panel-title" style="margin-top:6px;">Job Listing Info <span class="pill">powers Google Jobs search results</span></div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Employment Type</label>
+          <select class="form-select" id="rfEmpType">
+            <option value="FULL_TIME" ${(role?.employmentType||'FULL_TIME')==='FULL_TIME'?'selected':''}>Full-time</option>
+            <option value="PART_TIME" ${role?.employmentType==='PART_TIME'?'selected':''}>Part-time</option>
+            <option value="INTERN" ${role?.employmentType==='INTERN'?'selected':''}>Internship</option>
+            <option value="CONTRACTOR" ${role?.employmentType==='CONTRACTOR'?'selected':''}>Contract / Freelance</option>
+            <option value="VOLUNTEER" ${role?.employmentType==='VOLUNTEER'?'selected':''}>Volunteer</option>
+            <option value="OTHER" ${role?.employmentType==='OTHER'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="rfLocation" value="${esc(role?.location||'')}" placeholder="e.g. Delhi (leave blank if remote)"></div>
+        <div class="form-group"><label class="form-label">Listing Valid Through</label><input class="form-input" type="date" id="rfValidThrough" value="${role?.validThrough ? role.validThrough.substring(0,10) : ''}"></div>
+      </div>
       <div class="form-panel-title" style="margin-top:6px;">Eligibility Criteria <span class="pill">shown on the role card + apply form</span></div>
       <div id="criteriaList"></div>
       <button class="btn btn-outline btn-sm" onclick="addCriteriaRow()"><i class="fa-solid fa-plus"></i> Add Criteria</button>
@@ -643,6 +658,7 @@ window.saveRole = async function(){
   const title = $('rfTitle').value.trim();
   if (!title) return toast('Role title is required', 'warning');
   const revealVal = $('rfReveal').value;
+  const validThroughVal = $('rfValidThrough').value;
   const payload = {
     title,
     department: $('rfDept').value.trim(),
@@ -653,13 +669,16 @@ window.saveRole = async function(){
     hoverDurationMs: parseInt($('rfHover').value) || 200,
     resultRevealAt: revealVal ? new Date(revealVal) : null,
     criteria: state.criteriaDraft.filter(c => c.field && c.label),
+    employmentType: $('rfEmpType').value,
+    location: $('rfLocation').value.trim(),
+    validThrough: validThroughVal ? new Date(validThroughVal + 'T23:59:59').toISOString() : '',
   };
   try {
     if (state.editingRoleId) {
       await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), payload);
       toast('Role updated', 'success');
     } else {
-      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', questions:[], createdAt: serverTimestamp() });
+      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', questions:[], createdAt: serverTimestamp(), datePosted: serverTimestamp() });
       toast('Role created', 'success');
     }
     closeModal();
