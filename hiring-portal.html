@@ -156,8 +156,10 @@ button, input, select, textarea{ font-family:inherit; }
 .sidebar-filter-btn i{ width:16px; text-align:center; }
 .sidebar-logout{ margin-top:auto; }
 
-/* Main roles area */
-.roles-main{ flex:1; min-width:0; padding:24px 28px 60px; }
+/* Main roles area — header stays fixed, only the list below scrolls */
+.roles-main{ flex:1; min-width:0; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+.roles-header-sticky{ flex-shrink:0; padding:24px 28px 0; }
+.roles-scroll-area{ flex:1; overflow-y:auto; padding:0 28px 60px; -webkit-overflow-scrolling:touch; }
 .roles-topbar{ display:flex; align-items:center; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
 .roles-search-box{
   flex:1; min-width:220px; display:flex; align-items:center; gap:10px;
@@ -200,6 +202,11 @@ button, input, select, textarea{ font-family:inherit; }
 .role-card-apply:hover{ background:var(--accent); color:#fff; }
 
 .roles-empty{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text2); }
+.roles-filter-select{
+  border:1.5px solid var(--border); border-radius:12px; padding:10px 14px; background:var(--surface);
+  color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer; outline:none;
+}
+.roles-filter-select:focus{ border-color:var(--accent); }
 .roles-empty i{ font-size:30px; color:var(--text3); display:block; margin-bottom:12px; }
 
 /* Applied status box */
@@ -379,58 +386,20 @@ button, input, select, textarea{ font-family:inherit; }
 ============================================================ -->
 <div class="screen" id="screenAuth">
   <div class="auth-card">
-    <div class="auth-brand">
-      <div class="auth-brand-icon"><img src="/icon-192.png" alt="Study Grid Prep"></div>
+    <div class="auth-brand" style="flex-direction:column;text-align:center;gap:10px;">
+      <div class="auth-brand-icon" style="width:52px;height:52px;border-radius:14px;margin:0 auto;"><img src="/icon-192.png" alt="Study Grid Prep"></div>
       <div>
         <div class="auth-brand-name">Study Grid Prep</div>
         <div class="auth-brand-sub">Careers Portal</div>
       </div>
     </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tabRegister" onclick="switchAuthTab('register')">Register</button>
-      <button class="auth-tab" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
-    </div>
-
     <div class="auth-error" id="authError"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
 
-    <!-- Register form -->
-    <form class="auth-form active" id="formRegister" onsubmit="return false;">
-      <div class="auth-field">
-        <label class="auth-label">Full Name</label>
-        <input class="auth-input" id="regName" type="text" placeholder="Your full name" required>
-      </div>
-      <div class="auth-field">
-        <label class="auth-label">Gmail</label>
-        <input class="auth-input" id="regEmail" type="email" placeholder="you@gmail.com" required>
-      </div>
-      <div class="auth-field">
-        <label class="auth-label">Phone</label>
-        <input class="auth-input" id="regPhone" type="tel" placeholder="10-digit mobile number" required>
-      </div>
-      <div class="auth-field">
-        <label class="auth-label">Password</label>
-        <input class="auth-input" id="regPassword" type="password" placeholder="Minimum 6 characters" required>
-      </div>
-      <button class="auth-submit" id="btnRegisterSubmit" onclick="handleRegister()">
-        <span>Submit</span>
-      </button>
-    </form>
-
-    <!-- Login form -->
-    <form class="auth-form" id="formLogin" onsubmit="return false;">
-      <div class="auth-field">
-        <label class="auth-label">Name / Gmail</label>
-        <input class="auth-input" id="loginName" type="text" placeholder="Your name or Gmail" required>
-      </div>
-      <div class="auth-field">
-        <label class="auth-label">Password</label>
-        <input class="auth-input" id="loginPassword" type="password" placeholder="Your password" required>
-      </div>
-      <button class="auth-submit" id="btnLoginSubmit" onclick="handleLogin()">
-        <span>Login</span>
-      </button>
-    </form>
+    <button class="auth-submit auth-google-btn" id="btnGoogleSignIn" onclick="signInCandidate()" style="margin-top:18px;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      <span>Continue with Google</span>
+    </button>
   </div>
 </div>
 
@@ -461,27 +430,34 @@ button, input, select, textarea{ font-family:inherit; }
         </div>
       </div>
 
+      <button class="sidebar-filter-btn" id="themeToggleBtn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeToggleIcon"></i> <span id="themeToggleLabel">Dark Mode</span></button>
       <button class="sidebar-filter-btn sidebar-logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
     </aside>
 
     <main class="roles-main">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-        <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-        <div class="roles-header-title" style="margin-bottom:0;">Open Roles</div>
-      </div>
-      <div class="roles-header-sub">Apply for a role, check your eligibility instantly, and take the qualifying test online.</div>
+      <div class="roles-header-sticky">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+          <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+          <div class="roles-header-title" style="margin-bottom:0;">Open Roles</div>
+        </div>
+        <div class="roles-header-sub">Apply for a role, check your eligibility instantly, and take the qualifying test online.</div>
 
-      <div class="roles-topbar">
-        <div class="roles-search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="roleSearchInput" placeholder="Search roles…">
+        <div class="roles-topbar">
+          <div class="roles-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="roleSearchInput" placeholder="Search roles…">
+          </div>
+          <select id="roleFilterSelect" class="roles-filter-select" onchange="setDeptFilter(this.value)">
+            <option value="all">All Roles</option>
+          </select>
         </div>
       </div>
 
-      <div id="appliedStatusHost"></div>
-
-      <div class="roles-grid" id="rolesGrid">
-        <div class="roles-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>Loading roles…</div>
+      <div class="roles-scroll-area">
+        <div id="appliedStatusHost"></div>
+        <div class="roles-grid" id="rolesGrid">
+          <div class="roles-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>Loading roles…</div>
+        </div>
       </div>
     </main>
   </div>
@@ -490,7 +466,7 @@ button, input, select, textarea{ font-family:inherit; }
 <!-- ============================================================
      APPLY MODAL
 ============================================================ -->
-<div class="modal-overlay" id="applyModalOverlay">
+<div class="modal-overlay" id="applyModalOverlay" onclick="if(event.target===this) closeApplyModal();">
   <div class="modal-sheet">
     <div class="modal-head">
       <div class="modal-title" id="applyModalTitle">Apply</div>
@@ -581,9 +557,9 @@ try {
   throw e;
 }
 const {
-  db, auth, collection, query, where, onSnapshot, getDocs, getDoc, doc, updateDoc, setDoc, addDoc,
+  db, auth, provider, collection, query, where, onSnapshot, getDocs, getDoc, doc, updateDoc, setDoc, addDoc,
   serverTimestamp, orderBy,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut
+  signInWithPopup, onAuthStateChanged, signOut
 } = fb;
 
 /* ================================================================
@@ -614,67 +590,41 @@ function fmtDate(v){
 /* ================================================================
    AUTH
 ================================================================ */
-window.switchAuthTab = function(tab){
-  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-  document.getElementById('formRegister').classList.toggle('active', tab === 'register');
-  document.getElementById('formLogin').classList.toggle('active', tab === 'login');
-  document.getElementById('authError').classList.remove('show');
-};
 function showAuthError(msg){
   const el = document.getElementById('authError');
+  if (!msg) { el.classList.remove('show'); return; }
   el.querySelector('span').textContent = msg;
   el.classList.add('show');
 }
 
-window.handleRegister = async function(){
-  const name  = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  const pass  = document.getElementById('regPassword').value;
-  if (!name || !email || !phone || !pass) { showAuthError('Please fill in all fields.'); return; }
-  if (pass.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
-
-  const btn = document.getElementById('btnRegisterSubmit');
-  btn.disabled = true; btn.querySelector('span').textContent = 'Submitting…';
+window.signInCandidate = async function(){
+  showAuthError('');
+  const btn = document.getElementById('btnGoogleSignIn');
+  btn.disabled = true;
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(cred.user, { displayName: name });
-    await setDoc(doc(db, 'hiringCandidates', cred.user.uid), {
-      name, email, phone, createdAt: serverTimestamp(),
-    }, { merge: true });
-    localStorage.setItem('userName', name);
-    localStorage.setItem('userPhone', phone);
-    onLoggedIn(cred.user, { name, email, phone });
-  } catch (e) {
-    console.error('Register error:', e);
-    showAuthError(e.code === 'auth/email-already-in-use' ? 'This Gmail is already registered — try logging in instead.' : (e.message || 'Registration failed.'));
-  } finally {
-    btn.disabled = false; btn.querySelector('span').textContent = 'Submit';
-  }
-};
-
-window.handleLogin = async function(){
-  const identifier = document.getElementById('loginName').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  if (!identifier || !pass) { showAuthError('Please enter your name/Gmail and password.'); return; }
-
-  const btn = document.getElementById('btnLoginSubmit');
-  btn.disabled = true; btn.querySelector('span').textContent = 'Logging in…';
-  try {
-    // Accept either an email directly, or fall back to treating it as email too
-    // (candidates register with Gmail, so this is normally already an email).
-    const email = identifier.includes('@') ? identifier : identifier;
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const cred = await signInWithPopup(auth, provider);
     const snap = await getDoc(doc(db, 'hiringCandidates', cred.user.uid));
-    const profile = snap.exists() ? snap.data() : { name: cred.user.displayName || 'Candidate', email: cred.user.email };
-    localStorage.setItem('userName', profile.name || '');
+    const profile = snap.exists() ? snap.data() : { name: cred.user.displayName || '', email: cred.user.email };
+    if (!snap.exists()) {
+      await setDoc(doc(db, 'hiringCandidates', cred.user.uid), {
+        name: cred.user.displayName || '', email: cred.user.email, createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+    localStorage.setItem('userName', profile.name || cred.user.displayName || '');
     onLoggedIn(cred.user, profile);
   } catch (e) {
-    console.error('Login error:', e);
-    showAuthError('Incorrect name/Gmail or password.');
+    console.error('Google sign-in error:', e);
+    if (e.code === 'auth/popup-closed-by-user') {
+      showAuthError('Popup closed. Please complete the sign-in.');
+    } else if (e.code === 'auth/cancelled-popup-request') {
+      // ignore — double click
+    } else if (e.code === 'auth/network-request-failed') {
+      showAuthError('Network error. Please check your internet.');
+    } else {
+      showAuthError('Sign-in failed. Please try again.');
+    }
   } finally {
-    btn.disabled = false; btn.querySelector('span').textContent = 'Login';
+    btn.disabled = false;
   }
 };
 
@@ -741,10 +691,18 @@ function renderDeptFilters(){
   const host = document.getElementById('sidebarFilters');
   host.innerHTML = `<button class="sidebar-filter-btn ${STATE.deptFilter==='all'?'active':''}" data-dept="all" onclick="setDeptFilter('all')"><i class="fa-solid fa-layer-group"></i> All Roles</button>`
     + depts.map(d => `<button class="sidebar-filter-btn ${STATE.deptFilter===d?'active':''}" data-dept="${escapeHtml(d)}" onclick="setDeptFilter('${escapeHtml(d)}')"><i class="fa-solid fa-tag"></i> ${escapeHtml(d)}</button>`).join('');
+
+  const select = document.getElementById('roleFilterSelect');
+  if (select) {
+    select.innerHTML = `<option value="all">All Roles</option>` + depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+    select.value = STATE.deptFilter;
+  }
 }
 window.setDeptFilter = function(dept){
   STATE.deptFilter = dept;
   document.querySelectorAll('.sidebar-filter-btn[data-dept]').forEach(b => b.classList.toggle('active', b.dataset.dept === dept));
+  const select = document.getElementById('roleFilterSelect');
+  if (select) select.value = dept;
   renderRolesGrid();
   if (window.innerWidth <= 820) toggleSidebar(false);
 };
@@ -755,6 +713,25 @@ window.toggleSidebar = function(force){
   sb.classList.toggle('open', open);
   bd.classList.toggle('open', open);
 };
+
+// ── Theme toggle — same localStorage("theme") key the pre-boot inline
+// script reads, so it stays consistent across every page in the app.
+function syncThemeToggleUI(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const icon  = document.getElementById('themeToggleIcon');
+  const label = document.getElementById('themeToggleLabel');
+  if (icon)  icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  if (label) label.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+  const meta = document.getElementById('metaThemeColor');
+  if (meta) meta.setAttribute('content', isDark ? '#0D1120' : '#F0F2F8');
+}
+window.toggleTheme = function(){
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  syncThemeToggleUI();
+};
+syncThemeToggleUI();
 
 document.getElementById('roleSearchInput').addEventListener('input', (e) => {
   STATE.search = e.target.value.trim().toLowerCase();
@@ -841,6 +818,10 @@ window.openApplyModal = function(roleId){
   body.innerHTML = `
     <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">${escapeHtml(role.description || '')}</div>
     <form id="applyForm" onsubmit="return false;">
+      <div class="form-field">
+        <label class="form-label">Phone</label>
+        <input class="form-input" type="tel" id="applyPhoneInput" placeholder="10-digit mobile number" value="${escapeHtml(STATE.user.phone || '')}" required>
+      </div>
       ${criteria.map((c, i) => `
         <div class="form-field">
           <label class="form-label">${escapeHtml(c.label || c.field)}</label>
@@ -913,18 +894,27 @@ window.submitApplication = async function(){
     values[c.field] = el.value;
   });
 
-  const eligible = checkEligibility(role, values);
+  const phone = document.getElementById('applyPhoneInput').value.trim();
   const resultHost = document.getElementById('eligibilityResult');
+  if (!/^\d{10}$/.test(phone)) {
+    resultHost.innerHTML = `<div class="eligibility-banner no"><i class="fa-solid fa-circle-exclamation"></i>Enter a valid 10-digit mobile number.</div>`;
+    return;
+  }
+
+  const eligible = checkEligibility(role, values);
 
   btn.disabled = true;
   try {
+    STATE.user.phone = phone;
+    await setDoc(doc(db, 'hiringCandidates', STATE.user.uid), { phone }, { merge: true });
+
     const appRef = doc(collection(db, 'hiringApplications'));
     await setDoc(appRef, {
       roleId: role.id,
       uid: STATE.user.uid,
       name: STATE.user.name,
       email: STATE.user.email,
-      phone: STATE.user.phone,
+      phone,
       criteriaAnswers: values,
       skills: STATE._skills || [],
       eligible,
