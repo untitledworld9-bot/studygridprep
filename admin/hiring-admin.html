@@ -486,10 +486,11 @@ function bootData(){
     renderDashboard(); renderApplicants(); renderResults();
   }, e => console.error('applications snapshot error', e));
 
-  onSnapshot(query(collection(db, 'hiringCandidates'), orderBy('createdAt', 'desc')), snap => {
-    state.candidates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  onSnapshot(collection(db, 'hiringCandidates'), snap => {
+    state.candidates = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     renderDashboard(); renderCandidates();
-  }, e => console.error('candidates snapshot error', e));
+  }, e => { console.error('candidates snapshot error', e); toast('Could not load registered users: ' + e.message, 'error'); });
 }
 
 function populateRoleFilters(){
