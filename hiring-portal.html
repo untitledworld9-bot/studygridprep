@@ -844,13 +844,13 @@ function renderAppliedStatusBoxes(){
   host.innerHTML = apps.map(app => {
     const role = STATE.roles.find(r => r.id === app.roleId);
     const roleName = role ? role.title : 'Role';
-    const done = app.status === 'test_completed' || app.status === 'passed' || app.status === 'failed';
+    const done = app.status === 'test_completed' || app.status === 'qualified' || app.status === 'not_qualified';
     let sub = '';
     if (app.status === 'not_eligible') sub = 'You did not meet the eligibility criteria for this role.';
     else if (app.status === 'applied') sub = 'Application received — start your test from the role card.';
     else if (app.status === 'test_completed') sub = `Test submitted. Result on ${fmtDate(role && role.resultRevealAt)}.`;
-    else if (app.status === 'passed') sub = 'Result declared — you have qualified! Check your email.';
-    else if (app.status === 'failed') sub = 'Result declared — you did not qualify this time.';
+    else if (app.status === 'qualified') sub = 'Result declared — you have qualified! Check your email.';
+    else if (app.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
     return `
       <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
@@ -1023,10 +1023,10 @@ function renderExistingStatusBody(app, role){
   if (app.status === 'test_completed') {
     return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">Your test is submitted. Result declares on <strong>${fmtDate(role && role.resultRevealAt)}</strong>.</div>`;
   }
-  if (app.status === 'passed') {
+  if (app.status === 'qualified') {
     return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div></div>`;
   }
-  if (app.status === 'failed') {
+  if (app.status === 'not_qualified') {
     return `<div style="text-align:center;"><div class="eligibility-banner no" style="display:inline-flex;">Result declared — you did not qualify this time. Thank you for applying.</div></div>`;
   }
   return '';
