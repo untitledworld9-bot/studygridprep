@@ -308,7 +308,10 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
       <div><div class="section-title">Registered Users</div><div class="section-sub">Everyone who has signed up on the hiring portal</div></div>
     </div>
     <div class="form-panel" style="padding:14px 16px;margin-bottom:14px;">
-      <input class="form-input" id="candidatesSearch" placeholder="Search by name, email or phone…" oninput="renderCandidates()">
+      <div class="select-row">
+        <input class="form-input" id="candidatesSearch" style="flex:1;" placeholder="Search by name, email or phone…" oninput="renderCandidates()">
+        <select class="form-select" id="candidatesRoleFilter" style="max-width:260px;" onchange="renderCandidates()"><option value="all">All Roles (optional)</option></select>
+      </div>
     </div>
     <div id="candidatesList"><div class="empty-state"><i class="fa-solid fa-users"></i>No registered users yet.</div></div>
   </section>
@@ -487,19 +490,27 @@ function bootData(){
   }, e => console.error('applications snapshot error', e));
 
   onSnapshot(collection(db, 'hiringCandidates'), snap => {
-    state.candidates = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    state.candidates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort client-side (not via Firestore orderBy) — orderBy silently drops
+    // any doc missing the createdAt field entirely, which hid legitimately
+    // registered users that predate this field. Missing dates sort last.
+    state.candidates.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     renderDashboard(); renderCandidates();
-  }, e => { console.error('candidates snapshot error', e); toast('Could not load registered users: ' + e.message, 'error'); });
+  }, e => console.error('candidates snapshot error', e));
 }
 
 function populateRoleFilters(){
   const opts = '<option value="all">All Roles</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join('');
-  const a = $('applicantsRoleFilter'), r = $('resultsRoleFilter');
-  const aVal = a.value, rVal = r.value;
+  const optsCand = '<option value="all">All Roles (optional)</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join('');
+  const a = $('applicantsRoleFilter'), r = $('resultsRoleFilter'), c = $('candidatesRoleFilter');
+  const aVal = a.value, rVal = r.value, cVal = c ? c.value : 'all';
   a.innerHTML = opts; r.innerHTML = opts;
   if ([...a.options].some(o => o.value === aVal)) a.value = aVal;
   if ([...r.options].some(o => o.value === rVal)) r.value = rVal;
+  if (c) {
+    c.innerHTML = optsCand;
+    if ([...c.options].some(o => o.value === cVal)) c.value = cVal;
+  }
 }
 
 /* ================================================================
@@ -878,13 +889,13 @@ function parseAiQuestions(raw){
 ================================================================ */
 function renderApplicants(){
   const host = $('applicantsList'); if (!host) return;
-  const roleFilter = $('applicantsRoleFilter').value;
-  const statusFilter = $('applicantsStatusFilter').value;
+  const roleFilter = String($('applicantsRoleFilter').value || 'all');
+  const statusFilter = String($('applicantsStatusFilter').value || 'all');
   const search = $('applicantsSearch').value.trim().toLowerCase();
 
   let list = state.applications.slice();
-  if (roleFilter !== 'all') list = list.filter(a => a.roleId === roleFilter);
-  if (statusFilter !== 'all') list = list.filter(a => a.status === statusFilter);
+  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId) === roleFilter);
+  if (statusFilter !== 'all') list = list.filter(a => String(a.status) === statusFilter);
   if (search) list = list.filter(a => (a.name||'').toLowerCase().includes(search) || (a.email||'').toLowerCase().includes(search));
   list.sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0));
 
@@ -895,7 +906,9 @@ function renderApplicants(){
     const criteriaHtml = a.criteriaAnswers && Object.keys(a.criteriaAnswers).length
       ? Object.entries(a.criteriaAnswers).map(([k,v]) => `<span class="badge badge-gray">${esc(k)}: ${esc(v)}</span>`).join(' ')
       : '';
-    const skillsHtml = (a.skills||[]).map(s => `<span class="badge badge-accent">${esc(s)}</span>`).join(' ');
+    const skillsHtml = (a.skills && a.skills.length)
+      ? a.skills.map(s => `<span class="badge badge-accent">${esc(s)}</span>`).join(' ')
+      : '<span class="badge badge-gray" style="opacity:0.6;">No skills listed</span>';
     return `<div class="tx-row" style="align-items:flex-start;">
       <div class="tx-row-info">
         <div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div>
@@ -928,16 +941,29 @@ function scoreApplication(app, role){
 
 function renderResults(){
   const host = $('resultsList'); if (!host) return;
-  const roleFilter = $('resultsRoleFilter').value;
+  const roleFilter = String($('resultsRoleFilter').value || 'all');
   let list = state.applications.filter(a => ['test_completed','qualified','not_qualified'].includes(a.status));
-  if (roleFilter !== 'all') list = list.filter(a => a.roleId === roleFilter);
-  list.sort((x,y) => (y.testCompletedAt?.seconds||0) - (x.testCompletedAt?.seconds||0));
+  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId) === roleFilter);
+
+  // Attach each application's score once so sorting and rendering use the
+  // same numbers (and we don't recompute scoreApplication twice per item).
+  list = list.map(a => ({ a, role: state.roles.find(r => r.id === a.roleId) }))
+    .map(({a, role}) => ({ a, role, score: scoreApplication(a, role) }));
+
+  // Pending (test_completed) first — needs admin action, newest first.
+  // Qualified next, highest score first. Not-qualified last, lowest score first.
+  const statusOrder = { test_completed: 0, qualified: 1, not_qualified: 2 };
+  list.sort((x, y) => {
+    const gx = statusOrder[x.a.status] ?? 3, gy = statusOrder[y.a.status] ?? 3;
+    if (gx !== gy) return gx - gy;
+    if (x.a.status === 'qualified') return y.score.percent - x.score.percent;
+    if (x.a.status === 'not_qualified') return x.score.percent - y.score.percent;
+    return (y.a.testCompletedAt?.seconds||0) - (x.a.testCompletedAt?.seconds||0);
+  });
 
   if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-square-poll-vertical"></i>No completed tests yet.</div>'; return; }
 
-  host.innerHTML = list.map(a => {
-    const role = state.roles.find(r => r.id === a.roleId);
-    const { correct, total, percent } = scoreApplication(a, role);
+  host.innerHTML = list.map(({a, role, score: {correct, total, percent}}) => {
     const passPct = role?.passPercentage ?? 60;
     const wouldPass = percent >= passPct;
     return `<div class="tx-row" style="align-items:flex-start;">
@@ -947,6 +973,7 @@ function renderResults(){
       </div>
       <div class="tx-row-actions">
         ${statusBadge(a.status)}
+        ${a.resultDeclaredBy === 'auto' ? '<span class="badge badge-gray" title="Auto-declared once the result reveal time passed, before any admin action">Auto</span>' : ''}
         ${a.status === 'test_completed' ? `
           <button class="btn btn-green btn-sm" onclick="finalizeResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Qualify</button>
           <button class="btn btn-danger btn-sm" onclick="finalizeResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Reject</button>
@@ -958,7 +985,7 @@ function renderResults(){
 
 window.finalizeResult = async function(appId, qualified){
   try {
-    await updateDoc(doc(db, 'hiringApplications', appId), { status: qualified ? 'qualified' : 'not_qualified', resultDeclaredAt: serverTimestamp() });
+    await updateDoc(doc(db, 'hiringApplications', appId), { status: qualified ? 'qualified' : 'not_qualified', resultDeclaredAt: serverTimestamp(), resultDeclaredBy: 'admin' });
     toast(qualified ? 'Marked as qualified' : 'Marked as not qualified', 'success');
     emailResult(appId);
   } catch (e) { console.error(e); toast('Could not update result', 'error'); }
@@ -985,10 +1012,19 @@ window.emailResult = function(appId){
 function renderCandidates(){
   const host = $('candidatesList'); if (!host) return;
   const search = $('candidatesSearch').value.trim().toLowerCase();
+  const roleFilter = $('candidatesRoleFilter') ? String($('candidatesRoleFilter').value || 'all') : 'all';
   let list = state.candidates.slice();
   if (search) list = list.filter(c => (c.name||'').toLowerCase().includes(search) || (c.email||'').toLowerCase().includes(search) || (c.phone||'').includes(search));
+  if (roleFilter !== 'all') {
+    const relevantUids = new Set(state.applications.filter(a => String(a.roleId) === roleFilter).map(a => a.uid));
+    list = list.filter(c => relevantUids.has(c.id));
+  }
 
-  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i>No registered users match this search.</div>'; return; }
+  if (!list.length) {
+    const msg = (search || roleFilter !== 'all') ? 'No registered users match this search.' : 'No registered users yet.';
+    host.innerHTML = `<div class="empty-state"><i class="fa-solid fa-users"></i>${msg}</div>`;
+    return;
+  }
 
   host.innerHTML = list.map(c => {
     const appCount = state.applications.filter(a => a.uid === c.id).length;
