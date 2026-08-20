@@ -287,6 +287,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
         <option value="not_qualified">Not Qualified</option>
       </select>
       <input class="form-input" id="applicantsSearch" style="max-width:220px;" placeholder="Search name / email" oninput="renderApplicants()">
+      <input class="form-input" id="applicantsSkillFilter" style="max-width:220px;" placeholder="Filter by skill (optional)" oninput="renderApplicants()">
     </div>
     <div id="applicantsList"><div class="empty-state"><i class="fa-solid fa-file-lines"></i>No applicants yet.</div></div>
   </section>
@@ -889,15 +890,30 @@ function parseAiQuestions(raw){
 ================================================================ */
 function renderApplicants(){
   const host = $('applicantsList'); if (!host) return;
-  const roleFilter = String($('applicantsRoleFilter').value || 'all');
-  const statusFilter = String($('applicantsStatusFilter').value || 'all');
-  const search = $('applicantsSearch').value.trim().toLowerCase();
+  const roleFilter = String(($('applicantsRoleFilter').value || 'all')).trim();
+  const statusFilter = String(($('applicantsStatusFilter').value || 'all')).trim();
+  const search = ($('applicantsSearch').value || '').trim().toLowerCase();
+  const skillFilterEl = $('applicantsSkillFilter');
+  const skillTerms = skillFilterEl ? skillFilterEl.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
 
   let list = state.applications.slice();
-  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId) === roleFilter);
-  if (statusFilter !== 'all') list = list.filter(a => String(a.status) === statusFilter);
+  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId || '').trim() === roleFilter);
+  if (statusFilter !== 'all') list = list.filter(a => String(a.status || '').trim() === statusFilter);
   if (search) list = list.filter(a => (a.name||'').toLowerCase().includes(search) || (a.email||'').toLowerCase().includes(search));
-  list.sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0));
+
+  // Optional skill filter: keep applicants who have at least one matching skill,
+  // and remember how many of the requested skills each one matched (for sorting).
+  if (skillTerms.length) {
+    list = list.map(a => {
+      const skills = (a.skills || []).map(s => String(s).toLowerCase());
+      const matchCount = skillTerms.filter(term => skills.some(s => s.includes(term))).length;
+      return { a, matchCount };
+    }).filter(x => x.matchCount > 0)
+      .sort((x, y) => y.matchCount - x.matchCount || (y.a.appliedAt?.seconds||0) - (x.a.appliedAt?.seconds||0))
+      .map(x => x.a);
+  } else {
+    list.sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0));
+  }
 
   if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-file-lines"></i>No applicants match this filter.</div>'; return; }
 
