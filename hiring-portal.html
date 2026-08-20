@@ -206,6 +206,12 @@ button, input, select, textarea{ font-family:inherit; }
 .criteria-chip{ font-size:10.5px; font-weight:600; padding:4px 9px; border-radius:99px; background:var(--surface2); color:var(--text2); }
 .role-card-foot{ display:flex; align-items:center; justify-content:space-between; }
 .role-card-vacancy{ font-size:11.5px; color:var(--text3); font-weight:600; }
+.role-card-result{
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  font-size:12.5px; font-weight:700; padding:9px 10px; border-radius:10px; margin-top:12px;
+}
+.role-card-result.qualified{ background:rgba(22,163,74,0.1); color:var(--green); }
+.role-card-result.not-qualified{ background:rgba(239,68,68,0.1); color:var(--red); }
 .role-card-apply{
   font-size:12px; font-weight:700; color:var(--accent); background:rgba(91,91,246,0.08);
   padding:8px 16px; border-radius:9px; border:none; cursor:pointer; transition:var(--t);
@@ -469,7 +475,11 @@ button, input, select, textarea{ font-family:inherit; }
       </div>
 
       <div class="roles-scroll-area">
-        <div id="appliedStatusHost"></div>
+        <div id="appliedStatusSection" style="display:none;">
+          <div style="font-size:12.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">Your Applications</div>
+          <div id="appliedStatusHost"></div>
+          <div style="font-size:11px;color:var(--text3);margin:2px 0 18px;">Shown regardless of the filters below — these are roles you've already applied to.</div>
+        </div>
         <div class="roles-grid" id="rolesGrid">
           <div class="roles-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>Loading roles…</div>
         </div>
@@ -750,7 +760,40 @@ function loadMyApplications(){
     snap.docs.forEach(d => { STATE.applications[d.data().roleId] = { id: d.id, ...d.data() }; });
     renderRolesGrid();
     renderAppliedStatusBoxes();
+    autoDeclareDueResults();
   });
+}
+
+// Once resultRevealAt has passed, actually WRITE the computed qualified/
+// not_qualified status back to the application doc (not just display it) —
+// so it shows correctly in the admin's Results tab too, without needing the
+// admin to be online to click Qualify/Reject at the exact reveal moment.
+// A candidate can update their own application doc (see firestore.rules),
+// so this runs safely from their own client the next time they open the app.
+const STATE_autoDeclareInFlight = new Set();
+async function autoDeclareDueResults(){
+  for (const roleId in STATE.applications) {
+    const app = STATE.applications[roleId];
+    if (app.status !== 'test_completed') continue;
+    const role = STATE.roles.find(r => r.id === roleId);
+    if (!role) continue;
+    const eff = getEffectiveResult(app, role);
+    if (!eff.auto || (eff.status !== 'qualified' && eff.status !== 'not_qualified')) continue;
+    if (STATE_autoDeclareInFlight.has(app.id)) continue;
+    STATE_autoDeclareInFlight.add(app.id);
+    try {
+      await updateDoc(doc(db, 'hiringApplications', app.id), {
+        status: eff.status,
+        score: { correct: eff.correct, total: eff.total, percent: eff.percent },
+        resultDeclaredAt: serverTimestamp(),
+        resultDeclaredBy: 'auto',
+      });
+    } catch (e) {
+      console.error('Auto-declare result error:', e);
+    } finally {
+      STATE_autoDeclareInFlight.delete(app.id);
+    }
+  }
 }
 
 function renderDeptFilters(){
@@ -805,10 +848,57 @@ document.getElementById('roleSearchInput').addEventListener('input', (e) => {
   renderRolesGrid();
 });
 
+// Mirrors the admin panel's scoring logic — so a candidate can see their
+// live result the moment resultRevealAt passes, without waiting on the
+// admin to manually click Qualify/Reject in the Results tab.
+function scoreApplication(app, role){
+  const questions = (role && role.questions) || [];
+  const answers = (app && app.answers) || [];
+  if (!questions.length) return { correct: 0, total: 0, percent: 0 };
+  let correct = 0;
+  questions.forEach((q, i) => {
+    const given = answers[i];
+    if (given === null || given === undefined) return;
+    if (q.answerType === 'mcq') { if (given === q.correctAnswer) correct++; }
+    else if (q.answerType === 'integer') { if (parseFloat(given) === parseFloat(q.correctAnswer)) correct++; }
+    else { if (String(given).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++; }
+  });
+  const percent = Math.round((correct / questions.length) * 100);
+  return { correct, total: questions.length, percent };
+}
+
+// Returns the status to actually DISPLAY to the candidate:
+//  - if the admin has already declared a result (qualified/not_qualified), use that
+//  - else, once resultRevealAt has passed, auto-compute pass/fail from the score
+//    (display-only — doesn't write to Firestore; the admin's own Qualify/Reject
+//    click in hiring-admin.html remains what triggers the actual result email)
+//  - else, still pending
+function getEffectiveResult(app, role){
+  if (app.status === 'qualified' || app.status === 'not_qualified') {
+    return { status: app.status, auto: false };
+  }
+  if (app.status === 'test_completed') {
+    const revealAt = role && role.resultRevealAt;
+    const revealDate = revealAt?.toDate ? revealAt.toDate() : (revealAt ? new Date(revealAt) : null);
+    if (revealDate && !isNaN(revealDate.getTime()) && Date.now() >= revealDate.getTime()) {
+      const { correct, total, percent } = scoreApplication(app, role);
+      if (total > 0) {
+        const passPct = role?.passPercentage ?? 60;
+        return { status: percent >= passPct ? 'qualified' : 'not_qualified', auto: true, correct, total, percent };
+      }
+    }
+    return { status: 'test_completed', auto: false };
+  }
+  return { status: app.status, auto: false };
+}
+
 function renderRolesGrid(){
   const grid = document.getElementById('rolesGrid');
   let list = STATE.roles.slice();
-  if (STATE.deptFilter !== 'all') list = list.filter(r => r.department === STATE.deptFilter);
+  if (STATE.deptFilter !== 'all') {
+    const wanted = String(STATE.deptFilter).trim().toLowerCase();
+    list = list.filter(r => String(r.department || '').trim().toLowerCase() === wanted);
+  }
   if (STATE.search) list = list.filter(r => `${r.title} ${r.department} ${r.description}`.toLowerCase().includes(STATE.search));
 
   if (list.length === 0) {
@@ -819,6 +909,20 @@ function renderRolesGrid(){
   grid.innerHTML = list.map(role => {
     const applied = STATE.applications[role.id];
     const criteria = Array.isArray(role.criteria) ? role.criteria : [];
+    let applyLabel = 'Apply';
+    let resultBanner = '';
+    if (applied) {
+      const eff = getEffectiveResult(applied, role);
+      if (eff.status === 'qualified') {
+        applyLabel = 'View Details';
+        resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Qualified</div>`;
+      } else if (eff.status === 'not_qualified') {
+        applyLabel = 'View Details';
+        resultBanner = `<div class="role-card-result not-qualified"><i class="fa-solid fa-circle-xmark"></i> Not Qualified</div>`;
+      } else {
+        applyLabel = 'View Status';
+      }
+    }
     return `
       <div class="role-card" style="transition-duration:${role.hoverDurationMs || 200}ms;">
         <div class="role-card-top">
@@ -831,26 +935,30 @@ function renderRolesGrid(){
         ${criteria.length ? `<div class="role-card-criteria">${criteria.map(c => `<span class="criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
         <div class="role-card-foot">
           <span class="role-card-vacancy"><i class="fa-solid fa-users" style="margin-right:5px;"></i>${role.vacancy || 1} opening${(role.vacancy||1)>1?'s':''}</span>
-          <button class="role-card-apply" onclick="openApplyModal('${role.id}')">${applied ? 'View Status' : 'Apply'}</button>
+          <button class="role-card-apply" onclick="openApplyModal('${role.id}')">${applyLabel}</button>
         </div>
+        ${resultBanner}
       </div>`;
   }).join('');
 }
 
 function renderAppliedStatusBoxes(){
   const host = document.getElementById('appliedStatusHost');
+  const section = document.getElementById('appliedStatusSection');
   const apps = Object.values(STATE.applications);
-  if (apps.length === 0) { host.innerHTML = ''; return; }
+  if (apps.length === 0) { host.innerHTML = ''; section.style.display = 'none'; return; }
+  section.style.display = 'block';
   host.innerHTML = apps.map(app => {
     const role = STATE.roles.find(r => r.id === app.roleId);
     const roleName = role ? role.title : 'Role';
-    const done = app.status === 'test_completed' || app.status === 'qualified' || app.status === 'not_qualified';
+    const eff = getEffectiveResult(app, role);
+    const done = eff.status === 'qualified' || eff.status === 'not_qualified';
     let sub = '';
-    if (app.status === 'not_eligible') sub = 'You did not meet the eligibility criteria for this role.';
-    else if (app.status === 'applied') sub = 'Application received — start your test from the role card.';
-    else if (app.status === 'test_completed') sub = `Test submitted. Result on ${fmtDate(role && role.resultRevealAt)}.`;
-    else if (app.status === 'qualified') sub = 'Result declared — you have qualified! Check your email.';
-    else if (app.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
+    if (eff.status === 'not_eligible') sub = 'You did not meet the eligibility criteria for this role.';
+    else if (eff.status === 'applied') sub = 'Application received — start your test from the role card.';
+    else if (eff.status === 'test_completed') sub = `Test submitted. Result on ${fmtDate(role && role.resultRevealAt)}.`;
+    else if (eff.status === 'qualified') sub = 'Result declared — you have qualified! Check your email.';
+    else if (eff.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
     return `
       <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
@@ -1011,25 +1119,28 @@ window.submitApplication = async function(){
 };
 
 function renderExistingStatusBody(app, role){
-  if (app.status === 'not_eligible') {
+  const eff = getEffectiveResult(app, role);
+  if (eff.status === 'not_eligible') {
     return `<div class="na-icon"><i class="fa-solid fa-circle-xmark"></i></div><div style="text-align:center;font-size:13.5px;color:var(--text2);">You applied for this role but didn't meet the eligibility criteria.</div>`;
   }
-  if (app.status === 'applied') {
+  if (eff.status === 'applied') {
     return `<div style="text-align:center;">
       <div class="eligibility-banner ok" style="display:inline-flex;">You're eligible — take the test when you're ready.</div><br>
       <button class="modal-submit-btn primary" onclick="startTest(STATE_ROLE_PLACEHOLDER)" id="continueTestBtn"><i class="fa-solid fa-play"></i> Start Test</button>
     </div>`.replace('STATE_ROLE_PLACEHOLDER', "");
   }
-  if (app.status === 'test_completed') {
+  if (eff.status === 'test_completed') {
     return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">Your test is submitted. Result declares on <strong>${fmtDate(role && role.resultRevealAt)}</strong>.</div>`;
   }
-  if (app.status === 'qualified') {
-    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div></div>`;
+  if (eff.status === 'qualified') {
+    const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
+    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>${scoreLine}</div>`;
   }
-  if (app.status === 'not_qualified') {
-    return `<div style="text-align:center;"><div class="eligibility-banner no" style="display:inline-flex;">Result declared — you did not qualify this time. Thank you for applying.</div></div>`;
+  if (eff.status === 'not_qualified') {
+    const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
+    return `<div style="text-align:center;"><div class="eligibility-banner no" style="display:inline-flex;">Result declared — you did not qualify this time. Thank you for applying.</div>${scoreLine}</div>`;
   }
-  return '';
+  return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">No status available for this application yet.</div>`;
 }
 window.closeApplyModal = function(){ document.getElementById('applyModalOverlay').classList.remove('open'); };
 
