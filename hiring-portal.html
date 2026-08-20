@@ -1020,8 +1020,15 @@ window.openApplyModal = function(roleId){
   STATE._skills = [];
   const skillsInput = document.getElementById('skillsRawInput');
   skillsInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && skillsInput.value.trim()) {
+    if ((e.key === 'Enter' || e.key === ',') && skillsInput.value.trim()) {
       e.preventDefault();
+      addSkillChip(skillsInput.value.trim().replace(/,$/, ''));
+      skillsInput.value = '';
+    }
+  });
+  // Also catch skills left in the box if the user taps away instead of pressing Enter.
+  skillsInput.addEventListener('blur', () => {
+    if (skillsInput.value.trim()) {
       addSkillChip(skillsInput.value.trim());
       skillsInput.value = '';
     }
@@ -1064,6 +1071,14 @@ window.submitApplication = async function(){
   const btn = document.getElementById('applySubmitBtn');
   const criteria = Array.isArray(role.criteria) ? role.criteria : [];
   const values = {};
+
+  // If the user typed a skill but never hit Enter to turn it into a chip,
+  // don't silently lose it — capture it now, right before submitting.
+  const skillsInputEl = document.getElementById('skillsRawInput');
+  if (skillsInputEl && skillsInputEl.value.trim()) {
+    addSkillChip(skillsInputEl.value.trim());
+    skillsInputEl.value = '';
+  }
   document.querySelectorAll('#applyForm [data-crit]').forEach(el => {
     const c = criteria[parseInt(el.dataset.crit)];
     values[c.field] = el.value;
