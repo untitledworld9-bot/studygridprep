@@ -371,28 +371,48 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 /* ============================================================
    CHAPTER-WISE BREAKDOWN (ACCORDION)
 ============================================================ */
-.chapter-subject { border-bottom:1px solid var(--card-border); }
-.chapter-subject:last-child { border-bottom:none; }
+.chapter-subject {
+  border:1.5px solid var(--card-border); border-radius:14px;
+  margin-bottom:10px; overflow:hidden; background:var(--glass-bg);
+  transition:border-color 0.2s;
+}
+.chapter-subject:last-child { margin-bottom:0; }
+.chapter-subject.open { border-color:rgba(91,91,246,0.35); }
 .chapter-subject-head {
   display:flex; align-items:center; gap:10px;
-  padding:14px 2px; cursor:pointer; user-select:none;
+  padding:14px; cursor:pointer; user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
+.chapter-subject-head:active { background:rgba(91,91,246,0.06); }
 .chapter-subject-head .subj-icon { width:34px; height:34px; font-size:14px; }
 .chapter-subject-name { font-size:13px; font-weight:700; color:var(--text-primary); }
 .chapter-subject-sub  { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+/* Round badge chevron — same visual language everywhere in the accordion
+   (subject row + chapter row) so it's unmistakably a tap target, and it
+   flips 180° open ⇄ closed like the FAQ accordion elsewhere in the app. */
 .chapter-subject-chevron {
-  margin-left:auto; color:var(--text-secondary); font-size:13px;
-  transition:transform 0.25s;
+  margin-left:auto; flex-shrink:0; width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card-bg); border:1px solid var(--card-border);
+  color:var(--text-secondary); font-size:11px;
+  transition:transform 0.25s ease, background 0.2s, border-color 0.2s, color 0.2s;
 }
-.chapter-subject.open .chapter-subject-chevron { transform:rotate(180deg); }
+.chapter-subject.open .chapter-subject-chevron {
+  transform:rotate(180deg);
+  background:rgba(91,91,246,0.14); border-color:rgba(91,91,246,0.35); color:var(--primary);
+}
 .chapter-list {
   max-height:0; overflow:hidden;
   transition:max-height 0.3s ease;
+  padding:0 14px;
 }
-.chapter-subject.open .chapter-list { max-height:1200px; }
+.chapter-subject.open .chapter-list {
+  max-height:2000px; padding:0 14px 12px;
+  border-top:1px solid var(--card-border);
+}
 .chapter-row {
   display:flex; align-items:center; gap:10px;
-  padding:9px 2px 9px 44px;
+  padding:9px 2px;
   font-size:12px;
 }
 .chapter-row-mark {
@@ -404,6 +424,20 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 .chapter-row-mark.cross { background:rgba(239,68,68,0.14);  color:var(--red); }
 .chapter-row-name { flex:1; font-weight:600; color:var(--text-primary); }
 .chapter-row-count { font-size:10.5px; color:var(--text-secondary); font-weight:600; }
+
+/* Chapters that have topics inside them get their own mini bordered card,
+   with the same round chevron badge — tap it to reveal the topic list. */
+.chapter-item.expandable {
+  border:1px solid var(--card-border); border-radius:10px;
+  margin:6px 0; overflow:hidden; background:var(--card-bg);
+  transition:border-color 0.2s;
+}
+.chapter-item.expandable.open { border-color:rgba(91,91,246,0.3); }
+.chapter-item.expandable .chapter-row {
+  padding:10px 10px; cursor:pointer; user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.chapter-item.expandable .chapter-row:active { background:rgba(91,91,246,0.06); }
 
 /* ============================================================
    ASK ABOUT YOUR TEST (tappable question chips, no free-text)
@@ -425,16 +459,22 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 }
 
 .chapter-row-chevron {
-  margin-left:auto; color:var(--text-secondary); font-size:11px;
-  transition:transform 0.25s;
+  margin-left:auto; flex-shrink:0; width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--glass-bg); border:1px solid var(--card-border);
+  color:var(--text-secondary); font-size:10px;
+  transition:transform 0.25s ease, background 0.2s, border-color 0.2s, color 0.2s;
+}
+.chapter-item.expandable.open .chapter-row-chevron {
+  transform:rotate(180deg);
+  background:rgba(91,91,246,0.14); border-color:rgba(91,91,246,0.35); color:var(--primary);
 }
 .topic-list {
   max-height:0; overflow:hidden;
   transition:max-height 0.3s ease;
 }
-.topic-list.open { max-height:800px; }
-.topic-list.open ~ .chapter-row .chapter-row-chevron,
-.chapter-item:has(.topic-list.open) .chapter-row-chevron { transform:rotate(180deg); }
+.topic-list.open { max-height:800px; border-top:1px solid var(--card-border); }
+.topic-list .chapter-row { padding:9px 10px 9px 30px; }
 
 /* ============================================================
    TOPIC CHIPS (WEAK / STRONG)
@@ -777,7 +817,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
       Chapter-wise Breakdown
     </div>
     <div class="card" id="chapterCard">
-      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">Tap a subject to see chapter-by-chapter results.</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">Tap a subject to expand it, then tap a chapter to see its topics.</div>
       <div id="chapterAccordion"></div>
     </div>
 
@@ -1135,7 +1175,7 @@ function renderChapterAccordion(p) {
         const tAcc = t.total > 0 ? Math.round((t.correct / t.total) * 100) : 0;
         const tWeak = tAcc < 50;
         return `
-          <div class="chapter-row" style="padding-left:64px;">
+          <div class="chapter-row">
             <span class="chapter-row-mark ${tWeak ? 'cross' : 'tick'}">
               <i class="fa-solid fa-${tWeak ? 'xmark' : 'check'}"></i>
             </span>
@@ -1144,17 +1184,18 @@ function renderChapterAccordion(p) {
           </div>`;
       }).join('');
 
+      const hasTopics = realTopics.length > 0;
       return `
-        <div class="chapter-item">
-          <div class="chapter-row" style="cursor:${realTopics.length ? 'pointer' : 'default'};" ${realTopics.length ? `onclick="document.getElementById('${chapId}').classList.toggle('open')"` : ''}>
+        <div class="chapter-item${hasTopics ? ' expandable' : ''}" id="chapItem_${chapId}">
+          <div class="chapter-row" ${hasTopics ? `onclick="document.getElementById('chapItem_${chapId}').classList.toggle('open'); document.getElementById('${chapId}').classList.toggle('open')"` : ''}>
             <span class="chapter-row-mark ${isWeak ? 'cross' : 'tick'}">
               <i class="fa-solid fa-${isWeak ? 'xmark' : 'check'}"></i>
             </span>
             <span class="chapter-row-name">${chapterLabel}</span>
             <span class="chapter-row-count">${c.correct}/${c.total} · ${acc}%</span>
-            ${realTopics.length ? `<i class="fa-solid fa-chevron-down chapter-row-chevron"></i>` : ''}
+            ${hasTopics ? `<span class="chapter-row-chevron"><i class="fa-solid fa-chevron-down"></i></span>` : ''}
           </div>
-          <div class="topic-list" id="${chapId}">${topicRows}</div>
+          ${hasTopics ? `<div class="topic-list" id="${chapId}">${topicRows}</div>` : ''}
         </div>`;
     }).join('');
 
