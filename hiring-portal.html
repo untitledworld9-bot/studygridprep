@@ -690,16 +690,40 @@ onAuthStateChanged(auth, async (user) => {
    ROLES LISTING
 ================================================================ */
 function loadRoles(){
-  onSnapshot(query(collection(db, 'hiringRoles'), where('status', '==', 'open')), snap => {
-    STATE.roles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Fetch ALL roles (not just status=='open') into STATE.allRoles. Lookups for
+  // an existing application (status boxes, the apply modal, auto result
+  // declaration) must always be able to find the role even after an admin
+  // closes it — otherwise a candidate's own "you qualified" card silently
+  // disappears just because the role listing closed. STATE.roles (the
+  // browsable grid) stays restricted to status=='open' roles only.
+  onSnapshot(collection(db, 'hiringRoles'), snap => {
+    STATE.allRoles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    STATE.roles = STATE.allRoles.filter(r => r.status === 'open');
     renderDeptFilters();
     renderRolesGrid();
+    renderAppliedStatusBoxes();
     injectJobPostingSchema();
   }, err => {
     console.error('Roles load error:', err);
     document.getElementById('rolesGrid').innerHTML =
       `<div class="roles-empty"><i class="fa-solid fa-triangle-exclamation"></i>Couldn't load roles right now. Please refresh.</div>`;
   });
+}
+
+// A role can be "open" in the admin panel but past its listed application
+// deadline (validThrough). Rather than relying only on the admin remembering
+// to flip it closed, we auto-detect this and show it as Closed (red) —
+// it stays visible/searchable, it just can't be freshly applied to.
+function isRoleExpired(role){
+  if (!role || !role.validThrough) return false;
+  const d = new Date(role.validThrough);
+  return !isNaN(d.getTime()) && Date.now() > d.getTime();
+}
+// Covers BOTH ways a role can be closed: the admin manually flipped its
+// status, or its listed deadline has quietly passed.
+function isRoleClosed(role){
+  if (!role) return false;
+  return role.status !== 'open' || isRoleExpired(role);
 }
 
 // ── Google Jobs (JobPosting) structured data ──────────────────────────────
@@ -775,7 +799,7 @@ async function autoDeclareDueResults(){
   for (const roleId in STATE.applications) {
     const app = STATE.applications[roleId];
     if (app.status !== 'test_completed') continue;
-    const role = STATE.roles.find(r => r.id === roleId);
+    const role = (STATE.allRoles || STATE.roles).find(r => r.id === roleId);
     if (!role) continue;
     const eff = getEffectiveResult(app, role);
     if (!eff.auto || (eff.status !== 'qualified' && eff.status !== 'not_qualified')) continue;
@@ -894,7 +918,12 @@ function getEffectiveResult(app, role){
 
 function renderRolesGrid(){
   const grid = document.getElementById('rolesGrid');
-  let list = STATE.roles.slice();
+  // Base list: every open role, PLUS any role the candidate has already
+  // applied to — even if the admin has since closed it or its deadline has
+  // passed. Their own card must keep showing (marked Closed), it just
+  // shouldn't be offered to people who haven't applied.
+  const allRoles = STATE.allRoles || STATE.roles;
+  let list = allRoles.filter(r => r.status === 'open' || STATE.applications[r.id]);
   if (STATE.deptFilter !== 'all') {
     const wanted = String(STATE.deptFilter).trim().toLowerCase();
     list = list.filter(r => String(r.department || '').trim().toLowerCase() === wanted);
@@ -909,7 +938,8 @@ function renderRolesGrid(){
   grid.innerHTML = list.map(role => {
     const applied = STATE.applications[role.id];
     const criteria = Array.isArray(role.criteria) ? role.criteria : [];
-    let applyLabel = 'Apply';
+    const closed = isRoleClosed(role);
+    let applyLabel = closed ? 'Applications Closed' : 'Apply';
     let resultBanner = '';
     if (applied) {
       const eff = getEffectiveResult(applied, role);
@@ -927,7 +957,7 @@ function renderRolesGrid(){
       <div class="role-card" style="transition-duration:${role.hoverDurationMs || 200}ms;">
         <div class="role-card-top">
           <div class="role-card-icon"><i class="fa-solid ${escapeHtml(role.icon || 'fa-user-tie')}"></i></div>
-          <span class="role-card-badge">Open</span>
+          <span class="role-card-badge" ${closed ? 'style="background:rgba(239,68,68,0.12);color:#EF4444;"' : ''}>${closed ? 'Closed' : 'Open'}</span>
         </div>
         <div class="role-card-title">${escapeHtml(role.title || 'Untitled Role')}</div>
         <div class="role-card-dept">${escapeHtml(role.department || 'General')}</div>
@@ -935,7 +965,7 @@ function renderRolesGrid(){
         ${criteria.length ? `<div class="role-card-criteria">${criteria.map(c => `<span class="criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
         <div class="role-card-foot">
           <span class="role-card-vacancy"><i class="fa-solid fa-users" style="margin-right:5px;"></i>${role.vacancy || 1} opening${(role.vacancy||1)>1?'s':''}</span>
-          <button class="role-card-apply" onclick="openApplyModal('${role.id}')">${applyLabel}</button>
+          <button class="role-card-apply" ${closed && !applied ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="${closed && !applied ? '' : `openApplyModal('${role.id}')`}">${applyLabel}</button>
         </div>
         ${resultBanner}
       </div>`;
@@ -949,10 +979,14 @@ function renderAppliedStatusBoxes(){
   if (apps.length === 0) { host.innerHTML = ''; section.style.display = 'none'; return; }
   section.style.display = 'block';
   host.innerHTML = apps.map(app => {
-    const role = STATE.roles.find(r => r.id === app.roleId);
+    const role = (STATE.allRoles || STATE.roles).find(r => r.id === app.roleId);
     const roleName = role ? role.title : 'Role';
+    const closed = isRoleClosed(role);
     const eff = getEffectiveResult(app, role);
     const done = eff.status === 'qualified' || eff.status === 'not_qualified';
+    // Your own result/status never changes because the role closed —
+    // we just add a small "Closed" tag next to the role name so it's
+    // clear the listing itself isn't taking new applicants anymore.
     let sub = '';
     if (eff.status === 'not_eligible') sub = 'You did not meet the eligibility criteria for this role.';
     else if (eff.status === 'applied') sub = 'Application received — start your test from the role card.';
@@ -963,7 +997,7 @@ function renderAppliedStatusBoxes(){
       <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
         <div>
-          <div class="applied-status-title">${escapeHtml(roleName)}</div>
+          <div class="applied-status-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}</div>
           <div class="applied-status-sub">${sub}</div>
         </div>
         <i class="fa-solid fa-chevron-right applied-status-arrow"></i>
@@ -975,7 +1009,7 @@ function renderAppliedStatusBoxes(){
    APPLY MODAL — eligibility check + skills + submit
 ================================================================ */
 window.openApplyModal = function(roleId){
-  const role = STATE.roles.find(r => r.id === roleId);
+  const role = (STATE.allRoles || STATE.roles).find(r => r.id === roleId);
   if (!role) return;
   STATE.currentRole = role;
   const existing = STATE.applications[roleId];

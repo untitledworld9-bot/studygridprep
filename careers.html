@@ -457,15 +457,26 @@ function applyFilters(){
   renderPagination();
 }
 
+// A role can be "open" in the admin panel but past its listed application
+// deadline (validThrough). Rather than relying only on the admin remembering
+// to flip it closed, we auto-detect this and show it as Closed (red) — it
+// stays visible on this page, it just can't be freshly applied to.
+function isRoleExpired(role){
+  if (!role || !role.validThrough) return false;
+  const d = new Date(role.validThrough);
+  return !isNaN(d.getTime()) && Date.now() > d.getTime();
+}
+
 function cardHtml(role){
   const criteria = Array.isArray(role.criteria) ? role.criteria : [];
   const empLabel = EMP_LABELS[role.employmentType] || 'Full-time';
   const locLabel = role.location ? role.location : 'Remote';
+  const expired = isRoleExpired(role);
   return `
     <div class="role-card">
       <div class="role-card-top">
         <div class="role-card-icon"><i class="fa-solid ${escapeHtml(role.icon || 'fa-user-tie')}"></i></div>
-        <span class="role-card-badge">Open</span>
+        <span class="role-card-badge" ${expired ? 'style="background:rgba(239,68,68,0.12);color:#EF4444;"' : ''}>${expired ? 'Closed' : 'Open'}</span>
       </div>
       <div class="role-card-title">${escapeHtml(role.title || 'Untitled Role')}</div>
       <div class="role-card-dept">${escapeHtml(role.department || 'General')}</div>
@@ -477,7 +488,9 @@ function cardHtml(role){
       ${criteria.length ? `<div class="role-card-criteria">${criteria.map(c => `<span class="role-criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
       <div class="role-card-foot">
         <span class="role-card-vacancy"><i class="fa-solid fa-users" style="margin-right:5px;"></i>${role.vacancy || 1} opening${(role.vacancy||1)>1?'s':''}</span>
-        <a class="role-card-apply" href="hiring-portal.html">Apply <i class="fa-solid fa-arrow-right"></i></a>
+        ${expired
+          ? `<span class="role-card-apply" style="opacity:0.5;cursor:not-allowed;pointer-events:none;">Applications Closed</span>`
+          : `<a class="role-card-apply" href="hiring-portal.html">Apply <i class="fa-solid fa-arrow-right"></i></a>`}
       </div>
     </div>`;
 }
