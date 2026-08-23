@@ -941,11 +941,15 @@ function renderRolesGrid(){
     const closed = isRoleClosed(role);
     let applyLabel = closed ? 'Applications Closed' : 'Apply';
     let resultBanner = '';
+    let nextStepBadge = '';
     if (applied) {
       const eff = getEffectiveResult(applied, role);
       if (eff.status === 'qualified') {
         applyLabel = 'View Details';
         resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Qualified</div>`;
+        if (applied.nextStep) {
+          nextStepBadge = `<span style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>Next Step</span>`;
+        }
       } else if (eff.status === 'not_qualified') {
         applyLabel = 'View Details';
         resultBanner = `<div class="role-card-result not-qualified"><i class="fa-solid fa-circle-xmark"></i> Not Qualified</div>`;
@@ -965,7 +969,10 @@ function renderRolesGrid(){
         ${criteria.length ? `<div class="role-card-criteria">${criteria.map(c => `<span class="criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
         <div class="role-card-foot">
           <span class="role-card-vacancy"><i class="fa-solid fa-users" style="margin-right:5px;"></i>${role.vacancy || 1} opening${(role.vacancy||1)>1?'s':''}</span>
-          <button class="role-card-apply" ${closed && !applied ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="${closed && !applied ? '' : `openApplyModal('${role.id}')`}">${applyLabel}</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${nextStepBadge}
+            <button class="role-card-apply" style="${nextStepBadge ? 'text-align:left;' : ''}" ${closed && !applied ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="${closed && !applied ? '' : `openApplyModal('${role.id}')`}">${applyLabel}</button>
+          </div>
         </div>
         ${resultBanner}
       </div>`;
@@ -993,11 +1000,14 @@ function renderAppliedStatusBoxes(){
     else if (eff.status === 'test_completed') sub = `Test submitted. Result on ${fmtDate(role && role.resultRevealAt)}.`;
     else if (eff.status === 'qualified') sub = 'Result declared — you have qualified! Check your email.';
     else if (eff.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
+    const nextStepTag = (eff.status === 'qualified' && app.nextStep)
+      ? ' <span style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-calendar-check" style="margin-right:3px;"></i>Next Step</span>'
+      : '';
     return `
-      <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')">
+      <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')" style="align-items:center;">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
-        <div>
-          <div class="applied-status-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}</div>
+        <div style="text-align:left;">
+          <div class="applied-status-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}${nextStepTag}</div>
           <div class="applied-status-sub">${sub}</div>
         </div>
         <i class="fa-solid fa-chevron-right applied-status-arrow"></i>
@@ -1167,6 +1177,40 @@ window.submitApplication = async function(){
   }
 };
 
+// The interview details the admin sends once a candidate is qualified —
+// shown automatically below the qualified banner, no extra tap needed.
+function renderNextStepSection(ns){
+  const dateStr = ns.dateTime ? fmtDate(ns.dateTime) : 'To be announced';
+  const meetHtml = ns.meetLink
+    ? `<a href="${escapeHtml(ns.meetLink)}" target="_blank" rel="noopener" style="color:var(--primary,#5B5BF6);word-break:break-all;">${escapeHtml(ns.meetLink)}</a>`
+    : '<span style="color:var(--text3);">To be shared</span>';
+  return `
+    <div style="text-align:left;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+      <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:10px;">
+        <i class="fa-solid fa-calendar-check" style="margin-right:6px;color:var(--primary,#5B5BF6);"></i>Next Step — Interview Process
+      </div>
+      <div style="background:var(--surface2,#F4F6FB);border:1px solid var(--border);border-radius:12px;padding:14px;">
+        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+          <i class="fa-solid fa-comments" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Topic</div>${escapeHtml(ns.topic || '—')}</div>
+        </div>
+        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+          <i class="fa-solid fa-clock" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Date &amp; Time</div>${escapeHtml(dateStr)}</div>
+        </div>
+        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+          <i class="fa-solid fa-video" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Google Meet Link</div>${meetHtml}</div>
+        </div>
+        ${ns.extraContact ? `
+        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+          <i class="fa-solid fa-phone" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Extra Contact</div>${escapeHtml(ns.extraContact)}</div>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
 function renderExistingStatusBody(app, role){
   const eff = getEffectiveResult(app, role);
   if (eff.status === 'not_eligible') {
@@ -1183,7 +1227,8 @@ function renderExistingStatusBody(app, role){
   }
   if (eff.status === 'qualified') {
     const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
-    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>${scoreLine}</div>`;
+    const nextStepHtml = app.nextStep ? renderNextStepSection(app.nextStep) : '';
+    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>${scoreLine}</div>${nextStepHtml}`;
   }
   if (eff.status === 'not_qualified') {
     const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
