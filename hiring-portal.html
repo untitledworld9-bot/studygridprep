@@ -157,6 +157,22 @@ button, input, select, textarea{ font-family:inherit; }
 .sidebar-profile-email{ font-size:10.5px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sidebar-section-label{ font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3); padding:0 4px; }
 .sidebar-filter-group{ display:flex; flex-direction:column; gap:4px; }
+.sidebar-applied-group{ display:flex; flex-direction:column; gap:6px; }
+.sidebar-applied-box{
+  display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:11px;
+  background:var(--surface2); border:1px solid var(--border); cursor:pointer; transition:var(--t);
+}
+.sidebar-applied-box:hover{ background:var(--surface); box-shadow:var(--shadow-sm); }
+.sidebar-applied-box.status-selected{ border-color:rgba(22,163,74,0.4); box-shadow:0 0 0 1px rgba(22,163,74,0.12); }
+.sidebar-applied-box.status-not-selected{ border-color:rgba(239,68,68,0.4); box-shadow:0 0 0 1px rgba(239,68,68,0.12); }
+.sidebar-applied-icon{
+  width:26px; height:26px; border-radius:8px; background:rgba(245,158,11,0.12); color:var(--amber);
+  display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;
+}
+.sidebar-applied-icon.done{ background:rgba(22,163,74,0.12); color:var(--green); }
+.sidebar-applied-text{ min-width:0; }
+.sidebar-applied-title{ font-size:11.5px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-applied-sub{ font-size:9.5px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
 .sidebar-filter-btn{
   display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; border:none;
   background:none; color:var(--text2); font-size:12.5px; font-weight:600; text-align:left; cursor:pointer; transition:var(--t);
@@ -505,6 +521,11 @@ button, input, select, textarea{ font-family:inherit; }
         </div>
       </div>
 
+      <div id="sidebarAppliedSection" style="display:none;">
+        <div class="sidebar-section-label" style="margin-bottom:8px;">Your Applications</div>
+        <div class="sidebar-applied-group" id="sidebarAppliedHost"></div>
+      </div>
+
       <div>
         <div class="sidebar-section-label" style="margin-bottom:8px;">Filter</div>
         <div class="sidebar-filter-group" id="sidebarFilters">
@@ -536,17 +557,7 @@ button, input, select, textarea{ font-family:inherit; }
       </div>
 
       <div class="roles-scroll-area">
-        <div id="appliedStatusSection" class="applied-section-panel" style="display:none;">
-          <div class="applied-section-header">
-            <i class="fa-solid fa-clipboard-list"></i>
-            <div>
-              <div class="applied-section-title">Your Applications</div>
-              <div class="applied-section-sub">Roles you've already applied to — shown here regardless of the filters below.</div>
-            </div>
-          </div>
-          <div id="appliedStatusHost"></div>
-        </div>
-        <div class="all-roles-heading" id="allRolesHeading" style="display:none;"><i class="fa-solid fa-layer-group"></i> All Roles</div>
+        <div class="all-roles-heading" id="allRolesHeading"><i class="fa-solid fa-layer-group"></i> All Roles</div>
         <div class="roles-grid" id="rolesGrid">
           <div class="roles-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>Loading roles…</div>
         </div>
@@ -1060,18 +1071,15 @@ function renderRolesGrid(){
 }
 
 function renderAppliedStatusBoxes(){
-  const host = document.getElementById('appliedStatusHost');
-  const section = document.getElementById('appliedStatusSection');
-  const allRolesHeading = document.getElementById('allRolesHeading');
+  const host = document.getElementById('sidebarAppliedHost');
+  const section = document.getElementById('sidebarAppliedSection');
   const apps = Object.values(STATE.applications);
   if (apps.length === 0) {
     host.innerHTML = '';
     section.style.display = 'none';
-    if (allRolesHeading) allRolesHeading.style.display = 'none';
     return;
   }
   section.style.display = 'block';
-  if (allRolesHeading) allRolesHeading.style.display = 'flex';
   host.innerHTML = apps.map(app => {
     const role = (STATE.allRoles || STATE.roles).find(r => r.id === app.roleId);
     const roleName = role ? role.title : 'Role';
@@ -1104,13 +1112,12 @@ function renderAppliedStatusBoxes(){
     else if (eff.status === 'qualified') statusEdgeClass = 'status-selected';
     else if (eff.status === 'not_qualified') statusEdgeClass = 'status-not-selected';
     return `
-      <div class="applied-status-box ${statusEdgeClass}" onclick="openApplyModal('${app.roleId}')" style="align-items:center;">
-        <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
-        <div style="text-align:left;">
-          <div class="applied-status-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}${nextStepTag}</div>
-          <div class="applied-status-sub">${sub}</div>
+      <div class="sidebar-applied-box ${statusEdgeClass}" onclick="openApplyModal('${app.roleId}')">
+        <div class="sidebar-applied-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
+        <div class="sidebar-applied-text">
+          <div class="sidebar-applied-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:9px;font-weight:700;color:#EF4444;">•Closed</span>' : ''}${nextStepTag}</div>
+          <div class="sidebar-applied-sub">${sub}</div>
         </div>
-        <i class="fa-solid fa-chevron-right applied-status-arrow"></i>
       </div>`;
   }).join('');
 }
