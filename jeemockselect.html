@@ -470,7 +470,10 @@ main {
   flex-direction: column;
   gap: 10px;
   padding: 0 14px 14px;
+  scrollbar-width: thin;
 }
+.year-body-inner::-webkit-scrollbar { width: 4px; }
+.year-body-inner::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
 
 .test-card {
   position: relative;
@@ -557,10 +560,11 @@ main {
   font-size: 12px;
   color: var(--text-secondary);
   font-weight: 400;
-  display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  /* Redundant with year already shown on the accordion header — kept in DOM/logic, hidden from UI */
+  display: none;
 }
 
 .meta-dot {
@@ -572,10 +576,11 @@ main {
 }
 
 .subject-chips {
-  display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 8px;
+  /* Keeps card compact — subjects still computed in JS, just not rendered visually */
+  display: none;
 }
 
 .chip {
@@ -590,15 +595,23 @@ main {
 }
 
 .card-arrow {
-  color: var(--text-secondary);
-  font-size: 13px;
-  opacity: 0.4;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(245,158,11,0.1);
+  border: 1.5px solid rgba(245,158,11,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--exam-color);
+  font-size: 14px;
   flex-shrink: 0;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 .test-card:hover .card-arrow {
-  opacity: 0.8;
-  transform: translateX(3px);
+  background: rgba(245,158,11,0.18);
+  border-color: rgba(245,158,11,0.5);
+  transform: translateX(2px);
 }
 
 /* ── Premium badge (paid tests) ── */
@@ -1200,13 +1213,13 @@ function renderYearGroups(tests) {
     header.addEventListener('click', () => toggleYearGroup(group, body, bodyInner));
 
     list.appendChild(group);
-
-    // First (most recent) year opens by default for convenience.
-    if (groupIdx === 0) {
-      requestAnimationFrame(() => toggleYearGroup(group, body, bodyInner, true));
-    }
+    // All years start collapsed — user taps to expand (matches FAQ-style accordion).
   });
 }
+
+// Year card should only grow a little as tests are added — beyond this cap,
+// the list inside scrolls instead of the card pushing the page down further.
+const YEAR_BODY_MAX_PX = Math.round(Math.min(window.innerHeight * 0.52, 520));
 
 function toggleYearGroup(group, body, bodyInner, forceOpen) {
   const isOpen = group.classList.contains('open');
@@ -1217,10 +1230,19 @@ function toggleYearGroup(group, body, bodyInner, forceOpen) {
 
   if (willOpen) {
     group.classList.add('open');
-    body.style.maxHeight = bodyInner.scrollHeight + 'px';
+    const needed = bodyInner.scrollHeight;
+    if (needed > YEAR_BODY_MAX_PX) {
+      body.style.maxHeight = YEAR_BODY_MAX_PX + 'px';
+      bodyInner.style.overflowY = 'auto';
+      bodyInner.style.webkitOverflowScrolling = 'touch';
+    } else {
+      body.style.maxHeight = needed + 'px';
+      bodyInner.style.overflowY = 'visible';
+    }
   } else {
     group.classList.remove('open');
     body.style.maxHeight = '0px';
+    bodyInner.style.overflowY = 'hidden';
   }
 }
 
@@ -1262,7 +1284,7 @@ function buildCard(test, index) {
       </div>
       ${subjects.length ? `<div class="subject-chips">${chipsHtml}${extraCount}</div>` : ''}
     </div>
-    <i class="fa-solid fa-chevron-right card-arrow"></i>
+    <i class="fa-solid fa-arrow-right card-arrow"></i>
   `;
 
   // Completed / In-progress logic
