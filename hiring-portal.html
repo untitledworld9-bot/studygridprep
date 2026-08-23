@@ -189,6 +189,10 @@ button, input, select, textarea{ font-family:inherit; }
   padding:20px; cursor:pointer; transition:transform var(--t), box-shadow var(--t), border-color var(--t);
 }
 .role-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow-md); border-color:rgba(91,91,246,0.3); }
+.role-card.final-selected{ border-color:rgba(22,163,74,0.35); box-shadow:0 0 0 1px rgba(22,163,74,0.15); }
+.role-card.final-selected:hover{ border-color:var(--green); box-shadow:0 0 0 2px rgba(22,163,74,0.3), var(--shadow-md); }
+.role-card.final-not-selected{ border-color:rgba(239,68,68,0.35); box-shadow:0 0 0 1px rgba(239,68,68,0.15); }
+.role-card.final-not-selected:hover{ border-color:var(--red); box-shadow:0 0 0 2px rgba(239,68,68,0.3), var(--shadow-md); }
 .role-card-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
 .role-card-icon{
   width:40px; height:40px; border-radius:11px; background:rgba(91,91,246,0.1); color:var(--accent);
@@ -232,6 +236,10 @@ button, input, select, textarea{ font-family:inherit; }
   padding:16px 18px; margin-bottom:22px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:var(--t);
 }
 .applied-status-box:hover{ box-shadow:var(--shadow); }
+.applied-status-box.status-selected{ border-color:rgba(22,163,74,0.4); box-shadow:0 0 0 1px rgba(22,163,74,0.12); }
+.applied-status-box.status-selected:hover{ border-color:var(--green); box-shadow:0 0 0 2px rgba(22,163,74,0.3), var(--shadow); }
+.applied-status-box.status-not-selected{ border-color:rgba(239,68,68,0.4); box-shadow:0 0 0 1px rgba(239,68,68,0.12); }
+.applied-status-box.status-not-selected:hover{ border-color:var(--red); box-shadow:0 0 0 2px rgba(239,68,68,0.3), var(--shadow); }
 .applied-status-icon{
   width:42px; height:42px; border-radius:11px; background:rgba(245,158,11,0.1); color:var(--amber);
   display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
@@ -240,6 +248,24 @@ button, input, select, textarea{ font-family:inherit; }
 .applied-status-title{ font-size:13.5px; font-weight:700; color:var(--text); }
 .applied-status-sub{ font-size:12px; color:var(--text2); margin-top:2px; }
 .applied-status-arrow{ margin-left:auto; color:var(--text3); }
+
+/* Your Applications — its own clearly separated panel, distinct from
+   the browsable roles grid below, so the two don't visually blend. */
+.applied-section-panel{
+  background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:18px; margin-bottom:28px;
+}
+.applied-section-header{ display:flex; align-items:flex-start; gap:12px; margin-bottom:14px; }
+.applied-section-header i{ font-size:16px; color:var(--accent); margin-top:2px; }
+.applied-section-title{ font-size:14.5px; font-weight:800; color:var(--text); }
+.applied-section-sub{ font-size:11.5px; color:var(--text2); margin-top:2px; }
+.applied-section-panel .applied-status-box{ background:var(--surface); margin-bottom:10px; }
+.applied-section-panel .applied-status-box:last-child{ margin-bottom:0; }
+.all-roles-heading{
+  font-size:13px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.4px;
+  margin:0 0 14px; display:flex; align-items:center; gap:8px;
+}
+.all-roles-heading i{ color:var(--accent); font-size:12px; }
 
 /* Application progress stepper (shown inside the status modal) */
 .progress-stepper{ margin-top:14px; }
@@ -510,11 +536,17 @@ button, input, select, textarea{ font-family:inherit; }
       </div>
 
       <div class="roles-scroll-area">
-        <div id="appliedStatusSection" style="display:none;">
-          <div style="font-size:12.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">Your Applications</div>
+        <div id="appliedStatusSection" class="applied-section-panel" style="display:none;">
+          <div class="applied-section-header">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <div>
+              <div class="applied-section-title">Your Applications</div>
+              <div class="applied-section-sub">Roles you've already applied to — shown here regardless of the filters below.</div>
+            </div>
+          </div>
           <div id="appliedStatusHost"></div>
-          <div style="font-size:11px;color:var(--text3);margin:2px 0 18px;">Shown regardless of the filters below — these are roles you've already applied to.</div>
         </div>
+        <div class="all-roles-heading" id="allRolesHeading" style="display:none;"><i class="fa-solid fa-layer-group"></i> All Roles</div>
         <div class="roles-grid" id="rolesGrid">
           <div class="roles-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>Loading roles…</div>
         </div>
@@ -977,17 +1009,21 @@ function renderRolesGrid(){
     let applyLabel = closed ? 'Applications Closed' : 'Apply';
     let resultBanner = '';
     let nextStepBadge = '';
+    let finalStatusClass = '';
     if (applied) {
       const eff = getEffectiveResult(applied, role);
       if (eff.status === 'qualified') {
         applyLabel = 'View Details';
         if (applied.finalStatus === 'selected') {
+          finalStatusClass = 'final-selected';
           resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Selected</div>`;
           nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.14);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i>Selected</span>`;
         } else if (applied.finalStatus === 'not_selected') {
+          finalStatusClass = 'final-not-selected';
           resultBanner = `<div class="role-card-result not-qualified"><i class="fa-solid fa-circle-xmark"></i> Not Selected</div>`;
           nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#EF4444;background:rgba(239,68,68,0.14);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-circle-xmark" style="margin-right:4px;"></i>Not Selected</span>`;
         } else {
+          finalStatusClass = 'final-selected';
           resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Qualified</div>`;
           if (applied.nextStep) {
             nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>Next Step</span>`;
@@ -995,13 +1031,14 @@ function renderRolesGrid(){
         }
       } else if (eff.status === 'not_qualified') {
         applyLabel = 'View Details';
+        finalStatusClass = 'final-not-selected';
         resultBanner = `<div class="role-card-result not-qualified"><i class="fa-solid fa-circle-xmark"></i> Not Qualified</div>`;
       } else {
         applyLabel = 'View Status';
       }
     }
     return `
-      <div class="role-card" style="transition-duration:${role.hoverDurationMs || 200}ms;">
+      <div class="role-card ${finalStatusClass}" style="transition-duration:${role.hoverDurationMs || 200}ms;">
         <div class="role-card-top">
           <div class="role-card-icon"><i class="fa-solid ${escapeHtml(role.icon || 'fa-user-tie')}"></i></div>
           <span class="role-card-badge" ${closed ? 'style="background:rgba(239,68,68,0.12);color:#EF4444;"' : ''}>${closed ? 'Closed' : 'Open'}</span>
@@ -1025,9 +1062,16 @@ function renderRolesGrid(){
 function renderAppliedStatusBoxes(){
   const host = document.getElementById('appliedStatusHost');
   const section = document.getElementById('appliedStatusSection');
+  const allRolesHeading = document.getElementById('allRolesHeading');
   const apps = Object.values(STATE.applications);
-  if (apps.length === 0) { host.innerHTML = ''; section.style.display = 'none'; return; }
+  if (apps.length === 0) {
+    host.innerHTML = '';
+    section.style.display = 'none';
+    if (allRolesHeading) allRolesHeading.style.display = 'none';
+    return;
+  }
   section.style.display = 'block';
+  if (allRolesHeading) allRolesHeading.style.display = 'flex';
   host.innerHTML = apps.map(app => {
     const role = (STATE.allRoles || STATE.roles).find(r => r.id === app.roleId);
     const roleName = role ? role.title : 'Role';
@@ -1055,8 +1099,12 @@ function renderAppliedStatusBoxes(){
     } else if (eff.status === 'qualified' && app.nextStep) {
       nextStepTag = ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-calendar-check" style="margin-right:3px;"></i>Next Step</span>`;
     }
+    let statusEdgeClass = '';
+    if (eff.status === 'qualified' && app.finalStatus === 'not_selected') statusEdgeClass = 'status-not-selected';
+    else if (eff.status === 'qualified') statusEdgeClass = 'status-selected';
+    else if (eff.status === 'not_qualified') statusEdgeClass = 'status-not-selected';
     return `
-      <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')" style="align-items:center;">
+      <div class="applied-status-box ${statusEdgeClass}" onclick="openApplyModal('${app.roleId}')" style="align-items:center;">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
         <div style="text-align:left;">
           <div class="applied-status-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}${nextStepTag}</div>
