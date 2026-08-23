@@ -381,13 +381,95 @@ main {
 }
 
 /* ======================================================
-   TEST CARDS
+   YEAR GROUP CARDS (accordion — one card per year)
 ====================================================== */
 .tests-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   display: none;
+}
+
+.year-group {
+  border: 1.5px solid var(--card-border);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cardSlide 0.45s ease forwards;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.year-group.open {
+  border-color: var(--exam-color);
+  box-shadow: 0 8px 24px var(--exam-color-glow);
+}
+
+.year-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+.year-group.open .year-header {
+  background: rgba(245,158,11,0.06);
+}
+
+.year-badge {
+  width: 52px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--exam-gradient);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -0.4px;
+  box-shadow: 0 4px 12px var(--exam-color-glow);
+}
+
+.year-header-text { flex: 1; min-width: 0; }
+.year-header-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+.year-header-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.year-chevron {
+  color: var(--text-secondary);
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), color 0.25s ease;
+}
+.year-group.open .year-chevron {
+  transform: rotate(180deg);
+  color: var(--exam-color);
+}
+
+.year-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.year-body-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 14px 14px;
 }
 
 .test-card {
@@ -985,12 +1067,13 @@ function initPage(user) {
 /* ─── Real-time Firestore listener ───────────────────────
    Collection: "mockTests"
    Filter:     exam == "jee"
-   Sort:       year desc → createdAt desc
+   Group:      by year → newest year on top
+   Within year: sorted by test date → most recent (later month) on top
    onSnapshot: auto-updates when admin adds/removes tests
 ──────────────────────────────────────────────────────── */
 function listenTests() {
   // TWO equality filters only — no composite index needed.
-  // Sort by year desc client-side.
+  // Grouping/sorting happens client-side.
   const q = query(
     collection(db, 'mockTests'),
     where('exam',   '==', 'jee'),
@@ -998,19 +1081,24 @@ function listenTests() {
   );
 
   onSnapshot(q, (snap) => {
-    const tests = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => {
-        if ((b.year || 0) !== (a.year || 0)) return (b.year || 0) - (a.year || 0);
-        const at = a.createdAt?.seconds || a.createdAt || 0;
-        const bt = b.createdAt?.seconds || b.createdAt || 0;
-        return bt - at;
-      });
-    renderTests(tests);
+    const tests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderYearGroups(tests);
   }, (err) => {
     console.error('Firestore JEE error:', err);
     showEmpty();
   });
+}
+
+/* Returns a sortable timestamp for a test: prefers the admin-set
+   date field (so tests sort by actual exam month, not upload order),
+   falls back to createdAt if no date was set. */
+function getTestSortTime(test) {
+  if (test.date) {
+    const t = new Date(test.date).getTime();
+    if (!isNaN(t)) return t;
+  }
+  const ca = test.createdAt?.seconds ? test.createdAt.seconds * 1000 : (test.createdAt || 0);
+  return ca;
 }
 
 /* ─── Render test cards ───────────────────────────────── */
@@ -1046,7 +1134,7 @@ function getCompletedTestIds() {
   } catch(_) { return new Set(); }
 }
 
-function renderTests(tests) {
+function renderYearGroups(tests) {
   const loading = document.getElementById('testsLoading');
   const empty   = document.getElementById('testsEmpty');
   const list    = document.getElementById('testsList');
@@ -1062,10 +1150,78 @@ function renderTests(tests) {
   list.style.display  = 'flex';
   list.innerHTML      = '';
 
-  tests.forEach((test, i) => {
-    const card = buildCard(test, i);
-    list.appendChild(card);
+  // ── Group by year ──
+  const groups = new Map(); // year -> tests[]
+  tests.forEach(t => {
+    const y = t.year || 'Other';
+    if (!groups.has(y)) groups.set(y, []);
+    groups.get(y).push(t);
   });
+
+  // ── Sort each year's tests: most recent date on top ──
+  groups.forEach(arr => arr.sort((a, b) => getTestSortTime(b) - getTestSortTime(a)));
+
+  // ── Sort years descending: newest year on top ──
+  const sortedYears = Array.from(groups.keys()).sort((a, b) => {
+    const an = typeof a === 'number' ? a : -Infinity;
+    const bn = typeof b === 'number' ? b : -Infinity;
+    return bn - an;
+  });
+
+  let cardIndex = 0;
+  sortedYears.forEach((year, groupIdx) => {
+    const yearTests = groups.get(year);
+    const group = document.createElement('div');
+    group.className = 'year-group';
+    group.style.animationDelay = `${0.06 + groupIdx * 0.08}s`;
+
+    const body = document.createElement('div');
+    body.className = 'year-body';
+    const bodyInner = document.createElement('div');
+    bodyInner.className = 'year-body-inner';
+    yearTests.forEach(test => {
+      bodyInner.appendChild(buildCard(test, cardIndex++));
+    });
+    body.appendChild(bodyInner);
+
+    group.innerHTML = `
+      <div class="year-header">
+        <div class="year-badge">${year}</div>
+        <div class="year-header-text">
+          <div class="year-header-title">JEE Mains ${year}</div>
+          <div class="year-header-sub">${yearTests.length} test${yearTests.length !== 1 ? 's' : ''} available</div>
+        </div>
+        <i class="fa-solid fa-chevron-down year-chevron"></i>
+      </div>
+    `;
+    group.appendChild(body);
+
+    const header = group.querySelector('.year-header');
+    header.addEventListener('click', () => toggleYearGroup(group, body, bodyInner));
+
+    list.appendChild(group);
+
+    // First (most recent) year opens by default for convenience.
+    if (groupIdx === 0) {
+      requestAnimationFrame(() => toggleYearGroup(group, body, bodyInner, true));
+    }
+  });
+}
+
+function toggleYearGroup(group, body, bodyInner, forceOpen) {
+  const isOpen = group.classList.contains('open');
+  if (forceOpen === true && isOpen) return;
+  if (forceOpen === false && !isOpen) return;
+
+  const willOpen = forceOpen === true ? true : (forceOpen === false ? false : !isOpen);
+
+  if (willOpen) {
+    group.classList.add('open');
+    body.style.maxHeight = bodyInner.scrollHeight + 'px';
+  } else {
+    group.classList.remove('open');
+    body.style.maxHeight = '0px';
+  }
 }
 
 function showEmpty() {
