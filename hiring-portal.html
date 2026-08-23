@@ -981,9 +981,17 @@ function renderRolesGrid(){
       const eff = getEffectiveResult(applied, role);
       if (eff.status === 'qualified') {
         applyLabel = 'View Details';
-        resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Qualified</div>`;
-        if (applied.nextStep) {
-          nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>Next Step</span>`;
+        if (applied.finalStatus === 'selected') {
+          resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Selected</div>`;
+          nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.14);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i>Selected</span>`;
+        } else if (applied.finalStatus === 'not_selected') {
+          resultBanner = `<div class="role-card-result not-qualified"><i class="fa-solid fa-circle-xmark"></i> Not Selected</div>`;
+          nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#EF4444;background:rgba(239,68,68,0.14);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-circle-xmark" style="margin-right:4px;"></i>Not Selected</span>`;
+        } else {
+          resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Qualified</div>`;
+          if (applied.nextStep) {
+            nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>Next Step</span>`;
+          }
         }
       } else if (eff.status === 'not_qualified') {
         applyLabel = 'View Details';
@@ -1033,11 +1041,20 @@ function renderAppliedStatusBoxes(){
     if (eff.status === 'not_eligible') sub = 'You did not meet the eligibility criteria for this role.';
     else if (eff.status === 'applied') sub = 'Application received — start your test from the role card.';
     else if (eff.status === 'test_completed') sub = `Test submitted. Result on ${fmtDate(role && role.resultRevealAt)}.`;
-    else if (eff.status === 'qualified') sub = 'Result declared — you have qualified! Check your email.';
+    else if (eff.status === 'qualified') {
+      if (app.finalStatus === 'selected') sub = "You've been selected! 🎉 Tap to view interview details.";
+      else if (app.finalStatus === 'not_selected') sub = 'You were not selected after the interview.';
+      else sub = 'Result declared — you have qualified! Check your email.';
+    }
     else if (eff.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
-    const nextStepTag = (eff.status === 'qualified' && app.nextStep)
-      ? ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-calendar-check" style="margin-right:3px;"></i>Next Step</span>`
-      : '';
+    let nextStepTag = '';
+    if (eff.status === 'qualified' && app.finalStatus === 'selected') {
+      nextStepTag = ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.14);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-circle-check" style="margin-right:3px;"></i>Selected</span>`;
+    } else if (eff.status === 'qualified' && app.finalStatus === 'not_selected') {
+      nextStepTag = ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#EF4444;background:rgba(239,68,68,0.14);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-circle-xmark" style="margin-right:3px;"></i>Not Selected</span>`;
+    } else if (eff.status === 'qualified' && app.nextStep) {
+      nextStepTag = ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-calendar-check" style="margin-right:3px;"></i>Next Step</span>`;
+    }
     return `
       <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')" style="align-items:center;">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
@@ -1327,7 +1344,15 @@ function renderExistingStatusBody(app, role){
   if (eff.status === 'qualified') {
     const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
     const nextStepHtml = app.nextStep ? renderNextStepSection(app) : '';
-    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>${scoreLine}</div>${renderProgressStepper(eff, app)}${nextStepHtml}`;
+    let topBanner;
+    if (app.finalStatus === 'selected') {
+      topBanner = `<div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've been selected! 🎉</div>`;
+    } else if (app.finalStatus === 'not_selected') {
+      topBanner = `<div class="eligibility-banner no" style="display:inline-flex;"><i class="fa-solid fa-circle-xmark"></i> You qualified the test, but weren't selected after the interview. Thank you for applying.</div>`;
+    } else {
+      topBanner = `<div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>`;
+    }
+    return `<div style="text-align:center;">${topBanner}${scoreLine}</div>${renderProgressStepper(eff, app)}${nextStepHtml}`;
   }
   if (eff.status === 'not_qualified') {
     const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
