@@ -241,6 +241,41 @@ button, input, select, textarea{ font-family:inherit; }
 .applied-status-sub{ font-size:12px; color:var(--text2); margin-top:2px; }
 .applied-status-arrow{ margin-left:auto; color:var(--text3); }
 
+/* Application progress stepper (shown inside the status modal) */
+.progress-stepper{ margin-top:14px; }
+.progress-step{ display:flex; gap:12px; position:relative; padding-bottom:20px; }
+.progress-step:last-child{ padding-bottom:0; }
+.progress-step-line{
+  position:absolute; left:13px; top:28px; bottom:0; width:2px; background:var(--border);
+}
+.progress-step:last-child .progress-step-line{ display:none; }
+.progress-step-dot{
+  width:28px; height:28px; border-radius:50%; flex-shrink:0; z-index:1;
+  display:flex; align-items:center; justify-content:center; font-size:12px;
+  background:var(--surface2); color:var(--text3); border:2px solid var(--border);
+}
+.progress-step-dot.done{ background:var(--green); color:#fff; border-color:var(--green); }
+.progress-step-dot.fail{ background:var(--red); color:#fff; border-color:var(--red); }
+.progress-step-dot.pending{ background:var(--surface2); color:var(--amber); border-color:var(--amber); }
+.progress-step-label{ font-size:13px; font-weight:700; color:var(--text); }
+.progress-step-note{ font-size:11.5px; color:var(--text2); margin-top:1px; }
+
+/* Next Step section — its own card, tappable badge scrolls here with a
+   brief highlight pulse so it's obvious what just happened. */
+.next-step-section{
+  text-align:left; margin-top:18px; border:1.5px solid var(--border); border-radius:var(--radius-lg);
+  padding:16px; transition:border-color 0.3s, box-shadow 0.3s;
+}
+.next-step-section.selected{ border-color:var(--green); background:rgba(22,163,74,0.05); }
+.next-step-section.not-selected{ border-color:var(--red); background:rgba(239,68,68,0.05); }
+.next-step-section.ns-highlight{ box-shadow:0 0 0 4px rgba(91,91,246,0.25); }
+.next-step-final-banner{ display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; margin-bottom:12px; padding:10px 12px; border-radius:10px; }
+.next-step-final-banner.selected{ background:rgba(22,163,74,0.12); color:var(--green); }
+.next-step-final-banner.not-selected{ background:rgba(239,68,68,0.12); color:var(--red); }
+.ns-badge{ cursor:pointer; transition:transform 0.15s ease, box-shadow 0.15s ease; }
+.ns-badge:hover{ transform:translateY(-1px) scale(1.04); box-shadow:0 2px 8px rgba(22,163,74,0.25); }
+.ns-badge:active{ transform:scale(0.97); }
+
 /* ============================================================
    MODAL (Apply form / result popups)
 ============================================================ */
@@ -948,7 +983,7 @@ function renderRolesGrid(){
         applyLabel = 'View Details';
         resultBanner = `<div class="role-card-result qualified"><i class="fa-solid fa-circle-check"></i> Qualified</div>`;
         if (applied.nextStep) {
-          nextStepBadge = `<span style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>Next Step</span>`;
+          nextStepBadge = `<span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${role.id}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:4px 10px;white-space:nowrap;"><i class="fa-solid fa-calendar-check" style="margin-right:4px;"></i>Next Step</span>`;
         }
       } else if (eff.status === 'not_qualified') {
         applyLabel = 'View Details';
@@ -1001,7 +1036,7 @@ function renderAppliedStatusBoxes(){
     else if (eff.status === 'qualified') sub = 'Result declared — you have qualified! Check your email.';
     else if (eff.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
     const nextStepTag = (eff.status === 'qualified' && app.nextStep)
-      ? ' <span style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-calendar-check" style="margin-right:3px;"></i>Next Step</span>'
+      ? ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-calendar-check" style="margin-right:3px;"></i>Next Step</span>`
       : '';
     return `
       <div class="applied-status-box" onclick="openApplyModal('${app.roleId}')" style="align-items:center;">
@@ -1018,7 +1053,7 @@ function renderAppliedStatusBoxes(){
 /* ================================================================
    APPLY MODAL — eligibility check + skills + submit
 ================================================================ */
-window.openApplyModal = function(roleId){
+window.openApplyModal = function(roleId, opts){
   const role = (STATE.allRoles || STATE.roles).find(r => r.id === roleId);
   if (!role) return;
   STATE.currentRole = role;
@@ -1030,6 +1065,18 @@ window.openApplyModal = function(roleId){
   if (existing) {
     body.innerHTML = renderExistingStatusBody(existing, role);
     document.getElementById('applyModalOverlay').classList.add('open');
+    if (opts && opts.highlightNextStep) {
+      // Give the modal a beat to finish opening, then scroll to and
+      // briefly pulse-highlight the Next Step card.
+      setTimeout(() => {
+        const el = document.getElementById('nextStepSection');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ns-highlight');
+          setTimeout(() => el.classList.remove('ns-highlight'), 1600);
+        }
+      }, 200);
+    }
     return;
   }
 
@@ -1179,42 +1226,94 @@ window.submitApplication = async function(){
 
 // The interview details the admin sends once a candidate is qualified —
 // shown automatically below the qualified banner, no extra tap needed.
-function renderNextStepSection(ns){
+// A small vertical stepper showing where the application currently stands —
+// its own separate section from the interview-details card below it.
+function renderProgressStepper(eff, app){
+  let steps = [];
+  steps.push({ label:'Application Submitted', state:'done' });
+  if (eff.status === 'not_eligible') {
+    steps.push({ label:'Eligibility Check', state:'fail', note:'Did not meet criteria' });
+  } else if (eff.status === 'applied') {
+    steps.push({ label:'Qualifying Test', state:'pending', note:'Not started yet' });
+  } else if (eff.status === 'test_completed') {
+    steps.push({ label:'Qualifying Test', state:'done', note:'Submitted' });
+    steps.push({ label:'Result', state:'pending', note:'Awaiting declaration' });
+  } else if (eff.status === 'not_qualified') {
+    steps.push({ label:'Qualifying Test', state:'done', note:'Submitted' });
+    steps.push({ label:'Result', state:'fail', note:'Not Qualified' });
+  } else if (eff.status === 'qualified') {
+    steps.push({ label:'Qualifying Test', state:'done', note:'Qualified' });
+    steps.push({ label:'Interview Scheduled', state: app.nextStep ? 'done' : 'pending', note: app.nextStep ? 'Details sent' : 'Awaiting interview details' });
+    if (app.finalStatus === 'selected') steps.push({ label:'Final Decision', state:'done', note:'Selected 🎉' });
+    else if (app.finalStatus === 'not_selected') steps.push({ label:'Final Decision', state:'fail', note:'Not Selected' });
+    else steps.push({ label:'Final Decision', state:'pending', note:'Awaiting decision' });
+  }
+  const iconFor = s => s === 'done' ? 'fa-check' : s === 'fail' ? 'fa-xmark' : 'fa-clock';
+  return `
+    <div style="text-align:left;">
+      <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:6px;">
+        <i class="fa-solid fa-list-check" style="margin-right:6px;color:var(--accent);"></i>Application Progress
+      </div>
+      <div class="progress-stepper">
+        ${steps.map(s => `
+          <div class="progress-step">
+            <div class="progress-step-line"></div>
+            <div class="progress-step-dot ${s.state}"><i class="fa-solid ${iconFor(s.state)}"></i></div>
+            <div>
+              <div class="progress-step-label">${escapeHtml(s.label)}</div>
+              ${s.note ? `<div class="progress-step-note">${escapeHtml(s.note)}</div>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// The interview details the admin sends once a candidate is qualified —
+// its own separate, tappable-to-scroll-to section with a hover animation,
+// shown automatically (no extra tap needed) once the admin has sent it.
+// Turns green once the candidate is marked Selected, red if Not Selected.
+function renderNextStepSection(app){
+  const ns = app.nextStep;
   const dateStr = ns.dateTime ? fmtDate(ns.dateTime) : 'To be announced';
   const meetHtml = ns.meetLink
-    ? `<a href="${escapeHtml(ns.meetLink)}" target="_blank" rel="noopener" style="color:var(--primary,#5B5BF6);word-break:break-all;">${escapeHtml(ns.meetLink)}</a>`
+    ? `<a href="${escapeHtml(ns.meetLink)}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all;">${escapeHtml(ns.meetLink)}</a>`
     : '<span style="color:var(--text3);">To be shared</span>';
+  const finalBanner = app.finalStatus === 'selected'
+    ? `<div class="next-step-final-banner selected"><i class="fa-solid fa-circle-check"></i>You've been selected! 🎉</div>`
+    : app.finalStatus === 'not_selected'
+      ? `<div class="next-step-final-banner not-selected"><i class="fa-solid fa-circle-xmark"></i>You were not selected this time.</div>`
+      : '';
+  const sectionClass = app.finalStatus === 'selected' ? 'selected' : app.finalStatus === 'not_selected' ? 'not-selected' : '';
   return `
-    <div style="text-align:left;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
-      <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:10px;">
-        <i class="fa-solid fa-calendar-check" style="margin-right:6px;color:var(--primary,#5B5BF6);"></i>Next Step — Interview Process
+    <div class="next-step-section ${sectionClass}" id="nextStepSection">
+      <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:12px;">
+        <i class="fa-solid fa-calendar-check" style="margin-right:6px;color:var(--accent);"></i>Next Step — Interview Process
       </div>
-      <div style="background:var(--surface2,#F4F6FB);border:1px solid var(--border);border-radius:12px;padding:14px;">
-        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
-          <i class="fa-solid fa-comments" style="width:18px;color:var(--text3);margin-top:2px;"></i>
-          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Topic</div>${escapeHtml(ns.topic || '—')}</div>
-        </div>
-        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
-          <i class="fa-solid fa-clock" style="width:18px;color:var(--text3);margin-top:2px;"></i>
-          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Date &amp; Time</div>${escapeHtml(dateStr)}</div>
-        </div>
-        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
-          <i class="fa-solid fa-video" style="width:18px;color:var(--text3);margin-top:2px;"></i>
-          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Google Meet Link</div>${meetHtml}</div>
-        </div>
-        ${ns.extraContact ? `
-        <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
-          <i class="fa-solid fa-phone" style="width:18px;color:var(--text3);margin-top:2px;"></i>
-          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Extra Contact</div>${escapeHtml(ns.extraContact)}</div>
-        </div>` : ''}
+      ${finalBanner}
+      <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+        <i class="fa-solid fa-comments" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Topic</div>${escapeHtml(ns.topic || '—')}</div>
       </div>
+      <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+        <i class="fa-solid fa-clock" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Date &amp; Time</div>${escapeHtml(dateStr)}</div>
+      </div>
+      <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+        <i class="fa-solid fa-video" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Google Meet Link</div>${meetHtml}</div>
+      </div>
+      ${ns.extraContact ? `
+      <div style="display:flex;gap:10px;padding:6px 0;font-size:13px;">
+        <i class="fa-solid fa-phone" style="width:18px;color:var(--text3);margin-top:2px;"></i>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-weight:700;">Extra Contact</div>${escapeHtml(ns.extraContact)}</div>
+      </div>` : ''}
     </div>`;
 }
 
 function renderExistingStatusBody(app, role){
   const eff = getEffectiveResult(app, role);
   if (eff.status === 'not_eligible') {
-    return `<div class="na-icon"><i class="fa-solid fa-circle-xmark"></i></div><div style="text-align:center;font-size:13.5px;color:var(--text2);">You applied for this role but didn't meet the eligibility criteria.</div>`;
+    return `<div class="na-icon"><i class="fa-solid fa-circle-xmark"></i></div><div style="text-align:center;font-size:13.5px;color:var(--text2);">You applied for this role but didn't meet the eligibility criteria.</div>${renderProgressStepper(eff, app)}`;
   }
   if (eff.status === 'applied') {
     return `<div style="text-align:center;">
@@ -1223,16 +1322,16 @@ function renderExistingStatusBody(app, role){
     </div>`.replace('STATE_ROLE_PLACEHOLDER', "");
   }
   if (eff.status === 'test_completed') {
-    return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">Your test is submitted. Result declares on <strong>${fmtDate(role && role.resultRevealAt)}</strong>.</div>`;
+    return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">Your test is submitted. Result declares on <strong>${fmtDate(role && role.resultRevealAt)}</strong>.</div>${renderProgressStepper(eff, app)}`;
   }
   if (eff.status === 'qualified') {
     const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
-    const nextStepHtml = app.nextStep ? renderNextStepSection(app.nextStep) : '';
-    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>${scoreLine}</div>${nextStepHtml}`;
+    const nextStepHtml = app.nextStep ? renderNextStepSection(app) : '';
+    return `<div style="text-align:center;"><div class="eligibility-banner ok" style="display:inline-flex;"><i class="fa-solid fa-circle-check"></i> Congratulations — you've qualified! Check your email for next steps.</div>${scoreLine}</div>${renderProgressStepper(eff, app)}${nextStepHtml}`;
   }
   if (eff.status === 'not_qualified') {
     const scoreLine = eff.auto ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;">Score: ${eff.correct}/${eff.total} (${eff.percent}%)</div>` : '';
-    return `<div style="text-align:center;"><div class="eligibility-banner no" style="display:inline-flex;">Result declared — you did not qualify this time. Thank you for applying.</div>${scoreLine}</div>`;
+    return `<div style="text-align:center;"><div class="eligibility-banner no" style="display:inline-flex;">Result declared — you did not qualify this time. Thank you for applying.</div>${scoreLine}</div>${renderProgressStepper(eff, app)}`;
   }
   return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">No status available for this application yet.</div>`;
 }
