@@ -1027,6 +1027,11 @@ function renderResults(){
             <i class="fa-solid ${a.nextStep ? 'fa-pen' : 'fa-calendar-check'}"></i> ${a.nextStep ? 'Edit Next Step' : 'Next Step'}
           </button>
         ` : ''}
+        ${a.status === 'qualified' && a.nextStep ? `
+          <button class="btn btn-outline btn-sm" onclick="emailNextStep('${a.id}')"><i class="fa-solid fa-envelope"></i> Email</button>
+          <button class="btn ${a.finalStatus === 'selected' ? 'btn-solid-green' : 'btn-outline'} btn-sm" onclick="setFinalStatus('${a.id}', true)"><i class="fa-solid fa-user-check"></i> Selected</button>
+          <button class="btn ${a.finalStatus === 'not_selected' ? 'btn-danger' : 'btn-outline'} btn-sm" onclick="setFinalStatus('${a.id}', false)"><i class="fa-solid fa-user-xmark"></i> Not Selected</button>
+        ` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1130,6 +1135,44 @@ window.sendNextStep = async function(appId){
     errEl.textContent = 'Could not save — please try again.';
     errEl.style.display = 'block';
     btn.disabled = false;
+  }
+};
+
+// Opens the admin's email client, pre-filled with the interview details,
+// addressed to the specific applicant by name and email. Works with zero
+// backend/API keys, same pattern as emailResult().
+window.emailNextStep = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a || !a.nextStep) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const ns = a.nextStep;
+  const dateStr = ns.dateTime ? new Date(ns.dateTime).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'To be announced';
+  const subject = `Interview Details — ${role?.title || 'your application'} at Study Grid Prep`;
+  const bodyLines = [
+    `Hi ${a.name},`,
+    ``,
+    `Congratulations again on qualifying for the role of ${role?.title || ''} at Study Grid Prep! Here are your interview details:`,
+    ``,
+    `Topic: ${ns.topic || '—'}`,
+    `Date & Time: ${dateStr}`,
+    `Google Meet Link: ${ns.meetLink || 'To be shared'}`,
+  ];
+  if (ns.extraContact) bodyLines.push(`Extra Contact: ${ns.extraContact}`);
+  bodyLines.push('', 'Looking forward to speaking with you.', '', 'Regards,', 'Study Grid Prep Hiring Team');
+  window.open(`mailto:${encodeURIComponent(a.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`, '_blank');
+};
+
+// Final hiring decision — recorded after the interview. Tapping the other
+// option later simply overwrites the decision, so admins can correct it.
+window.setFinalStatus = async function(appId, selected){
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), {
+      finalStatus: selected ? 'selected' : 'not_selected',
+      finalStatusAt: serverTimestamp(),
+    });
+    toast(selected ? 'Marked as Selected' : 'Marked as Not Selected', 'success');
+  } catch (e) {
+    console.error(e);
+    toast('Could not update final status', 'error');
   }
 };
 
