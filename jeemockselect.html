@@ -995,7 +995,7 @@ main {
 
   <div class="modal-footer">
     <button class="start-btn" id="startBtn" onclick="startTest()">
-      <i class="fa-solid fa-play"></i>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
       Start Test
       <span class="start-btn-count" id="selectedCount"></span>
     </button>
@@ -1214,7 +1214,7 @@ function renderYearGroups(tests) {
           <div class="year-header-title">JEE Mains ${year}</div>
           <div class="year-header-sub">${yearTests.length} test${yearTests.length !== 1 ? 's' : ''} available</div>
         </div>
-        <i class="fa-solid fa-chevron-down year-chevron"></i>
+        <div class="year-chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
       </div>
     `;
     group.appendChild(body);
@@ -1294,7 +1294,7 @@ function buildCard(test, index) {
       </div>
       ${subjects.length ? `<div class="subject-chips">${chipsHtml}${extraCount}</div>` : ''}
     </div>
-    <i class="fa-solid fa-arrow-right card-arrow"></i>
+    <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div>
   `;
 
   // Completed / In-progress logic
@@ -1310,12 +1310,12 @@ function buildCard(test, index) {
     if (bodyEl) {
       const badge = document.createElement('span');
       badge.className = 'premium-badge';
-      badge.innerHTML = '<i class="fa-solid fa-lock"></i> Premium';
+      badge.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:2px;"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg> Premium';
       bodyEl.appendChild(badge);
     }
     const arrow = card.querySelector('.card-arrow');
     if (arrow) {
-      arrow.outerHTML = '<div class="card-lock-icon" title="Premium Test"><i class="fa-solid fa-lock"></i></div>';
+      arrow.outerHTML = '<div class="card-lock-icon" title="Premium Test"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>';
     }
   }
 
@@ -1323,12 +1323,12 @@ function buildCard(test, index) {
     if (bodyEl) {
       const badge = document.createElement('span');
       badge.style.cssText = 'display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:#10B981;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:2px 8px;margin-top:5px;';
-      badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Completed';
+      badge.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:2px;"><circle cx="12" cy="12" r="9"></circle><polyline points="8 12.5 11 15.5 16 9"></polyline></svg> Completed';
       bodyEl.appendChild(badge);
     }
     const arrow = card.querySelector('.card-arrow');
     if (arrow) {
-      arrow.outerHTML = '<div title="Retry Test" style="width:34px;height:34px;border-radius:50%;background:rgba(16,185,129,0.12);border:1.5px solid rgba(16,185,129,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#10B981;font-size:15px;"><i class="fa-solid fa-arrow-rotate-right"></i></div>';
+      arrow.outerHTML = '<div title="Retry Test" style="width:34px;height:34px;border-radius:50%;background:rgba(16,185,129,0.12);border:1.5px solid rgba(16,185,129,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#10B981;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></div>';
     }
     card.style.borderColor = 'rgba(16,185,129,0.35)';
     card.style.background  = 'rgba(16,185,129,0.04)';
@@ -1336,12 +1336,12 @@ function buildCard(test, index) {
     if (bodyEl) {
       const badge = document.createElement('span');
       badge.style.cssText = 'display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:#F59E0B;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:2px 8px;margin-top:5px;';
-      badge.innerHTML = '<i class="fa-solid fa-play"></i> In Progress';
+      badge.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-right:2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> In Progress';
       bodyEl.appendChild(badge);
     }
     const arrow = card.querySelector('.card-arrow');
     if (arrow) {
-      arrow.outerHTML = '<div title="Resume Test" style="width:34px;height:34px;border-radius:50%;background:rgba(245,158,11,0.12);border:1.5px solid rgba(245,158,11,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#F59E0B;font-size:15px;"><i class="fa-solid fa-play"></i></div>';
+      arrow.outerHTML = '<div title="Resume Test" style="width:34px;height:34px;border-radius:50%;background:rgba(245,158,11,0.12);border:1.5px solid rgba(245,158,11,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#F59E0B;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>';
     }
     card.style.borderColor = 'rgba(245,158,11,0.5)';
     card.style.background  = 'rgba(245,158,11,0.04)';
@@ -1390,8 +1390,8 @@ window.openSubjectModal = function(test) {
     })();
     const _isResumable = !_isCompleted && _saved && _saved.remainingSeconds > 0;
     startBtn.innerHTML = _isResumable
-      ? '<i class="fa-solid fa-play"></i> Resume Test'
-      : '<i class="fa-solid fa-play"></i> Start JEE Test';
+      ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Resume Test'
+      : '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Start JEE Test';
   }
 
   const metaParts = [];
