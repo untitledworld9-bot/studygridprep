@@ -694,6 +694,12 @@ function prepareMathHtml(raw) {
     return `\x00IMG${idx}\x00`;
   });
 
+  // Normalise bare exponents/subscripts (e.g. 10^2, x_1, 10^-3) into braced
+  // form (10^{2}, x_{1}, 10^{-3}) so MathJax raises the FULL exponent, not
+  // just its first character. Already-braced tokens (^{...}) are untouched
+  // since '{' isn't matched by \w.
+  processed = processed.replace(/([_^])(-?\w+)/g, (m, sign, val) => `${sign}{${val}}`);
+
   processed = processed.replace(/(\\begin\{[^}]+\}[\s\S]*?\\end\{[^}]+\})/g, m => `\\[${m}\\]`);
 
   const mathDelimRe = /(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g;
@@ -1458,26 +1464,24 @@ function renderAIText(el, text) {
   // Normalise line endings, then split into lines
   const lines = text.replace(/\r\n/g, '\n').split('\n');
 
-  // Helper: parse inline **bold** in a string → DocumentFragment
-  function parseBold(str, container) {
-    const parts = str.split(/(\*\*[^*]+\*\*)/g);
-    parts.forEach(part => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        const strong = document.createElement('strong');
-        strong.textContent = part.slice(2, -2);
-        container.appendChild(strong);
-      } else if (part) {
-        container.appendChild(document.createTextNode(part));
-      }
-    });
+  // Helper: parse inline **bold** + LaTeX/math in a string → HTML string.
+  // Math (\(...\), \[...\], $...$, and bare tokens like 10^2, x_1) is
+  // handled by prepareMathHtml; **bold** markdown is converted afterward
+  // since prepareMathHtml doesn't touch plain '*' characters.
+  function formatInline(str) {
+    let html = prepareMathHtml(str);
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    return html;
   }
 
-  let currentPara = null;
+  let currentParaLines = [];
   function flushPara() {
-    if (currentPara && currentPara.childNodes.length > 0) {
-      el.appendChild(currentPara);
+    if (currentParaLines.length) {
+      const p = document.createElement('p');
+      p.innerHTML = formatInline(currentParaLines.join(' '));
+      el.appendChild(p);
     }
-    currentPara = null;
+    currentParaLines = [];
   }
 
   lines.forEach(line => {
@@ -1501,7 +1505,7 @@ function renderAIText(el, text) {
       div.appendChild(num);
       const body = document.createElement('span');
       body.style.cssText = 'flex:1;font-size:13px;line-height:1.7;';
-      parseBold(numMatch[2], body);
+      body.innerHTML = formatInline(numMatch[2]);
       div.appendChild(body);
       el.appendChild(div);
       return;
@@ -1519,23 +1523,21 @@ function renderAIText(el, text) {
       div.appendChild(dot);
       const body = document.createElement('span');
       body.style.cssText = 'flex:1;font-size:13px;line-height:1.7;';
-      parseBold(bulletMatch[1], body);
+      body.innerHTML = formatInline(bulletMatch[1]);
       div.appendChild(body);
       el.appendChild(div);
       return;
     }
 
     // Regular text — accumulate into current paragraph
-    if (!currentPara) {
-      currentPara = document.createElement('p');
-    } else {
-      // Add a space between lines within the same paragraph
-      currentPara.appendChild(document.createTextNode(' '));
-    }
-    parseBold(trimmed, currentPara);
+    currentParaLines.push(trimmed);
   });
 
   flushPara();
+
+  // Typeset all \(...\), \[...\], $...$ math (and now-braced bare
+  // exponents/subscripts) that prepareMathHtml left for MathJax.
+  triggerMathJax(el);
 }
 
 /* ================================================================
