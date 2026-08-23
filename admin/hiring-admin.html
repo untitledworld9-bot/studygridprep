@@ -129,6 +129,12 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
 .btn-danger{ background:rgba(239,68,68,0.1); color:var(--red); }
 .btn-danger:hover{ background:var(--red); color:#fff; }
+.btn-solid-green{ background:var(--green); color:#fff; }
+.btn-solid-green:hover{ opacity:.9; transform:translateY(-1px); }
+.next-step-card{ background:var(--input); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+.next-step-card-row{ display:flex; gap:10px; align-items:flex-start; padding:6px 0; font-size:12.5px; }
+.next-step-card-row i{ width:18px; color:var(--accent); margin-top:2px; }
+.next-step-card-label{ font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); font-weight:700; margin-bottom:2px; }
 .btn-green{ background:rgba(22,163,74,0.1); color:var(--green); }
 .btn-green:hover{ background:var(--green); color:#fff; }
 .btn-sm{ padding:7px 13px; font-size:11.5px; }
@@ -470,6 +476,8 @@ function toast(msg, type = 'info'){
 window.toast = toast;
 window.closeModal = function(){ $('modalOverlay').classList.remove('open'); setTimeout(() => $('modalOverlay').innerHTML = '', 200); };
 function openModal(html){ $('modalOverlay').innerHTML = html; $('modalOverlay').classList.add('open'); }
+// Tapping the dimmed backdrop (outside the modal box) also closes it.
+$('modalOverlay').addEventListener('click', (e) => { if (e.target.id === 'modalOverlay') closeModal(); });
 function esc(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 function fmtDate(v){
   if (!v) return 'Not set';
@@ -1014,6 +1022,11 @@ function renderResults(){
           <button class="btn btn-green btn-sm" onclick="finalizeResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Qualify</button>
           <button class="btn btn-danger btn-sm" onclick="finalizeResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Reject</button>
         ` : `<button class="btn btn-outline btn-sm" onclick="emailResult('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Result</button>`}
+        ${a.status === 'qualified' ? `
+          <button class="btn ${a.nextStep ? 'btn-outline' : 'btn-solid-green'} btn-sm" onclick="openNextStepModal('${a.id}')">
+            <i class="fa-solid ${a.nextStep ? 'fa-pen' : 'fa-calendar-check'}"></i> ${a.nextStep ? 'Edit Next Step' : 'Next Step'}
+          </button>
+        ` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1040,6 +1053,84 @@ window.emailResult = function(appId){
     ? `Hi ${a.name},\n\nCongratulations! You have qualified the test for the role of ${role?.title || ''} at Study Grid Prep. Our team will reach out with next steps shortly.\n\nRegards,\nStudy Grid Prep Hiring Team`
     : `Hi ${a.name},\n\nThank you for taking the qualifying test for ${role?.title || ''} at Study Grid Prep. After review, we won't be moving forward at this time. We appreciate your effort and encourage you to apply for future openings.\n\nRegards,\nStudy Grid Prep Hiring Team`;
   window.open(`mailto:${encodeURIComponent(a.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+};
+
+// Helper to format a Firestore Timestamp / ISO string into a
+// datetime-local input's expected "YYYY-MM-DDTHH:mm" value.
+function toDatetimeLocalValue(val){
+  if (!val) return '';
+  const d = val?.toDate ? val.toDate() : new Date(val);
+  if (isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+window.openNextStepModal = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const ns = a.nextStep || {};
+  openModal(`
+    <div class="modal-box" style="max-width:480px;">
+      <div class="modal-title">
+        Next Step — Interview
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">${esc(a.name)} · ${esc(role?.title || 'Unknown role')}</div>
+      <div class="form-group">
+        <label class="form-label">Topic</label>
+        <input class="form-input" id="nsTopic" placeholder="e.g. Technical + HR round" value="${esc(ns.topic || '')}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Interview Date &amp; Time</label>
+        <input class="form-input" type="datetime-local" id="nsDateTime" value="${toDatetimeLocalValue(ns.dateTime)}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Google Meet Link</label>
+        <input class="form-input" type="url" id="nsMeetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx" value="${esc(ns.meetLink || '')}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Extra Contact (optional)</label>
+        <input class="form-input" id="nsExtraContact" placeholder="e.g. WhatsApp / phone / alt. email — shown only if filled" value="${esc(ns.extraContact || '')}">
+      </div>
+      <div id="nsError" style="color:var(--red);font-size:12px;margin-bottom:6px;display:none;"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-solid-green" id="nsSendBtn" onclick="sendNextStep('${appId}')"><i class="fa-solid fa-paper-plane"></i> ${a.nextStep ? 'Update & Send' : 'Send'}</button>
+      </div>
+    </div>
+  `);
+};
+
+window.sendNextStep = async function(appId){
+  const topic = $('nsTopic').value.trim();
+  const dateTime = $('nsDateTime').value;
+  const meetLink = $('nsMeetLink').value.trim();
+  const extraContact = $('nsExtraContact').value.trim();
+  const errEl = $('nsError');
+  if (!topic || !dateTime) {
+    errEl.textContent = 'Topic and interview date & time are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = $('nsSendBtn');
+  btn.disabled = true;
+  try {
+    const nextStep = {
+      topic,
+      dateTime: new Date(dateTime).toISOString(),
+      meetLink: meetLink || '',
+      extraContact: extraContact || '',
+      sentAt: serverTimestamp(),
+    };
+    await updateDoc(doc(db, 'hiringApplications', appId), { nextStep });
+    toast('Next step sent to applicant', 'success');
+    closeModal();
+  } catch (e) {
+    console.error(e);
+    errEl.textContent = 'Could not save — please try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+  }
 };
 
 /* ================================================================
