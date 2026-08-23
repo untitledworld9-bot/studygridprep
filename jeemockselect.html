@@ -450,14 +450,24 @@ main {
 }
 
 .year-chevron {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1.5px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), color 0.25s ease;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
 }
 .year-group.open .year-chevron {
   transform: rotate(180deg);
   color: var(--exam-color);
+  background: rgba(245,158,11,0.12);
+  border-color: rgba(245,158,11,0.4);
 }
 
 .year-body {
@@ -1318,7 +1328,7 @@ function buildCard(test, index) {
     }
     const arrow = card.querySelector('.card-arrow');
     if (arrow) {
-      arrow.outerHTML = '<div title="Retry Test" style="width:34px;height:34px;border-radius:50%;background:rgba(16,185,129,0.12);border:1.5px solid rgba(16,185,129,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#10B981;font-size:15px;"><i class="fa-solid fa-rotate-right"></i></div>';
+      arrow.outerHTML = '<div title="Retry Test" style="width:34px;height:34px;border-radius:50%;background:rgba(16,185,129,0.12);border:1.5px solid rgba(16,185,129,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#10B981;font-size:15px;"><i class="fa-solid fa-arrow-rotate-right"></i></div>';
     }
     card.style.borderColor = 'rgba(16,185,129,0.35)';
     card.style.background  = 'rgba(16,185,129,0.04)';
@@ -1350,7 +1360,7 @@ const SUBJECT_ICONS = {
   'biology':     'fa-solid fa-dna',
   'english':     'fa-solid fa-language',
   'gat':         'fa-solid fa-brain',
-  'default':     'fa-solid fa-file-alt'
+  'default':     'fa-solid fa-file-lines'
 };
 const SUBJECT_DESCS = {
   'physics':     'Mechanics, Electrostatics, Optics & more',
