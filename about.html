@@ -221,33 +221,45 @@ p:last-child { margin-bottom: 0; }
   margin-top: 2px;
 }
 
-/* ===== FOUNDER SOCIAL LINK ===== */
+/* ===== FOUNDER SOCIAL LINKS ===== */
+.founder-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
 .founder-social-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
-  margin-bottom: 4px;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   text-decoration: none;
-  padding: 5px 12px;
+  padding: 6px 14px;
   background: var(--bg-soft);
   border: 1px solid var(--border);
   border-radius: 20px;
   transition: all 0.25s ease;
 }
-.founder-social-link:hover {
-  color: #E1306C;
-  border-color: #E1306C;
-  background: #FFF0F5;
-  transform: translateY(-1px);
-}
 .founder-social-link svg {
   width: 14px;
   height: 14px;
+}
+/* Hover effects specifically for each platform */
+.founder-social-link.li:hover {
+  color: #0A66C2;
+  border-color: #0A66C2;
+  background: #F0F6FF;
+  transform: translateY(-2px);
+}
+.founder-social-link.ig:hover {
+  color: #E1306C;
+  border-color: #E1306C;
+  background: #FFF0F5;
+  transform: translateY(-2px);
 }
 
 .founder-desc {
@@ -266,9 +278,8 @@ p:last-child { margin-bottom: 0; }
     padding: 28px 20px;
   }
   .founder-img { width: 80px; height: 80px; }
-  .founder-social-link {
-    margin-top: 12px;
-    margin-bottom: 6px;
+  .founder-socials {
+    justify-content: center;
   }
 }
 
@@ -474,16 +485,29 @@ footer {
       <div class="founder-name" itemprop="name">Ayush Kumar Gupta</div>
       <div class="founder-role" itemprop="jobTitle">Founder, Study Grid Prep</div>
       <div class="founder-subrole">BTech Student</div>
-      
-      <!-- NEW INSTAGRAM PROFESSIONAL LINK -->
-      <a href="https://www.instagram.com/itz_ayush_0.0_" target="_blank" rel="noopener me" itemprop="sameAs" class="founder-social-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-        </svg>
-        @itz_ayush_0.0_
-      </a>
+
+      <!-- FOUNDER SOCIAL LINKS WRAPPER -->
+      <div class="founder-socials">
+        <!-- NEW LINKEDIN PROFESSIONAL LINK -->
+        <a href="https://www.linkedin.com/in/ayush-kumar-gupta-235a89430?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener me" itemprop="sameAs" class="founder-social-link li">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+          LinkedIn
+        </a>
+
+        <!-- INSTAGRAM PROFESSIONAL LINK -->
+        <a href="https://www.instagram.com/itz_ayush_0.0_" target="_blank" rel="noopener me" itemprop="sameAs" class="founder-social-link ig">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+          @itz_ayush_0.0_
+        </a>
+      </div>
 
       <p class="founder-desc" itemprop="description">Building Study Grid Prep to make learning more focused, organized, and accessible for students.</p>
     </div>
