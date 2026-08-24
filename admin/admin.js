@@ -2035,6 +2035,7 @@ function renderOnlineUsersModal() {
       if (p.includes("leaderboard") && p.includes("full"))     return "🏅 Full Leaderboard";
       if (p.includes("leaderboard"))                           return "🏆 Leaderboard";
       if (p.includes("progress"))                              return "📊 Progress";
+      if (p.includes("content-hub"))                           return "📚 Content Hub";
       if (p.includes("mock"))                                  return "📝 Mock Test";
       if (p.includes("dashboard-home") || p.includes("home") || p === "index" || p.includes("index")) return "🏠 Home";
       return `📄 ${pageName}`;
@@ -3998,6 +3999,7 @@ function formatLastPage(u) {
   if (p.includes("leaderboard") && p.includes("full"))     return `<span title="${escHtml(pageName)}">🏅 Full LB</span>`;
   if (p.includes("leaderboard"))                           return `<span title="${escHtml(pageName)}">🏆 Leaderboard</span>`;
   if (p.includes("progress"))                              return `<span title="${escHtml(pageName)}">📊 Progress</span>`;
+  if (p.includes("content-hub"))                           return `<span title="${escHtml(pageName)}">📚 Content Hub</span>`;
   if (p.includes("mock"))                                  return `<span title="${escHtml(pageName)}">📝 Mock</span>`;
   if (p.includes("dashboard-home") || p.includes("home") || p === "index" || p.includes("index")) return `<span title="${escHtml(pageName)}">🏠 Home</span>`;
   return `<span title="${escHtml(pageName)}" style="color:var(--text-muted);">📄 ${escHtml(pageName.replace(/\.html$/i,""))}</span>`;
