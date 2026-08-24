@@ -618,7 +618,8 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   position:absolute; bottom:14px; right:18px;
   font-size:12px; color:rgba(244,63,94,0.3);
 }
-.motivation-emoji { font-size:40px; margin-bottom:12px; display:block; }
+.motivation-emoji { display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+.motivation-emoji svg { width:36px; height:36px; }
 .motivation-quote {
   font-size:15px; font-weight:600; color:var(--text-primary);
   line-height:1.6; margin-bottom:10px;
@@ -643,8 +644,8 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 .regen-btn:hover { border-color:var(--purple); transform:translateY(-1px); box-shadow:0 6px 20px rgba(139,92,246,0.18); }
 .regen-btn:active { transform:scale(0.97); }
 .regen-btn:disabled { opacity:0.5; pointer-events:none; }
-.regen-btn i { transition:transform 0.4s; }
-.regen-btn.spinning i { animation:spin 0.8s linear infinite; }
+.regen-btn svg { transition:transform 0.4s; }
+.regen-btn.spinning svg { animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
 /* ============================================================
@@ -705,7 +706,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 ══════════════════════════════════════════════════ -->
 <header>
   <button class="hdr-back" onclick="goBack()" aria-label="Back">
-    <i class="fa-solid fa-arrow-left"></i>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </button>
   <div class="hdr-center">
     <div class="hdr-title">AI Performance Analysis</div>
@@ -769,7 +770,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 1. PERFORMANCE SUMMARY -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(34,211,238,0.12);color:var(--primary);">
-        <i class="fa-solid fa-chart-bar"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
       </div>
       Performance Summary
     </div>
@@ -804,7 +805,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- SUBJECT BREAKDOWN -->
     <div class="card" id="subjectCard">
       <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:6px;">
-        <i class="fa-solid fa-layer-group" style="color:var(--primary);"></i> Subject Performance
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;"><polygon points="12 2 22 8 12 14 2 8 12 2"></polygon><polyline points="2 13 12 19 22 13"></polyline><polyline points="2 18 12 24 22 18"></polyline></svg> Subject Performance
       </div>
       <div id="subjectRows"></div>
     </div>
@@ -812,7 +813,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- CHAPTER-WISE BREAKDOWN -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(139,92,246,0.12);color:var(--purple);">
-        <i class="fa-solid fa-list-check"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 5 10 9 6"></polyline><line x1="12" y1="7" x2="21" y2="7"></line><polyline points="3 16 5 18 9 14"></polyline><line x1="12" y1="17" x2="21" y2="17"></line></svg>
       </div>
       Chapter-wise Breakdown
     </div>
@@ -824,7 +825,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 2. WEAK AREAS -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(239,68,68,0.12);color:var(--red);">
-        <i class="fa-solid fa-triangle-exclamation"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"></path><line x1="12" y1="10" x2="12" y2="14"></line><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"></circle></svg>
       </div>
       Weak Areas
     </div>
@@ -837,7 +838,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 3. STRONG AREAS -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(16,185,129,0.12);color:var(--green);">
-        <i class="fa-solid fa-star"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.1 8.6 22 9.6 17 14.6 18.2 21.6 12 18.3 5.8 21.6 7 14.6 2 9.6 8.9 8.6 12 2"></polygon></svg>
       </div>
       Strong Areas
     </div>
@@ -850,7 +851,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 4. TIME MANAGEMENT -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(245,158,11,0.12);color:var(--amber);">
-        <i class="fa-solid fa-clock"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 16 14"></polyline></svg>
       </div>
       Time Management
     </div>
@@ -862,14 +863,14 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 5. AI STRATEGY ANALYSIS -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(139,92,246,0.12);color:var(--purple);">
-        <i class="fa-solid fa-brain"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 4a4.5 4.5 0 0 0-4.5 4.5c0 1.5.7 2.8 1.8 3.7A3.5 3.5 0 0 0 9 18.9V21h2v-2h2v2h2v-2.1a3.5 3.5 0 0 0 2.2-6.7A4.5 4.5 0 0 0 14.5 4h-5z"></path><line x1="12" y1="8" x2="12" y2="14"></line><line x1="9" y1="11" x2="15" y2="11"></line></svg>
       </div>
       AI Strategy Analysis
     </div>
 
     <div class="ai-card" id="aiStrategyCard">
       <div class="ai-header">
-        <div class="ai-avatar"><i class="fa-solid fa-microchip"></i></div>
+        <div class="ai-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"></rect><line x1="12" y1="1" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="23"></line><line x1="1" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line><line x1="7" y1="1" x2="7" y2="4"></line><line x1="17" y1="1" x2="17" y2="4"></line><line x1="7" y1="20" x2="7" y2="23"></line><line x1="17" y1="20" x2="17" y2="23"></line><line x1="1" y1="7" x2="4" y2="7"></line><line x1="1" y1="17" x2="4" y2="17"></line><line x1="20" y1="7" x2="23" y2="7"></line><line x1="20" y1="17" x2="23" y2="17"></line></svg></div>
         <div class="ai-title-wrap">
           <div class="ai-title">Study Grid Prep AI</div>
           <div class="ai-subtitle" id="aiStatus">Generating personalised analysis...</div>
@@ -877,7 +878,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
       </div>
       <div class="ai-body" id="aiBody">
         <div style="display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:13px;">
-          <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--purple);"></i>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.2" stroke-linecap="round" style="animation:spin 0.8s linear infinite;"><path d="M12 3a9 9 0 1 0 9 9"></path></svg>
           Analysing your performance data...
         </div>
       </div>
@@ -886,7 +887,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- STRATEGY INSIGHTS (local fallback / supplement) -->
     <div class="card" id="strategyCard">
       <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-        <i class="fa-solid fa-lightbulb" style="color:var(--amber);"></i> Improvement Plan
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"></path></svg> Improvement Plan
       </div>
       <div id="insightRows"></div>
     </div>
@@ -894,7 +895,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 6. RECOMMENDED TESTS -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(34,211,238,0.12);color:var(--primary);">
-        <i class="fa-solid fa-bullseye"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"></circle></svg>
       </div>
       Recommended Focus Areas
     </div>
@@ -904,7 +905,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- ASK ABOUT YOUR TEST — tap a question, no typing -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(34,211,238,0.12);color:var(--primary);">
-        <i class="fa-solid fa-comment-dots"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4A9 9 0 0 1 8 19L3 20l1.3-4A8.4 8.4 0 1 1 21 11.5Z"></path><circle cx="8" cy="11.5" r="0.7" fill="currentColor" stroke="none"></circle><circle cx="12" cy="11.5" r="0.7" fill="currentColor" stroke="none"></circle><circle cx="16" cy="11.5" r="0.7" fill="currentColor" stroke="none"></circle></svg>
       </div>
       Ask About Your Test
     </div>
@@ -917,20 +918,20 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <!-- 7. MOTIVATION -->
     <div class="section-label">
       <div class="icon-dot" style="background:rgba(244,63,94,0.12);color:var(--accent);">
-        <i class="fa-solid fa-fire"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.5 7-6.5 0-3-1.8-4.7-3-6.5-.2 2-1 3-2 3.5.3-3-1-5.5-3.5-7.5-.3 2.8-1.2 4.3-3 6-1.5 1.4-2.5 3-2.5 5 0 4 3 6 7 6Z"></path></svg>
       </div>
       Keep Going
     </div>
 
     <div class="motivation-card" id="motivCard">
-      <i class="fa-solid fa-rocket motivation-emoji" id="motivEmoji"></i>
+      <div class="motivation-emoji" id="motivEmoji"></div>
       <div class="motivation-quote" id="motivQuote">"Loading your motivation..."</div>
       <div class="motivation-author" id="motivAuthor"></div>
     </div>
 
     <!-- REGENERATE BUTTON -->
     <button class="regen-btn" id="regenBtn" onclick="regenerateAnalysis()">
-      <i class="fa-solid fa-rotate-right"></i>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
       Regenerate AI Analysis
     </button>
 
@@ -938,6 +939,85 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 </main>
 
 <script>
+/* ================================================================
+   INLINE ICON SYSTEM — replaces Font Awesome web-font icons.
+   Font Awesome's icon glyphs depend on an external font file loading
+   from a CDN; on slow/blocked networks the icons silently render as
+   blank boxes. These are plain inline SVGs instead, so every icon on
+   this page always renders regardless of network conditions.
+================================================================ */
+const ICON_PATHS = {
+  'arrow-left':        '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  'chevron-down':      '<polyline points="6 9 12 15 18 9"/>',
+  'chart-bar':         '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  'layer-group':       '<polygon points="12 2 22 8 12 14 2 8 12 2"/><polyline points="2 13 12 19 22 13"/><polyline points="2 18 12 24 22 18"/>',
+  'list-check':        '<polyline points="3 8 5 10 9 6"/><line x1="12" y1="7" x2="21" y2="7"/><polyline points="3 16 5 18 9 14"/><line x1="12" y1="17" x2="21" y2="17"/>',
+  'triangle-exclamation':'<path d="M12 3 2 20h20L12 3Z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>',
+  'star':              '<polygon points="12 2 15.1 8.6 22 9.6 17 14.6 18.2 21.6 12 18.3 5.8 21.6 7 14.6 2 9.6 8.9 8.6 12 2" fill="currentColor" stroke="none"/>',
+  'clock':             '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/>',
+  'brain':              '<path d="M9.5 4a4.5 4.5 0 0 0-4.5 4.5c0 1.5.7 2.8 1.8 3.7A3.5 3.5 0 0 0 9 18.9V21h2v-2h2v2h2v-2.1a3.5 3.5 0 0 0 2.2-6.7A4.5 4.5 0 0 0 14.5 4h-5z" stroke-linejoin="round"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="9" y1="11" x2="15" y2="11"/>',
+  'microchip':         '<rect x="7" y="7" width="10" height="10" rx="1.5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="7" y1="1" x2="7" y2="4"/><line x1="17" y1="1" x2="17" y2="4"/><line x1="7" y1="20" x2="7" y2="23"/><line x1="17" y1="20" x2="17" y2="23"/><line x1="1" y1="7" x2="4" y2="7"/><line x1="1" y1="17" x2="4" y2="17"/><line x1="20" y1="7" x2="23" y2="7"/><line x1="20" y1="17" x2="23" y2="17"/>',
+  'circle-notch':      '<path d="M12 3a9 9 0 1 0 9 9"/>',
+  'lightbulb':         '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/>',
+  'bullseye':          '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  'comment-dots':      '<path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4A9 9 0 0 1 8 19L3 20l1.3-4A8.4 8.4 0 1 1 21 11.5Z"/><circle cx="8" cy="11.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="16" cy="11.5" r="0.7" fill="currentColor" stroke="none"/>',
+  'fire':              '<path d="M12 22c4 0 7-2.5 7-6.5 0-3-1.8-4.7-3-6.5-.2 2-1 3-2 3.5.3-3-1-5.5-3.5-7.5-.3 2.8-1.2 4.3-3 6-1.5 1.4-2.5 3-2.5 5 0 4 3 6 7 6Z" stroke-linejoin="round"/>',
+  'rocket':            '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09Z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 19 2c0 2.22-.63 6.28-4.05 9.05A22 22 0 0 1 12 15Z"/><path d="M9 12H5s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v4s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+  'rotate-right':      '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+  'trophy':            '<path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2.5a2.5 2.5 0 0 1 0 5H17"/><path d="M7 5H4.5a2.5 2.5 0 0 0 0 5H7"/>',
+  'circle-check':      '<circle cx="12" cy="12" r="9"/><polyline points="8 12.5 11 15.5 16 9"/>',
+  'arrow-trend-up':    '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>',
+  'arrow-up-right-dots': '<line x1="6" y1="18" x2="18" y2="6"/><polyline points="9 6 18 6 18 15"/>',
+  'atom':              '<ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>',
+  'flask':             '<path d="M9 3h6M9 3v7l-4 8a1 1 0 0 0 .9 1.4h12.2a1 1 0 0 0 .9-1.4L15 10V3" stroke-linejoin="round"/><circle cx="10" cy="16" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="0.6" fill="currentColor" stroke="none"/>',
+  'flask-vial':        '<path d="M9 2h6M10 2v6.3L5 18a1.5 1.5 0 0 0 1.3 2.2h11.4A1.5 1.5 0 0 0 19 18l-5-9.7V2" stroke-linejoin="round"/><path d="M7.5 15h9"/>',
+  'square-root-variable':'<path d="M3 12h3l2 6 4-12 2 6h7" stroke-linecap="round" stroke-linejoin="round"/>',
+  'dna':               '<path d="M6 3c0 4 12 4 12 8S6 15 6 19"/><path d="M18 3c0 4-12 4-12 8s12 4 12 8"/><line x1="6" y1="7.5" x2="18" y2="7.5"/><line x1="6" y1="16.5" x2="18" y2="16.5"/>',
+  'language':          '<rect x="3" y="5" width="18" height="14" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="14" y2="12"/><line x1="7" y1="15" x2="11" y2="15"/>',
+  'book':              '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" stroke-linejoin="round"/>',
+  'book-open':         '<path d="M12 7c-2-1.5-5-2-8-2v13c3 0 6 .5 8 2 2-1.5 5-2 8-2V5c-3 0-6 .5-8 2Z" stroke-linejoin="round"/><line x1="12" y1="7" x2="12" y2="20"/>',
+  'stopwatch':         '<circle cx="12" cy="13" r="8"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="9" y1="2" x2="15" y2="2"/><line x1="12" y1="2" x2="12" y2="5"/>',
+  'bolt':              '<polygon points="13 2 3 14 11 14 10 22 21 10 13 10 13 2" stroke-linejoin="round" fill="currentColor" stroke="none"/>',
+  'hourglass-half':    '<path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 5 12 5 12 10s-12 5-12 10"/><path d="M18 2c0 5-12 5-12 10s12 5 12 10"/>',
+  'calendar-days':     '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="0.8" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="0.8" fill="currentColor" stroke="none"/>',
+  'dumbbell':          '<path d="M2 12h2M20 12h2M6 8v8M18 8v8M6 12h12" stroke-width="2.2"/><rect x="3.5" y="9.5" width="3" height="5" rx="1"/><rect x="17.5" y="9.5" width="3" height="5" rx="1"/>',
+  'moon':              '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke-linejoin="round"/>',
+  'gears':             '<circle cx="8" cy="16" r="3"/><circle cx="16" cy="8" r="3"/><path d="M8 8h.01M16 16h.01"/>',
+  'temperature-half':  '<path d="M12 3a2 2 0 0 0-2 2v9.5a4 4 0 1 0 4 0V5a2 2 0 0 0-2-2Z" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="14.5"/>',
+  'eye':               '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" stroke-linejoin="round"/><circle cx="12" cy="12" r="3"/>',
+  'magnet':            '<path d="M6 15V9a6 6 0 0 1 12 0v6" stroke-linecap="round"/><path d="M6 15h4v-6H6v6Z" stroke-linejoin="round"/><path d="M14 15h4v-6h-4v6Z" stroke-linejoin="round"/>',
+  'wave-square':       '<path d="M3 12h4V6h6v12h6V6h2"/>',
+  'battery-full':      '<rect x="2" y="7" width="18" height="10" rx="2"/><line x1="22" y1="10" x2="22" y2="14"/><line x1="5" y1="10" x2="5" y2="14"/><line x1="9" y1="10" x2="9" y2="14"/><line x1="13" y1="10" x2="13" y2="14"/><line x1="17" y1="10" x2="17" y2="14"/>',
+  'scale-balanced':    '<line x1="12" y1="3" x2="12" y2="21"/><path d="M5 7l-3 7a3 3 0 0 0 6 0L5 7Z" stroke-linejoin="round"/><path d="M19 7l-3 7a3 3 0 0 0 6 0l-3-7Z" stroke-linejoin="round"/><line x1="5" y1="7" x2="19" y2="7"/><path d="M8 21h8"/>',
+  'person-running':    '<circle cx="14" cy="4" r="2" fill="currentColor" stroke="none"/><path d="M10 22l2-6 3 2 3 5"/><path d="M6 15l4-3 2-5-4-1-3 3"/><path d="M12 13l3 1 3-2"/>',
+  'earth-americas':    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/>',
+  'draw-polygon':      '<polygon points="12 3 21 9 18 20 6 20 3 9" stroke-linejoin="round"/>',
+  'dice':              '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  'chart-line':        '<polyline points="3 17 9 11 13 15 21 7"/><polyline points="21 12 21 7 16 7"/>',
+  'arrow-right':       '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  'table-cells':       '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>',
+  'check':             '<polyline points="20 6 9 17 4 12"/>',
+  'xmark':             '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  'circle-info':       '<circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><circle cx="12" cy="7.3" r="0.9" fill="currentColor" stroke="none"/>',
+  'graduation-cap':    '<path d="M22 10L12 5 2 10l10 5 10-5Z" stroke-linejoin="round"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+  'ranking-star':      '<path d="M8 21V13"/><path d="M16 21V9"/><path d="M12 21v-5"/><polygon points="12 3 13.5 6.2 17 6.7 14.5 9 15.2 12.5 12 10.8 8.8 12.5 9.5 9 7 6.7 10.5 6.2 12 3" fill="currentColor" stroke="none"/>',
+  'circle':            '<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/>',
+  'circle-dot':        '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/>',
+};
+
+/**
+ * Returns inline-SVG markup for a named icon (bare name, no "fa-solid fa-" prefix).
+ * `style` is an inline CSS string forwarded to the <svg>; icons use currentColor
+ * so `color:` in that style controls the icon color, matching how <i class="fa-...">
+ * used to behave. `size` defaults to 14px.
+ */
+function ico(name, style, size) {
+  const body = ICON_PATHS[name] || ICON_PATHS['circle-info'];
+  const s = size || 14;
+  const filled = /fill="currentColor"/.test(body) && !/stroke-width/.test(body.split('fill="currentColor"')[0].slice(-40));
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;${style || ''}">${body}</svg>`;
+}
+
 /* ================================================================
    GEMINI API CONFIG (via Cloudflare Worker — no key in client)
 ================================================================ */
@@ -1120,12 +1200,12 @@ function processAnalysisData(data) {
    GRADE HELPER
 ================================================================ */
 function getGrade(accuracy) {
-  if (accuracy >= 90) return { label:'S Rank', color:'#5B5BF6',    bg:'rgba(91,91,246,0.12)',    icon:'fa-solid fa-trophy' };
-  if (accuracy >= 75) return { label:'A+',     color:'#10B981',    bg:'rgba(16,185,129,0.12)',   icon:'fa-solid fa-star' };
-  if (accuracy >= 60) return { label:'A',      color:'#10B981',    bg:'rgba(16,185,129,0.12)',   icon:'fa-solid fa-circle-check' };
-  if (accuracy >= 45) return { label:'B',      color:'#F59E0B',    bg:'rgba(245,158,11,0.12)',   icon:'fa-solid fa-arrow-trend-up' };
-  if (accuracy >= 30) return { label:'C',      color:'#F97316',    bg:'rgba(249,115,22,0.12)',   icon:'fa-solid fa-fire' };
-  return                     { label:'D',      color:'#EF4444',    bg:'rgba(239,68,68,0.12)',    icon:'fa-solid fa-arrow-up-right-dots' };
+  if (accuracy >= 90) return { label:'S Rank', color:'#5B5BF6',    bg:'rgba(91,91,246,0.12)',    icon:'trophy' };
+  if (accuracy >= 75) return { label:'A+',     color:'#10B981',    bg:'rgba(16,185,129,0.12)',   icon:'star' };
+  if (accuracy >= 60) return { label:'A',      color:'#10B981',    bg:'rgba(16,185,129,0.12)',   icon:'circle-check' };
+  if (accuracy >= 45) return { label:'B',      color:'#F59E0B',    bg:'rgba(245,158,11,0.12)',   icon:'arrow-trend-up' };
+  if (accuracy >= 30) return { label:'C',      color:'#F97316',    bg:'rgba(249,115,22,0.12)',   icon:'fire' };
+  return                     { label:'D',      color:'#EF4444',    bg:'rgba(239,68,68,0.12)',    icon:'arrow-up-right-dots' };
 }
 
 /* ================================================================
@@ -1133,12 +1213,12 @@ function getGrade(accuracy) {
 ================================================================ */
 function subjectStyle(sub) {
   const s = sub.toLowerCase();
-  if (s.includes('phys'))  return { bg:'rgba(91,91,246,0.1)',   color:'#5B5BF6', icon:'fa-solid fa-atom' };
-  if (s.includes('chem'))  return { bg:'rgba(16,185,129,0.1)',  color:'#10B981', icon:'fa-solid fa-flask' };
-  if (s.includes('math'))  return { bg:'rgba(124,58,237,0.1)',  color:'#7C3AED', icon:'fa-solid fa-square-root-variable' };
-  if (s.includes('bio'))   return { bg:'rgba(16,185,129,0.1)',  color:'#10B981', icon:'fa-solid fa-dna' };
-  if (s.includes('eng'))   return { bg:'rgba(244,63,94,0.1)',   color:'#F43F5E', icon:'fa-solid fa-language' };
-  return { bg:'rgba(245,158,11,0.1)', color:'#F59E0B', icon:'fa-solid fa-book' };
+  if (s.includes('phys'))  return { bg:'rgba(91,91,246,0.1)',   color:'#5B5BF6', icon:'atom' };
+  if (s.includes('chem'))  return { bg:'rgba(16,185,129,0.1)',  color:'#10B981', icon:'flask' };
+  if (s.includes('math'))  return { bg:'rgba(124,58,237,0.1)',  color:'#7C3AED', icon:'square-root-variable' };
+  if (s.includes('bio'))   return { bg:'rgba(16,185,129,0.1)',  color:'#10B981', icon:'dna' };
+  if (s.includes('eng'))   return { bg:'rgba(244,63,94,0.1)',   color:'#F43F5E', icon:'language' };
+  return { bg:'rgba(245,158,11,0.1)', color:'#F59E0B', icon:'book' };
 }
 
 /* ================================================================
@@ -1151,7 +1231,7 @@ function renderChapterAccordion(p) {
   if (!p.anyChapterTagged || subjects.length === 0) {
     el.innerHTML = `
       <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--text-secondary);padding:4px 2px;">
-        <i class="fa-solid fa-circle-info" style="color:var(--text-secondary);margin-top:2px;"></i>
+        ${ico('circle-info', 'color:var(--text-secondary);margin-top:2px;')}
         <span>Chapter/topic tagging isn't set up for this test yet — questions were added without chapter tags. Once your admin panel tags chapters and topics on the questions, this section will show a full chapter-by-chapter breakdown.</span>
       </div>`;
     return;
@@ -1177,7 +1257,7 @@ function renderChapterAccordion(p) {
         return `
           <div class="chapter-row">
             <span class="chapter-row-mark ${tWeak ? 'cross' : 'tick'}">
-              <i class="fa-solid fa-${tWeak ? 'xmark' : 'check'}"></i>
+              ${ico(tWeak ? 'xmark' : 'check', '', 11)}
             </span>
             <span class="chapter-row-name">${t.topic}</span>
             <span class="chapter-row-count">${t.correct}/${t.total} · ${tAcc}%</span>
@@ -1189,11 +1269,11 @@ function renderChapterAccordion(p) {
         <div class="chapter-item${hasTopics ? ' expandable' : ''}" id="chapItem_${chapId}">
           <div class="chapter-row" ${hasTopics ? `onclick="document.getElementById('chapItem_${chapId}').classList.toggle('open'); document.getElementById('${chapId}').classList.toggle('open')"` : ''}>
             <span class="chapter-row-mark ${isWeak ? 'cross' : 'tick'}">
-              <i class="fa-solid fa-${isWeak ? 'xmark' : 'check'}"></i>
+              ${ico(isWeak ? 'xmark' : 'check', '', 11)}
             </span>
             <span class="chapter-row-name">${chapterLabel}</span>
             <span class="chapter-row-count">${c.correct}/${c.total} · ${acc}%</span>
-            ${hasTopics ? `<span class="chapter-row-chevron"><i class="fa-solid fa-chevron-down"></i></span>` : ''}
+            ${hasTopics ? `<span class="chapter-row-chevron">${ico('chevron-down', '', 12)}</span>` : ''}
           </div>
           ${hasTopics ? `<div class="topic-list" id="${chapId}">${topicRows}</div>` : ''}
         </div>`;
@@ -1202,12 +1282,12 @@ function renderChapterAccordion(p) {
     return `
       <div class="chapter-subject" id="chapterSubj${si}">
         <div class="chapter-subject-head" onclick="document.getElementById('chapterSubj${si}').classList.toggle('open')">
-          <div class="subj-icon" style="background:${sty.bg};"><i class="${sty.icon}" style="color:${sty.color};"></i></div>
+          <div class="subj-icon" style="background:${sty.bg};">${ico(sty.icon, `color:${sty.color};`, 16)}</div>
           <div>
             <div class="chapter-subject-name">${cap(sub)}</div>
             <div class="chapter-subject-sub">${chaps.length} chapter${chaps.length > 1 ? 's' : ''}${weakCount > 0 ? ` · ${weakCount} weak` : ''}</div>
           </div>
-          <span class="chapter-subject-chevron"><i class="fa-solid fa-chevron-down"></i></span>
+          <span class="chapter-subject-chevron">${ico('chevron-down', '', 12)}</span>
         </div>
         <div class="chapter-list">${chapRows}</div>
       </div>`;
@@ -1223,18 +1303,18 @@ function renderUI(p) {
 
   // ── Hero Card ──
   document.getElementById('ringNum').textContent  = p.score;
-  document.getElementById('heroName').innerHTML = `<i class="${grade.icon}" style="color:${grade.color};font-size:15px;margin-right:6px;"></i>Hey, ${escHtml(userName)}!`;
+  document.getElementById('heroName').innerHTML = ico(grade.icon, `color:${grade.color};margin-right:4px;`, 15) + `Hey, ${escHtml(userName)}!`;
 
   const gradeEl = document.getElementById('heroGrade');
   gradeEl.textContent = grade.label;
   gradeEl.style.cssText = `background:${grade.bg};color:${grade.color};border:1px solid ${grade.color}22;`;
 
   document.getElementById('heroMeta').innerHTML = `
-    ${p.exam ? `<span class="hero-meta-chip"><i class="fa-solid fa-graduation-cap"></i> ${examLabel(p.exam)}</span>` : ''}
-    <span class="hero-meta-chip"><i class="fa-solid fa-clock"></i> ${p.timeTaken} min</span>
-    <span class="hero-meta-chip"><i class="fa-solid fa-ranking-star"></i> Rank ${p.rank}</span>
+    ${p.exam ? `<span class="hero-meta-chip">${ico('graduation-cap', '', 11)} ${examLabel(p.exam)}</span>` : ''}
+    <span class="hero-meta-chip">${ico('clock', '', 11)} ${p.timeTaken} min</span>
+    <span class="hero-meta-chip">${ico('ranking-star', '', 11)} Rank ${p.rank}</span>
     <span class="hero-meta-chip" style="color:var(--primary);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.08);">
-      <i class="fa-solid fa-chart-line"></i> Top ${100 - p.percentile}%
+      ${ico('chart-line', '', 11)} Top ${100 - p.percentile}%
     </span>
   `;
 
@@ -1270,12 +1350,12 @@ function renderUI(p) {
     const clr = pct >= 60 ? '#10B981' : pct >= 40 ? '#F59E0B' : '#EF4444';
     return `
       <div class="subject-row">
-        <div class="subj-icon" style="background:${sty.bg};"><i class="${sty.icon}" style="color:${sty.color};"></i></div>
+        <div class="subj-icon" style="background:${sty.bg};">${ico(sty.icon, `color:${sty.color};`, 16)}</div>
         <div class="subj-info">
           <div class="subj-name">${cap(sub)}</div>
           <div class="subj-stats">
-            <span class="subj-stat correct"><i class="fa-solid fa-check"></i> ${s.correct}</span>
-            <span class="subj-stat wrong"><i class="fa-solid fa-xmark"></i> ${s.wrong}</span>
+            <span class="subj-stat correct">${ico('check', '', 10)} ${s.correct}</span>
+            <span class="subj-stat wrong">${ico('xmark', '', 10)} ${s.wrong}</span>
             <span class="subj-stat acc">· ${pct}% acc</span>
           </div>
           <div class="progress-bar-wrap">
@@ -1299,7 +1379,7 @@ function renderUI(p) {
 
   // ── Weak Areas ──
   if (!p.anyChapterTagged) {
-    document.getElementById('weakDesc').innerHTML = '<i class="fa-solid fa-circle-info"></i> Chapter/topic tags aren\'t set up for this test yet, so weak topics can\'t be pinpointed. See the subject-wise breakdown above instead.';
+    document.getElementById('weakDesc').innerHTML = ico('circle-info', '', 12) + ' Chapter/topic tags aren\'t set up for this test yet, so weak topics can\'t be pinpointed. See the subject-wise breakdown above instead.';
     document.getElementById('weakChips').innerHTML = '';
   } else if (p.weakTopics.length === 0) {
     document.getElementById('weakDesc').textContent = 'Excellent! No significantly weak topics detected in this test.';
@@ -1309,7 +1389,7 @@ function renderUI(p) {
       `You struggled most in ${p.weakTopics.length} topic${p.weakTopics.length > 1 ? 's' : ''}. Focus on these to boost your score significantly.`;
     document.getElementById('weakChips').innerHTML = p.weakTopics.map(t => `
       <span class="topic-chip weak">
-        <i class="fa-solid fa-triangle-exclamation" style="font-size:9px;"></i>
+        ${ico('triangle-exclamation', '', 9)}
         ${t.topic}
         <span class="topic-chip-count">${t.wrong}✗</span>
       </span>`).join('');
@@ -1317,7 +1397,7 @@ function renderUI(p) {
 
   // ── Strong Areas ──
   if (!p.anyChapterTagged) {
-    document.getElementById('strongDesc').innerHTML = '<i class="fa-solid fa-circle-info"></i> Chapter/topic tags aren\'t set up for this test yet, so strong topics can\'t be pinpointed.';
+    document.getElementById('strongDesc').innerHTML = ico('circle-info', '', 12) + ' Chapter/topic tags aren\'t set up for this test yet, so strong topics can\'t be pinpointed.';
     document.getElementById('strongChips').innerHTML = '';
   } else if (p.strongTopics.length === 0) {
     document.getElementById('strongDesc').textContent = 'Keep practising — strong topics will appear as your accuracy improves.';
@@ -1327,7 +1407,7 @@ function renderUI(p) {
       `You performed well in ${p.strongTopics.length} topic${p.strongTopics.length > 1 ? 's' : ''}. Build on these strengths!`;
     document.getElementById('strongChips').innerHTML = p.strongTopics.map(t => `
       <span class="topic-chip strong">
-        <i class="fa-solid fa-check" style="font-size:9px;"></i>
+        ${ico('check', '', 9)}
         ${t.topic}
         <span class="topic-chip-count">${t.correct}✓</span>
       </span>`).join('');
@@ -1337,7 +1417,7 @@ function renderUI(p) {
   const timeInsights = buildTimeInsights(p);
   document.getElementById('timeRows').innerHTML = timeInsights.map(t => `
     <div class="time-row">
-      <div class="time-icon" style="background:${t.bg};"><i class="${t.icon}"></i></div>
+      <div class="time-icon" style="background:${t.bg};">${ico(t.icon, `color:${t.color||"currentColor"};`, 16)}</div>
       <div class="time-info">
         <div class="time-label">${t.label}</div>
         <div class="time-value">${t.value}</div>
@@ -1372,14 +1452,14 @@ function buildTimeInsights(p) {
 
   return [
     {
-      icon:'fa-solid fa-stopwatch', bg:'rgba(34,211,238,0.1)',
+      icon:'stopwatch', bg:'rgba(34,211,238,0.1)',
       label:'Total Time Taken',
       value:`${totalMin} minutes for ${qCount} questions`,
       badge:`${Math.floor(totalMin/60)}h ${totalMin%60}m`,
       badgeBg:'rgba(34,211,238,0.1)', badgeColor:'var(--primary)',
     },
     {
-      icon:'fa-solid fa-bolt', bg:`${paceBg}`,
+      icon:'bolt', bg:`${paceBg}`,
       label:'Avg Time Per Question',
       value:secPerQ < 45 ? 'You may be rushing. Slow down on tricky questions.' :
             secPerQ > 120 ? 'You spent too long per question. Practice speed.' :
@@ -1388,7 +1468,7 @@ function buildTimeInsights(p) {
       badgeBg:paceBg, badgeColor:paceColor,
     },
     {
-      icon:'fa-solid fa-bullseye', bg:'rgba(139,92,246,0.1)',
+      icon:'bullseye', bg:'rgba(139,92,246,0.1)',
       label:'Efficiency Score',
       value:`Score / Time ratio — ${p.accuracy >= 60 && secPerQ <= 90 ? 'Excellent efficiency!' : p.accuracy < 40 ? 'Low efficiency — speed didn\'t help accuracy.' : 'Moderate — there\'s room to improve.'}`,
       badge:p.accuracy >= 60 && secPerQ <= 90 ? 'High' : p.accuracy < 40 ? 'Low' : 'Mid',
@@ -1405,7 +1485,7 @@ function renderStrategyInsights(p) {
 
   if (p.weakTopics.length > 0) {
     insights.push({
-      icon:'fa-solid fa-book-open', bg:'rgba(239,68,68,0.1)', color:'var(--red)',
+      icon:'book-open', bg:'rgba(239,68,68,0.1)', color:'var(--red)',
       title:`Revise ${p.weakTopics[0].topic}`,
       desc:`Your highest error topic. Dedicate 2–3 focused sessions this week with solved examples.`,
     });
@@ -1413,13 +1493,13 @@ function renderStrategyInsights(p) {
 
   if (p.accuracy < 50) {
     insights.push({
-      icon:'fa-solid fa-bullseye', bg:'rgba(245,158,11,0.1)', color:'var(--amber)',
+      icon:'bullseye', bg:'rgba(245,158,11,0.1)', color:'var(--amber)',
       title:'Focus on Accuracy First',
       desc:'Attempting fewer questions with higher accuracy will improve your score more than attempting all.',
     });
   } else {
     insights.push({
-      icon:'fa-solid fa-rocket', bg:'rgba(16,185,129,0.1)', color:'var(--green)',
+      icon:'rocket', bg:'rgba(16,185,129,0.1)', color:'var(--green)',
       title:'Maintain Accuracy, Increase Attempts',
       desc:'Your accuracy is solid. Work on reducing skipped questions to maximise your score.',
     });
@@ -1427,13 +1507,13 @@ function renderStrategyInsights(p) {
 
   if (p.secPerQ < 45) {
     insights.push({
-      icon:'fa-solid fa-hourglass-half', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
+      icon:'hourglass-half', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
       title:'Read Questions Carefully',
       desc:'Your speed is very high — rushing leads to avoidable mistakes. Slow down on multi-step problems.',
     });
   } else if (p.secPerQ > 120) {
     insights.push({
-      icon:'fa-solid fa-bolt', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
+      icon:'bolt', bg:'rgba(34,211,238,0.1)', color:'var(--primary)',
       title:'Improve Speed with Timed Practice',
       desc:'Practice with a timer daily. Aim for 60–90 seconds per question across all subjects.',
     });
@@ -1441,21 +1521,21 @@ function renderStrategyInsights(p) {
 
   if (p.strongTopics.length > 0) {
     insights.push({
-      icon:'fa-solid fa-lightbulb', bg:'rgba(139,92,246,0.1)', color:'var(--purple)',
+      icon:'lightbulb', bg:'rgba(139,92,246,0.1)', color:'var(--purple)',
       title:`Leverage Your Strength in ${p.strongTopics[0].topic}`,
       desc:'Strong topics are your score boosters. Attempt these first in the exam to build momentum.',
     });
   }
 
   insights.push({
-    icon:'fa-solid fa-calendar-days', bg:'rgba(244,63,94,0.1)', color:'var(--accent)',
+    icon:'calendar-days', bg:'rgba(244,63,94,0.1)', color:'var(--accent)',
     title:'Recommended Study Schedule',
     desc:'Revise weak topics daily (60 min), take 1 mock test per week, and review solutions the same day.',
   });
 
   document.getElementById('insightRows').innerHTML = insights.map(i => `
     <div class="insight-row">
-      <div class="insight-icon" style="background:${i.bg};color:${i.color};"><i class="${i.icon}"></i></div>
+      <div class="insight-icon" style="background:${i.bg};color:${i.color};">${ico(i.icon, "", 16)}</div>
       <div>
         <div class="insight-title">${i.title}</div>
         <div class="insight-desc">${i.desc}</div>
@@ -1467,14 +1547,14 @@ function renderStrategyInsights(p) {
    RECOMMENDATIONS
 ================================================================ */
 const TOPIC_ICONS = {
-  default:'fa-solid fa-book', integration:'fa-solid fa-chart-line', differentiation:'fa-solid fa-chart-line',
-  mechanics:'fa-solid fa-gears', thermodynamics:'fa-solid fa-temperature-half', optics:'fa-solid fa-eye',
-  magnetism:'fa-solid fa-magnet', electricity:'fa-solid fa-bolt', waves:'fa-solid fa-wave-square',
-  'organic chemistry':'fa-solid fa-dna', 'inorganic chemistry':'fa-solid fa-flask-vial',
-  electrochemistry:'fa-solid fa-battery-full', equilibrium:'fa-solid fa-scale-balanced',
-  kinematics:'fa-solid fa-person-running', gravitation:'fa-solid fa-earth-americas',
-  trigonometry:'fa-solid fa-draw-polygon', probability:'fa-solid fa-dice', algebra:'fa-solid fa-square-root-variable',
-  calculus:'fa-solid fa-chart-line', vectors:'fa-solid fa-arrow-right', matrices:'fa-solid fa-table-cells',
+  default:'book', integration:'chart-line', differentiation:'chart-line',
+  mechanics:'gears', thermodynamics:'temperature-half', optics:'eye',
+  magnetism:'magnet', electricity:'bolt', waves:'wave-square',
+  'organic chemistry':'dna', 'inorganic chemistry':'flask-vial',
+  electrochemistry:'battery-full', equilibrium:'scale-balanced',
+  kinematics:'person-running', gravitation:'earth-americas',
+  trigonometry:'draw-polygon', probability:'dice', algebra:'square-root-variable',
+  calculus:'chart-line', vectors:'arrow-right', matrices:'table-cells',
 };
 
 function topicIcon(topic) {
@@ -1507,11 +1587,11 @@ function renderRecommendations(p) {
   if (recs.length === 0) {
     document.getElementById('recGrid').innerHTML = !p.anyChapterTagged ? `
       <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-secondary);font-size:13px;">
-        <i class="fa-solid fa-circle-info" style="color:var(--text-secondary);font-size:24px;display:block;margin-bottom:8px;"></i>
+        ${ico('circle-info', 'color:var(--text-secondary);display:block;margin:0 auto 8px;', 24)}
         Chapters aren't tagged for this test yet — recommendations will show up here once they are.
       </div>` : `
       <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-secondary);font-size:13px;">
-        <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:24px;display:block;margin-bottom:8px;"></i>
+        ${ico('circle-check', 'color:var(--green);display:block;margin:0 auto 8px;', 24)}
         Great performance! No specific topics to recommend.
       </div>`;
     return;
@@ -1519,11 +1599,11 @@ function renderRecommendations(p) {
 
   document.getElementById('recGrid').innerHTML = recs.map((r, i) => `
     <div class="rec-card" style="animation-delay:${i * 0.05}s;">
-      <div class="rec-icon"><i class="${r.icon}"></i></div>
+      <div class="rec-icon">${ico(r.icon, "", 16)}</div>
       <div class="rec-topic">${r.topic}</div>
       <div class="rec-subject">${r.subject}</div>
       <div class="rec-difficulty">
-        ${[1,2,3].map(n=>`<i class="fa-solid fa-circle${n<=r.stars?'':'-dot'}" style="color:${n<=r.stars?'var(--amber)':'var(--card-border)'};"></i>`).join('')}
+        ${[1,2,3].map(n=>ico(n<=r.stars?'circle':'circle-dot', `color:${n<=r.stars?'var(--amber)':'var(--card-border)'};`, 10)).join('')}
         ${r.difficulty}
       </div>
     </div>`).join('');
@@ -1533,14 +1613,14 @@ function renderRecommendations(p) {
    MOTIVATION
 ================================================================ */
 const QUOTES = [
-  { icon:'fa-solid fa-fire', quote:'The expert in anything was once a beginner. Every wrong answer is a step forward.', author:'Keep pushing.' },
-  { icon:'fa-solid fa-dumbbell', quote:'You don\'t have to be perfect. You just have to be better than yesterday.', author:'Progress over perfection.' },
-  { icon:'fa-solid fa-star', quote:'Difficult roads often lead to beautiful destinations. Stay consistent.', author:'Your future self thanks you.' },
-  { icon:'fa-solid fa-rocket', quote:'Every master was once a disaster. Embrace the process and keep going.', author:'Trust the journey.' },
-  { icon:'fa-solid fa-bolt', quote:'Hard work beats talent when talent doesn\'t work hard. You have both.', author:'Go win it.' },
-  { icon:'fa-solid fa-bullseye', quote:'Small daily improvements lead to stunning long-term results. One topic at a time.', author:'Be patient with yourself.' },
-  { icon:'fa-solid fa-moon', quote:'The night before your breakthrough often feels the darkest. Keep studying.', author:'Your moment is coming.' },
-  { icon:'fa-solid fa-trophy', quote:'Champions are made in the hours when they want to give up but don\'t. Be a champion.', author:'That\'s you.' },
+  { icon:'fire', quote:'The expert in anything was once a beginner. Every wrong answer is a step forward.', author:'Keep pushing.' },
+  { icon:'dumbbell', quote:'You don\'t have to be perfect. You just have to be better than yesterday.', author:'Progress over perfection.' },
+  { icon:'star', quote:'Difficult roads often lead to beautiful destinations. Stay consistent.', author:'Your future self thanks you.' },
+  { icon:'rocket', quote:'Every master was once a disaster. Embrace the process and keep going.', author:'Trust the journey.' },
+  { icon:'bolt', quote:'Hard work beats talent when talent doesn\'t work hard. You have both.', author:'Go win it.' },
+  { icon:'bullseye', quote:'Small daily improvements lead to stunning long-term results. One topic at a time.', author:'Be patient with yourself.' },
+  { icon:'moon', quote:'The night before your breakthrough often feels the darkest. Keep studying.', author:'Your moment is coming.' },
+  { icon:'trophy', quote:'Champions are made in the hours when they want to give up but don\'t. Be a champion.', author:'That\'s you.' },
 ];
 
 function renderMotivation(p) {
@@ -1551,7 +1631,7 @@ function renderMotivation(p) {
   if (p.accuracy >= 75) pick = QUOTES[4]; // high performer
   else if (p.accuracy < 40) pick = QUOTES[2]; // needs encouragement
 
-  document.getElementById('motivEmoji').className = `${pick.icon} motivation-emoji`;
+  document.getElementById('motivEmoji').innerHTML = ico(pick.icon, 'color:var(--accent);', 36);
   document.getElementById('motivQuote').textContent  = `"${pick.quote}"`;
   document.getElementById('motivAuthor').textContent = `— ${pick.author}`;
 }
@@ -1793,7 +1873,7 @@ async function askQuickQuestion(key) {
   document.querySelectorAll('.ask-chip').forEach(c => c.setAttribute('disabled', 'true'));
   const box = document.getElementById('askAnswerBox');
   box.style.display = 'block';
-  box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);"><i class="fa-solid fa-circle-notch fa-spin"></i> Checking your test data...</div>`;
+  box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);">${ico('circle-notch', 'animation:spin 0.8s linear infinite;', 14)} Checking your test data...</div>`;
 
   const prompt = `Tu ek ${examLabel(p.exam)} exam coach hai. Neeche EK student ke EK specific mock test ka data hai — sirf isi test ke baare mein baat kar, kisi aur test ya exam ko assume mat kar.
 
@@ -1858,7 +1938,7 @@ async function runAIAnalysis(p) {
 
   aiBody.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:13px;">
-      <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--purple);"></i>
+      ${ico('circle-notch', 'color:var(--purple);animation:spin 0.8s linear infinite;', 14)}
       Analysing your performance data...
     </div>`;
 
@@ -1925,12 +2005,12 @@ async function init() {
           background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(34,211,238,0.12));
           border:1px solid rgba(139,92,246,0.2);
           display:flex;align-items:center;justify-content:center;
-          display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(139,92,246,0.15);"><i class="fa-solid fa-microchip" style="font-size:32px;color:var(--purple);"></i></div>
+          display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(139,92,246,0.15);">${ico('microchip', 'color:var(--purple);', 32)}</div>
         <div>
           <div style="font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:8px;">No Analysis Data Found</div>
           <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;max-width:290px;margin:0 auto;">
             Please attempt a test first, then tap
-            <strong style="color:var(--purple);"><i class="fa-solid fa-microchip"></i> AI Detailed Analysis</strong>
+            <strong style="color:var(--purple);">${ico('microchip', 'color:var(--purple);', 12)} AI Detailed Analysis</strong>
             from the result page.
           </div>
         </div>
