@@ -950,12 +950,12 @@ main {
 
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">
-      <i class="fa-regular fa-clipboard"></i>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"></rect><rect x="9" y="2" width="6" height="4" rx="1"></rect></svg>
     </div>
     <div class="empty-title">No tests attempted yet</div>
     <div class="empty-sub">Complete a mock test to start tracking your performance here.</div>
     <a href="mock-home.html" class="empty-btn">
-      <i class="fa-solid fa-file-pen"></i>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"></path><path d="M14 3v5h5"></path><path d="M11.5 15.5l4-4 1.5 1.5-4 4H11.5v-1.5Z"></path></svg>
       Start a Mock Test
     </a>
   </div>
@@ -968,14 +968,14 @@ main {
 
     <div class="popup-header">
       <div class="popup-header-dot" id="popupDot">
-        <i class="fa-solid fa-graduation-cap"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg>
       </div>
       <div class="popup-title">
         <div class="popup-exam-name" id="popupExamName">—</div>
         <div class="popup-exam-meta" id="popupExamMeta">—</div>
       </div>
       <div class="popup-close-btn" onclick="closePopup()" aria-label="Close">
-        <i class="fa-solid fa-xmark"></i>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </div>
     </div>
 
@@ -1016,7 +1016,7 @@ main {
 
     <div class="popup-cta">
       <button class="popup-cta-btn" id="popupAnalysisBtn" onclick="goToAnalysis()">
-        <i class="fa-solid fa-chart-bar"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
         View Full Analysis
       </button>
     </div>
@@ -1026,7 +1026,7 @@ main {
 
 <div class="pwa-bottom-nav">
   <button class="nav-tab" onclick="navigate('dashboard-home.html')">
-    <i class="fa-solid fa-house"></i><span>Home</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:3px;"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"></path></svg><span>Home</span>
   </button>
   <button class="nav-tab" onclick="navigate('mock-home.html')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-bottom: 3px;">
@@ -1039,16 +1039,40 @@ main {
     <span>Mock</span>
   </button>
   <button class="nav-tab active" onclick="navigate('testhistory.html')">
-    <i class="fa-solid fa-clock-rotate-left"></i><span>My Tests</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:3px;"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 8 12 12 15 14"></polyline></svg><span>My Tests</span>
   </button>
   <button class="nav-tab" onclick="navigate('profile.html')">
-    <i class="fa-regular fa-circle-user"></i><span>Profile</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:3px;"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.5 19a6 6 0 0 1 11 0"></path></svg><span>Profile</span>
   </button>
 </div>
 
 <script src="theme.js"></script>
 
 <script>
+/* ================================================================
+   INLINE ICON SYSTEM — replaces Font Awesome web-font icons so
+   icons always render, even when the FA CDN font fails to load
+   on a slow/blocked network.
+================================================================ */
+const ICON_PATHS = {
+  'clipboard':          '<rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/>',
+  'file-pen':           '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M11.5 15.5l4-4 1.5 1.5-4 4H11.5v-1.5Z"/>',
+  'graduation-cap':     '<path d="M22 10L12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+  'xmark':              '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  'chart-bar':          '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  'house':              '<path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>',
+  'clock-rotate-left':  '<path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/><polyline points="12 8 12 12 15 14"/>',
+  'circle-user':        '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 19a6 6 0 0 1 11 0"/>',
+  'flask':              '<path d="M9 3h6M9 3v7l-4 8a1 1 0 0 0 .9 1.4h12.2a1 1 0 0 0 .9-1.4L15 10V3"/><circle cx="10" cy="16" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="0.6" fill="currentColor" stroke="none"/>',
+  'file-alt':           '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><line x1="8.5" y1="13" x2="15.5" y2="13"/><line x1="8.5" y1="16.5" x2="15.5" y2="16.5"/>',
+  'chevron-right':      '<polyline points="9 6 15 12 9 18"/>',
+};
+function ico(name, style, size) {
+  const body = ICON_PATHS[name] || ICON_PATHS['file-alt'];
+  const s = size || 14;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;${style || ''}">${body}</svg>`;
+}
+
 window.navigate = function(url) {
   const veil = document.getElementById('pageTransition');
   veil.classList.add('leaving');
@@ -1233,21 +1257,21 @@ function examConfig(exam) {
   if (e === 'cuet') return {
     label: 'CUET Mock Test',
     dotClass: 'dot-cuet',
-    icon: 'fa-graduation-cap',
+    icon:'graduation-cap',
     glow: 'rgba(91,91,246,0.1)',
     color: '#5B5BF6'
   };
   if (e === 'jee') return {
     label: 'JEE Mock Test',
     dotClass: 'dot-jee',
-    icon: 'fa-flask',
+    icon:'flask',
     glow: 'rgba(245,158,11,0.12)',
     color: '#F59E0B'
   };
   return {
     label: `${exam?.toUpperCase() || 'Mock'} Test`,
     dotClass: 'dot-default',
-    icon: 'fa-file-alt',
+    icon:'file-alt',
     glow: 'rgba(129,140,248,0.12)',
     color: '#818cf8'
   };
@@ -1323,12 +1347,15 @@ function renderHistory(history) {
     card.setAttribute('tabindex', '0');
 
     const displayTitle = buildTestDisplayTitle(test);
-    const subjectsMeta = Array.isArray(test.subjects) && test.subjects.length
+    const subjectPart = Array.isArray(test.subjects) && test.subjects.length
       ? test.subjects.join(' · ')
       : (test.shift || '');
+    // Show the paper's year alongside subjects — the custom testName (e.g. "22
+    // January Shift 2") on its own doesn't say which year's paper it was.
+    const subjectsMeta = [test.year, subjectPart].filter(Boolean).join(' · ');
     card.innerHTML = `
       <div class="test-card-dot ${cfg.dotClass}">
-        <i class="fa-solid ${cfg.icon}"></i>
+        ${ico(cfg.icon, '', 16)}
       </div>
       <div class="test-card-body">
         <div class="test-card-title">${displayTitle}</div>
@@ -1340,7 +1367,7 @@ function renderHistory(history) {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
         <div class="test-card-date">${formatDate(test.date)}</div>
-        <i class="fa-solid fa-chevron-right test-card-arrow"></i>
+        <span class="test-card-arrow">${ico('chevron-right', '', 14)}</span>
       </div>
     `;
 
@@ -1367,10 +1394,10 @@ function openPopup(test) {
   const dot = document.getElementById('popupDot');
   dot.style.background = cfg.glow;
   dot.style.color      = cfg.color;
-  dot.querySelector('i').className = `fa-solid ${cfg.icon}`;
+  dot.innerHTML = ico(cfg.icon, '', 16);
   const popupTitle = buildTestDisplayTitle(test);
   document.getElementById('popupExamName').textContent = popupTitle;
-  const subMeta = Array.isArray(test.subjects) && test.subjects.length ? test.subjects.join(' · ') : (test.shift || '');
+  const subMeta = [test.year, (Array.isArray(test.subjects) && test.subjects.length ? test.subjects.join(' · ') : (test.shift || ''))].filter(Boolean).join(' · ');
   document.getElementById('popupExamMeta').textContent =
     [subMeta, formatDate(test.date)].filter(Boolean).join(' — ');
 

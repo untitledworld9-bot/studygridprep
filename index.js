@@ -112,13 +112,14 @@ const unsubs = {
 // ── Which page are we on? Used for page-targeted promos/announcements
 function getCurrentPage() {
   const path = window.location.pathname.toLowerCase();
-  if (path.includes("timer"))      return "timer";
-  if (path.includes("playlist"))   return "playlist";
-  if (path.includes("todo"))       return "todo";
-  if (path.includes("profile"))    return "profile";
-  if (path.includes("mock-home"))  return "mock-home";
-  if (path.includes("progress"))   return "progress";
-  if (path.includes("leaderboard"))return "leaderboard";
+  if (path.includes("timer"))        return "timer";
+  if (path.includes("playlist"))     return "playlist";
+  if (path.includes("todo"))         return "todo";
+  if (path.includes("profile"))      return "profile";
+  if (path.includes("mock-home"))    return "mock-home";
+  if (path.includes("progress"))     return "progress";
+  if (path.includes("leaderboard"))  return "leaderboard";
+  if (path.includes("content-hub"))  return "content-hub";
   if (path.includes("dashboard-home")) return "home";
   // index.html and root = home/main
   if (path.endsWith("index.html") || path === "/" || path.endsWith("/")) return "home";
@@ -1292,6 +1293,7 @@ function getCurrentPageFull() {
   if (path.includes("progress"))                             return "progress.html";
   if (path.includes("mock-home"))                            return "mock-home.html";
   if (path.includes("mock"))                                 return "mock.html";
+  if (path.includes("content-hub"))                          return "content-hub.html";
   if (path.includes("dashboard-home"))                       return "dashboard-home.html";
   return "dashboard-home.html"; // default = home
 }

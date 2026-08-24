@@ -1384,6 +1384,39 @@ function boot(){
 }
 
 boot();
+
+/* ── PRESENCE TRACKING ──────────────────────────────────────────────────────
+   Writes currentPage:"content-hub.html" to users/{uid} so the admin panel
+   can show which page this user is currently on.
+   Mirrors the initPresence() logic from index.js (not imported here).
+─────────────────────────────────────────────────────────────────────────── */
+(async function initContentHubPresence() {
+  const uid = localStorage.getItem("uwUid") || localStorage.getItem("userUID") || null;
+  if (!uid) return;
+
+  const PAGE = "content-hub.html";
+  const userRef = doc(db, "users", uid);
+
+  // Write presence immediately
+  try {
+    await setDoc(userRef, {
+      currentPage: PAGE,
+      lastActive:  Date.now(),
+      status:      "online"
+    }, { merge: true });
+  } catch(e) {}
+
+  // Heartbeat every 60 s to keep lastActive fresh
+  const hb = setInterval(async () => {
+    try { await updateDoc(userRef, { currentPage: PAGE, lastActive: Date.now(), status: "online" }); } catch {}
+  }, 60_000);
+
+  // Mark offline + clear page when user leaves
+  window.addEventListener("pagehide", async () => {
+    clearInterval(hb);
+    try { await updateDoc(userRef, { status: "offline", lastActive: Date.now(), currentPage: "" }); } catch {}
+  });
+})();
 </script>
 
 </body>

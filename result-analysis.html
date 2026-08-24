@@ -613,7 +613,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 <!-- ===== FIXED HEADER ===== -->
 <header>
   <div class="hdr-back" onclick="navigate('result-summary.html')" title="Back to Summary">
-    <i class="fa-solid fa-arrow-left"></i>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </div>
   <div class="hdr-center">
     <div class="hdr-title" id="hdrTitle">Mock Test Analysis</div>
@@ -664,7 +664,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.15s both; margin-bottom:16px;">
     <div class="ac-body" style="padding:16px 18px;">
       <div class="perf-msg" id="perfMsg">
-        <div class="perf-msg-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="perf-msg-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"></polyline><polyline points="21 12 21 7 16 7"></polyline></svg></div>
         <div class="perf-msg-text" id="perfMsgText">Loading your performance insight...</div>
       </div>
     </div>
@@ -674,7 +674,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="sec-label" style="animation:fadeUp 0.4s ease 0.2s both;">Subject-wise Analysis</div>
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.22s both;" id="subjectCard">
     <div class="analysis-card-hdr">
-      <div class="ac-hdr-icon"><i class="fa-solid fa-book-open"></i></div>
+      <div class="ac-hdr-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7c-2-1.5-5-2-8-2v13c3 0 6 .5 8 2 2-1.5 5-2 8-2V5c-3 0-6 .5-8 2Z"></path><line x1="12" y1="7" x2="12" y2="20"></line></svg></div>
       <div>
         <div class="ac-hdr-title">Subject Breakdown</div>
         <div class="ac-hdr-sub">Accuracy and attempt rate per subject</div>
@@ -687,7 +687,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="sec-label" style="animation:fadeUp 0.4s ease 0.28s both;">Rank &amp; Percentile</div>
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.3s both;">
     <div class="analysis-card-hdr">
-      <div class="ac-hdr-icon"><i class="fa-solid fa-trophy"></i></div>
+      <div class="ac-hdr-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M17 5h2.5a2.5 2.5 0 0 1 0 5H17"></path><path d="M7 5H4.5a2.5 2.5 0 0 0 0 5H7"></path></svg></div>
       <div>
         <div class="ac-hdr-title">Your Standing</div>
         <div class="ac-hdr-sub">Compared to all test takers</div>
@@ -713,7 +713,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="sec-label" style="animation:fadeUp 0.4s ease 0.34s both;">Performance Comparison</div>
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.36s both;">
     <div class="analysis-card-hdr">
-      <div class="ac-hdr-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="ac-hdr-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
       <div>
         <div class="ac-hdr-title">Topper vs You</div>
         <div class="ac-hdr-sub" id="topperSubtitle">Loading live topper data...</div>
@@ -741,7 +741,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="sec-label" style="animation:fadeUp 0.4s ease 0.36s both;">Accuracy Benchmark</div>
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.38s both;" id="benchmarkCard">
     <div class="analysis-card-hdr">
-      <div class="ac-hdr-icon" style="background:rgba(52,211,153,0.1);color:var(--secondary);"><i class="fa-solid fa-chart-bar"></i></div>
+      <div class="ac-hdr-icon" style="background:rgba(52,211,153,0.1);color:var(--secondary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
       <div>
         <div class="ac-hdr-title">Accuracy Comparison</div>
         <div class="ac-hdr-sub" id="benchmarkSub">Comparing your accuracy against all test takers</div>
@@ -756,7 +756,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="sec-label" style="animation:fadeUp 0.4s ease 0.38s both;">Solutions Analysis</div>
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.39s both; margin-bottom:16px;">
     <div class="analysis-card-hdr">
-      <div class="ac-hdr-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+      <div class="ac-hdr-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"></rect><rect x="9" y="2" width="6" height="4" rx="1"></rect><line x1="9" y1="11" x2="15" y2="11"></line><line x1="9" y1="14.5" x2="15" y2="14.5"></line><line x1="9" y1="18" x2="12.5" y2="18"></line></svg></div>
       <div>
         <div class="ac-hdr-title">Solutions Analysis</div>
         <div class="ac-hdr-sub">Review correct &amp; incorrect answers question by question</div>
@@ -776,12 +776,12 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
           background:rgba(91,91,246,0.12); border:1.5px solid rgba(91,91,246,0.3);
           display:flex; align-items:center; justify-content:center;
           font-size:20px; color:var(--primary); flex-shrink:0;
-        "><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+        "><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="7"></circle><line x1="21" y1="21" x2="15.5" y2="15.5"></line><path d="M7 12l1.5-2 2 1.5L13 8"></path></svg></div>
         <div style="flex:1;">
           <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:3px;">View Solutions</div>
           <div style="font-size:12px; color:var(--text-secondary);">See what was correct &amp; what went wrong — question by question</div>
         </div>
-        <i class="fa-solid fa-chevron-right" style="color:var(--text-secondary);opacity:0.5;font-size:13px;flex-shrink:0;"></i>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;flex-shrink:0;"><polyline points="9 6 15 12 9 18"></polyline></svg>
       </div>
     </div>
   </div>
@@ -791,7 +791,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
     <div class="sec-label" style="animation:fadeUp 0.4s ease 0.37s both;">Previous vs Current</div>
     <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.38s both;">
       <div class="analysis-card-hdr">
-        <div class="ac-hdr-icon"><i class="fa-solid fa-code-compare"></i></div>
+        <div class="ac-hdr-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 5 21"></path><path d="M15 3l4 4-4 4"></path><path d="M9 17l-4-4 4-4"></path></svg></div>
         <div>
           <div class="ac-hdr-title">1st Attempt vs This Attempt</div>
           <div class="ac-hdr-sub" id="prevVsCurrentSub">Your improvement over the first attempt</div>
@@ -816,7 +816,7 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
   <div class="sec-label" style="animation:fadeUp 0.4s ease 0.4s both;">Study Tips</div>
   <div class="analysis-card" style="animation:fadeUp 0.4s ease 0.42s both; margin-bottom:20px;">
     <div class="analysis-card-hdr">
-      <div class="ac-hdr-icon"><i class="fa-solid fa-lightbulb"></i></div>
+      <div class="ac-hdr-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"></path></svg></div>
       <div>
         <div class="ac-hdr-title">Improvement Areas</div>
         <div class="ac-hdr-sub">Based on your performance</div>
@@ -856,12 +856,48 @@ main::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:99p
 
 <!-- Floating Back Button -->
 <button id="fabBack" onclick="navigate('mock-home.html')">
-  <i class="fa-solid fa-house"></i> Back to Home
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"></path></svg> Back to Home
 </button>
 
 <script src="theme.js"></script>
 
 <script>
+/* ============================================================
+   INLINE ICON SYSTEM — replaces Font Awesome web-font icons so
+   icons always render, even if the FA CDN font fails to load on
+   a slow/blocked network.
+============================================================ */
+const ICON_PATHS = {
+  'arrow-left':          '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  'chart-line':          '<polyline points="3 17 9 11 13 15 21 7"/><polyline points="21 12 21 7 16 7"/>',
+  'book-open':           '<path d="M12 7c-2-1.5-5-2-8-2v13c3 0 6 .5 8 2 2-1.5 5-2 8-2V5c-3 0-6 .5-8 2Z"/><line x1="12" y1="7" x2="12" y2="20"/>',
+  'trophy':              '<path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2.5a2.5 2.5 0 0 1 0 5H17"/><path d="M7 5H4.5a2.5 2.5 0 0 0 0 5H7"/>',
+  'users':               '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'chart-bar':           '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  'clipboard-list':      '<rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="14.5" x2="15" y2="14.5"/><line x1="9" y1="18" x2="12.5" y2="18"/>',
+  'magnifying-glass-chart':'<circle cx="10.5" cy="10.5" r="7"/><line x1="21" y1="21" x2="15.5" y2="15.5"/><path d="M7 12l1.5-2 2 1.5L13 8"/>',
+  'chevron-right':       '<polyline points="9 6 15 12 9 18"/>',
+  'code-compare':        '<path d="M9 3 5 21"/><path d="M15 3l4 4-4 4"/><path d="M9 17l-4-4 4-4"/>',
+  'lightbulb':           '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/>',
+  'house':               '<path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>',
+  'circle-xmark':        '<circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>',
+  'calendar':            '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  'clock':               '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/>',
+  'circle-info':         '<circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><circle cx="12" cy="7.3" r="0.9" fill="currentColor" stroke="none"/>',
+  'fire':                '<path d="M12 22c4 0 7-2.5 7-6.5 0-3-1.8-4.7-3-6.5-.2 2-1 3-2 3.5.3-3-1-5.5-3.5-7.5-.3 2.8-1.2 4.3-3 6-1.5 1.4-2.5 3-2.5 5 0 4 3 6 7 6Z"/>',
+  'thumbs-up':           '<path d="M7 22V11"/><path d="M7 11l3-8a2 2 0 0 1 3.7 1.3L12.5 9H19a2 2 0 0 1 2 2.3l-1.4 8A3 3 0 0 1 16.6 22H10a3 3 0 0 1-3-3Z"/>',
+  'book':                '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+  'seedling':            '<path d="M12 22V13"/><path d="M12 13C7 13 4 9 4 5c5 0 8 3 8 8Z"/><path d="M12 13c5 0 8-3 8-8-5 0-8 3-8 8Z"/>',
+  'circle-exclamation':  '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none"/>',
+  'star':                '<polygon points="12 2 15.1 8.6 22 9.6 17 14.6 18.2 21.6 12 18.3 5.8 21.6 7 14.6 2 9.6 8.9 8.6 12 2" fill="currentColor" stroke="none"/>',
+  'repeat':              '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+};
+function ico(name, style, size) {
+  const body = ICON_PATHS[name] || ICON_PATHS['circle-info'];
+  const s = size || 14;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;${style || ''}">${body}</svg>`;
+}
+
 /* ============================================================
    RESULT ANALYSIS PAGE — result-analysis.html
    Data source: localStorage.lastTestResult (written by mock.html)
@@ -909,10 +945,10 @@ function animateNum(el, target, duration, suffix) {
 
 /* Performance message based on accuracy */
 function getPerformanceInsight(accuracy, score, maxScore) {
-  if (accuracy >= 80) return { icon:'fa-fire', msg:`<strong>Outstanding performance!</strong> You scored ${accuracy}% accuracy. You're well on track for your exam. Focus on maintaining this consistency.` };
-  if (accuracy >= 60) return { icon:'fa-thumbs-up', msg:`<strong>Good attempt!</strong> You scored ${accuracy}% accuracy. With targeted revision on your weaker subjects, you can push this above 80%.` };
-  if (accuracy >= 40) return { icon:'fa-book', msg:`<strong>Keep practicing!</strong> ${accuracy}% accuracy shows you understand the basics. Focus on concept clarity and time management.` };
-  return { icon:'fa-seedling', msg:`<strong>Every expert was once a beginner.</strong> ${accuracy}% accuracy — focus on fundamentals first. Consistent daily practice will show rapid improvement.` };
+  if (accuracy >= 80) return { icon:'fire', msg:`<strong>Outstanding performance!</strong> You scored ${accuracy}% accuracy. You're well on track for your exam. Focus on maintaining this consistency.` };
+  if (accuracy >= 60) return { icon:'thumbs-up', msg:`<strong>Good attempt!</strong> You scored ${accuracy}% accuracy. With targeted revision on your weaker subjects, you can push this above 80%.` };
+  if (accuracy >= 40) return { icon:'book', msg:`<strong>Keep practicing!</strong> ${accuracy}% accuracy shows you understand the basics. Focus on concept clarity and time management.` };
+  return { icon:'seedling', msg:`<strong>Every expert was once a beginner.</strong> ${accuracy}% accuracy — focus on fundamentals first. Consistent daily practice will show rapid improvement.` };
 }
 
 /* Subject accuracy color */
@@ -941,21 +977,21 @@ function generateTips(subjectData, accuracy) {
   // Low accuracy subjects
   subjectData.forEach(s => {
     if (s.accuracy < 50 && s.attempted > 0) {
-      tips.push({ icon:'fa-circle-exclamation', color:'var(--red)', text:`<strong>${escHtml(s.subject)}</strong>: Only ${s.accuracy}% accuracy. Revisit core concepts and practice previous year questions.` });
+      tips.push({ icon:'circle-exclamation', color:'var(--red)', text:`<strong>${escHtml(s.subject)}</strong>: Only ${s.accuracy}% accuracy. Revisit core concepts and practice previous year questions.` });
     }
   });
   // High unattempted
   subjectData.forEach(s => {
     if (s.unattempted > s.total * 0.4) {
-      tips.push({ icon:'fa-clock', color:'var(--amber)', text:`<strong>${escHtml(s.subject)}</strong>: ${s.unattempted} questions unattempted. Work on time management — try timed subject-wise drills.` });
+      tips.push({ icon:'clock', color:'var(--amber)', text:`<strong>${escHtml(s.subject)}</strong>: ${s.unattempted} questions unattempted. Work on time management — try timed subject-wise drills.` });
     }
   });
   if (accuracy >= 70) {
-    tips.push({ icon:'fa-star', color:'var(--green)', text:`<strong>Strong overall performance.</strong> Now focus on your weakest subject to improve total score significantly.` });
+    tips.push({ icon:'star', color:'var(--green)', text:`<strong>Strong overall performance.</strong> Now focus on your weakest subject to improve total score significantly.` });
   }
   if (tips.length === 0) {
-    tips.push({ icon:'fa-chart-line', color:'var(--primary)', text:`<strong>Keep attempting all questions.</strong> Even eliminating wrong options improves your score in MCQ exams.` });
-    tips.push({ icon:'fa-repeat', color:'var(--primary)', text:`<strong>Attempt more mock tests</strong> to track your improvement over time. Consistency is key.` });
+    tips.push({ icon:'chart-line', color:'var(--primary)', text:`<strong>Keep attempting all questions.</strong> Even eliminating wrong options improves your score in MCQ exams.` });
+    tips.push({ icon:'repeat', color:'var(--primary)', text:`<strong>Attempt more mock tests</strong> to track your improvement over time. Consistency is key.` });
   }
   return tips;
 }
@@ -1023,7 +1059,7 @@ function generateTips(subjectData, accuracy) {
     const main = document.querySelector('main');
     if (main) main.innerHTML = `
       <div class="no-data">
-        <div class="no-data-icon"><i class="fa-regular fa-circle-xmark"></i></div>
+        <div class="no-data-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg></div>
         <div class="no-data-title">No Analysis Data Found</div>
         <div class="no-data-sub">Please complete a mock test first to see your analysis.</div>
         <button class="no-data-btn" onclick="navigate('mock-home.html')">Go to Mock Tests</button>
@@ -1120,10 +1156,10 @@ function generateTips(subjectData, accuracy) {
   const topExamMeta = document.getElementById('topExamMeta');
   if (topExamMeta) {
     const chips = [
-      year  ? `<div class="top-meta-chip"><i class="fa-solid fa-calendar"></i>${year}</div>`     : '',
-      shift ? `<div class="top-meta-chip"><i class="fa-solid fa-clock"></i>${escHtml(shift)}</div>` : '',
+      year  ? `<div class="top-meta-chip">${ico('calendar', '', 11)}${year}</div>`     : '',
+      shift ? `<div class="top-meta-chip">${ico('clock', '', 11)}${escHtml(shift)}</div>` : '',
       Array.isArray(subjects) && subjects.length > 0
-        ? `<div class="top-meta-chip"><i class="fa-solid fa-book-open"></i>${subjects.map(escHtml).join(', ')}</div>`
+        ? `<div class="top-meta-chip">${ico('book-open', '', 11)}${subjects.map(escHtml).join(', ')}</div>`
         : '',
     ].filter(Boolean);
     topExamMeta.innerHTML = chips.join('');
@@ -1172,13 +1208,16 @@ function generateTips(subjectData, accuracy) {
   if (perfMsgText) {
     const insight = getPerformanceInsight(accuracy, score, maxScore);
     const iconEl = perfMsg.querySelector('.perf-msg-icon');
-    if (iconEl) iconEl.innerHTML = `<i class="fa-solid ${insight.icon}"></i>`;
+    if (iconEl) iconEl.innerHTML = ico(insight.icon, '', 16);
     perfMsgText.innerHTML = insight.msg;
   }
 
   /* 9. Subject breakdown */
   const answers  = result.answers || {};
   const subjectList = document.getElementById('subjectList');
+  function normSubKey(s) { return (s || '').trim().toLowerCase(); }
+  const answersByNormSub = {};
+  Object.keys(answers).forEach(k => { answersByNormSub[normSubKey(k)] = answers[k]; });
 
   // Build subject-level stats
   const subjectsToAnalyze = Array.isArray(subjects) && subjects.length > 0
@@ -1193,7 +1232,7 @@ function generateTips(subjectData, accuracy) {
     }
   } else {
     subjectsToAnalyze.forEach(sub => {
-      const subAnswers = answers[sub] || {};
+      const subAnswers = answersByNormSub[normSubKey(sub)] || {};
       let sTotal = 0, sCorrect = 0, sIncorrect = 0, sAttempted = 0, sUnattempted = 0;
 
       // Try to reconstruct from answers object
@@ -1492,7 +1531,7 @@ function generateTips(subjectData, accuracy) {
               <div class="benchmark-fill" id="${b.id}" style="background:${b.color};"></div>
             </div>
           </div>`).join('') +
-          `<div class="bm-you-row"><i class="fa-solid fa-circle-info" style="color:var(--primary);flex-shrink:0;"></i><span>${standingNote}</span></div>`;
+          `<div class="bm-you-row">${ico('circle-info', 'color:var(--primary);', 14)}<span>${standingNote}</span></div>`;
 
         // Animate bars after paint
         bars.forEach((b, i) => {
@@ -1515,7 +1554,7 @@ function generateTips(subjectData, accuracy) {
     const tips = generateTips(subjectData, accuracy);
     tipsBody.innerHTML = tips.map(t => `
       <div class="perf-msg" style="background:rgba(0,0,0,0.02);border-color:${t.color};opacity:0.9;">
-        <div class="perf-msg-icon" style="color:${t.color};"><i class="fa-solid ${t.icon}"></i></div>
+        <div class="perf-msg-icon" style="color:${t.color};">${ico(t.icon, '', 16)}</div>
         <div class="perf-msg-text">${t.text}</div>
       </div>`).join('');
   }
@@ -1557,28 +1596,33 @@ window.launchAIAnalysis = async function() {
   const _posMark  = parseInt(_marking.split('/')[0]) || (_exam === 'jee' ? 4 : 5);
   const maxScore  = total * _posMark;
 
-  // --- Build subjects map from subjectData ---
-  const subjects = {};
+  // --- Build subjects map from subjectData (FALLBACK ONLY) ---
+  // This proportional/equal-split logic is an approximation, not real
+  // per-subject correctness — it's only used if we can't derive subjects
+  // from the actual per-question data below (see subjectsFromQuestions).
+  const fallbackSubjects = {};
   if (result.subjectData && Array.isArray(result.subjectData)) {
     result.subjectData.forEach(s => {
       const key = (s.subject || '').toLowerCase().replace(/\s+/g,'_');
-      if (key) subjects[key] = { correct: s.correct || 0, wrong: s.incorrect || 0 };
+      if (key) fallbackSubjects[key] = { correct: s.correct || 0, wrong: s.incorrect || 0 };
     });
   } else if (result.subjects && typeof result.subjects === 'object' && !Array.isArray(result.subjects)) {
     // subjects is already a proper map { subjectName: {correct,wrong} }
-    Object.assign(subjects, result.subjects);
+    Object.assign(fallbackSubjects, result.subjects);
   } else if (Array.isArray(result.subjects) && result.subjects.length > 0) {
     // subjects is an array of names — distribute correct/incorrect proportionally from answers
     const subList = result.subjects;
     const answersMap = result.answers || {};
+    const answersMapByNormSub = {};
+    Object.keys(answersMap).forEach(k => { answersMapByNormSub[k.trim().toLowerCase()] = answersMap[k]; });
     subList.forEach(sub => {
-      const subAnswers = answersMap[sub] || {};
+      const subAnswers = answersMapByNormSub[sub.trim().toLowerCase()] || {};
       const sTotal = Object.keys(subAnswers).length;
       const ratio = total > 0 && sTotal > 0 ? sTotal / total : 1 / subList.length;
       const sCorrect   = Math.round(correct   * ratio);
       const sWrong     = Math.round(incorrect * ratio);
       const key = sub.toLowerCase().replace(/\s+/g, '_');
-      subjects[key] = { correct: sCorrect, wrong: sWrong };
+      fallbackSubjects[key] = { correct: sCorrect, wrong: sWrong };
     });
   }
 
@@ -1592,24 +1636,34 @@ window.launchAIAnalysis = async function() {
 
     const exam   = (result.exam || '').toLowerCase();
     const testId = result.testId || localStorage.getItem('selectedTestId') || '';
+    const yr     = result.year   || localStorage.getItem('selectedYear')   || '';
+    const sh     = result.shift  || localStorage.getItem('selectedShift')  || '';
 
-    let q;
+    let q = null;
     if (testId) {
       q = query(collection(db, 'mockQuestions'), where('testId', '==', testId));
-    } else if (exam === 'jee') {
-      q = query(collection(db, 'mockQuestions'), where('exam', '==', 'jee'));
-    } else {
-      const yr  = result.year  || localStorage.getItem('selectedYear')  || '';
-      const sh  = result.shift || localStorage.getItem('selectedShift') || '';
+    } else if (yr && sh) {
+      // No testId, but we know exactly which paper this was — scope by
+      // exam+year+shift. This applies to JEE too now: previously a missing
+      // testId on a JEE test fell back to fetching EVERY JEE question in the
+      // entire database (all shifts/years mixed together), which corrupted
+      // both the chapter/topic counts (way too many, from unrelated shifts)
+      // and the subject-wise correct/wrong tally (answers got matched
+      // against the wrong, unrelated questions by index).
       q = query(collection(db, 'mockQuestions'),
-            where('exam',  '==', 'cuet'),
+            where('exam',  '==', exam),
             where('year',  '==', parseInt(yr) || yr),
             where('shift', '==', sh));
     }
+    // If we have neither a testId nor year+shift to scope by, don't guess —
+    // leave allFirestoreQ empty so the code below falls back to the
+    // subject-level stub data instead of pulling in an unrelated question set.
 
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000));
-    const snap = await Promise.race([getDocs(q), timeout]);
-    snap.forEach(d => allFirestoreQ.push({ id: d.id, ...d.data() }));
+    if (q) {
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000));
+      const snap = await Promise.race([getDocs(q), timeout]);
+      snap.forEach(d => allFirestoreQ.push({ id: d.id, ...d.data() }));
+    }
   } catch(err) {
     console.warn('Firestore topic fetch failed — will use subject-level data only:', err);
   }
@@ -1621,8 +1675,16 @@ window.launchAIAnalysis = async function() {
   const answers  = result.answers || {};         // { "Physics": { 0:{answer:'A'}, 1:{answer:'B'} }, ... }
 
   if (allFirestoreQ.length > 0) {
-    // Group Firestore questions by subject, sort by questionNo
     function normSub(s) { return (s || '').trim().toLowerCase(); }
+    // Build a normalized lookup so "Physics" in result.subjects matches
+    // "physics" (or any casing/whitespace variant) as a key in result.answers
+    // — a raw answers[sub] exact-match here silently returned {} whenever the
+    // two didn't match exactly, which marked every question in that subject
+    // as skipped/wrong even though the chapter/topic names (sourced straight
+    // from Firestore, independent of this lookup) still displayed correctly.
+    const answersByNormSubject = {};
+    Object.keys(answers).forEach(k => { answersByNormSubject[normSub(k)] = answers[k]; });
+
     let subjectList = result.subjects;
     if (!subjectList) {
       try { subjectList = JSON.parse(localStorage.getItem('selectedSubjects') || '[]'); } catch(e){ subjectList = []; }
@@ -1630,7 +1692,7 @@ window.launchAIAnalysis = async function() {
     if (!subjectList || !subjectList.length) subjectList = Object.keys(answers);
 
     subjectList.forEach(sub => {
-      const subAnswers = answers[sub] || {};
+      const subAnswers = answersByNormSubject[normSub(sub)] || {};
       const subQs = allFirestoreQ
         .filter(q => normSub(q.subject) === normSub(sub))
         .sort((a, b) => (a.questionNo || 0) - (b.questionNo || 0));
@@ -1670,6 +1732,20 @@ window.launchAIAnalysis = async function() {
       });
     }
   }
+
+  // --- Build the FINAL subjects map from the same real per-question data
+  // used for chapters/topics (`questions`), so Subject Performance and the
+  // chapter breakdown always agree — instead of two separate, inconsistent
+  // calculations. Only fall back to the proportional/equal-split estimate
+  // above if we truly have no per-question data at all.
+  const subjectsFromQuestions = {};
+  questions.forEach(q => {
+    const key = (q.subject || '').toLowerCase().replace(/\s+/g, '_');
+    if (!key) return;
+    if (!subjectsFromQuestions[key]) subjectsFromQuestions[key] = { correct: 0, wrong: 0 };
+    if (q.correct) subjectsFromQuestions[key].correct++; else subjectsFromQuestions[key].wrong++;
+  });
+  const subjects = Object.keys(subjectsFromQuestions).length > 0 ? subjectsFromQuestions : fallbackSubjects;
 
   // --- Build final payload ---
   const payload = {

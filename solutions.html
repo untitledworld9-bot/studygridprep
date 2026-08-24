@@ -1261,7 +1261,14 @@ window.launchAIFromSolutions = function() {
   }
 
   // Build rich questions array from SOL_STATE.flatList
-  // Each item: { subject, topic, correct: bool }
+  // Each item: { subject, chapter, topic, correct: bool }
+  // NOTE: chapter and topic must stay SEPARATE fields — ai-analysis.html
+  // groups by q.chapter as the primary key and q.topic as the sub-grouping
+  // within it. Merging them into one field (as this used to do) meant
+  // q.chapter was always undefined, so every question collapsed into a
+  // single "untagged chapter" bucket per subject and the real chapter/topic
+  // breakdown was lost. q.section (CUET's Section A/B) is never a syllabus
+  // chapter and must never be used as a chapter/topic fallback.
   const questions = SOL_STATE.flatList.map(item => {
     const { subject, q, ansObj } = item;
     const userAnswer    = ansObj?.answer !== undefined ? ansObj.answer : null;
@@ -1269,9 +1276,11 @@ window.launchAIFromSolutions = function() {
     const isCorrect     = userAnswer !== null && userAnswer !== ''
                           && String(userAnswer).toUpperCase() === correctAnswer;
     return {
-      subject: subject || q.subject || 'Unknown',
-      topic:   q.topic || q.chapter || q.section || subject || 'Unknown',
-      correct: isCorrect,
+      subject:       subject || q.subject || 'Unknown',
+      chapter:       q.chapter || null,
+      topic:         q.topic   || null,
+      chapterTagged: !!(q.chapter || q.topic),
+      correct:       isCorrect,
     };
   });
 
@@ -1316,6 +1325,7 @@ window.launchAIFromSolutions = function() {
     year:       baseResult?.year       || '',
     subjects:   Object.keys(subjectsMap).length > 0 ? subjectsMap : (baseResult?.subjects || {}),
     questions,  // ← rich question-level data from Firestore
+    dataSource: 'solutions',
   };
 
   try {
