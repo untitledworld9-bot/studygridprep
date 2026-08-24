@@ -220,6 +220,36 @@ p:last-child { margin-bottom: 0; }
   color: var(--text-muted);
   margin-top: 2px;
 }
+
+/* ===== FOUNDER SOCIAL LINK ===== */
+.founder-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 5px 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transition: all 0.25s ease;
+}
+.founder-social-link:hover {
+  color: #E1306C;
+  border-color: #E1306C;
+  background: #FFF0F5;
+  transform: translateY(-1px);
+}
+.founder-social-link svg {
+  width: 14px;
+  height: 14px;
+}
+
 .founder-desc {
   margin: 10px 0 0;
   font-size: 14px;
@@ -236,6 +266,10 @@ p:last-child { margin-bottom: 0; }
     padding: 28px 20px;
   }
   .founder-img { width: 80px; height: 80px; }
+  .founder-social-link {
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
 }
 
 .btn {
@@ -432,14 +466,26 @@ footer {
     <a href="login.html" class="btn">Get Started →</a>
   </div>
 
-  <div class="founder-card reveal">
+  <!-- Added Schema.org 'Person' attributes for better Google Search Indexing -->
+  <div class="founder-card reveal" itemscope itemtype="https://schema.org/Person">
     <!-- FOUNDER IMAGE URL: Replace the src below with the founder's profile image URL -->
-    <img class="founder-img" src="https://placehold.co/160x160" alt="Ayush Kumar Gupta">
+    <img class="founder-img" src="https://placehold.co/160x160" alt="Ayush Kumar Gupta" itemprop="image">
     <div class="founder-info">
-      <div class="founder-name">Ayush Kumar Gupta</div>
-      <div class="founder-role">Founder, Study Grid Prep</div>
+      <div class="founder-name" itemprop="name">Ayush Kumar Gupta</div>
+      <div class="founder-role" itemprop="jobTitle">Founder, Study Grid Prep</div>
       <div class="founder-subrole">BTech Student</div>
-      <p class="founder-desc">Building Study Grid Prep to make learning more focused, organized, and accessible for students.</p>
+      
+      <!-- NEW INSTAGRAM PROFESSIONAL LINK -->
+      <a href="https://www.instagram.com/itz_ayush_0.0_" target="_blank" rel="noopener me" itemprop="sameAs" class="founder-social-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+        </svg>
+        @itz_ayush_0.0_
+      </a>
+
+      <p class="founder-desc" itemprop="description">Building Study Grid Prep to make learning more focused, organized, and accessible for students.</p>
     </div>
   </div>
 </main>
