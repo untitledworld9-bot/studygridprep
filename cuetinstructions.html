@@ -50,12 +50,6 @@ window.matchMedia("(prefers-color-scheme: dark)")
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-  integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer">
 
 <style>
 /* ======================================================
@@ -690,7 +684,7 @@ main {
 <!-- Loading overlay -->
 <div id="loadingOverlay">
   <div class="overlay-pulse">
-    <i class="fa-solid fa-graduation-cap"></i>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg>
   </div>
   <div class="overlay-spinner"></div>
   <div class="overlay-title">Preparing your CUET test…</div>
@@ -702,14 +696,14 @@ main {
 ====================================================== -->
 <header>
   <a class="back-btn" onclick="navigate('cuetmockselect.html')" title="Back" role="button">
-  <i class="fa-solid fa-arrow-left"></i>
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </a>
 
   <div class="header-center">
     <div class="exam-icon-header">
       <img src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1776513590/akwsnzcht7pr7owrw8zv.webp"
        alt="NTA" style="width:26px;height:26px;object-fit:contain;border-radius:6px;"
-       onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-graduation-cap\'></i>';">
+       onerror="this.style.display='none';this.parentElement.innerHTML='<svg width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M22 10L12 5 2 10l10 5 10-5Z\'></path><path d=\'M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5\'></path></svg>';">
     </div>
     <h1 class="header-title">CUET Mock Test</h1>
   </div>
@@ -730,7 +724,7 @@ main {
     <div class="test-identity-card" id="testIdentityCard">
       <div class="ti-icon">
         <img src="assets/cuet.png" alt="CUET"
-             onerror="this.src='https://res.cloudinary.com/dm9hqkipf/image/upload/v1776513590/akwsnzcht7pr7owrw8zv.webp';this.onerror=function(){this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-graduation-cap\' style=\'font-size:20px;color:#7C3AED;\'></i>';};">
+             onerror="this.src='https://res.cloudinary.com/dm9hqkipf/image/upload/v1776513590/akwsnzcht7pr7owrw8zv.webp';this.onerror=function(){this.style.display='none';this.parentElement.innerHTML='<svg width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#7C3AED\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M22 10L12 5 2 10l10 5 10-5Z\'></path><path d=\'M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5\'></path></svg>';};">
       </div>
       <div class="ti-text">
         <div class="ti-name" id="tiName">CUET Mock</div>
@@ -748,7 +742,7 @@ main {
     </div>
 
     <div class="instr-error" id="instrError">
-      <i class="fa-solid fa-triangle-exclamation"></i>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"></path><line x1="12" y1="10" x2="12" y2="14"></line><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"></circle></svg>
       Could not load instructions. Please check your connection and try again.
     </div>
 
@@ -757,7 +751,7 @@ main {
 
     <!-- ── Duration strip (populated from Firestore) ── -->
     <div class="duration-strip" id="durationStrip">
-      <div class="duration-icon"><i class="fa-regular fa-clock"></i></div>
+      <div class="duration-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 16 14"></polyline></svg></div>
       <div class="duration-text">
         <div class="dur-label">Total Duration</div>
         <div class="dur-value" id="durationValue">—</div>
@@ -769,36 +763,36 @@ main {
 
     <div class="rules-card">
       <div class="rules-title">
-        <i class="fa-solid fa-circle-info" style="color:var(--exam-color);"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--exam-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="10.5" x2="12" y2="16"></line><circle cx="12" cy="7.3" r="0.9" fill="var(--exam-color)" stroke="none"></circle></svg>
         Read carefully before starting
       </div>
 
       <div class="rule-row">
-        <i class="fa-solid fa-circle-dot ri-info"></i>
+        <svg class="ri-info" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle></svg>
         <span>Each question has <strong>4 options</strong>. Only one is correct.</span>
       </div>
       <div class="rule-row">
-        <i class="fa-solid fa-triangle-exclamation ri-warn"></i>
+        <svg class="ri-warn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"></path><line x1="12" y1="10" x2="12" y2="14"></line><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"></circle></svg>
         <span><strong>Negative marking applies</strong> — incorrect answers deduct marks as per section rules.</span>
       </div>
       <div class="rule-row">
-        <i class="fa-solid fa-hourglass-half ri-warn"></i>
+        <svg class="ri-warn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12"></path><path d="M6 22h12"></path><path d="M6 2c0 5 12 5 12 10s-12 5-12 10"></path><path d="M18 2c0 5-12 5-12 10s12 5 12 10"></path></svg>
         <span>The timer will <strong>auto-submit</strong> when time runs out.</span>
       </div>
       <div class="rule-row">
-        <i class="fa-solid fa-rotate-right ri-danger"></i>
+        <svg class="ri-danger" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
         <span><strong>Do not refresh</strong> the page during the test. Progress will be lost.</span>
       </div>
       <div class="rule-row">
-        <i class="fa-solid fa-eye-slash ri-warn"></i>
+        <svg class="ri-warn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7c1.5 0 2.9.3 4.1.9M22 12s-1.5 2.6-4 4.5"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
         <span>Do not switch tabs or minimise the app during the test.</span>
       </div>
       <div class="rule-row">
-        <i class="fa-solid fa-check-circle ri-ok"></i>
+        <svg class="ri-ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="8 12.5 11 15.5 16 9"></polyline></svg>
         <span>You can <strong>review and change</strong> answers before submitting.</span>
       </div>
       <div class="rule-row">
-        <i class="fa-solid fa-flag ri-info"></i>
+        <svg class="ri-info" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg>
         <span>Use the <strong>Mark for Review</strong> feature to flag uncertain questions.</span>
       </div>
     </div>
@@ -809,7 +803,7 @@ main {
     <div class="agreement-wrap" id="agreementWrap" onclick="toggleAgreement()">
       <input type="checkbox" id="agreeCheck">
       <div class="custom-check" id="customCheck">
-        <i class="fa-solid fa-check"></i>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </div>
       <label class="agree-text" for="agreeCheck">
         I have read all instructions carefully and agree to the exam rules.
@@ -825,7 +819,7 @@ main {
 <div class="sticky-footer">
   <div class="footer-inner">
     <button class="start-btn" id="startBtn" onclick="startTest()" disabled>
-      <i class="fa-solid fa-play"></i>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
       Start CUET Test
     </button>
   </div>
@@ -842,6 +836,42 @@ import {
   onAuthStateChanged,
   signOut
 } from './firebase.js';
+
+/* ============================================================
+   INLINE ICON SYSTEM — replaces Font Awesome web-font icons so
+   icons always render, even if the FA CDN font fails to load on
+   a slow/blocked network.
+============================================================ */
+const ICON_PATHS = {
+  'atom':                 '<ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>',
+  'flask':                '<path d="M9 3h6M9 3v7l-4 8a1 1 0 0 0 .9 1.4h12.2a1 1 0 0 0 .9-1.4L15 10V3"/><circle cx="10" cy="16" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="0.6" fill="currentColor" stroke="none"/>',
+  'square-root-variable': '<path d="M3 12h3l2 6 4-12 2 6h7"/>',
+  'dna':                  '<path d="M6 3c0 4 12 4 12 8S6 15 6 19"/><path d="M18 3c0 4-12 4-12 8s12 4 12 8"/><line x1="6" y1="7.5" x2="18" y2="7.5"/><line x1="6" y1="16.5" x2="18" y2="16.5"/>',
+  'spell-check':          '<path d="M3 15l4-10 4 10"/><line x1="4.5" y1="11" x2="9.5" y2="11"/><path d="M14 15v-3a2 2 0 1 1 2 2h-2"/><polyline points="18 12.5 20 14.5 22.5 10.5"/>',
+  'landmark':             '<line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 21 8 3 8 12 2"/>',
+  'earth-asia':           '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/>',
+  'chart-line':           '<polyline points="3 17 9 11 13 15 21 7"/><polyline points="21 12 21 7 16 7"/>',
+  'brain':                '<path d="M9.5 4a4.5 4.5 0 0 0-4.5 4.5c0 1.5.7 2.8 1.8 3.7A3.5 3.5 0 0 0 9 18.9V21h2v-2h2v2h2v-2.1a3.5 3.5 0 0 0 2.2-6.7A4.5 4.5 0 0 0 14.5 4h-5z"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="9" y1="11" x2="15" y2="11"/>',
+  'language':             '<rect x="3" y="5" width="18" height="14" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="14" y2="12"/><line x1="7" y1="15" x2="11" y2="15"/>',
+  'scale-balanced':       '<line x1="12" y1="3" x2="12" y2="21"/><path d="M5 7l-3 7a3 3 0 0 0 6 0L5 7Z"/><path d="M19 7l-3 7a3 3 0 0 0 6 0l-3-7Z"/><line x1="5" y1="7" x2="19" y2="7"/><path d="M8 21h8"/>',
+  'people-group':         '<circle cx="9" cy="8" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2"/><circle cx="18" cy="9" r="2.3"/><path d="M15.5 21v-1.5a4 4 0 0 1 4-4h1a4 4 0 0 1 3 1.4"/>',
+  'head-side-virus':      '<path d="M10 3a6 6 0 0 0-6 6v3l-2 3h4v3a2 2 0 0 0 2 2h2v-3h4v3h1a2 2 0 0 0 2-2v-2a6 6 0 0 0-1.8-4.3"/><circle cx="17" cy="7" r="2.2"/>',
+  'calculator':           '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><circle cx="8" cy="11" r="0.8" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r="0.8" fill="currentColor" stroke="none"/><circle cx="16" cy="11" r="0.8" fill="currentColor" stroke="none"/><circle cx="8" cy="15" r="0.8" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="0.8" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="0.8" fill="currentColor" stroke="none"/><circle cx="8" cy="19" r="0.8" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="0.8" fill="currentColor" stroke="none"/><circle cx="16" cy="19" r="0.8" fill="currentColor" stroke="none"/>',
+  'briefcase':            '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="2" y1="13" x2="22" y2="13"/>',
+  'laptop-code':          '<rect x="4" y="4" width="16" height="10" rx="1.5"/><path d="M2 20h20"/><polyline points="9.5 8 7.5 10 9.5 12"/><polyline points="14.5 8 16.5 10 14.5 12"/>',
+  'book-open':            '<path d="M12 7c-2-1.5-5-2-8-2v13c3 0 6 .5 8 2 2-1.5 5-2 8-2V5c-3 0-6 .5-8 2Z"/><line x1="12" y1="7" x2="12" y2="20"/>',
+  'lightbulb':            '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/>',
+  'list-check':           '<polyline points="3 8 5 10 9 6"/><line x1="12" y1="7" x2="21" y2="7"/><polyline points="3 16 5 18 9 14"/><line x1="12" y1="17" x2="21" y2="17"/>',
+  'list':                 '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+  'check':                '<polyline points="20 6 9 17 4 12"/>',
+  'graduation-cap':       '<path d="M22 10L12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+  'triangle-exclamation': '<path d="M12 3 2 20h20L12 3Z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>',
+};
+function ico(name, style, size) {
+  const body = ICON_PATHS[name] || ICON_PATHS['list-check'];
+  const s = size || 14;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;${style || ''}">${body}</svg>`;
+}
 
 /* ── Resume bypass: if user tapped Resume Test, skip this instructions page ── */
 (function() {
@@ -953,25 +983,25 @@ function listenInstructions() {
   const duration = subCount * 60;
 
   const iconMap = {
-    physics:'fa-solid fa-atom', chemistry:'fa-solid fa-flask',
-    maths:'fa-solid fa-square-root-variable', mathematics:'fa-solid fa-square-root-variable',
-    biology:'fa-solid fa-dna', english:'fa-solid fa-spell-check',
-    history:'fa-solid fa-landmark', geography:'fa-solid fa-earth-asia',
-    economics:'fa-solid fa-chart-line', general:'fa-solid fa-brain',
-    language:'fa-solid fa-language', political:'fa-solid fa-scale-balanced',
-    sociology:'fa-solid fa-people-group', psychology:'fa-solid fa-head-side-virus',
-    accountancy:'fa-solid fa-calculator', business:'fa-solid fa-briefcase',
-    computer:'fa-solid fa-laptop-code'
+    physics:'atom', chemistry:'flask',
+    maths:'square-root-variable', mathematics:'square-root-variable',
+    biology:'dna', english:'spell-check',
+    history:'landmark', geography:'earth-asia',
+    economics:'chart-line', general:'brain',
+    language:'language', political:'scale-balanced',
+    sociology:'people-group', psychology:'head-side-virus',
+    accountancy:'calculator', business:'briefcase',
+    computer:'laptop-code'
   };
 
   const getSections = () => {
     if (subjects.length > 0) {
       return subjects.map(sub => {
         const key = Object.keys(iconMap).find(k => sub.toLowerCase().includes(k));
-        return { name: sub, questions: 50, marks: '+5 / -1', icon: iconMap[key] || 'fa-solid fa-book-open' };
+        return { name: sub, questions: 50, marks: '+5 / -1', icon: iconMap[key] || 'book-open' };
       });
     }
-    return [{ name: 'General Test', questions: 50, marks: '+5 / -1', icon: 'fa-solid fa-brain' }];
+    return [{ name: 'General Test', questions: 50, marks: '+5 / -1', icon: 'brain' }];
   };
 
   renderInstructions({ duration, sections: getSections() });
@@ -991,17 +1021,17 @@ function renderInstructions(data) {
 
   // Icon map per section name keyword
   const iconMap = {
-    language:  'fa-solid fa-language',
-    domain:    'fa-solid fa-book-open',
-    general:   'fa-solid fa-brain',
-    physics:   'fa-solid fa-atom',
-    chemistry: 'fa-solid fa-flask',
-    math:      'fa-solid fa-square-root-variable',
-    maths:     'fa-solid fa-square-root-variable',
-    biology:   'fa-solid fa-dna',
-    english:   'fa-solid fa-spell-check',
-    gat:       'fa-solid fa-lightbulb',
-    default:   'fa-solid fa-list-check'
+    language:  'language',
+    domain:    'book-open',
+    general:   'brain',
+    physics:   'atom',
+    chemistry: 'flask',
+    math:      'square-root-variable',
+    maths:     'square-root-variable',
+    biology:   'dna',
+    english:   'spell-check',
+    gat:       'lightbulb',
+    default:   'list-check'
   };
 
   sections.forEach((sec, i) => {
@@ -1019,18 +1049,18 @@ function renderInstructions(data) {
     const marking = sec.marking || '';
 
     card.innerHTML = `
-      <div class="sc-icon"><i class="${icon}"></i></div>
+      <div class="sc-icon">${ico(icon, '', 18)}</div>
       <div class="sc-body">
         <div class="sc-name">${escHtml(sec.name || 'Section')}</div>
         <div class="sc-stats">
           ${sec.questions !== undefined
-            ? `<span class="sc-stat total"><i class="fa-solid fa-list"></i> ${sec.questions} Questions</span>`
+            ? `<span class="sc-stat total">${ico('list', '', 12)} ${sec.questions} Questions</span>`
             : ''}
           ${sec.attempt !== undefined
-            ? `<span class="sc-stat attempt"><i class="fa-solid fa-check"></i> Attempt ${sec.attempt}</span>`
+            ? `<span class="sc-stat attempt">${ico('check', '', 12)} Attempt ${sec.attempt}</span>`
             : ''}
           ${marking
-            ? `<span class="sc-stat marking"><i class="fa-solid fa-scale-balanced"></i> ${escHtml(marking)}</span>`
+            ? `<span class="sc-stat marking">${ico('scale-balanced', '', 12)} ${escHtml(marking)}</span>`
             : ''}
         </div>
       </div>

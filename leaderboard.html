@@ -11,9 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 
 <!-- Instant theme -->
 <script>
@@ -451,13 +448,13 @@ body {
 <!-- HEADER -->
 <header class="header">
   <a href="javascript:history.back()" class="back-btn" title="Back">
-    <i class="fa-solid fa-arrow-left" style="font-size:13px;"></i>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </a>
   <div class="header-info">
     <div class="header-title">Weekly Leaderboard</div>
   </div>
   <button class="header-refresh" id="refreshBtn" title="Refresh">
-    <i class="fa-solid fa-rotate-right" style="font-size:13px;"></i>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
   </button>
 </header>
 
@@ -467,20 +464,20 @@ body {
   <!-- XP info strip -->
   <div class="xp-info-strip">
     <div class="xp-info-icon">
-      <i class="fa-solid fa-stopwatch"></i>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><line x1="12" y1="9" x2="12" y2="13"></line><line x1="9" y1="2" x2="15" y2="2"></line><line x1="12" y1="2" x2="12" y2="5"></line></svg>
     </div>
     <div class="xp-info-text">
       <strong>2 min focus = 1 XP.</strong> Stay consistent to climb the board.
     </div>
     <div class="xp-reset-badge" id="resetTimer">
-      <i class="fa-solid fa-clock-rotate-left" style="font-size:9px; margin-right:3px;"></i>—
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px;"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 8 12 12 15 14"></polyline></svg>—
     </div>
   </div>
 
   <!-- Level strip -->
   <div class="lvl-strip-wrap">
     <div class="lvl-strip-title">
-      <i class="fa-solid fa-layer-group" style="font-size:9px; margin-right:4px;"></i>Level Ranks
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;"><polygon points="12 2 22 8 12 14 2 8 12 2"></polygon><polyline points="2 13 12 19 22 13"></polyline><polyline points="2 18 12 24 22 18"></polyline></svg>Level Ranks
     </div>
     <div class="lvl-strip" id="levelStrip"></div>
   </div>
@@ -506,7 +503,7 @@ body {
     <div class="my-rank-val" id="myRankVal">—</div>
   </div>
   <div class="my-xp-val" id="myXpVal">
-    <i class="fa-solid fa-star" style="font-size:11px;"></i> 0 XP
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;"><polygon points="12 2 15.1 8.6 22 9.6 17 14.6 18.2 21.6 12 18.3 5.8 21.6 7 14.6 2 9.6 8.9 8.6 12 2"></polygon></svg> 0 XP
   </div>
 </div>
 
