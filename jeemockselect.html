@@ -51,7 +51,6 @@ window.matchMedia("(prefers-color-scheme: dark)")
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 /* ======================================================
@@ -925,14 +924,14 @@ main {
 ====================================================== -->
 <header>
   <a class="back-btn" onclick="navigate('mock-home.html')" title="Back" role="button">
-  <i class="fa-solid fa-arrow-left"></i>
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </a>
 
   <div class="header-center">
     <div class="exam-icon-header">
   <img src="https://res.cloudinary.com/dm9hqkipf/image/upload/v1776513590/akwsnzcht7pr7owrw8zv.webp"
        alt="NTA" style="width:26px;height:26px;object-fit:contain;border-radius:6px;"
-       onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-graduation-cap\'></i>';">
+       onerror="this.style.display='none';this.parentElement.innerHTML='<svg width=\'18\' height=\'18\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M22 10L12 5 2 10l10 5 10-5Z\'></path><path d=\'M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5\'></path></svg>';">
     </div>
     <h1 class="header-title">JEE Main Mock Tests</h1>
   </div>
@@ -953,7 +952,7 @@ main {
         <span>Select Test</span>
       </div>
       <div class="section-subtitle">
-        <span class="nta-badge"><i class="fa-solid fa-shield-halved" style="font-size:9px;"></i> NTA Official Pattern</span>
+        <span class="nta-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4Z"></path></svg> NTA Official Pattern</span>
         JEE Mains pattern
       </div>
     </div>
@@ -964,7 +963,7 @@ main {
     </div>
 
     <div class="tests-empty" id="testsEmpty">
-      <i class="fa-regular fa-folder-open"></i>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H3V7Z"></path><path d="M3 8v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2Z"></path></svg>
       <p>No JEE tests available yet.<br>Check back soon — new tests are added regularly.</p>
     </div>
 
@@ -1025,6 +1024,28 @@ import {
   canAccessTest,
   markFreeMockUsed
 } from './subscription.js';
+
+/* ============================================================
+   INLINE ICON SYSTEM — replaces Font Awesome web-font icons so
+   icons always render, even if the FA CDN font fails to load on
+   a slow/blocked network.
+============================================================ */
+const ICON_PATHS = {
+  'atom':                 '<ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>',
+  'flask':                '<path d="M9 3h6M9 3v7l-4 8a1 1 0 0 0 .9 1.4h12.2a1 1 0 0 0 .9-1.4L15 10V3"/><circle cx="10" cy="16" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="0.6" fill="currentColor" stroke="none"/>',
+  'square-root-variable': '<path d="M3 12h3l2 6 4-12 2 6h7"/>',
+  'dna':                  '<path d="M6 3c0 4 12 4 12 8S6 15 6 19"/><path d="M18 3c0 4-12 4-12 8s12 4 12 8"/><line x1="6" y1="7.5" x2="18" y2="7.5"/><line x1="6" y1="16.5" x2="18" y2="16.5"/>',
+  'language':             '<rect x="3" y="5" width="18" height="14" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="14" y2="12"/><line x1="7" y1="15" x2="11" y2="15"/>',
+  'brain':                '<path d="M9.5 4a4.5 4.5 0 0 0-4.5 4.5c0 1.5.7 2.8 1.8 3.7A3.5 3.5 0 0 0 9 18.9V21h2v-2h2v2h2v-2.1a3.5 3.5 0 0 0 2.2-6.7A4.5 4.5 0 0 0 14.5 4h-5z"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="9" y1="11" x2="15" y2="11"/>',
+  'file-lines':           '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><line x1="8.5" y1="13" x2="15.5" y2="13"/><line x1="8.5" y1="16.5" x2="15.5" y2="16.5"/>',
+  'check':                '<polyline points="20 6 9 17 4 12"/>',
+  'circle-notch':         '<path d="M12 3a9 9 0 1 0 9 9"/>',
+};
+function ico(name, style, size) {
+  const body = ICON_PATHS[name] || ICON_PATHS['file-lines'];
+  const s = size || 14;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;${style || ''}">${body}</svg>`;
+}
 
 /* ─── Helpers ─────────────────────────────────────────── */
 const isPWA = () =>
@@ -1285,7 +1306,7 @@ function buildCard(test, index) {
         alt="NTA"
         class="nta-logo-card"
         onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-      <i class="fa-solid fa-flask" style="display:none;font-size:20px;color:#f59e0b;"></i>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M9 3h6M9 3v7l-4 8a1 1 0 0 0 .9 1.4h12.2a1 1 0 0 0 .9-1.4L15 10V3"></path></svg>
     </div>
     <div class="card-body">
       <div class="card-name">${test.testName || 'JEE Mains Mock' + (test.year ? ' ' + test.year : '')}</div>
@@ -1353,14 +1374,14 @@ function buildCard(test, index) {
 
 /* ─── Subject icon map ────────────────────────────────── */
 const SUBJECT_ICONS = {
-  'physics':     'fa-solid fa-atom',
-  'chemistry':   'fa-solid fa-flask',
-  'mathematics': 'fa-solid fa-square-root-variable',
-  'maths':       'fa-solid fa-square-root-variable',
-  'biology':     'fa-solid fa-dna',
-  'english':     'fa-solid fa-language',
-  'gat':         'fa-solid fa-brain',
-  'default':     'fa-solid fa-file-lines'
+  'physics':     'atom',
+  'chemistry':   'flask',
+  'mathematics': 'square-root-variable',
+  'maths':       'square-root-variable',
+  'biology':     'dna',
+  'english':     'language',
+  'gat':         'brain',
+  'default':     'file-lines'
 };
 const SUBJECT_DESCS = {
   'physics':     'Mechanics, Electrostatics, Optics & more',
@@ -1407,12 +1428,12 @@ window.openSubjectModal = function(test) {
   const container = document.getElementById('dynamicSubjectOptions');
   container.innerHTML = subjects.map(sub => `
     <div class="subject-option selected" data-subject="${sub}">
-      <div class="subject-option-icon"><i class="${getSubjectIcon(sub)}"></i></div>
+      <div class="subject-option-icon">${ico(getSubjectIcon(sub), '', 16)}</div>
       <div class="subject-option-text">
         <div class="subject-option-name">${sub}</div>
         <div class="subject-option-desc">${getSubjectDesc(sub)}</div>
       </div>
-      <div class="subject-check"><i class="fa-solid fa-check"></i></div>
+      <div class="subject-check">${ico('check', '', 13)}</div>
     </div>`).join('');
 
   const badge = document.getElementById('selectedCount');
@@ -1436,7 +1457,7 @@ window.startTest = async function() {
   const originalLabel = startBtn ? startBtn.innerHTML : '';
   if (startBtn) {
     startBtn.disabled = true;
-    startBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking access…';
+    startBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-2px;margin-right:4px;animation:spin 0.8s linear infinite;"><path d="M12 3a9 9 0 1 0 9 9"></path></svg> Checking access…';
   }
 
   const access = await canAccessTest(selectedTest.isFree === true);
