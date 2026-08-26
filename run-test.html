@@ -1184,22 +1184,22 @@ body.css-rotated .btn-submit { display: flex !important; }
 <!-- ===== CONTROLS BAR ===== -->
 <div id="controlsBar">
   <button class="ctrl-btn btn-prev" onclick="prevQuestion()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><polyline points="15 6 9 12 15 18"></polyline></svg> Prev
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>Prev
   </button>
   <button class="ctrl-btn btn-clear" onclick="clearResponse()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><path d="M20 20H8l-6-6a2 2 0 0 1 0-2.8l9-9a2 2 0 0 1 2.8 0l7 7a2 2 0 0 1 0 2.8L13 20"></path><line x1="7" y1="14" x2="14" y2="21"></line></svg> Clear
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H8l-6-6a2 2 0 0 1 0-2.8l9-9a2 2 0 0 1 2.8 0l7 7a2 2 0 0 1 0 2.8L13 20"></path><line x1="7" y1="14" x2="14" y2="21"></line></svg>Clear
   </button>
   <button class="ctrl-btn btn-mark" onclick="markForReview()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"></path></svg> Mark
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"></path></svg>Mark
   </button>
   <button class="ctrl-btn btn-save" onclick="saveAndNext()">
-    Save &amp; Next <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-left:2px;"><polyline points="9 6 15 12 9 18"></polyline></svg>
+    Save &amp; Next<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
   </button>
   <button class="ctrl-btn btn-palette" id="paletteToggleBtn" onclick="togglePalette()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><circle cx="6" cy="6" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="6" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="18" cy="6" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="6" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="18" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="6" cy="18" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="18" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="18" cy="18" r="1.4" fill="currentColor" stroke="none"></circle></svg> Palette
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="6" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="18" cy="6" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="6" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="18" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="6" cy="18" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="12" cy="18" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="18" cy="18" r="1.4" fill="currentColor" stroke="none"></circle></svg>Palette
   </button>
   <button class="ctrl-btn btn-submit" onclick="openSubmitModal()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;"><path d="M4 22V4"></path><path d="M4 4h14l-2 4 2 4H4"></path></svg> Submit
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4"></path><path d="M4 4h14l-2 4 2 4H4"></path></svg>Submit
   </button>
 </div>
 
@@ -2259,6 +2259,13 @@ function formatQuestionText(raw) {
   const toSup = s => [...s].map(c => _sup[c] !== undefined ? _sup[c] : c).join('');
   const toSub = s => [...s].map(c => _sub[c] !== undefined ? _sub[c] : c).join('');
   const text = raw
+    // Bare ASCII "^"/"_" without braces (e.g. "10^6", "10^-31", "x_n") →
+    // brace them so they flow into the same wrap-in-\(\) path as properly
+    // braced LaTeX below. Skipped if already braced ("10^{6}") to avoid
+    // double-wrapping. This is what was missing — the existing pipeline
+    // only handled pre-braced or Unicode-superscript input.
+    .replace(/([A-Za-z0-9)\]])\^(?!\{)([+-]?\d+(?:\.\d+)?)/g, '$1^{$2}')
+    .replace(/([A-Za-z0-9)\]])_(?!\{)([+-]?\d+(?:\.\d+)?|[A-Za-z])/g, '$1_{$2}')
     // ×10⁻¹⁶ → ×10^{-16}  (scientific notation with Unicode superscripts)
     .replace(/([×·x]10)([²³¹⁰-⁼]+)/g, (_, b, e) => `${b}^{${toSup(e)}}`)
     // letter/digit followed by Unicode superscript chars → letter^{n}

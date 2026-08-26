@@ -210,10 +210,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${d.getFullYear()}-W${Math.ceil((((d-ys)/86400000)+1)/7)}`;
   }
 
-  function showToast(msg) {
+  function showToast(msg, iconName) {
     const el = document.createElement("div");
     el.className = "toast-msg";
-    el.textContent = msg;
+    if (iconName && window.ico) {
+      el.innerHTML = window.ico(iconName, 'margin-right:4px;', 13);
+    }
+    el.appendChild(document.createTextNode(msg));
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 2600);
   }
@@ -384,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
       (msg.from===withUser    && msg.to===currentUser)
     );
     if (!msgs.length) {
-      chatArea.innerHTML = `<div style="text-align:center;opacity:.35;font-size:12px;padding:20px">No messages yet. Say hi! 👋</div>`;
+      chatArea.innerHTML = `<div style="text-align:center;opacity:.35;font-size:12px;padding:20px">${window.ico('hand','margin-right:4px;',13)}No messages yet. Say hi!</div>`;
       return;
     }
     chatArea.innerHTML = "";
@@ -392,10 +395,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const seen = msg.status==="seen";
       const del  = msg.status==="delivered";
       const tick = seen
-        ? '<span style="color:var(--blue);font-size:10px;margin-left:5px">✔✔</span>'
+        ? `<span style="color:var(--blue);font-size:10px;margin-left:5px">${window.ico('check-double','',10)}</span>`
         : del
-          ? '<span style="opacity:.5;font-size:10px;margin-left:5px">✔✔</span>'
-          : '<span style="opacity:.4;font-size:10px;margin-left:5px">✔</span>';
+          ? `<span style="opacity:.5;font-size:10px;margin-left:5px">${window.ico('check-double','',10)}</span>`
+          : `<span style="opacity:.4;font-size:10px;margin-left:5px">${window.ico('check','',10)}</span>`;
       const bubble = document.createElement("div");
       if (msg.from===currentUser) {
         bubble.className = "msg-me";
@@ -473,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!users.length) {
       userList.innerHTML = `<div style="text-align:center;opacity:.4;font-size:13px;padding:24px">
-        ${panelMode==="global"?"No one online right now.":"No members yet — share the invite link 🔗"}</div>`;
+        ${panelMode==="global"?"No one online right now.":`No members yet — share the invite link ${window.ico('link','',12)}`}</div>`;
       return;
     }
 
@@ -504,7 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="sdot ${dotCls}"></span>
             <span>${recentlyActive ? u.status : "Offline"}</span>
             <span style="margin-left:4px;color:var(--accent)">· ${timeStr}</span>
-            ${panelMode==="global" ? `<span style="margin-left:4px;color:gold">· ⭐${xp}</span>` : ""}
+            ${panelMode==="global" ? `<span style="margin-left:4px;color:gold">· ${window.ico('star','',10)}${xp}</span>` : ""}
           </div>
         </div>
         ${!isMe && panelMode==="room" ? `
@@ -607,13 +610,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const h = Math.floor(liveFocusTime/60), m = liveFocusTime%60;
       const timeStr = h>0 ? `${h}h ${m}m` : `${m}m`;
       const xp = _displayXP(u);
-      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
+      const medal = i===0?window.ico('medal-gold','',18):i===1?window.ico('medal-silver','',18):i===2?window.ico('medal-bronze','',18):`<span class="lb-rank-num">#${i+1}</span>`;
       const isMe  = u.id===_timerUid;
       const displayName = u.name||u.displayName||"User";
       const el = document.createElement("div");
       if (isMe) el.style.borderColor="rgba(91,91,246,.35)";
-      const xpStr = xp > 0 ? ` <span style="color:#F59E0B;font-size:11px;">⭐${xp} XP</span>` : "";
-      el.innerHTML = `<span>${medal} ${displayName}${isMe?" (You)":""}</span><span>${timeStr}${xpStr}</span>`;
+      const xpStr = xp > 0 ? ` <span style="color:#F59E0B;font-size:11px;">${window.ico('star','',10)}${xp} XP</span>` : "";
+      el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;">${medal} ${displayName}${isMe?" (You)":""}</span><span>${timeStr}${xpStr}</span>`;
       board.appendChild(el);
     });
   }
@@ -780,7 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const existingQ = query(collection(db, "rooms"), where("name", "==", name));
         const existingSnap = await getDocs(existingQ);
         if (!existingSnap.empty) {
-          showToast(`⚠️ Room "${name}" already exists! Try a different name.`);
+          showToast(`Room "${name}" already exists! Try a different name.`, 'triangle-exclamation');
           confirmCreate.disabled = false;
           confirmCreate.textContent = origText;
           return;
@@ -1152,7 +1155,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const ta=document.createElement("textarea"); ta.value=inviteLink;
         document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
       }
-      showToast("✅ Invite link copied!");
+      showToast("Invite link copied!", 'check-circle');
     };
   }
 
@@ -1234,11 +1237,11 @@ document.addEventListener("DOMContentLoaded", () => {
         waveTime: Date.now()
       });
     } catch(e) {
-      showToast('❌ Could not send wave');
+      showToast('Could not send wave', 'xmark');
       return;
     }
 
-    showToast('👋 Waved at ' + targetName + '!');
+    showToast('Waved at ' + targetName + '!', 'hand');
   };
 
   // ── Mute ───────────────────────────────────────────────────────────────
@@ -1264,7 +1267,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnEl.title = nowMuted ? `Unmute ${name}` : `Mute ${name}`;
       btnEl.innerHTML = `<i class="fa-solid ${nowMuted ? "fa-bell-slash" : "fa-bell"}"></i>`;
     }
-    showToast(nowMuted ? `🔕 Muted ${name}` : `🔔 Unmuted ${name}`);
+    showToast(nowMuted ? `Muted ${name}` : `Unmuted ${name}`, nowMuted ? 'bell-slash' : 'bell');
   };
 
   window.openChat = name => {
@@ -1275,7 +1278,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const lbl  = qs("chatWithLabel");
     if (box)  { box.style.display="flex"; box.classList.add("open"); }
     if (bd)   { bd.style.display="block"; bd.classList.add("open"); }
-    if (lbl)  lbl.textContent = "💬 " + name;
+    if (lbl) {
+      lbl.innerHTML = window.ico('comment','margin-right:5px;',13);
+      lbl.appendChild(document.createTextNode(name));
+    }
     if (area) {
       area.innerHTML = `<div style="text-align:center;opacity:.4;font-size:12px;padding:16px">Loading...</div>`;
       renderChatForPair(name);
@@ -1332,7 +1338,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .sort((a,b)=>(b.focusTime||0)-(a.focusTime||0));
 
         if (!focusing.length) {
-          globalUsersEl.textContent = "No one focusing right now — be the first! 🚀";
+          globalUsersEl.innerHTML = window.ico('rocket','margin-right:4px;',13) + 'No one focusing right now — be the first!';
         } else {
           const names = focusing.slice(0,3).map(u=>u.name||u.displayName||"User").join(", ");
           const extra = focusing.length > 3 ? ` +${focusing.length-3} more` : "";
@@ -1371,7 +1377,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const container = qs("wavePopupContainer") || document.body;
           const pop = document.createElement("div");
           pop.className = "wave-popup";
-          pop.textContent = `👋 ${u.waveFrom} waved at you!`;
+          pop.innerHTML = window.ico('hand','margin-right:5px;',13);
+          pop.appendChild(document.createTextNode(`${u.waveFrom} waved at you!`));
           container.appendChild(pop);
           setTimeout(()=>{
             pop.remove();
