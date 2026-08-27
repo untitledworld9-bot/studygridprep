@@ -176,6 +176,14 @@ mjx-container[jax="CHTML"] {
   overflow-x: auto !important;
   line-height: 1.4 !important;
   margin: 0 1px !important;
+  scrollbar-width: none !important;      /* Firefox: hide the scrollbar itself */
+  -ms-overflow-style: none !important;   /* old Edge/IE */
+}
+/* Chrome/Safari/WebView: hide the scrollbar track so it never renders as a
+   stray thin line under normal (non-overflowing) inline math like "10^6" */
+mjx-container[jax="CHTML"]::-webkit-scrollbar {
+  display: none !important;
+  height: 0 !important;
 }
 
 /* Display (block-level) math equations — own line, scrollable */
@@ -190,6 +198,21 @@ mjx-container[jax="CHTML"][display="true"] {
 /* General wrapper classes */
 .MathJax {
   max-width: 100% !important;
+}
+/* Keep MathJax's hidden accessibility text layer fully invisible — belt and
+   suspenders alongside the scrollbar fix above, in case any page-wide CSS
+   reset weakened MathJax's own hiding rules for this element. */
+mjx-assistive-mml {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  clip-path: inset(50%) !important;
+  border: 0 !important;
+  white-space: nowrap !important;
 }
 .math-render {
   max-width: 100%;
@@ -449,7 +472,7 @@ mjx-container[jax="CHTML"][display="true"] {
 #questionPanel {
   flex:1; overflow-y:auto; overflow-x:hidden;
   padding:16px;
-  padding-bottom: calc(120px + max(16px, env(safe-area-inset-bottom)));
+  padding-bottom: calc(170px + max(16px, env(safe-area-inset-bottom)));
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
   max-width:100%;
@@ -927,7 +950,7 @@ body.css-rotated #controlsBar {
 }
 body.css-rotated .btn-submit { display: flex !important; }
 #toastWrap {
-  position:fixed; bottom:120px; left:50%;
+  position:fixed; bottom:150px; left:50%;
   transform:translateX(-50%);
   z-index:9999; display:flex;
   flex-direction:column; align-items:center; gap:8px;
@@ -2603,6 +2626,35 @@ function _syncThemeIcon() {
     : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"></circle><line x1="12" y1="1.5" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22.5"></line><line x1="4.2" y1="4.2" x2="6" y2="6"></line><line x1="18" y1="18" x2="19.8" y2="19.8"></line><line x1="1.5" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22.5" y2="12"></line><line x1="4.2" y1="19.8" x2="6" y2="18"></line><line x1="18" y1="6" x2="19.8" y2="4.2"></line></svg>';
 }
 document.addEventListener('DOMContentLoaded', _syncThemeIcon);
+
+/* ── Keep question content clear of the bottom controls bar ──────────────
+   #controlsBar can wrap onto 2 or 3 rows depending on screen width and
+   font metrics (6 buttons don't always fit on one line). A hardcoded
+   padding-bottom on #questionPanel can't reliably predict that, so instead
+   we measure the bar's real rendered height and size the padding to match
+   — this guarantees the last answer option is never hidden behind it,
+   on any screen size. */
+(function syncControlsBarHeight() {
+  const bar   = document.getElementById('controlsBar');
+  const panel = document.getElementById('questionPanel');
+  if (!bar || !panel) return;
+
+  function apply() {
+    const h = bar.offsetHeight || 0;
+    if (h > 0) panel.style.paddingBottom = (h + 16) + 'px';
+  }
+
+  apply();
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', apply);
+  if (window.ResizeObserver) {
+    new ResizeObserver(apply).observe(bar);
+  }
+  // Bar content (e.g. palette toggle state) can change after load — re-check shortly after.
+  setTimeout(apply, 300);
+  setTimeout(apply, 1000);
+})();
+
 // Also sync on theme change by other means
 (function() {
   const obs = new MutationObserver(_syncThemeIcon);
