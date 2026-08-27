@@ -44,7 +44,6 @@ window.matchMedia("(prefers-color-scheme: dark)")
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 
 <!-- MathJax — same as mock.html -->
 <script>
@@ -249,6 +248,14 @@ mjx-container[jax="CHTML"] {
   overflow-x: auto !important;
   line-height: 1.4 !important;
   margin: 0 1px !important;
+  scrollbar-width: none !important;      /* Firefox: hide the scrollbar itself */
+  -ms-overflow-style: none !important;   /* old Edge/IE */
+}
+/* Chrome/Safari/WebView: hide the scrollbar track so it never renders as a
+   stray thin line under normal (non-overflowing) inline math like "10^6" */
+mjx-container[jax="CHTML"]::-webkit-scrollbar {
+  display: none !important;
+  height: 0 !important;
 }
 mjx-container[jax="CHTML"][display="true"] {
   display: block !important;
@@ -258,6 +265,21 @@ mjx-container[jax="CHTML"][display="true"] {
   max-width: 100% !important;
 }
 .MathJax { max-width: 100% !important; }
+/* Keep MathJax's hidden accessibility text layer fully invisible — belt and
+   suspenders alongside the scrollbar fix above, in case any page-wide CSS
+   reset weakened MathJax's own hiding rules for this element. */
+mjx-assistive-mml {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  clip-path: inset(50%) !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
 .math-render {
   max-width: 100%;
   overflow-wrap: break-word;
@@ -583,7 +605,7 @@ mjx-container[jax="CHTML"][display="true"] {
 <!-- HEADER -->
 <header>
   <div class="hdr-back" onclick="goBack()" title="Back to Analysis">
-    <i class="fa-solid fa-arrow-left"></i>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </div>
   <div class="hdr-center">
     <div class="hdr-title">Solutions</div>
@@ -601,13 +623,13 @@ mjx-container[jax="CHTML"][display="true"] {
 <div id="controlsBar" style="flex-wrap:wrap; gap:8px;">
   <div style="display:flex;gap:8px;width:100%;">
     <button class="ctrl-btn btn-back-sol" onclick="goBack()" style="flex:0.6;">
-      <i class="fa-solid fa-arrow-left"></i> Back
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>Back
     </button>
     <button class="ctrl-btn btn-prev-sol" id="prevBtn" onclick="prevQuestion()">
-      <i class="fa-solid fa-arrow-left"></i> Prev
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>Prev
     </button>
     <button class="ctrl-btn btn-next-sol" id="nextBtn" onclick="nextQuestion()">
-      Next <i class="fa-solid fa-arrow-right"></i>
+      Next<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
     </button>
   </div>
   <!-- AI Analysis button — full width, appears after question data is loaded -->
@@ -640,6 +662,31 @@ mjx-container[jax="CHTML"][display="true"] {
 <script src="theme.js"></script>
 
 <script>
+/* ============================================================
+   INLINE ICON SYSTEM — replaces Font Awesome web-font icons so
+   icons always render, even if the FA CDN font fails to load on
+   a slow/blocked network.
+============================================================ */
+const ICON_PATHS = {
+  'arrow-left':           '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  'arrow-right':          '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  'circle-xmark':         '<circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>',
+  'circle-question':      '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.7-2.4 3.4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>',
+  'check':                '<polyline points="20 6 9 17 4 12"/>',
+  'xmark':                '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  'minus':                '<line x1="5" y1="12" x2="19" y2="12"/>',
+  'check-circle':         '<circle cx="12" cy="12" r="9"/><polyline points="8 12.5 11 15.5 16 9"/>',
+  'times-circle':         '<circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>',
+  'chevron-down':         '<polyline points="6 9 12 15 18 9"/>',
+  'flag-checkered':       '<path d="M4 22V4"/><path d="M4 4h14l-2 4 2 4H4"/>',
+  'triangle-exclamation': '<path d="M12 3 2 20h20L12 3Z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>',
+};
+function ico(name, style, size) {
+  const body = ICON_PATHS[name] || ICON_PATHS['circle-question'];
+  const s = size || 14;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;${style || ''}">${body}</svg>`;
+}
+
 /* ============================================================
    SOLUTIONS PAGE
    Reads lastTestResult from localStorage (written by mock.html).
@@ -900,7 +947,7 @@ const SOL_STATE = {
   if (!result) {
     document.getElementById('questionContent').innerHTML = `
       <div class="no-data">
-        <div class="no-data-icon"><i class="fa-regular fa-circle-xmark"></i></div>
+        <div class="no-data-icon">${ico('circle-xmark', '', 40)}</div>
         <div class="no-data-title">No Test Data Found</div>
         <div class="no-data-sub">Please complete a mock test first to view solutions.</div>
         <button class="no-data-btn" onclick="navigate('mock-home.html')">Go to Mock Tests</button>
@@ -998,7 +1045,7 @@ function renderCurrentQuestion() {
   const total   = flat.length;
 
   if (!total) {
-    content.innerHTML = `<div class="no-data"><div class="no-data-icon"><i class="fa-regular fa-circle-question"></i></div><div class="no-data-title">No Questions Found</div><div class="no-data-sub">Questions could not be loaded. Try completing the test again.</div></div>`;
+    content.innerHTML = `<div class="no-data"><div class="no-data-icon">${ico('circle-question', '', 40)}</div><div class="no-data-title">No Questions Found</div><div class="no-data-sub">Questions could not be loaded. Try completing the test again.</div></div>`;
     return;
   }
 
@@ -1024,12 +1071,12 @@ function renderCurrentQuestion() {
     optionsHTML = `
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <div style="padding:12px 15px;border-radius:12px;background:rgba(16,185,129,0.1);border:1.5px solid #10B981;">
-          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check" style="margin-right:5px;"></i>Correct Answer</div>
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;">${ico('check','margin-right:5px;',13)}Correct Answer</div>
           <div style="font-size:18px;font-weight:700;color:var(--text-primary);">${escHtml(correct)}</div>
         </div>
         <div style="padding:12px 15px;border-radius:12px;background:${isCorrect?'rgba(16,185,129,0.08)':isSkipped?'rgba(156,163,175,0.08)':'rgba(239,68,68,0.08)'};border:1.5px solid ${isCorrect?'#10B981':isSkipped?'var(--card-border)':'#EF4444'};">
           <div style="font-size:11px;color:${isCorrect?'#10B981':isSkipped?'var(--text-secondary)':'#EF4444'};font-weight:700;margin-bottom:4px;">
-            <i class="fa-solid ${isCorrect?'fa-check':isSkipped?'fa-minus':'fa-xmark'}" style="margin-right:5px;"></i>Your Answer
+            ${ico(isCorrect?'check':isSkipped?'minus':'xmark','margin-right:5px;',13)}Your Answer
           </div>
           <div style="font-size:18px;font-weight:700;color:var(--text-primary);">${escHtml(ua)}</div>
         </div>
@@ -1081,9 +1128,9 @@ function renderCurrentQuestion() {
           const isChosenWrong = isChosen && !isThisCorrect;
           let cls = isThisCorrect ? 'correct' : isChosenWrong ? 'chosen-wrong' : '';
           let resultBadge = '';
-          if (isThisCorrect && isChosen)       resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct — You chose this</div>`;
-          else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct Answer</div>`;
-          else if (isChosenWrong)              resultBadge = `<div class="opt-result-badge badge-wrong"><i class="fa-solid fa-xmark"></i> Wrong — You chose this</div>`;
+          if (isThisCorrect && isChosen)       resultBadge = `<div class="opt-result-badge badge-correct">${ico('check','margin-right:3px;',11)}Correct — You chose this</div>`;
+          else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct">${ico('check','margin-right:3px;',11)}Correct Answer</div>`;
+          else if (isChosenWrong)              resultBadge = `<div class="opt-result-badge badge-wrong">${ico('xmark','margin-right:3px;',11)}Wrong — You chose this</div>`;
           return `
             <div class="option-item ${cls}">
               <div class="opt-letter">${letter}</div>
@@ -1096,7 +1143,7 @@ function renderCurrentQuestion() {
     } else {
       optionsHTML += `
         <div style="padding:12px 15px;border-radius:12px;background:rgba(16,185,129,0.08);border:1.5px solid #10B981;margin-top:4px;">
-          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check" style="margin-right:5px;"></i>Correct Answer</div>
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;">${ico('check','margin-right:5px;',13)}Correct Answer</div>
           <div style="font-size:15px;font-weight:600;color:var(--text-primary);">${escHtml(correctAnswer||'—')}</div>
         </div>`;
     }
@@ -1130,9 +1177,9 @@ function renderCurrentQuestion() {
           const isChosenWrong = isChosen && !isThisCorrect;
           let cls = isThisCorrect ? 'correct' : isChosenWrong ? 'chosen-wrong' : '';
           let resultBadge = '';
-          if (isThisCorrect && isChosen)       resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct — You chose this</div>`;
-          else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct Answer</div>`;
-          else if (isChosenWrong)              resultBadge = `<div class="opt-result-badge badge-wrong"><i class="fa-solid fa-xmark"></i> Wrong — You chose this</div>`;
+          if (isThisCorrect && isChosen)       resultBadge = `<div class="opt-result-badge badge-correct">${ico('check','margin-right:3px;',11)}Correct — You chose this</div>`;
+          else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct">${ico('check','margin-right:3px;',11)}Correct Answer</div>`;
+          else if (isChosenWrong)              resultBadge = `<div class="opt-result-badge badge-wrong">${ico('xmark','margin-right:3px;',11)}Wrong — You chose this</div>`;
           return `
             <div class="option-item ${cls}">
               <div class="opt-letter">${letter}</div>
@@ -1145,7 +1192,7 @@ function renderCurrentQuestion() {
     } else {
       optionsHTML += `
         <div style="padding:12px 15px;border-radius:12px;background:rgba(16,185,129,0.08);border:1.5px solid #10B981;margin-top:4px;">
-          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-check" style="margin-right:5px;"></i>Correct Answer</div>
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:4px;">${ico('check','margin-right:5px;',13)}Correct Answer</div>
           <div style="font-size:15px;font-weight:600;color:var(--text-primary);">${escHtml(correctAnswer||'—')}</div>
         </div>`;
     }
@@ -1163,9 +1210,9 @@ function renderCurrentQuestion() {
         if (isThisCorrect) cls = 'correct';
         else if (isChosenWrong) cls = 'chosen-wrong';
         let resultBadge = '';
-        if (isThisCorrect && isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct — You chose this</div>`;
-        else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct"><i class="fa-solid fa-check"></i> Correct Answer</div>`;
-        else if (isChosenWrong) resultBadge = `<div class="opt-result-badge badge-wrong"><i class="fa-solid fa-xmark"></i> Wrong — You chose this</div>`;
+        if (isThisCorrect && isChosen) resultBadge = `<div class="opt-result-badge badge-correct">${ico('check','margin-right:3px;',11)}Correct — You chose this</div>`;
+        else if (isThisCorrect && !isChosen) resultBadge = `<div class="opt-result-badge badge-correct">${ico('check','margin-right:3px;',11)}Correct Answer</div>`;
+        else if (isChosenWrong) resultBadge = `<div class="opt-result-badge badge-wrong">${ico('xmark','margin-right:3px;',11)}Wrong — You chose this</div>`;
         return `
           <div class="option-item ${cls}">
             <div class="opt-letter">${letter}</div>
@@ -1180,11 +1227,11 @@ function renderCurrentQuestion() {
   // Result box — original
   let resultBox = '';
   if (isSkipped) {
-    resultBox = `<div class="q-result-box skipped"><i class="fa-solid fa-minus"></i> Skipped — No answer selected</div>`;
+    resultBox = `<div class="q-result-box skipped">${ico('minus','margin-right:5px;',13)}Skipped — No answer selected</div>`;
   } else if (isCorrect) {
-    resultBox = `<div class="q-result-box correct"><i class="fa-solid fa-check-circle"></i> Correct</div>`;
+    resultBox = `<div class="q-result-box correct">${ico('check-circle','margin-right:5px;',13)}Correct</div>`;
   } else {
-    resultBox = `<div class="q-result-box wrong"><i class="fa-solid fa-times-circle"></i> Incorrect</div>`;
+    resultBox = `<div class="q-result-box wrong">${ico('times-circle','margin-right:5px;',13)}Incorrect</div>`;
   }
 
   content.innerHTML = `
@@ -1200,7 +1247,7 @@ function renderCurrentQuestion() {
       <button class="ai-ans-btn" id="aiAnsBtn" onclick="toggleAIAnswer()">
         <span class="btn-icon">🤖</span>
         <span class="btn-label">AI Detailed Answer</span>
-        <i class="fa-solid fa-chevron-down btn-chevron"></i>
+        <span class="btn-chevron">${ico('chevron-down','',13)}</span>
       </button>
       <div class="ai-ans-box" id="aiAnsBox">
         <div class="ai-ans-box-inner">
@@ -1222,7 +1269,7 @@ function renderCurrentQuestion() {
   const nextBtn = document.getElementById('nextBtn');
   if (nextBtn) {
     const isLast = SOL_STATE.currentIdx >= total - 1;
-    nextBtn.innerHTML = isLast ? `<i class="fa-solid fa-flag-checkered"></i> Finish` : `Next <i class="fa-solid fa-arrow-right"></i>`;
+    nextBtn.innerHTML = isLast ? (ico('flag-checkered','margin-right:5px;',13) + 'Finish') : ('Next' + ico('arrow-right','margin-left:5px;',13));
     nextBtn.onclick = isLast ? () => goBack() : () => nextQuestion();
   }
   const prevBtn = document.getElementById('prevBtn');
@@ -1462,7 +1509,7 @@ Format: use **bold** for key terms. Keep it 120-180 words. No unnecessary intro.
   } catch(err) {
     console.error('AI answer error:', err);
     body.innerHTML = `<div style="color:var(--text-secondary);font-size:12px;">
-      <i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;margin-right:5px;"></i>
+      ${ico('triangle-exclamation','color:#F59E0B;margin-right:5px;',15)}
       Could not load AI explanation. Check your internet connection and try again.
     </div>`;
   }
