@@ -2032,7 +2032,12 @@ function loadTopRooms() {
       const r = u.room;
       if (!r || r === 'default') return;
 
-      if (!roomMap[r]) roomMap[r] = { totalJoined: 0, onlineCount: 0, name: r };
+      if (!roomMap[r]) roomMap[r] = { totalJoined: 0, onlineCount: 0, name: r, liveUids: new Set() };
+
+      // Anyone whose room field currently points here counts as "joined" —
+      // same source of truth as the Live Members list — independent of
+      // whether room.memberUids (a separate arrayUnion write) succeeded.
+      roomMap[r].liveUids.add(d.id);
 
       const s = (u.status || '').toLowerCase();
       const activeRecently = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
@@ -2047,19 +2052,25 @@ function loadTopRooms() {
     // someone already knows the direct link to join it, which is impossible
     // since there's no other way to discover it.
     // FIX-JOINED-COUNT: "joined" is now the permanent, never-decrementing
-    // count of everyone who has EVER joined (room.memberUids, deduplicated
-    // by uid) — not who's currently present. This also fixes popular rooms
-    // disappearing from "Top" after everyone temporarily left.
+    // count of everyone who has EVER joined. Computed as the UNION of
+    // room.memberUids (arrayUnion, written once per join) and liveUids
+    // (whoever's user doc currently has room===this room, same source as
+    // Live Members) — this way the count can never fall behind what Live
+    // Members visibly shows, even if a memberUids write occasionally
+    // failed or a user joined through a path that only set their own
+    // room field without also updating room.memberUids.
     (latestRoomDocs || []).forEach(room => {
-      if (!roomMap[room.id]) roomMap[room.id] = { totalJoined: 0, onlineCount: 0, name: room.id };
+      if (!roomMap[room.id]) roomMap[room.id] = { totalJoined: 0, onlineCount: 0, name: room.id, liveUids: new Set() };
       roomMap[room.id].name     = room.name || room.id;
       roomMap[room.id].password = room.password || '';
       roomMap[room.id].hasPass  = !!room.password;
       roomMap[room.id].color    = room.color || '';
       roomMap[room.id].note     = room.note || '';
       roomMap[room.id].pinned   = !!room.pinned;
-      roomMap[room.id].totalJoined = Array.isArray(room.memberUids) ? room.memberUids.length : roomMap[room.id].totalJoined;
-      roomMap[room.id].memberUids  = Array.isArray(room.memberUids) ? room.memberUids : (roomMap[room.id].memberUids || []);
+      const memberUidsSet = new Set(Array.isArray(room.memberUids) ? room.memberUids : []);
+      roomMap[room.id].liveUids.forEach(uid => memberUidsSet.add(uid));
+      roomMap[room.id].memberUids  = [...memberUidsSet];
+      roomMap[room.id].totalJoined = memberUidsSet.size;
     });
 
     const roomIds = Object.keys(roomMap);
@@ -2146,7 +2157,7 @@ function loadRecentRooms() {
   // Fetch room data + live user counts
   onSnapshot(collection(db, 'users'), usersSnap => {
     // Count per room
-    const roomCount = {};
+    const roomUids = {};   // roomId → Set of uids currently pointing here
     const roomOnline = {};
     usersSnap.docs.forEach(d => {
       const u = d.data();
@@ -2156,7 +2167,8 @@ function loadRecentRooms() {
       // stale/orphaned user docs from inflating the joined count.
       const presentRecently = u.lastActive && (Date.now() - u.lastActive) < 30 * 60 * 1000;
       if (!presentRecently) return;
-      roomCount[r]  = (roomCount[r]  || 0) + 1;
+      if (!roomUids[r]) roomUids[r] = new Set();
+      roomUids[r].add(d.id);
       const s = (u.status || '').toLowerCase();
       const activeRecently = u.lastActive && (Date.now() - u.lastActive) < 5 * 60 * 1000;
       if (activeRecently && (s === 'online' || s.includes('focus'))) {
@@ -2175,7 +2187,13 @@ function loadRecentRooms() {
       let rendered = 0;
 
       results.forEach(({ id, snap }) => {
-        const memberUids = snap?.exists() && Array.isArray(snap.data().memberUids) ? snap.data().memberUids : [];
+        // FIX-JOINED-COUNT: union room.memberUids (arrayUnion write) with
+        // whoever's user doc currently points at this room (roomUids) —
+        // same source of truth as Live Members — so this count can never
+        // fall behind what Live Members visibly shows, even if a
+        // memberUids write occasionally failed for someone.
+        const memberUidsSet = new Set(snap?.exists() && Array.isArray(snap.data().memberUids) ? snap.data().memberUids : []);
+        (roomUids[id] || new Set()).forEach(uid => memberUidsSet.add(uid));
         const roomData = {
           id,
           name:       snap?.exists() ? (snap.data().name || id) : id,
@@ -2183,8 +2201,8 @@ function loadRecentRooms() {
           hasPass:    snap?.exists() ? !!snap.data().password : false,
           // FIX-JOINED-COUNT: permanent, never-decrementing count of
           // everyone who has EVER joined (see loadTopRooms for full explanation).
-          totalJoined: memberUids.length,
-          memberUids:  memberUids,
+          totalJoined: memberUidsSet.size,
+          memberUids:  [...memberUidsSet],
           onlineCount: roomOnline[id] || 0,
         };
 
