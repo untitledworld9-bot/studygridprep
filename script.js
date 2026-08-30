@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Show a neutral placeholder while fetching the real name — never show
       // the raw hyphenated room-ID slug (e.g. "jee-study-room"), which looked
       // broken/unstyled compared to the actual room name with its emoji.
-      roomBadge.innerHTML = '<i class="fa-solid fa-users-line" style="font-size:12px;margin-right:6px;flex-shrink:0;"></i><span id="roomBadgeText">Room</span>';
+      roomBadge.innerHTML = window.ico('users-line', 'margin-right:6px;', 12) + '<span id="roomBadgeText">Room</span>';
       // Fetch actual room name (preserving emojis)
       import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ doc: d2, getDoc: gd }) => {
         gd(d2(db, "rooms", roomId)).then(snap => {
@@ -353,13 +353,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const lbT   = qs("lbTitle");
     const invWA = qs("inviteWhatsapp");
     const invCP = qs("copyInvite");
-    if (title) title.innerHTML = '<i class="fa-solid fa-globe" style="color:var(--green);margin-right:6px;font-size:13px;"></i>Global Room';
-    if (lbT)   lbT.innerHTML   = '<i class="fa-solid fa-trophy" style="color:var(--orange);margin-right:5px;font-size:10px;"></i>Global Leaderboard';
+    if (title) title.innerHTML = window.ico('globe', 'color:var(--green);margin-right:6px;', 13) + 'Global Room';
+    if (lbT)   lbT.innerHTML   = window.ico('trophy', 'color:var(--orange);margin-right:5px;', 10) + 'Global Leaderboard';
     if (invWA) invWA.style.display = "none";
     if (invCP) invCP.style.display = "none";
     if (socialSheet) socialSheet.classList.add("open");
     if (backdrop)    backdrop.style.display = "block";
     renderPanelUsers();
+    renderPanelLeaderboard();
   };
 
   window._openRoomSheet = () => {
@@ -368,13 +369,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const lbT   = qs("lbTitle");
     const invWA = qs("inviteWhatsapp");
     const invCP = qs("copyInvite");
-    if (title) title.innerHTML = '<i class="fa-solid fa-users" style="color:var(--accent);margin-right:6px;font-size:13px;"></i>Live Members';
-    if (lbT)   lbT.innerHTML   = '<i class="fa-solid fa-ranking-star" style="color:var(--orange);margin-right:5px;font-size:10px;"></i>Room Leaderboard';
+    if (title) title.innerHTML = window.ico('users', 'color:var(--accent);margin-right:6px;', 13) + 'Live Members';
+    if (lbT)   lbT.innerHTML   = window.ico('ranking-star', 'color:var(--orange);margin-right:5px;', 10) + 'Room Leaderboard';
     if (invWA) invWA.style.display = "";
     if (invCP) invCP.style.display = "";
     if (socialSheet) socialSheet.classList.add("open");
     if (backdrop)    backdrop.style.display = "block";
     renderPanelUsers();
+    renderPanelLeaderboard();
   };
 
   let _msgCache = [];
@@ -512,11 +514,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         ${!isMe && panelMode==="room" ? `
         <div class="member-acts">
-          <button class="mact wave" data-wave-target="${u.id}" data-wave-name="${displayName.replace(/"/g,'&quot;')}" title="Wave"><i class="fa-solid fa-hand"></i></button>
-          <button class="mact chat" data-chat-target="${displayName.replace(/"/g,'&quot;')}" title="Message"><i class="fa-solid fa-comment"></i></button>
+          <button class="mact wave" data-wave-target="${u.id}" data-wave-name="${displayName.replace(/"/g,'&quot;')}" title="Wave">${window.ico('hand','',13)}</button>
+          <button class="mact chat" data-chat-target="${displayName.replace(/"/g,'&quot;')}" title="Message">${window.ico('comment','',13)}</button>
           <button class="mact mute${_isMuted(displayName) ? ' muted' : ''}" data-mute-target="${displayName.replace(/"/g,'&quot;')}"
             title="${_isMuted(displayName) ? 'Unmute' : 'Mute'} ${displayName.replace(/"/g,'&quot;')}">
-            <i class="fa-solid ${_isMuted(displayName) ? 'fa-bell-slash' : 'fa-bell'}"></i>
+            ${window.ico(_isMuted(displayName) ? 'bell-slash' : 'bell', '', 13)}
           </button>
         </div>` : ""}`;
 
@@ -1017,7 +1019,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pop.innerHTML = `
       <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,184,48,0.12);
         display:flex;align-items:center;justify-content:center;">
-        <i class="fa-solid fa-pause" style="font-size:20px;color:var(--accent-amber,#ffb830);"></i>
+        ${window.ico('pause', 'color:var(--accent-amber,#ffb830);', 20)}
       </div>
       <div style="font-weight:700;font-size:14px;color:var(--text,#fff);">Focus session paused</div>
       <div style="font-size:12px;color:var(--text2,#9ca3af);">Screen was off or you left the app — press Start to resume.</div>
@@ -1265,7 +1267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnEl) {
       btnEl.classList.toggle("muted", nowMuted);
       btnEl.title = nowMuted ? `Unmute ${name}` : `Mute ${name}`;
-      btnEl.innerHTML = `<i class="fa-solid ${nowMuted ? "fa-bell-slash" : "fa-bell"}"></i>`;
+      btnEl.innerHTML = window.ico(nowMuted ? 'bell-slash' : 'bell', '', 13);
     }
     showToast(nowMuted ? `Muted ${name}` : `Unmuted ${name}`, nowMuted ? 'bell-slash' : 'bell');
   };

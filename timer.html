@@ -2059,6 +2059,7 @@ function loadTopRooms() {
       roomMap[room.id].note     = room.note || '';
       roomMap[room.id].pinned   = !!room.pinned;
       roomMap[room.id].totalJoined = Array.isArray(room.memberUids) ? room.memberUids.length : roomMap[room.id].totalJoined;
+      roomMap[room.id].memberUids  = Array.isArray(room.memberUids) ? room.memberUids : (roomMap[room.id].memberUids || []);
     });
 
     const roomIds = Object.keys(roomMap);
@@ -2183,6 +2184,7 @@ function loadRecentRooms() {
           // FIX-JOINED-COUNT: permanent, never-decrementing count of
           // everyone who has EVER joined (see loadTopRooms for full explanation).
           totalJoined: memberUids.length,
+          memberUids:  memberUids,
           onlineCount: roomOnline[id] || 0,
         };
 
@@ -2288,10 +2290,16 @@ function joinSelectedRoom() {
   if (!_selectedRoom) return;
   const room = _selectedRoom;
 
-  // Check if user already has access (created/joined before)
+  // Check if user already has access (created/joined before). Prefer the
+  // Firestore-backed room.memberUids list (persists across devices and
+  // survives local storage being cleared) over the local-only
+  // uw_accessed_rooms list, which is just a fallback for older room data
+  // that predates memberUids being attached to room card objects.
   let accessedRooms = [];
   try { accessedRooms = JSON.parse(localStorage.getItem('uw_accessed_rooms') || '[]'); } catch(e){}
-  const alreadyAccessed = accessedRooms.includes(room.id);
+  const myUid = localStorage.getItem('uwUid') || '';
+  const alreadyMemberInFirestore = !!myUid && Array.isArray(room.memberUids) && room.memberUids.includes(myUid);
+  const alreadyAccessed = alreadyMemberInFirestore || accessedRooms.includes(room.id);
 
   if (room.hasPass && room.password && !alreadyAccessed) {
     // Use custom password modal
