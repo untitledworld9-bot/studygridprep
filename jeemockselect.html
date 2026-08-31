@@ -484,6 +484,33 @@ main {
 .year-body-inner::-webkit-scrollbar { width: 4px; }
 .year-body-inner::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
 
+.session-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 2px;
+}
+.session-divider::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--card-border);
+}
+.session-divider span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--exam-color);
+  white-space: nowrap;
+}
+.session-divider::after {
+  content: '';
+  flex: 3;
+  height: 1px;
+  background: var(--card-border);
+}
+
 .test-card {
   position: relative;
   background: var(--card-bg);
@@ -1145,6 +1172,20 @@ function getTestSortTime(test) {
   return ca;
 }
 
+// JEE Mains runs two sessions a year — Session 1 in January, Session 2
+// (e.g. April) later. Groups tests within a year by month so Session 2
+// tests get their own labeled section instead of just tacking onto the
+// bottom of the list looking like more Session 1 tests.
+function getTestMonth(test) {
+  const t = getTestSortTime(test);
+  if (!t) return null;
+  return new Date(t).getMonth(); // 0 = January
+}
+function getTestSession(test) {
+  const m = getTestMonth(test);
+  return (m === null || m === 0) ? 1 : 2; // January (or unknown) → Session 1, anything later → Session 2
+}
+
 /* ─── Render test cards ───────────────────────────────── */
 /* --- Get completed testIds (same logic as cuetmockselect) --- */
 function getInProgressTestId() {
@@ -1202,8 +1243,11 @@ function renderYearGroups(tests) {
     groups.get(y).push(t);
   });
 
-  // ── Sort each year's tests: most recent date on top ──
-  groups.forEach(arr => arr.sort((a, b) => getTestSortTime(b) - getTestSortTime(a)));
+  // ── Sort each year's tests: earliest exam date first, so tests read in
+  // the same sequential order as the actual exam (22 Jan Shift 1, 22 Jan
+  // Shift 2, 23 Jan Shift 1, ...) regardless of the order they were
+  // uploaded in — uploading a new test no longer jumps it to the top.
+  groups.forEach(arr => arr.sort((a, b) => getTestSortTime(a) - getTestSortTime(b)));
 
   // ── Sort years descending: newest year on top ──
   const sortedYears = Array.from(groups.keys()).sort((a, b) => {
@@ -1223,9 +1267,25 @@ function renderYearGroups(tests) {
     body.className = 'year-body';
     const bodyInner = document.createElement('div');
     bodyInner.className = 'year-body-inner';
-    yearTests.forEach(test => {
+
+    // Split into Session 1 (January) / Session 2 (later, e.g. April) —
+    // yearTests is already sorted chronologically, so this just partitions
+    // it in place without re-ordering anything.
+    const session1 = yearTests.filter(t => getTestSession(t) === 1);
+    const session2 = yearTests.filter(t => getTestSession(t) === 2);
+
+    session1.forEach(test => {
       bodyInner.appendChild(buildCard(test, cardIndex++));
     });
+    if (session2.length) {
+      const divider = document.createElement('div');
+      divider.className = 'session-divider';
+      divider.innerHTML = `<span>Session 2</span>`;
+      bodyInner.appendChild(divider);
+      session2.forEach(test => {
+        bodyInner.appendChild(buildCard(test, cardIndex++));
+      });
+    }
     body.appendChild(bodyInner);
 
     group.innerHTML = `
