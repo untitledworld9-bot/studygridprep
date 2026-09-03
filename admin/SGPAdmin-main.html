@@ -893,6 +893,74 @@
     }
     .sgp-report-note-from { font-size: 12px; font-weight: 700; color: var(--accent-amber); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
     .sgp-report-note-text { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
+
+    /* ── HOME BANNERS MANAGER ── */
+    .hb-add-form { display:flex; flex-direction:column; gap:14px; }
+    .hb-img-preview-wrap {
+      width:100%; height:120px; border-radius:12px; overflow:hidden;
+      background:var(--bg-input); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      position:relative; transition:.2s;
+    }
+    .hb-img-preview-wrap img {
+      width:100%; height:100%; object-fit:cover;
+      border-radius:12px;
+    }
+    .hb-img-placeholder {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      color:var(--text-muted); font-size:12px;
+    }
+    .hb-img-placeholder i { font-size:26px; opacity:.45; }
+    .hb-banner-list { display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+    .hb-banner-item {
+      display:flex; align-items:center; gap:12px;
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:12px; padding:10px 12px;
+      transition:.18s;
+    }
+    .hb-banner-item:hover { border-color:var(--border-glow); background:var(--bg-card-hover); }
+    .hb-banner-thumb {
+      width:70px; height:46px; border-radius:8px; flex-shrink:0;
+      object-fit:cover; background:var(--bg-input);
+      border:1px solid var(--border);
+    }
+    .hb-banner-thumb-placeholder {
+      width:70px; height:46px; border-radius:8px; flex-shrink:0;
+      background:var(--bg-input); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--text-muted); font-size:18px;
+    }
+    .hb-banner-info { flex:1; min-width:0; }
+    .hb-banner-info-num { font-size:10px; color:var(--text-muted); font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+    .hb-banner-info-btn { font-size:13px; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+    .hb-banner-info-url { font-size:10.5px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+    .hb-banner-actions { display:flex; gap:6px; flex-shrink:0; }
+    .hb-btn-icon {
+      width:32px; height:32px; border-radius:8px; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:13px;
+      transition:.15s; -webkit-tap-highlight-color:transparent;
+    }
+    .hb-btn-edit { background:rgba(124,92,252,.15); color:var(--accent-violet); }
+    .hb-btn-edit:hover { background:rgba(124,92,252,.28); }
+    .hb-btn-delete { background:rgba(255,79,106,.12); color:var(--accent-red); }
+    .hb-btn-delete:hover { background:rgba(255,79,106,.25); }
+    .hb-fallback-badge {
+      font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+      background:rgba(0,229,160,.12); color:var(--accent-green);
+      border:1px solid rgba(0,229,160,.25); border-radius:6px; padding:2px 7px;
+      flex-shrink:0;
+    }
+    .hb-empty { text-align:center; padding:28px 0 10px; color:var(--text-muted); font-size:13px; }
+    .hb-empty i { display:block; font-size:28px; margin-bottom:8px; opacity:.4; }
+    /* Edit inline panel */
+    .hb-edit-panel {
+      background:var(--bg-card-hover); border:1px solid var(--border-glow);
+      border-radius:12px; padding:14px; margin-top:6px;
+      display:none; flex-direction:column; gap:12px;
+    }
+    .hb-edit-panel.open { display:flex; }
+    .hb-edit-panel-title { font-size:12px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:.06em; }
+    .hb-edit-preview { width:100%; height:90px; border-radius:10px; object-fit:cover; display:block; background:var(--bg-input); border:1px solid var(--border); }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -990,6 +1058,9 @@
     </button>
     <button class="nav-btn" onclick="showSection('videopromo')" data-section="videopromo">
       <span class="nav-icon"><i class="fa-solid fa-play"></i></span><span>Video Promotion</span>
+    </button>
+    <button class="nav-btn" onclick="showSection('homeBanners')" data-section="homeBanners">
+      <span class="nav-icon"><i class="fa-solid fa-images"></i></span><span>Home Banners</span>
     </button>
     <button class="nav-btn" onclick="showSection('maintenance')" data-section="maintenance">
       <span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span><span>Maintenance</span>
@@ -1998,6 +2069,81 @@
           <div class="empty-state-icon">▶️</div>
           <div class="empty-state-text">No video promotions sent yet</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── HOME BANNERS ─────────── -->
+  <section id="homeBanners" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><i class="fa-solid fa-images"></i> Home Banners</div>
+        <div class="section-subtitle">Manage the sliding banner carousel on the student home screen</div>
+      </div>
+    </div>
+
+    <!-- Add / Edit form panel -->
+    <div class="form-panel">
+      <div class="form-panel-title">Add New Banner <span class="pill">Live</span></div>
+
+      <div class="hb-add-form">
+        <!-- Image URL + live preview -->
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-image"></i> Image URL</label>
+          <input class="form-input" id="hbImgUrl" placeholder="https://example.com/banner.jpg"
+                 oninput="hbPreviewImg(this.value)" />
+        </div>
+        <div class="hb-img-preview-wrap" id="hbImgPreviewWrap">
+          <div class="hb-img-placeholder" id="hbImgPlaceholder">
+            <i class="fa-solid fa-image"></i>
+            <span>Image preview</span>
+          </div>
+          <img id="hbImgPreview" src="" alt="preview"
+               style="display:none;width:100%;height:100%;object-fit:cover;border-radius:12px;"
+               onerror="hbPreviewError()" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-tag"></i> Button Text</label>
+            <input class="form-input" id="hbBtnText" placeholder="e.g. Start Mock" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-link"></i> Link URL <span style="color:var(--text-muted);font-size:11px;">(optional)</span></label>
+            <input class="form-input" id="hbLink" placeholder="e.g. mock-home.html" />
+          </div>
+        </div>
+
+        <button class="btn btn-cyan" onclick="hbAddBanner()" style="display:flex;align-items:center;gap:8px;">
+          <i class="fa-solid fa-plus"></i> Add Banner
+        </button>
+      </div>
+    </div>
+
+    <!-- Current banners list -->
+    <div class="form-panel">
+      <div class="form-panel-title">Current Banners
+        <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:6px;">
+          (drag to reorder — or use arrows)</span>
+      </div>
+
+      <!-- Fallback notice -->
+      <div style="background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.18);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--accent-green);display:flex;align-items:flex-start;gap:8px;">
+        <i class="fa-solid fa-circle-info" style="margin-top:1px;"></i>
+        <span>Two <strong>fallback banners</strong> (Mock Tests &amp; Focus Session) always show when no custom banners are saved or when the app is offline. Add banners below to replace them.</span>
+      </div>
+
+      <div class="hb-banner-list" id="hbBannerList">
+        <div class="hb-empty" id="hbEmptyState">
+          <i class="fa-solid fa-images"></i>
+          Loading banners…
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+        <button class="btn" onclick="hbSaveOrder()" style="font-size:13px;padding:10px 20px;background:rgba(0,224,255,.1);color:var(--accent-cyan);border:1px solid rgba(0,224,255,.22);">
+          <i class="fa-solid fa-floppy-disk"></i> Save Order
+        </button>
       </div>
     </div>
   </section>
@@ -3406,6 +3552,181 @@ window.mockZoomIn = () => { _mockZoom = Math.min(_zoomMax, _mockZoom + _zoomStep
 window.mockZoomOut = () => { _mockZoom = Math.max(_zoomMin, _mockZoom - _zoomStep); _applyMockZoom(); };
 window.mockZoomReset = () => { _mockZoom = 1.0; _applyMockZoom(); };
 window.mockIframeRefresh = () => { const i = document.getElementById('mockIframe'); if (i) i.src = i.src; };
+
+// ── Non-module globals exposed by HB module below ──
+// (hbAddBanner, hbDelete, hbStartEdit, hbCancelEdit, hbSaveEdit, hbSaveOrder,
+//  hbPreviewImg, hbPreviewError, hbEditPreview — all set on window in the module)
+</script>
+
+<!-- ═══ HOME BANNERS — Firebase module ═══ -->
+<script type="module">
+import { db } from "../firebase.js";
+import { doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+let _banners = [];
+let _editingId = null;
+let _unsubHB = null;
+
+const HB_DOC = () => doc(db, "config", "homeBanners");
+
+// ── toast helper (reuse admin's or fallback) ──
+function toast(msg, type='success'){
+  if(window.showToast) window.showToast(msg, type);
+  else alert(msg);
+}
+
+// ── Persist to Firestore ──
+async function hbPersist(){
+  const payload = _banners.map((b, i) => ({ ...b, order: i }));
+  try { await setDoc(HB_DOC(), { banners: payload }, { merge: true }); }
+  catch(e){ toast('Save failed: ' + e.message, 'error'); }
+}
+
+// ── Render list ──
+function hbRender(){
+  const list = document.getElementById('hbBannerList');
+  if(!list) return;
+  if(_banners.length === 0){
+    list.innerHTML = `<div class="hb-empty"><i class="fa-solid fa-images"></i>No custom banners yet — add your first one above.</div>`;
+    return;
+  }
+  list.innerHTML = _banners.map((b, idx) => `
+    <div class="hb-banner-item" id="hbItem_${b.id}">
+      <img class="hb-banner-thumb" src="${b.imageUrl||''}" alt="thumb"
+           onerror="this.style.display='none';document.getElementById('hbTP_${b.id}').style.display='flex';">
+      <div class="hb-banner-thumb-placeholder" id="hbTP_${b.id}" style="${b.imageUrl?'display:none':''}">
+        <i class="fa-solid fa-image"></i>
+      </div>
+      <div class="hb-banner-info">
+        <div class="hb-banner-info-num">Slide #${idx + 1}</div>
+        <div class="hb-banner-info-btn">${b.btnText||'<span style="opacity:.45;font-style:italic;">No button text</span>'}</div>
+        ${b.link?`<div class="hb-banner-info-url">🔗 ${b.link}</div>`:''}
+      </div>
+      <div class="hb-banner-actions">
+        <button class="hb-btn-icon hb-btn-edit" onclick="hbStartEdit('${b.id}')" title="Edit">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="hb-btn-icon hb-btn-delete" onclick="hbDelete('${b.id}')" title="Delete">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="hb-edit-panel" id="hbEditPanel_${b.id}">
+      <div class="hb-edit-panel-title"><i class="fa-solid fa-pen"></i> Edit Slide #${idx + 1}</div>
+      <div class="form-group">
+        <label class="form-label" style="font-size:11px;">Image URL</label>
+        <input class="form-input" id="hbEditUrl_${b.id}" value="${b.imageUrl||''}"
+               oninput="hbEditPreview('${b.id}',this.value)" style="font-size:13px;padding:10px 12px;" />
+      </div>
+      <img class="hb-edit-preview" id="hbEditPreviewImg_${b.id}"
+           src="${b.imageUrl||''}" alt="preview" onerror="this.style.opacity='.2'"
+           style="${b.imageUrl?'':'display:none'}" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" style="font-size:11px;">Button Text</label>
+          <input class="form-input" id="hbEditBtn_${b.id}" value="${b.btnText||''}" placeholder="e.g. Start Now" style="font-size:13px;padding:10px 12px;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:11px;">Link URL</label>
+          <input class="form-input" id="hbEditLink_${b.id}" value="${b.link||''}" placeholder="e.g. mock-home.html" style="font-size:13px;padding:10px 12px;" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn" onclick="hbCancelEdit('${b.id}')"
+          style="font-size:12px;padding:8px 16px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);">Cancel</button>
+        <button class="btn btn-cyan" onclick="hbSaveEdit('${b.id}')" style="font-size:12px;padding:8px 16px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Load from Firestore ──
+function hbLoad(){
+  if(_unsubHB) _unsubHB();
+  _unsubHB = onSnapshot(HB_DOC(), snap => {
+    if(!snap.exists()){ _banners = []; }
+    else {
+      const data = snap.data();
+      _banners = Array.isArray(data.banners) ? [...data.banners] : [];
+      _banners.sort((a,b) => (a.order||0) - (b.order||0));
+    }
+    hbRender();
+  }, () => { _banners = []; hbRender(); });
+}
+hbLoad();
+
+// ── Exposed globals ──
+window.hbPreviewImg = (url) => {
+  const img = document.getElementById('hbImgPreview');
+  const ph = document.getElementById('hbImgPlaceholder');
+  if(!img||!ph) return;
+  if(!url){ img.style.display='none'; ph.style.display='flex'; return; }
+  img.src = url; img.style.display='block'; ph.style.display='none';
+};
+window.hbPreviewError = () => {
+  const img = document.getElementById('hbImgPreview');
+  const ph = document.getElementById('hbImgPlaceholder');
+  if(img) img.style.display='none';
+  if(ph) ph.style.display='flex';
+};
+window.hbEditPreview = (id, url) => {
+  const img = document.getElementById('hbEditPreviewImg_'+id);
+  if(!img) return;
+  if(!url){ img.style.display='none'; return; }
+  img.src=url; img.style.display='block'; img.style.opacity='1';
+};
+window.hbAddBanner = () => {
+  const imgUrl = (document.getElementById('hbImgUrl').value||'').trim();
+  const btnText = (document.getElementById('hbBtnText').value||'').trim();
+  const link = (document.getElementById('hbLink').value||'').trim();
+  if(!imgUrl){ toast('Please enter an image URL','error'); return; }
+  const id = 'hb_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  _banners.push({ id, imageUrl:imgUrl, btnText, link, order:_banners.length });
+  document.getElementById('hbImgUrl').value='';
+  document.getElementById('hbBtnText').value='';
+  document.getElementById('hbLink').value='';
+  window.hbPreviewImg('');
+  hbRender();
+  hbPersist().then(()=> toast('Banner added ✓','success'));
+};
+window.hbStartEdit = (id) => {
+  if(_editingId && _editingId!==id) window.hbCancelEdit(_editingId);
+  _editingId=id;
+  const p=document.getElementById('hbEditPanel_'+id);
+  if(p) p.classList.add('open');
+};
+window.hbCancelEdit = (id) => {
+  const p=document.getElementById('hbEditPanel_'+id);
+  if(p) p.classList.remove('open');
+  if(_editingId===id) _editingId=null;
+};
+window.hbSaveEdit = async (id) => {
+  const imgUrl=(document.getElementById('hbEditUrl_'+id).value||'').trim();
+  const btnText=(document.getElementById('hbEditBtn_'+id).value||'').trim();
+  const link=(document.getElementById('hbEditLink_'+id).value||'').trim();
+  if(!imgUrl){ toast('Image URL cannot be empty','error'); return; }
+  const idx=_banners.findIndex(b=>b.id===id);
+  if(idx===-1) return;
+  _banners[idx]={..._banners[idx],imageUrl:imgUrl,btnText,link};
+  _editingId=null;
+  hbRender();
+  await hbPersist();
+  toast('Banner updated ✓','success');
+};
+window.hbDelete = async (id) => {
+  if(!confirm('Delete this banner?')) return;
+  _banners=_banners.filter(b=>b.id!==id);
+  _banners.forEach((b,i)=>b.order=i);
+  hbRender();
+  await hbPersist();
+  toast('Banner deleted','success');
+};
+window.hbSaveOrder = async () => {
+  await hbPersist();
+  toast('Order saved ✓','success');
+};
 </script>
 </body>
 </html>
