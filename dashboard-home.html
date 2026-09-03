@@ -176,6 +176,36 @@
 .banner-dot.active{
   width:18px; border-radius:3px; background:#fff;
 }
+/* Dynamic image banner slide */
+.banner-slide-img{
+  background:linear-gradient(135deg,#5B2BF6,#8B2FF8);
+  padding:0 !important;
+  min-height:155px;
+}
+.banner-slide-img img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; border-radius:22px;
+}
+.banner-slide-img .banner-img-overlay{
+  position:absolute; inset:0; border-radius:22px;
+  background:linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.08) 60%, transparent 100%);
+  z-index:1;
+}
+.banner-slide-img .banner-img-content{
+  position:relative; z-index:2; padding:18px 18px 20px 18px;
+  display:flex; flex-direction:column; justify-content:flex-end; height:100%;
+}
+.banner-slide-img .banner-btn-img{
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.95); border:none; border-radius:50px;
+  padding:9px 18px; font-size:13px; font-weight:700;
+  cursor:pointer; width:fit-content; color:#1A0F40;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+  transition:transform 0.15s ease;
+  -webkit-tap-highlight-color:transparent;
+  margin-top:8px;
+}
+.banner-slide-img .banner-btn-img:active{ transform:scale(0.96); }
 
 /* ─── DAILY GOAL CONGRATS POPUP ─── */
 .daily-goal-congrats-overlay{
@@ -605,10 +635,10 @@ header{
 
 /* XP Rank Bar */
 .xp-rank{
-  margin:0 auto 12px auto;
+  margin:0 auto 10px auto;
   display:flex; justify-content:center; gap:0;
   font-size:13px; font-weight:600;
-  background:var(--surface); padding:10px 6px;
+  background:var(--surface); padding:6px 6px;
   border-radius:16px; border:1px solid var(--border);
   box-shadow:var(--shadow-sm);
   cursor:pointer; color:var(--text); transition:var(--t);
@@ -618,7 +648,7 @@ header{
 .xp-stat-item{
   display:flex; align-items:center; gap:7px;
   flex:1; justify-content:center;
-  padding:4px 0;
+  padding:2px 0;
 }
 .xp-stat-item + .xp-stat-item{ border-left:1px solid var(--border); }
 .xp-stat-icon{ font-size:20px; }
@@ -629,8 +659,8 @@ header{
 /* Daily Goal Card */
 .daily-streak-card{
   background:var(--surface); border:1px solid var(--border);
-  border-radius:18px; padding:10px 16px 12px 16px;
-  margin:0 auto 12px auto;
+  border-radius:18px; padding:8px 16px 9px 16px;
+  margin:0 auto 10px auto;
   box-shadow:var(--shadow-sm); cursor:pointer; transition:var(--t);
   width:100%;
 }
@@ -4103,44 +4133,96 @@ window.goHome = function(tabEl) {
   setTimeout(() => r.remove(), 500);
 };
 
-// ── BANNER CAROUSEL
-(function(){
-  const track = document.getElementById('bannerTrack');
-  const dots = document.querySelectorAll('.banner-dot');
+// ── BANNER CAROUSEL — dynamic, supports N slides from Firestore
+window._BannerCarousel = (function(){
   let current = 0;
+  let totalSlides = 2; // default fallback count
   let autoTimer = null;
+  let isInit = false;
+
+  function getTrack(){ return document.getElementById('bannerTrack'); }
+  function getDotsContainer(){ return document.getElementById('bannerDots'); }
+  function getWrap(){ return document.getElementById('bannerCarousel'); }
+
+  function buildDots(n){
+    const dc = getDotsContainer();
+    if(!dc) return;
+    dc.innerHTML = '';
+    for(let i = 0; i < n; i++){
+      const d = document.createElement('div');
+      d.className = 'banner-dot' + (i === 0 ? ' active' : '');
+      dc.appendChild(d);
+    }
+  }
 
   function goTo(idx){
-    current = idx;
-    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
-    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    const track = getTrack();
+    if(!track) return;
+    current = ((idx % totalSlides) + totalSlides) % totalSlides;
+    track.style.transform = 'translateX(-' + (current * 100) + '%)';
+    const dots = getDotsContainer();
+    if(dots) dots.querySelectorAll('.banner-dot').forEach((d, i) => d.classList.toggle('active', i === current));
   }
 
-  function next(){
-    goTo((current + 1) % 2);
-  }
+  function next(){ goTo(current + 1); }
 
   function startAuto(){
-    autoTimer = setInterval(next, 2000);
-  }
-
-  function stopAuto(){
     clearInterval(autoTimer);
+    if(totalSlides < 2) return;
+    autoTimer = setInterval(next, 3000);
   }
 
-  // Touch swipe support
-  let startX = 0;
-  const wrap = document.getElementById('bannerCarousel');
-  if(wrap){
-    wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; stopAuto(); }, {passive:true});
-    wrap.addEventListener('touchend', e => {
-      const diff = startX - e.changedTouches[0].clientX;
-      if(Math.abs(diff) > 40) goTo(diff > 0 ? 1 : 0);
-      startAuto();
-    }, {passive:true});
+  function stopAuto(){ clearInterval(autoTimer); }
+
+  function init(n){
+    totalSlides = n || 2;
+    current = 0;
+    buildDots(totalSlides);
+    goTo(0);
+    if(!isInit){
+      isInit = true;
+      let startX = 0;
+      const wrap = getWrap();
+      if(wrap){
+        wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; stopAuto(); }, {passive:true});
+        wrap.addEventListener('touchend', e => {
+          const diff = startX - e.changedTouches[0].clientX;
+          if(Math.abs(diff) > 40) goTo(current + (diff > 0 ? 1 : -1));
+          startAuto();
+        }, {passive:true});
+      }
+    }
+    startAuto();
   }
 
-  window.addEventListener('load', () => { startAuto(); });
+  // Render dynamic image banners from Firestore into carousel
+  function renderDynamic(banners){
+    const track = getTrack();
+    if(!track || !banners || !banners.length) return;
+    // Sort by order field
+    banners.sort((a, b) => (a.order||0) - (b.order||0));
+    track.innerHTML = '';
+    banners.forEach(b => {
+      const slide = document.createElement('div');
+      slide.className = 'banner-slide banner-slide-img';
+      const linkAttr = b.link ? `onclick="location.href='${b.link}'"` : '';
+      slide.setAttribute('onclick', b.link ? `location.href='${b.link}'` : '');
+      slide.style.cursor = b.link ? 'pointer' : 'default';
+      slide.innerHTML = `
+        <img src="${b.imageUrl}" alt="banner" loading="lazy"
+             onerror="this.parentElement.style.background='linear-gradient(135deg,#5B2BF6,#8B2FF8)';this.remove();">
+        <div class="banner-img-overlay"></div>
+        <div class="banner-img-content">
+          ${b.btnText ? `<button class="banner-btn-img" onclick="event.stopPropagation();${b.link?`location.href='${b.link}'`:''}">${b.btnText} <i class="fa-solid fa-play" style="font-size:9px;"></i></button>` : ''}
+        </div>`;
+      track.appendChild(slide);
+    });
+    init(banners.length);
+  }
+
+  window.addEventListener('load', () => { init(2); });
+
+  return { init, renderDynamic, goTo, startAuto, stopAuto };
 })();
 
 // ── DAILY GOAL CONGRATS POPUP
@@ -4228,6 +4310,28 @@ window.addEventListener('load', function(){
   const headerNum = document.getElementById('headerStreakNum');
   if(headerNum) _streakObserver.observe(headerNum, {childList:true,characterData:true,subtree:true});
 });</script>
+
+<!-- ── HOME BANNERS — Load from Firestore config/homeBanners ── -->
+<script type="module">
+import { db } from "./firebase.js";
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// Try loading from Firestore; fall back to hardcoded 2 slides on any error
+try {
+  onSnapshot(doc(db, "config", "homeBanners"), snap => {
+    if(!snap.exists()) return; // no data → keep fallback slides
+    const data = snap.data();
+    const banners = data && Array.isArray(data.banners) ? data.banners.filter(b => b.imageUrl) : [];
+    if(banners.length === 0) return; // empty list → keep fallback slides
+    // Wait for carousel to be ready then render
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', () => window._BannerCarousel.renderDynamic(banners));
+    } else {
+      window._BannerCarousel.renderDynamic(banners);
+    }
+  }, _err => { /* network error → keep fallback */ });
+} catch(e) { /* import error → keep fallback */ }
+</script>
 
 </body>
 </html>
