@@ -1209,7 +1209,110 @@ header{
 }
 .streak-popup-btn:active{ transform:scale(0.96); }
 
-/* ─── BOTTOM NAV ─── */
+/* ─── STREAK MILESTONE CELEBRATION (7 / 14 / 21 / 28+ days) ─── */
+.streak-milestone-overlay{
+  position:fixed; inset:0; z-index:10000000;
+  background:rgba(0,0,0,0.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+}
+.streak-milestone-card{
+  position:relative; overflow:hidden;
+  border-radius:30px; padding:40px 28px 30px;
+  width:100%; max-width:360px; text-align:center;
+  box-shadow:0 36px 90px rgba(0,0,0,0.5);
+  animation:milestoneCardIn 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes milestoneCardIn{
+  0%{ transform:scale(0.75) translateY(30px); opacity:0; }
+  100%{ transform:scale(1) translateY(0); opacity:1; }
+}
+/* Tier 1 — 7 days: warm bronze/orange */
+.streak-milestone-card[data-tier="1"]{ background:linear-gradient(160deg,#3A1F0A 0%,#241207 65%); border:1.5px solid rgba(249,115,22,0.35); }
+/* Tier 2 — 14 days: cool silver/blue */
+.streak-milestone-card[data-tier="2"]{ background:linear-gradient(160deg,#101B33 0%,#0B1220 65%); border:1.5px solid rgba(91,140,246,0.4); }
+/* Tier 3 — 21 days: royal purple/gold */
+.streak-milestone-card[data-tier="3"]{ background:linear-gradient(160deg,#2A0F3D 0%,#170924 65%); border:1.5px solid rgba(168,85,247,0.4); }
+/* Tier 4 — 28+ days: premium gold/legendary */
+.streak-milestone-card[data-tier="4"]{ background:linear-gradient(160deg,#3D2A05 0%,#241A08 65%); border:1.5px solid rgba(251,191,36,0.5); }
+
+.streak-milestone-glow{
+  position:absolute; top:-60px; left:50%; transform:translateX(-50%);
+  width:220px; height:220px; border-radius:50%; filter:blur(50px);
+  opacity:0.55; pointer-events:none;
+}
+.streak-milestone-card[data-tier="1"] .streak-milestone-glow{ background:#F97316; }
+.streak-milestone-card[data-tier="2"] .streak-milestone-glow{ background:#5B8CF6; }
+.streak-milestone-card[data-tier="3"] .streak-milestone-glow{ background:#A855F7; }
+.streak-milestone-card[data-tier="4"] .streak-milestone-glow{ background:#FBBF24; }
+
+.streak-milestone-x{
+  position:absolute; top:14px; right:14px; z-index:2;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.7); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:0.2s; -webkit-tap-highlight-color:transparent;
+}
+.streak-milestone-x:active{ transform:scale(0.88); }
+
+.streak-milestone-confetti{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1; }
+
+.streak-milestone-badge{
+  position:relative; z-index:2;
+  width:88px; height:88px; margin:0 auto 18px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  animation:milestoneBadgeIn 0.6s cubic-bezier(0.34,1.8,0.64,1) 0.15s both;
+}
+@keyframes milestoneBadgeIn{
+  0%{ transform:scale(0) rotate(-30deg); opacity:0; }
+  100%{ transform:scale(1) rotate(0deg); opacity:1; }
+}
+.streak-milestone-card[data-tier="1"] .streak-milestone-badge{ background:radial-gradient(circle,rgba(249,115,22,0.25),transparent 70%); }
+.streak-milestone-card[data-tier="2"] .streak-milestone-badge{ background:radial-gradient(circle,rgba(91,140,246,0.25),transparent 70%); }
+.streak-milestone-card[data-tier="3"] .streak-milestone-badge{ background:radial-gradient(circle,rgba(168,85,247,0.28),transparent 70%); }
+.streak-milestone-card[data-tier="4"] .streak-milestone-badge{ background:radial-gradient(circle,rgba(251,191,36,0.3),transparent 70%); animation:milestoneBadgeIn 0.6s cubic-bezier(0.34,1.8,0.64,1) 0.15s both, legendarySpin 3.5s linear 0.8s infinite; }
+@keyframes legendarySpin{ 0%{ filter:drop-shadow(0 0 0px rgba(251,191,36,0.6)); } 50%{ filter:drop-shadow(0 0 14px rgba(251,191,36,0.8)); } 100%{ filter:drop-shadow(0 0 0px rgba(251,191,36,0.6)); } }
+
+.streak-milestone-eyebrow{
+  position:relative; z-index:2;
+  font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;
+  margin-bottom:6px; animation:milestoneFadeUp 0.4s ease 0.3s both;
+}
+.streak-milestone-card[data-tier="1"] .streak-milestone-eyebrow{ color:#FDBA74; }
+.streak-milestone-card[data-tier="2"] .streak-milestone-eyebrow{ color:#93C5FD; }
+.streak-milestone-card[data-tier="3"] .streak-milestone-eyebrow{ color:#D8B4FE; }
+.streak-milestone-card[data-tier="4"] .streak-milestone-eyebrow{ color:#FDE68A; }
+
+.streak-milestone-title{
+  position:relative; z-index:2;
+  font-size:24px; font-weight:900; color:#fff; letter-spacing:-0.4px;
+  margin-bottom:8px; line-height:1.2;
+  animation:milestoneFadeUp 0.4s ease 0.38s both;
+}
+@keyframes milestoneFadeUp{ 0%{ transform:translateY(10px); opacity:0; } 100%{ transform:translateY(0); opacity:1; } }
+
+.streak-milestone-sub{
+  position:relative; z-index:2;
+  font-size:13.5px; color:rgba(255,255,255,0.65); line-height:1.55;
+  margin-bottom:26px; font-weight:500;
+  animation:milestoneFadeUp 0.4s ease 0.46s both;
+}
+
+.streak-milestone-btn{
+  position:relative; z-index:2;
+  border:none; border-radius:50px; padding:15px 32px;
+  color:#fff; font-size:15px; font-weight:700; cursor:pointer; width:100%;
+  transition:0.2s; -webkit-tap-highlight-color:transparent;
+  animation:milestoneFadeUp 0.4s ease 0.54s both;
+}
+.streak-milestone-card[data-tier="1"] .streak-milestone-btn{ background:linear-gradient(135deg,#F97316,#EA580C); box-shadow:0 8px 24px rgba(249,115,22,0.4); }
+.streak-milestone-card[data-tier="2"] .streak-milestone-btn{ background:linear-gradient(135deg,#5B8CF6,#3B6FE0); box-shadow:0 8px 24px rgba(91,140,246,0.4); }
+.streak-milestone-card[data-tier="3"] .streak-milestone-btn{ background:linear-gradient(135deg,#A855F7,#7C3AED); box-shadow:0 8px 24px rgba(168,85,247,0.4); }
+.streak-milestone-card[data-tier="4"] .streak-milestone-btn{ background:linear-gradient(135deg,#FBBF24,#F59E0B); box-shadow:0 8px 24px rgba(251,191,36,0.4); }
+.streak-milestone-btn:active{ transform:scale(0.96); }
+
+
 .pwa-bottom-nav{
   position:fixed; bottom:0; left:0; width:100%; height:64px;
   background:var(--nav-bg); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
@@ -2105,6 +2208,22 @@ body { padding-bottom: 64px; }
   </div>
 </div>
 
+<!-- Streak Milestone Celebration (7 / 14 / 21 / 28+ days) -->
+<div id="streakMilestoneOverlay" class="streak-milestone-overlay" style="display:none;" onclick="closeStreakMilestonePopup()">
+  <div class="streak-milestone-card" id="streakMilestoneCard" data-tier="1" onclick="event.stopPropagation()">
+    <div class="streak-milestone-glow"></div>
+    <div class="streak-milestone-confetti" id="milestoneConfetti"></div>
+    <button class="streak-milestone-x" onclick="closeStreakMilestonePopup()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <div class="streak-milestone-badge" id="streakMilestoneBadge"></div>
+    <div class="streak-milestone-eyebrow" id="streakMilestoneEyebrow">Milestone Unlocked</div>
+    <div class="streak-milestone-title" id="streakMilestoneTitle">7 Day Streak!</div>
+    <div class="streak-milestone-sub" id="streakMilestoneSub">A full week of consistent study. Keep this momentum going!</div>
+    <button class="streak-milestone-btn" onclick="closeStreakMilestonePopup()">Keep Going</button>
+  </div>
+</div>
+
 <!-- Bottom Nav — Home | Playlist | Leaderboard | Profile -->
 <div id="pwaBottomNav" class="pwa-bottom-nav">
   <button class="nav-tab active" id="nav-home" onclick="goHome(this)">
@@ -2657,6 +2776,92 @@ window._showStreakPopup = function(streak){
 
 window.closeStreakPopup = function(){
   const el = document.getElementById("streakPopupOverlay");
+  if(el){ el.style.opacity='0'; el.style.transition='0.25s'; setTimeout(()=>{ el.style.display='none'; el.style.opacity=''; el.style.transition=''; }, 250); }
+};
+
+/* ─────────────────────────────
+   STREAK MILESTONE CELEBRATION (7 / 14 / 21 / 28+ days)
+   Single entry point — call checkStreakMilestone(streak) from anywhere the
+   streak value changes. It self-dedupes per exact streak number (via
+   localStorage), so no matter which code path (app-open check, or a live
+   goal-completion update from todo.html/playlist.html) is the one that
+   actually reaches a new multiple of 7, the celebration fires exactly once
+   for that milestone — never twice, never skipped.
+───────────────────────────── */
+const STREAK_MILESTONE_TIERS = {
+  7:  { tier: 1, eyebrow: "Milestone Unlocked",  title: "7 Day Streak!",        sub: "A full week of consistent study. Keep this momentum going!" },
+  14: { tier: 2, eyebrow: "Two Weeks Strong",    title: "14 Day Streak!",       sub: "Two weeks straight — this is becoming a real habit. Don't stop now!" },
+  21: { tier: 3, eyebrow: "Three Weeks In",      title: "21 Day Streak!",       sub: "It takes 21 days to build a habit — and you just did. You're unstoppable." },
+};
+function _streakMilestoneMeta(streak) {
+  if (STREAK_MILESTONE_TIERS[streak]) return STREAK_MILESTONE_TIERS[streak];
+  // 28+ — every further multiple of 7 gets the top "legendary" tier
+  return { tier: 4, eyebrow: "Legendary Streak", title: `${streak} Day Streak!`, sub: "This kind of consistency is rare. You're operating at a completely different level." };
+}
+const STREAK_MILESTONE_ICONS = {
+  1: `<svg width="46" height="46" viewBox="0 0 24 24" fill="#F97316" stroke="none"><path d="M12 2c-1 4-5 6-5 11a5 5 0 0 0 10 0c0-2-1-3-1-3s.5 2-1 3c-1-3 1-4 0-7-1 2-1 3-2 2 .5-2-1-4-1-6Z"/></svg>`,
+  2: `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#5B8CF6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.6 22 9.6 17 14.6 18.2 21.6 12 18.3 5.8 21.6 7 14.6 2 9.6 8.9 8.6 12 2" fill="rgba(91,140,246,0.18)"></polygon></svg>`,
+  3: `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#D8B4FE" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" fill="rgba(168,85,247,0.18)"></path><path d="M17 5h2.5a2.5 2.5 0 0 1 0 5H17"></path><path d="M7 5H4.5a2.5 2.5 0 0 0 0 5H7"></path></svg>`,
+  4: `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 3 5-7 5 7 4-3-2 11H5L3 8Z" fill="rgba(251,191,36,0.2)"></path></svg>`,
+};
+
+function checkStreakMilestone(streak) {
+  if (!streak || streak % 7 !== 0) return;
+  const key = "streakMilestoneShown_" + streak;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, "1");
+  // Suppress the regular daily-streak popup today so it doesn't stack
+  // awkwardly with this bigger celebration — the milestone popup already
+  // shows the streak count.
+  const todayStr = new Date().toDateString();
+  localStorage.setItem("streakGoalPopupShown_" + todayStr, "1");
+  localStorage.setItem("streakPopupOpenShown_" + todayStr, "1");
+  setTimeout(() => { if (window._showStreakMilestone) window._showStreakMilestone(streak); }, 1000);
+}
+
+window._showStreakMilestone = function(streak){
+  const overlay  = document.getElementById("streakMilestoneOverlay");
+  const card     = document.getElementById("streakMilestoneCard");
+  const badge    = document.getElementById("streakMilestoneBadge");
+  const eyebrow  = document.getElementById("streakMilestoneEyebrow");
+  const title    = document.getElementById("streakMilestoneTitle");
+  const sub      = document.getElementById("streakMilestoneSub");
+  if(!overlay || !card) return;
+
+  const meta = _streakMilestoneMeta(streak);
+  card.setAttribute("data-tier", meta.tier);
+  if(badge)   badge.innerHTML   = STREAK_MILESTONE_ICONS[meta.tier] || STREAK_MILESTONE_ICONS[1];
+  if(eyebrow) eyebrow.textContent = meta.eyebrow;
+  if(title)   title.textContent   = meta.title;
+  if(sub)     sub.textContent     = meta.sub;
+
+  buildMilestoneConfetti();
+  overlay.style.display = "flex";
+  overlay.style.opacity = "0";
+  requestAnimationFrame(()=>{ overlay.style.transition="opacity 0.3s ease"; overlay.style.opacity="1"; });
+};
+
+function buildMilestoneConfetti(){
+  const c = document.getElementById("milestoneConfetti");
+  if(!c) return;
+  c.innerHTML = "";
+  const colors = ["#F97316","#5B8CF6","#A855F7","#FBBF24","#10B981","#EF4444"];
+  for(let i=0;i<34;i++){
+    const dot = document.createElement("div");
+    dot.style.cssText = `
+      position:absolute;width:${5+Math.random()*8}px;height:${5+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?"50%":"3px"};
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      left:${Math.random()*100}%;top:${-10-Math.random()*10}%;
+      animation:confettiFall ${0.9+Math.random()*1.3}s ease forwards;
+      animation-delay:${Math.random()*0.6}s;
+    `;
+    c.appendChild(dot);
+  }
+}
+
+window.closeStreakMilestonePopup = function(){
+  const el = document.getElementById("streakMilestoneOverlay");
   if(el){ el.style.opacity='0'; el.style.transition='0.25s'; setTimeout(()=>{ el.style.display='none'; el.style.opacity=''; el.style.transition=''; }, 250); }
 };
 window.openNotifPanel=function(){
@@ -3367,6 +3572,24 @@ onAuthStateChanged(auth, async user => {
   // streakHistory: array of ISO date strings when daily goal was done
   let streakHistory=data.streakHistory||[];
 
+  // ✅ FIX: a streak break may have already been detected+reset on a
+  // DIFFERENT page (uw-core.js runs this same check on todo.html and
+  // playlist.html too — see uw-core.js's _checkStreakBreak). If that
+  // happened, `data.streak` read above is already 0 by the time we get
+  // here, so the dashboard's own detection further below won't fire
+  // anymore (hadStreakBefore would be false) — without this check the
+  // "Streak Broken!" popup would silently never show at all.
+  try {
+    if (localStorage.getItem("uw_pending_streak_break") === "1") {
+      const breakKeyShared = "streakBreakShown_" + today;
+      if (!localStorage.getItem(breakKeyShared)) {
+        localStorage.setItem(breakKeyShared, "1");
+        setTimeout(() => { if (window.showStreakBreakPopup) window.showStreakBreakPopup(); }, 1200);
+      }
+      localStorage.removeItem("uw_pending_streak_break");
+    }
+  } catch(e) {}
+
   const hadStreakBefore = streak > 0;
   // ✅ FIX: agar streak aaj hi ban chuki hai (playlist/todo/dashboard kisi se bhi),
   // to lastActiveDate chahe stale ho (e.g. todo.html se streak update hone par
@@ -3408,6 +3631,7 @@ onAuthStateChanged(auth, async user => {
   localStorage.setItem("uw_streak",streak);
   document.getElementById("headerStreakNum").textContent=streak;
   const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=streak;
+  checkStreakMilestone(streak);
 
   // Store streakHistory and streak globally for week popup
   window._currentStreak = streak;
@@ -3566,6 +3790,7 @@ onAuthStateChanged(auth, async user => {
       if(headerNum) headerNum.textContent=newStreak;
       const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=newStreak;
       if(window._renderNotifications) window._renderNotifications(newNotifs);
+      checkStreakMilestone(newStreak);
 
       // Show streak popup (once per day) — works for both playlist and todo completion
       const streakGoalPopupKey = "streakGoalPopupShown_" + todayStr;

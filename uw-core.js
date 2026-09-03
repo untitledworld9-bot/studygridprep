@@ -212,6 +212,48 @@ function getBadge(xp) {
 }
 
 /* ─────────────────────────────
+   STREAK BREAK DETECTION (runs on EVERY page)
+   Previously this check only existed inside dashboard-home.html, so if the
+   user's first page of the day was anything else (timer, playlist, todo, a
+   mock test...) a missed day was never detected: the streak stayed at its
+   old value indefinitely and the "Streak Broken!" popup never appeared,
+   until they happened to open the dashboard again. Running it here means
+   the reset now always happens the moment the user opens the app at all,
+   on any page — dashboard-home.html then just needs to show a popup for a
+   break it (or this) already detected.
+   Uses the exact same rules as dashboard-home.html's own check, so both
+   can never disagree about whether a break happened.
+───────────────────────────── */
+const STREAK_BREAK_PENDING_KEY = "uw_pending_streak_break";
+
+async function _checkStreakBreak(d) {
+  const today         = new Date().toDateString();
+  const yesterday      = new Date(Date.now() - 86400000).toDateString();
+  const lastStreakDate = d.lastStreakDate || "";
+  const streak         = d.streak || 0;
+
+  const hadStreakBefore = streak > 0;
+  const streakDoneToday = (lastStreakDate === today);
+  // Real gap: lastStreakDate is set, isn't today, and isn't yesterday either.
+  const missedDay = lastStreakDate && lastStreakDate !== today && lastStreakDate !== yesterday;
+
+  if (streakDoneToday || !missedDay || !hadStreakBefore) return;
+
+  // Reset now, immediately, regardless of which page detected it.
+  localStorage.setItem(STREAK_KEY, "0");
+  window.dispatchEvent(new CustomEvent("uw_streak_changed", { detail: { streak: 0 } }));
+  await _saveUser({ streak: 0 });
+
+  // Flag it (once per day) so whichever page has the popup UI
+  // (dashboard-home.html) can show it next time it's opened — even if
+  // that's a different page load than the one that did the reset.
+  const shownKey = "streakBreakShown_" + today;
+  if (!localStorage.getItem(shownKey)) {
+    localStorage.setItem(STREAK_BREAK_PENDING_KEY, "1");
+  }
+}
+
+/* ─────────────────────────────
    LOAD USER DATA
 ───────────────────────────── */
 async function loadUserData() {
@@ -232,6 +274,10 @@ async function loadUserData() {
         window.dispatchEvent(new CustomEvent("uw_streak_changed", { detail: { streak: d.streak } }));
       }
       if (d.lastStreakDate !== undefined) localStorage.setItem(STREAK_DATE_KEY, d.lastStreakDate || "");
+
+      // Runs on every page, not just dashboard-home.html — see comment above.
+      await _checkStreakBreak(d);
+
       return d;
     }
   } catch(e) { console.warn("[UW Core] loadUserData failed:", e); }
@@ -371,6 +417,12 @@ async function syncData(payload) {
   } catch(e) { console.warn("[UW Core] syncData failed:", e); }
 }
 
+function consumePendingStreakBreak() {
+  const pending = localStorage.getItem(STREAK_BREAK_PENDING_KEY) === "1";
+  if (pending) localStorage.removeItem(STREAK_BREAK_PENDING_KEY);
+  return pending;
+}
+
 /* ─────────────────────────────
    EXPOSE TO WINDOW
 ───────────────────────────── */
@@ -388,6 +440,7 @@ window.UW = {
   saveUserData,
   syncData,
   updateLeaderboard,
+  consumePendingStreakBreak,
   LEVEL_THRESHOLDS
 };
 
