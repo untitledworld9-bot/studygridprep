@@ -195,17 +195,24 @@
       display:none;width:40px;height:40px;border:0;background:transparent;
       cursor:pointer;border-radius:10px;gap:5px;
       flex-direction:column;justify-content:center;align-items:center;
+      transition:background .22s cubic-bezier(0.4,0,0.2,1);padding:6px;
     }
-    .hamburger span{display:block;height:2px;border-radius:2px;background:var(--text-primary);}
+    .hamburger:hover{background:var(--bg-muted);}
+    .hamburger span{display:block;height:2px;border-radius:2px;background:var(--text-primary);transition:all .35s cubic-bezier(0.4,0,0.2,1);transform-origin:center;}
     .hamburger span:nth-child(1),.hamburger span:nth-child(3){width:22px;}
     .hamburger span:nth-child(2){width:16px;}
+    .hamburger.open span:nth-child(1){width:20px;transform:translateY(7px) rotate(45deg);}
+    .hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+    .hamburger.open span:nth-child(3){width:20px;transform:translateY(-7px) rotate(-45deg);}
 
     .mobile-menu{
-      display:none;position:fixed;top:64px;left:0;right:0;z-index:190;
+      position:fixed;top:64px;left:0;right:0;z-index:190;
       background:rgba(255,255,255,.97);backdrop-filter:blur(24px);
-      border-bottom:1px solid var(--border);padding:12px 5%;
+      border-bottom:1px solid var(--border);padding:0 5%;
+      overflow:hidden;max-height:0;opacity:0;
+      transition:max-height .4s cubic-bezier(0.4,0,0.2,1),opacity .3s ease;
     }
-    .mobile-menu.open{display:block;}
+    .mobile-menu.open{max-height:400px;opacity:1;padding:12px 5%;}
     .mobile-menu a{
       display:block;padding:13px 14px;border-radius:12px;
       font-family:var(--font);font-weight:600;
@@ -240,8 +247,8 @@
       -webkit-text-fill-color:transparent;
     }
     .hero-sub{
-      max-width:670px;margin:0 auto;
-      font-size:16px;color:var(--text-secondary);line-height:1.7;
+      max-width:520px;margin:0 auto;
+      font-size:15px;color:var(--text-muted);line-height:1.6;font-weight:400;
     }
 
     .faq-wrap{
@@ -807,10 +814,9 @@
   <header class="hero">
     <div class="hero-inner">
       <div class="eyebrow"><i class="fa-solid fa-circle-question"></i> Study Grid Prep FAQ</div>
-      <h1>Everything you need to know about <span>Study Grid Prep</span></h1>
+      <h1>Frequently Asked <span>Questions</span></h1>
       <p class="hero-sub">
-        Search common questions about mock tests, AI study tools, Study Playlist, Focus Timer,
-        study rooms, planner, progress tracking, pricing, accounts, PWA installation and support.
+        Quick answers on mock tests, AI tools, planner, pricing and accounts — all in one place.
       </p>
     </div>
   </header>
@@ -1318,9 +1324,19 @@
     }
 
     // Mobile menu
-    menuBtn.addEventListener('click', () => {
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const open = mobileMenu.classList.toggle('open');
+      menuBtn.classList.toggle('open', open);
       menuBtn.setAttribute('aria-expanded', String(open));
+    });
+
+    document.addEventListener('click', (e) => {
+      if(!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)){
+        mobileMenu.classList.remove('open');
+        menuBtn.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }
     });
 
     // Keep open answers sized correctly after orientation/resize changes.
