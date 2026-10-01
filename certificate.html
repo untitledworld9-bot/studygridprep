@@ -135,7 +135,7 @@ a{color:var(--accent);text-decoration:none;}
 .sgc .seal{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:100px;height:100px;z-index:4;}
 
 .sgc .sig{width:300px;text-align:center;display:flex;flex-direction:column;align-items:center;}
-.sgc .sig-box{width:240px;height:46px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+.sgc .sig-box{width:250px;height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:1px;}
 .sgc .sig-box svg{width:100%;height:100%;}
 .sgc .sig .ln{height:1.5px;width:100%;margin:2px 0 5px;}
 .sgc .sig .n{font-weight:700;font-size:13.5px;}
@@ -240,30 +240,30 @@ async function fingerprint(c){
   } catch(e) { let x = 0; for (const ch of s) x = (x * 31 + ch.charCodeAt(0)) >>> 0; return x.toString(16).toUpperCase().padStart(8, '0'); }
 }
 
-/* Exact handwritten signature matching user upload: "Ayush Kumar Gupta" */
+/* Exact handwritten signature matching user scan: "Ayush Kumar Gupta" */
 function exactHandwrittenSignatureSvg(color = '#E7C75A'){
-  return `<svg viewBox="0 0 286 60" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%;">
-    <g fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round">
-      <!-- Ayush: A stem & crossbar connected to y, u, s, h with tall loop -->
-      <path d="M 8 42 L 19 8 L 27 42 M 13 28 L 32 27" stroke-width="2.2"/>
-      <path d="M 32 27 C 34 26 36 34 36 37 C 36 44 39 27 40 27 L 40 56 C 40 60 32 58 31 54 C 30 48 39 42 43 35" stroke-width="2.0"/>
-      <path d="M 43 35 C 47 42 51 42 54 35 C 57 28 58 38 61 35" stroke-width="2.0"/>
-      <path d="M 61 35 C 64 27 68 26 67 33 C 66 39 64 42 69 41" stroke-width="2.0"/>
-      <path d="M 69 41 L 74 9 L 74 42 C 75 30 80 26 84 26 C 88 26 89 36 89 42 C 90 42 94 38 96 36" stroke-width="2.1"/>
+  return `<svg viewBox="0 0 452 112" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%;">
+    <g fill="none" stroke="${color}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Ayush: A stem, apex, crossbar connected to y, u, s, h with tall ascender -->
+      <path d="M 16 70 L 38 14 L 46 70 M 24 48 L 54 44"/>
+      <path d="M 54 44 C 55 58 64 58 66 44 L 66 88 C 66 104 50 102 48 94 C 47 84 62 72 70 58"/>
+      <path d="M 70 58 C 76 70 82 70 86 58 C 90 44 94 62 98 58"/>
+      <path d="M 98 58 C 104 44 112 42 110 54 C 108 64 104 70 114 68"/>
+      <path d="M 114 68 L 122 16 L 122 70 C 124 50 132 42 140 42 C 148 42 148 60 148 70 C 150 70 156 64 160 60"/>
       
-      <!-- Kumar: K stem and slanted arms, u, m, a, r -->
-      <path d="M 104 8 L 104 42 M 116 14 L 105 27 L 117 42" stroke-width="2.1"/>
-      <path d="M 121 28 C 123 42 127 42 130 35 C 133 28 135 38 138 35" stroke-width="2.0"/>
-      <path d="M 138 35 C 140 27 144 26 146 35 C 148 42 151 26 154 34 C 157 42 160 26 163 35 C 165 42 168 36 170 34" stroke-width="2.0"/>
-      <path d="M 170 34 C 168 27 174 26 177 34 C 179 40 178 42 174 42 C 170 42 172 32 177 27 L 177 42" stroke-width="2.0"/>
-      <path d="M 177 42 C 180 29 184 26 190 25 C 193 25 195 28 196 34" stroke-width="2.0"/>
+      <!-- Kumar: K vertical stem and arms, u, m (three arches), a, r -->
+      <path d="M 174 14 L 174 70 M 194 22 L 176 46 L 196 70"/>
+      <path d="M 200 46 C 204 70 210 70 214 58 C 218 46 222 62 226 58"/>
+      <path d="M 226 58 C 228 44 236 42 238 56 C 242 70 246 44 252 56 C 258 70 262 44 268 58 C 272 70 276 60 280 56"/>
+      <path d="M 280 56 C 276 44 286 42 290 56 C 294 66 292 70 286 70 C 280 70 282 54 290 46 L 290 70"/>
+      <path d="M 290 70 C 294 48 300 42 310 40 C 316 40 318 44 320 54"/>
       
-      <!-- Gupta: G cursive loop with deep descender, u, p, t crossed, a flourish -->
-      <path d="M 210 16 C 215 8 206 14 203 24 C 199 34 205 42 211 41 C 216 40 218 32 218 27 L 218 56 C 218 60 210 58 210 53 C 210 47 218 42 222 35" stroke-width="2.2"/>
-      <path d="M 222 35 C 225 42 229 42 232 35 C 235 28 237 38 240 35" stroke-width="2.0"/>
-      <path d="M 240 35 L 243 18 L 243 56 M 243 27 C 248 26 252 28 252 35 C 252 42 247 42 243 42" stroke-width="2.1"/>
-      <path d="M 255 10 L 255 42 C 256 42 260 40 263 37 M 249 23 L 264 23" stroke-width="2.1"/>
-      <path d="M 264 36 C 263 28 268 26 271 33 C 273 39 272 42 268 42 C 264 42 266 34 270 28 C 275 24 280 27 284 28" stroke-width="2.0"/>
+      <!-- Gupta: G majestic cursive loop with deep descender, u, p, crossed t, a flourish -->
+      <path d="M 338 28 C 346 14 330 22 326 38 C 320 56 330 70 340 68 C 348 66 350 52 350 44 L 350 88 C 350 104 336 102 334 94 C 334 84 348 74 356 60"/>
+      <path d="M 356 60 C 362 70 368 70 372 58 C 376 46 380 62 384 58"/>
+      <path d="M 384 58 L 388 30 L 388 92 M 388 44 C 396 42 404 46 404 58 C 404 70 396 70 388 70"/>
+      <path d="M 408 14 L 408 70 C 410 70 416 66 420 62 M 398 36 L 424 34"/>
+      <path d="M 420 60 C 418 46 428 42 432 54 C 436 64 434 70 428 70 C 420 70 424 56 430 46 C 438 40 444 44 450 46"/>
     </g>
   </svg>`;
 }
