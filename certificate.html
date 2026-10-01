@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Poppins:wght@300;400;500;600;700;800&family=Alex+Brush&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Poppins:wght@300;400;500;600;700;800&family=Great+Vibes&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>html{visibility:hidden;} html[data-theme]{visibility:visible;}</style>
 <script>
@@ -58,14 +58,14 @@ a{color:var(--accent);text-decoration:none;}
 .linkbox{display:flex;gap:8px;align-items:center;background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:9px 12px;margin-top:12px;font-size:11.5px;color:var(--text2);word-break:break-all;}
 
 /* preview stage */
-.stage{position:relative;width:100%;overflow:hidden;border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,0.32);border:1px solid var(--border);background:#070B16;}
+.stage{position:relative;width:100%;overflow:hidden;border-radius:16px;box-shadow:var(--shadow-md);border:1px solid var(--border);}
 .scaler{width:1123px;height:794px;transform-origin:0 0;}
 .stage.lockd .scaler{filter:blur(7px) grayscale(.3);}
-.lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(15,23,42,.45);color:#fff;font-weight:800;font-size:15px;}
+.lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(15,23,42,.35);color:#fff;font-weight:800;font-size:15px;}
 .lock i{font-size:30px;}
 
 /* modal */
-.ov{position:fixed;inset:0;z-index:100;background:rgba(8,12,26,.65);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:16px;}
+.ov{position:fixed;inset:0;z-index:100;background:rgba(8,12,26,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
 .ov.open{display:flex;animation:fi .2s;} @keyframes fi{from{opacity:0}to{opacity:1}}
 .sheet{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:24px 22px;box-shadow:var(--shadow-md);text-align:center;animation:pop .28s cubic-bezier(.2,1.4,.4,1);}
 @keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
@@ -96,134 +96,95 @@ a{color:var(--accent);text-decoration:none;}
 .brand{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:6px;font-weight:800;font-size:14px;} .brand img{width:26px;height:26px;border-radius:8px;}
 #printArea{display:none;}
 @media print{ body *{visibility:hidden;} #printArea,#printArea *{visibility:visible;} #printArea{display:block;position:fixed;inset:0;} #printArea img{width:100%;height:100%;object-fit:contain;} @page{size:A4 landscape;margin:0;} }
-#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#0F172A;color:#fff;padding:10px 18px;border-radius:12px;font-size:12.5px;font-weight:600;opacity:0;transition:.25s;z-index:200;pointer-events:none;max-width:90%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#0F172A;color:#fff;padding:10px 18px;border-radius:12px;font-size:12.5px;font-weight:600;opacity:0;transition:.25s;z-index:200;pointer-events:none;max-width:90%;text-align:center;}
 #toast.show{opacity:1;transform:translateX(-50%);}
 
 /* ==========================================================================
-   ULTRA-PREMIUM CERTIFICATE ENGINE (1123 × 794)
+   SOLID, RELIABLE CERTIFICATE STYLES (1123 × 794)
+   NO background-clip:text which breaks html2canvas downloads!
 ========================================================================== */
 .sgc{position:relative;width:1123px;height:794px;overflow:hidden;font-family:'Poppins',sans-serif;box-sizing:border-box;}
 .sgc *{font-family:inherit;margin:0;padding:0;box-sizing:border-box;}
+.sgc .frame{position:absolute;inset:16px;border-radius:14px;z-index:2;pointer-events:none;}
+.sgc .frame2{position:absolute;inset:26px;border-radius:9px;z-index:2;pointer-events:none;}
+.sgc .in{position:absolute;inset:40px 76px 36px 78px;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:3;}
 
-/* Corner Rosettes / Luxury Guilloche Ornaments */
-.sgc .corner-ornament{position:absolute;width:48px;height:48px;pointer-events:none;z-index:4;}
-.sgc .corner-tl{top:18px;left:18px;}
-.sgc .corner-tr{top:18px;right:18px;transform:rotate(90deg);}
-.sgc .corner-br{bottom:18px;right:18px;transform:rotate(180deg);}
-.sgc .corner-bl{bottom:18px;left:18px;transform:rotate(270deg);}
+.sgc .head{display:flex;align-items:center;gap:12px;}
+.sgc .head img{width:48px;height:48px;border-radius:12px;}
+.sgc .org{font-weight:800;font-size:20px;letter-spacing:.14em;text-align:left;}
+.sgc .tag{font-size:11px;letter-spacing:.08em;text-align:left;opacity:.8;margin-top:1px;font-weight:600;}
 
-/* Double Border & Framing */
-.sgc .outer-frame{position:absolute;inset:14px;border:2px solid #D4AF37;border-radius:12px;z-index:2;pointer-events:none;}
-.sgc .inner-frame{position:absolute;inset:22px;border:1px dashed rgba(212,175,55,0.45);border-radius:8px;z-index:2;pointer-events:none;}
-.sgc .micro-border{position:absolute;inset:28px;border:0.5px solid rgba(212,175,55,0.22);border-radius:6px;z-index:2;pointer-events:none;}
-
-/* Certificate Canvas Interior */
-.sgc .in{position:absolute;inset:36px 68px 30px 68px;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:3;}
-
-/* Header Branding */
-.sgc .head{display:flex;align-items:center;gap:14px;margin-bottom:2px;}
-.sgc .head img{width:46px;height:46px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.35);}
-.sgc .org{font-family:'Cinzel',serif;font-weight:800;font-size:22px;letter-spacing:.18em;text-align:left;line-height:1.15;}
-.sgc .tag{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;text-align:left;opacity:.82;margin-top:2px;font-weight:600;}
-
-/* Certificate Headings */
-.sgc .title{font-family:'Cinzel',serif;font-weight:800;font-size:44px;letter-spacing:.12em;margin-top:14px;line-height:1.1;text-transform:uppercase;}
-.sgc .kind{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.46em;text-transform:uppercase;margin-top:4px;font-weight:700;}
-.sgc .cert-l{font-size:13px;letter-spacing:.08em;margin-top:16px;opacity:.82;font-style:italic;font-family:'Playfair Display',serif;}
-
-/* Recipient Name */
-.sgc .name{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;margin-top:2px;padding:0 32px 4px;border-bottom:2px solid #D4AF37;line-height:1.2;max-width:920px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-
-/* Body Paragraph */
-.sgc .body{font-size:14px;line-height:1.75;max-width:870px;margin-top:14px;}
+.sgc .title{font-family:'Playfair Display',serif;font-weight:800;font-size:46px;letter-spacing:.08em;margin-top:18px;line-height:1.1;text-transform:uppercase;}
+.sgc .kind{font-size:13px;letter-spacing:.42em;text-transform:uppercase;margin-top:6px;font-weight:700;}
+.sgc .cert-l{font-size:13.5px;margin-top:20px;opacity:.8;font-weight:500;}
+.sgc .name{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;margin-top:4px;padding:0 36px 4px;border-bottom:2px solid;line-height:1.2;max-width:920px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.sgc .body{font-size:14.5px;line-height:1.75;max-width:850px;margin-top:16px;}
 .sgc .body b{font-weight:700;}
 
-/* Information Display Cards */
-.sgc .chips2{display:flex;gap:14px;margin-top:14px;}
-.sgc .c2{padding:8px 18px;border-radius:10px;min-width:160px;text-align:center;}
-.sgc .c2 .a{font-size:9px;letter-spacing:.15em;text-transform:uppercase;opacity:.78;font-weight:800;}
+.sgc .chips2{display:flex;gap:12px;margin-top:16px;}
+.sgc .c2{padding:8px 18px;border-radius:12px;min-width:160px;text-align:center;}
+.sgc .c2 .a{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;font-weight:700;}
 .sgc .c2 .b{font-size:13.5px;font-weight:700;margin-top:1px;}
 
-/* Footer & Signature Section */
-.sgc .foot{margin-top:auto;width:100%;display:flex;justify-content:space-between;align-items:flex-end;padding-top:8px;}
+.sgc .foot{margin-top:auto;width:100%;display:flex;justify-content:space-between;align-items:flex-end;}
+.sgc .qr{display:flex;gap:11px;align-items:center;text-align:left;}
+.sgc .qr img{width:92px;height:92px;border-radius:9px;background:#fff;padding:5px;}
+.sgc .qr .t{font-size:10px;line-height:1.45;max-width:160px;}
+.sgc .qr .t b{display:block;font-size:11px;letter-spacing:.04em;margin-bottom:2px;}
 
-/* QR Code & ID */
-.sgc .qr{display:flex;gap:12px;align-items:center;text-align:left;}
-.sgc .qr img{width:86px;height:86px;border-radius:8px;background:#fff;padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
-.sgc .qr .t{font-size:9.5px;line-height:1.45;max-width:160px;}
-.sgc .qr .t b{display:block;font-size:10.5px;letter-spacing:.06em;margin-bottom:2px;}
+.sgc .seal{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:100px;height:100px;z-index:4;}
 
-/* Center Gold Seal */
-.sgc .seal{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:96px;height:96px;z-index:4;}
-
-/* Authentic Human Signature Area */
 .sgc .sig{width:300px;text-align:center;display:flex;flex-direction:column;align-items:center;}
-.sgc .sig-art{width:220px;height:48px;display:flex;align-items:center;justify-content:center;margin-bottom:-4px;}
-.sgc .sig-art svg{width:100%;height:100%;overflow:visible;}
-.sgc .sig .ln{height:1.5px;width:100%;margin:2px 0 4px;}
-.sgc .sig .n{font-weight:800;font-size:13px;letter-spacing:.04em;}
-.sgc .sig .r{font-size:10.5px;letter-spacing:.02em;opacity:.82;font-weight:600;}
+.sgc .sig-box{width:240px;height:46px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+.sgc .sig-box svg{width:100%;height:100%;}
+.sgc .sig .ln{height:1.5px;width:100%;margin:2px 0 5px;}
+.sgc .sig .n{font-weight:700;font-size:13.5px;}
+.sgc .sig .r{font-size:11px;opacity:.8;}
 
-/* Verified Digital Signature Security Block */
-.sgc .ds{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:8.5px;line-height:1.3;text-align:left;padding:5px 9px;border-radius:8px;width:100%;}
-.sgc .ds svg{width:18px;height:18px;flex-shrink:0;}
-.sgc .ds .ds-title{font-weight:800;letter-spacing:.03em;}
-.sgc .ds .ds-sub{opacity:.85;font-size:8px;}
+.sgc .ds{display:flex;gap:7px;align-items:center;justify-content:center;margin-top:7px;font-size:9.5px;line-height:1.35;text-align:left;padding:6px 9px;border-radius:9px;width:100%;}
+.sgc .ds svg{width:20px;height:20px;flex-shrink:0;}
 
-/* ==========================================================================
-   THEME STYLES (Job / Internship / Achievement)
-========================================================================== */
-/* 1. Job / Experience Theme (Executive Midnight Navy & Gold) */
-.sgc.job{background:radial-gradient(circle at 50% 20%, #111A33 0%, #080D1D 70%, #050813 100%);color:#F4EBD9;}
-.sgc.job .org{background:linear-gradient(135deg, #FDE68A 0%, #D4AF37 50%, #F59E0B 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.sgc.job .tag{color:#D4AF37;}
-.sgc.job .title{background:linear-gradient(135deg, #FFF0B3 0%, #E7C75A 45%, #C9972E 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 8px rgba(212,175,55,0.25));}
-.sgc.job .kind{color:#D4AF37;}
-.sgc.job .name{color:#FFFFFF;border-color:#D4AF37;text-shadow:0 2px 12px rgba(212,175,55,0.25);}
-.sgc.job .c2{background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.35);color:#FBF6E9;}
-.sgc.job .ln{background:linear-gradient(90deg, transparent, #D4AF37 20%, #D4AF37 80%, transparent);}
-.sgc.job .sig .n{color:#FFF;}
-.sgc.job .sig .r{color:#D4AF37;}
-.sgc.job .ds{background:rgba(22,163,74,0.14);border:1px solid rgba(74,222,128,0.38);color:#BBF7D0;}
-.sgc.job .qr img{border:1.5px solid #D4AF37;}
-.sgc.job .corner-ornament path{fill:#D4AF37;}
+/* 1. Internship theme */
+.sgc.intern{background:radial-gradient(circle at 0 0,#e0e7ff,transparent 42%),radial-gradient(circle at 100% 100%,#ede9fe,transparent 42%),#fff;color:#0f172a;}
+.sgc.intern .band{position:absolute;left:0;top:0;bottom:0;width:22px;background:linear-gradient(180deg,#5B5BF6,#7C3AED);}
+.sgc.intern .frame{border:2px solid #a5b4fc;}
+.sgc.intern .frame2{border:1px dashed #c7d2fe;}
+.sgc.intern .org{color:#4338ca;}
+.sgc.intern .tag{color:#6366f1;}
+.sgc.intern .title{color:#4338ca;}
+.sgc.intern .kind{color:#6366f1;}
+.sgc.intern .name{border-color:#a5b4fc;color:#1e1b4b;}
+.sgc.intern .c2{background:#eef2ff;border:1px solid #c7d2fe;color:#312e81;}
+.sgc.intern .ln{background:#4338ca;}
+.sgc.intern .ds{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;}
 
-/* 2. Internship Theme */
-.sgc.intern{background:radial-gradient(circle at 0 0,#EEF2FF,transparent 45%),radial-gradient(circle at 100% 100%,#F5F3FF,transparent 45%),#FFFFFF;color:#0F172A;}
-.sgc.intern .band{position:absolute;left:0;top:0;bottom:0;width:18px;background:linear-gradient(180deg,#5B5BF6,#7C3AED);z-index:1;}
-.sgc.intern .outer-frame{border-color:#6366F1;}
-.sgc.intern .inner-frame{border-color:rgba(99,102,241,0.35);}
-.sgc.intern .micro-border{border-color:rgba(99,102,241,0.15);}
-.sgc.intern .corner-ornament path{fill:#6366F1;}
-.sgc.intern .org{color:#4338CA;}
-.sgc.intern .tag{color:#6366F1;}
-.sgc.intern .title{background:linear-gradient(135deg,#3730A3,#6366F1 50%,#7C3AED);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.sgc.intern .kind{color:#6366F1;}
-.sgc.intern .name{color:#1E1B4B;border-color:#6366F1;}
-.sgc.intern .c2{background:#EEF2FF;border:1px solid #C7D2FE;color:#312E81;}
-.sgc.intern .ln{background:linear-gradient(90deg, transparent, #6366F1 20%, #6366F1 80%, transparent);}
-.sgc.intern .sig .n{color:#1E1B4B;}
-.sgc.intern .sig .r{color:#4F46E5;}
-.sgc.intern .ds{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;}
-.sgc.intern .qr img{border:1.5px solid #6366F1;}
+/* 2. Achievement theme */
+.sgc.achievement{background:radial-gradient(circle at 50% 0,rgba(245,158,11,.16),transparent 45%),linear-gradient(135deg,#0c1328,#1b254b);color:#fdfaf3;}
+.sgc.achievement .frame{border:2px solid #f59e0b;}
+.sgc.achievement .frame2{border:1px dashed rgba(245,158,11,.45);}
+.sgc.achievement .org{color:#fbbf24;}
+.sgc.achievement .tag{color:#f59e0b;}
+.sgc.achievement .title{color:#fbbf24;}
+.sgc.achievement .kind{color:#f59e0b;}
+.sgc.achievement .name{border-color:#f59e0b;color:#fff;}
+.sgc.achievement .c2{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fef3c7;}
+.sgc.achievement .ln{background:#f59e0b;}
+.sgc.achievement .ds{background:rgba(22,163,74,.15);border:1px solid rgba(74,222,128,.4);color:#bbf7d0;}
+.sgc.achievement .qr img{border:2px solid #f59e0b;}
 
-/* 3. Achievement Theme */
-.sgc.achievement{background:radial-gradient(circle at 50% 15%, #1F190D 0%, #0C0F1A 70%, #070912 100%);color:#FFF8EA;}
-.sgc.achievement .outer-frame{border-color:#F59E0B;}
-.sgc.achievement .inner-frame{border-color:rgba(245,158,11,0.45);}
-.sgc.achievement .micro-border{border-color:rgba(245,158,11,0.2);}
-.sgc.achievement .corner-ornament path{fill:#F59E0B;}
-.sgc.achievement .org{background:linear-gradient(135deg, #FDE68A 0%, #F59E0B 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.sgc.achievement .tag{color:#F59E0B;}
-.sgc.achievement .title{background:linear-gradient(135deg,#FDE68A,#F59E0B 50%,#D97706);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.sgc.achievement .kind{color:#F59E0B;}
-.sgc.achievement .name{color:#FFFFFF;border-color:#F59E0B;}
-.sgc.achievement .c2{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#FEF3C7;}
-.sgc.achievement .ln{background:linear-gradient(90deg, transparent, #F59E0B 20%, #F59E0B 80%, transparent);}
-.sgc.achievement .sig .n{color:#FFF;}
-.sgc.achievement .sig .r{color:#F59E0B;}
-.sgc.achievement .ds{background:rgba(22,163,74,0.15);border:1px solid rgba(74,222,128,0.4);color:#BBF7D0;}
-.sgc.achievement .qr img{border:1.5px solid #F59E0B;}
+/* 3. Job / Experience theme (Navy & Gold) */
+.sgc.job{background:radial-gradient(circle at 100% 0,rgba(212,175,55,.16),transparent 40%),linear-gradient(135deg,#0b1226,#162447);color:#f6f1e1;}
+.sgc.job .frame{border:2px solid #d4af37;}
+.sgc.job .frame2{border:1px solid rgba(212,175,55,.4);}
+.sgc.job .org{color:#e7c75a;}
+.sgc.job .tag{color:#d4af37;}
+.sgc.job .title{color:#e7c75a;}
+.sgc.job .kind{color:#d4af37;}
+.sgc.job .name{border-color:#d4af37;color:#fff;}
+.sgc.job .c2{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.45);color:#f6f1e1;}
+.sgc.job .ln{background:#d4af37;}
+.sgc.job .ds{background:rgba(22,163,74,.14);border:1px solid rgba(74,222,128,.4);color:#bbf7d0;}
+.sgc.job .qr img{border:2px solid #d4af37;}
 </style>
 </head>
 <body>
@@ -279,32 +240,31 @@ async function fingerprint(c){
   } catch(e) { let x = 0; for (const ch of s) x = (x * 31 + ch.charCodeAt(0)) >>> 0; return x.toString(16).toUpperCase().padStart(8, '0'); }
 }
 
-/* Authentic Human Signature Generator for Ayush Kumar Gupta */
-function humanSignatureSvg(inkColor = '#E7C75A'){
-  return `<svg viewBox="0 0 240 50" xmlns="http://www.w3.org/2000/svg">
-    <g fill="none" stroke="${inkColor}" stroke-linecap="round" stroke-linejoin="round">
-      <!-- 'A' initial loop and fluid ascender -->
-      <path d="M 12 38 C 18 20, 24 10, 32 8 C 36 7, 39 12, 35 25 C 28 42, 22 46, 18 45 C 14 44, 18 34, 30 32 C 45 29, 58 35, 68 34" stroke-width="2.6" />
-      <!-- 'y' descender loop -->
-      <path d="M 68 34 C 74 33, 78 30, 81 33 C 83 36, 81 40, 78 45 C 74 51, 69 53, 67 48 C 65 42, 75 30, 88 28" stroke-width="2.3" />
-      <!-- 'u','s','h' connecting rhythmic strokes -->
-      <path d="M 88 28 C 96 26, 102 34, 108 30 C 114 26, 118 24, 124 29 C 127 31, 126 14, 131 10 C 134 7, 136 18, 137 28" stroke-width="2.2" />
-      <!-- 'K.' swift middle stroke -->
-      <path d="M 148 14 L 145 32 M 156 16 L 148 24 L 158 32 M 163 31 C 163 30, 164 30, 164 31" stroke-width="2.4" />
-      <!-- 'Gupta' prominent G loop and ending speed flourish -->
-      <path d="M 174 22 C 168 18, 164 26, 168 32 C 172 36, 180 34, 182 26 C 184 18, 181 44, 175 49 C 170 53, 168 47, 172 40 C 178 30, 194 28, 208 26 C 216 25, 226 23, 234 22" stroke-width="2.5" />
-      <!-- 't' bar crossing with realistic pen slant -->
-      <path d="M 206 20 L 220 18" stroke-width="2.0" />
+/* Exact handwritten signature matching user upload: "Ayush Kumar Gupta" */
+function exactHandwrittenSignatureSvg(color = '#E7C75A'){
+  return `<svg viewBox="0 0 260 55" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%;">
+    <g fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Ayush: A stem, loop, y with descender loop, u, s, h with tall ascender -->
+      <path d="M 6 42 L 20 10 L 29 42 M 10 30 Q 23 27 34 26" stroke-width="2.3"/>
+      <path d="M 34 26 Q 38 24 40 33 Q 42 41 38 48 Q 33 54 30 46 Q 30 38 38 29 Q 44 26 49 32" stroke-width="2.1"/>
+      <path d="M 49 32 Q 52 38 56 32 Q 59 26 62 31 Q 65 37 70 33" stroke-width="2.0"/>
+      <path d="M 70 33 Q 73 28 76 30 Q 77 35 73 37 Q 71 39 77 38" stroke-width="2.0"/>
+      <path d="M 77 38 L 81 12 L 81 40 Q 82 28 88 28 Q 94 28 94 38" stroke-width="2.2"/>
+      
+      <!-- Kumar: K stem and arms, u, m, a, r -->
+      <path d="M 104 12 L 104 40 M 115 16 L 105 28 L 118 40" stroke-width="2.2"/>
+      <path d="M 121 28 Q 123 38 127 38 Q 131 38 133 28" stroke-width="2.0"/>
+      <path d="M 133 28 L 134 38 Q 136 28 140 28 Q 144 28 145 38 Q 147 28 152 28 Q 155 28 156 38" stroke-width="2.0"/>
+      <path d="M 160 33 Q 158 28 163 28 Q 168 28 168 35 Q 168 38 164 38 Q 160 38 162 34 M 168 28 L 169 38" stroke-width="2.0"/>
+      <path d="M 172 28 L 173 38 M 173 30 Q 177 27 182 28" stroke-width="2.0"/>
+      
+      <!-- Gupta: G uppercase cursive with descender, u, p with down stem, t, a flourish -->
+      <path d="M 200 16 Q 192 14 188 22 Q 184 32 189 39 Q 195 44 200 36 L 200 48 Q 200 54 195 53 Q 191 51 194 45 Q 198 34 206 30" stroke-width="2.3"/>
+      <path d="M 206 30 Q 208 38 212 38 Q 216 38 218 30" stroke-width="2.0"/>
+      <path d="M 221 28 L 221 48 M 221 29 Q 228 27 228 34 Q 228 38 221 38" stroke-width="2.1"/>
+      <path d="M 233 14 L 233 38 M 228 23 L 238 23" stroke-width="2.1"/>
+      <path d="M 242 33 Q 239 28 244 28 Q 248 28 248 35 Q 248 38 244 38 Q 240 38 243 32 M 248 28 Q 251 34 256 31" stroke-width="2.0"/>
     </g>
-  </svg>`;
-}
-
-/* Luxury Guilloche Corner Ornament SVG */
-function cornerOrnamentSvg(){
-  return `<svg viewBox="0 0 50 50" class="corner-ornament">
-    <path d="M 4 4 L 44 4 C 44 14, 38 20, 28 22 C 24 24, 20 28, 22 38 C 20 44, 14 44, 4 44 L 4 4 Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.85"/>
-    <circle cx="12" cy="12" r="3" fill="currentColor"/>
-    <path d="M 8 8 L 36 8 M 8 16 L 26 16 M 8 24 L 18 24" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
   </svg>`;
 }
 
@@ -320,13 +280,13 @@ function certHtml(c, qr, fp){
   let bodyText = '';
   let chips = [];
   let themeClass = 'job';
-  let inkColor = '#E7C75A';
+  let sigColor = '#E7C75A';
 
   if (intern) {
     themeClass = 'intern';
     titleTop = 'CERTIFICATE';
     kindSub = 'OF INTERNSHIP';
-    inkColor = '#3730A3';
+    sigColor = '#3730A3';
     bodyText = `has successfully completed an <b>Internship</b> as <b>${role}</b> at <b>Study Grid Prep</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total duration of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this period, they showed dedication, ownership and a strong willingness to learn.'}`;
     chips = [
       ['INTERNSHIP ROLE', role],
@@ -337,7 +297,7 @@ function certHtml(c, qr, fp){
     themeClass = 'achievement';
     titleTop = 'CERTIFICATE';
     kindSub = 'OF ACHIEVEMENT';
-    inkColor = '#F59E0B';
+    sigColor = '#F59E0B';
     bodyText = `has been awarded this <b>Certificate of Achievement</b> at <b>Study Grid Prep</b> as <b>${role}</b> in recognition of outstanding performance and valuable contributions from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>.${c.note ? ' ' + esc(c.note) : ' We commend their excellence and wish them continued success in all future endeavors.'}`;
     chips = [
       ['DESIGNATION', role],
@@ -348,7 +308,7 @@ function certHtml(c, qr, fp){
     themeClass = 'job';
     titleTop = 'EXPERIENCE';
     kindSub = 'CERTIFICATE';
-    inkColor = '#E7C75A';
+    sigColor = '#E7C75A';
     bodyText = `has worked with <b>Study Grid Prep</b> as <b>${role}</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total experience of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this tenure, they contributed professionally and reliably to the team. We wish them every success ahead.'}`;
     chips = [
       ['DESIGNATION', role],
@@ -359,18 +319,12 @@ function certHtml(c, qr, fp){
 
   return `<div class="sgc ${themeClass}">
     ${intern ? '<div class="band"></div>' : ''}
-    <div class="outer-frame"></div>
-    <div class="inner-frame"></div>
-    <div class="micro-border"></div>
-    
-    <div class="corner-tl">${cornerOrnamentSvg()}</div>
-    <div class="corner-tr">${cornerOrnamentSvg()}</div>
-    <div class="corner-br">${cornerOrnamentSvg()}</div>
-    <div class="corner-bl">${cornerOrnamentSvg()}</div>
+    <div class="frame"></div>
+    <div class="frame2"></div>
 
     <div class="in">
       <div class="head">
-        <img src="/icon-192.png" alt="Study Grid Prep Logo">
+        <img src="/icon-192.png" alt="Study Grid Prep">
         <div>
           <div class="org">STUDY GRID PREP</div>
           <div class="tag">Smart Study Platform</div>
@@ -387,13 +341,13 @@ function certHtml(c, qr, fp){
 
       <div class="foot">
         <div class="qr">
-          <img src="${qr}" alt="Verification QR">
+          <img src="${qr}" alt="QR">
           <div class="t"><b>SCAN TO VERIFY</b>Certificate ID: ${certCode(c.id)}<br>Issued: ${fD(c.issuedMs || c.endMs)}</div>
         </div>
 
         <div class="sig">
-          <div class="sig-art">
-            ${humanSignatureSvg(inkColor)}
+          <div class="sig-box">
+            ${exactHandwrittenSignatureSvg(sigColor)}
           </div>
           <div class="ln"></div>
           <div class="n">${signatoryName}</div>
@@ -401,28 +355,17 @@ function certHtml(c, qr, fp){
           
           <div class="ds">
             <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z" fill="#16a34a"/><path d="m8.5 12 2.6 2.6L16 9.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div>
-              <div class="ds-title">Digitally Signed &amp; Certified</div>
-              <div class="ds-sub">Signatory: ${signatoryName} (Founder) · ${fDT(c.issuedMs || c.endMs)} · ${fp}</div>
-            </div>
+            <div><b>Digitally signed</b> by Study Grid Prep<br>Signatory: ${signatoryName} (Founder) · ${fDT(c.issuedMs || c.endMs)} · ${fp}</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Official Verified Seal -->
     <svg class="seal" viewBox="0 0 100 100">
-      <defs>
-        <linearGradient id="sealG_${themeClass}" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${intern ? '#6366f1' : (achievement ? '#fbbf24' : '#F6E27A')}"/>
-          <stop offset="50%" stop-color="${intern ? '#4f46e5' : (achievement ? '#d97706' : '#CB9B51')}"/>
-          <stop offset="100%" stop-color="${intern ? '#3730a3' : (achievement ? '#b45309' : '#8B6508')}"/>
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r="47" fill="url(#sealG_${themeClass})" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.35))"/>
-      <circle cx="50" cy="50" r="41" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-dasharray="3 2" stroke-width="1.2"/>
-      <path d="m50 22 6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.4L50 54.9l-13 6.9 2.5-14.4L29 37.3l14.5-2.1z" fill="#FFFFFF"/>
-      <text x="50" y="78" text-anchor="middle" font-size="7.5" font-family="'Cinzel',serif" font-weight="900" fill="#FFFFFF" letter-spacing="1.4">VERIFIED</text>
+      <circle cx="50" cy="50" r="47" fill="${intern ? '#6366f1' : (achievement ? '#f59e0b' : '#c99a22')}"/>
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#fff" stroke-opacity=".75" stroke-dasharray="2 3"/>
+      <path d="m50 24 6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.4L50 56.9l-13 6.9 2.5-14.4L29 39.3l14.5-2.1z" fill="#fff"/>
+      <text x="50" y="80" text-anchor="middle" font-size="7.5" font-weight="700" fill="#fff" letter-spacing="1.2">VERIFIED</text>
     </svg>
   </div>`;
 }
@@ -537,21 +480,21 @@ async function loadOwner(user){
 }
 window.pick = id => { S.cur = S.apps.find(a => a.id === id); renderOwner(); };
 
-/* ---- Edit Name Modal (Confirm once & permanently update) ---- */
+/* ---- One-Time Edit Name Modal ---- */
 window.openNameModal = function(){
   if (!S.c || !S.cur) return;
   const curName = S.c.name || S.user.displayName || '';
   $('lvOv').innerHTML = `<div class="sheet" style="max-width:440px;text-align:left;">
-    <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;"><i class="fa-solid fa-user-pen" style="color:var(--accent);margin-right:8px;"></i>Confirm / Edit Name</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Enter your full legal name as it should appear on your verified certificate. Once saved, it will be permanently stored on this certificate.</div>
+    <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;"><i class="fa-solid fa-user-pen" style="color:var(--accent);margin-right:8px;"></i>Confirm Legal Name (One-Time)</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Please enter your full legal name as it should appear on your official certificate. <b>Note:</b> You can only confirm this once.</div>
     <div style="margin-bottom:16px;">
-      <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:block;">Full Name</label>
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:block;">Full Name on Certificate</label>
       <input type="text" id="certNameInput" value="${esc(curName)}" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-size:14px;font-weight:700;outline:none;" placeholder="e.g. Ayush Kumar Gupta">
     </div>
-    <div style="font-size:11.5px;color:var(--text3);margin-bottom:18px;"><i class="fa-solid fa-circle-check" style="color:var(--green);"></i> This name will reflect across verification, PDF download, and image export.</div>
+    <div style="font-size:11.5px;color:var(--text3);margin-bottom:18px;"><i class="fa-solid fa-shield-check" style="color:var(--green);"></i> Once confirmed, this name is permanently saved to your verified certificate record.</div>
     <div style="display:flex;gap:10px;">
       <button class="btn" style="flex:1;" onclick="closeLv()">Cancel</button>
-      <button class="btn p" id="saveNameBtn" style="flex:1;" onclick="saveCertName()"><i class="fa-solid fa-floppy-disk"></i> Save &amp; Update</button>
+      <button class="btn p" id="saveNameBtn" style="flex:1;" onclick="saveCertName()"><i class="fa-solid fa-check"></i> Save &amp; Confirm</button>
     </div>
   </div>`;
   $('lvOv').classList.add('open');
@@ -565,18 +508,25 @@ window.saveCertName = async function(){
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving…'; }
   try {
     const ref = doc(db, 'hiringApplications', S.cur.id);
-    await updateDoc(ref, { certName: val, name: val, 'certOverride.name': val });
+    await updateDoc(ref, {
+      certName: val,
+      name: val,
+      nameConfirmed: true,
+      'certOverride.name': val,
+      'certOverride.nameConfirmed': true
+    });
     S.cur.certName = val;
     S.cur.name = val;
+    S.cur.nameConfirmed = true;
     if (S.c) S.c.name = val;
     await publish(S.c);
     closeLv();
-    toast('Name saved on certificate', 'success');
+    toast('Name confirmed and saved', 'success');
     renderOwner();
   } catch(e) {
     console.error(e);
     toast('Could not save name — please try again', 'error');
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save &amp; Update'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Save &amp; Confirm'; }
   }
 };
 
@@ -590,6 +540,9 @@ async function renderOwner(){
   const kindName = certTitle(c.kind);
   let html = head + `<div class="sub">${kindName} — auto-generated, digitally signed and verifiable with a QR code.</div>` + chips;
 
+  // Has the candidate already confirmed their name once?
+  const isNameConfirmed = S.cur.nameConfirmed === true || (S.cur.certOverride && S.cur.certOverride.nameConfirmed === true);
+
   if (c.state === 'revoked') {
     html += `<div class="card"><div class="ok-head"><div class="ok-ico red"><i class="fa-solid fa-ban"></i></div><div><div class="h3">Certificate not available</div><div class="p2">Your engagement with this role was ended by the team.</div></div></div></div>`;
   } else if (c.state === 'active') {
@@ -598,7 +551,10 @@ async function renderOwner(){
     html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-hourglass-half"></i></div><div><div class="h3">${intern ? 'Internship in progress' : 'You are currently working'}</div><div class="p2">${esc(c.roleTitle)} · Started ${fD(c.startMs)}</div></div></div>
       <div class="k">${intern ? 'Certificate unlocks in' : 'Working since'}</div><div class="cd" id="cd">—</div>
       ${intern ? '<div class="bar"><span id="cdBar" style="width:0%"></span></div><div class="p2" style="margin-top:8px">Full certificate for ' + c.plannedMonths + ' months is released automatically on completion.</div>' : ''}
-      <div class="acts"><button class="btn r" ${proj.eligible ? '' : 'disabled'} onclick="askLeave()"><i class="fa-solid fa-award"></i> ${proj.eligible ? 'Get certificate now' : 'Unlocks after 15 days'}</button></div>
+      <div class="acts">
+        <button class="btn r" ${proj.eligible ? '' : 'disabled'} onclick="askLeave()"><i class="fa-solid fa-award"></i> ${proj.eligible ? 'Get certificate now' : 'Unlocks after 15 days'}</button>
+        ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm Name</button>` : ''}
+      </div>
       <div class="p2" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> Downloading before completion means leaving this role. You will be asked to confirm.</div></div><div id="pv"></div>`;
     $('app').innerHTML = html;
     const pv = { ...c, endMs: Date.now(), months: proj.months, durationLabel: core.fmtMonths(proj.months, proj.days), issuedMs: Date.now() };
@@ -618,7 +574,7 @@ async function renderOwner(){
       <div class="acts">
         <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
         <button class="btn" onclick="dlPng(this)"><i class="fa-solid fa-image"></i> Image (PNG)</button>
-        <button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Edit / Confirm Name</button>
+        ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm / Edit Name</button>` : ''}
         <button class="btn" onclick="printCert(this)"><i class="fa-solid fa-print"></i> Print</button>
         <button class="btn g" onclick="shareCert(this)"><i class="fa-solid fa-share-nodes"></i> Share</button>
         <button class="btn li" onclick="linkedIn()"><i class="fa-brands fa-linkedin"></i> Add to LinkedIn</button>
