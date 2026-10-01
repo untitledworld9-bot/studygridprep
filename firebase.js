@@ -47,7 +47,14 @@ const app       = getApps().length ? getApps()[0] : initializeApp(_cfg);
 const db        = getFirestore(app);
 const auth      = getAuth(app);
 const provider  = new GoogleAuthProvider();
-const messaging = getMessaging(app);
+let messaging   = null;
+try {
+  if (typeof window !== 'undefined') {
+    messaging = getMessaging(app);
+  }
+} catch (e) {
+  // Gracefully handle environments where Firebase messaging is unsupported
+}
 
 export {
   db, auth, provider, messaging,
