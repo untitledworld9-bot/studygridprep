@@ -1671,10 +1671,39 @@ function buildEmail(kind, a, role, extra){
       kind === 'fired'
         ? `This is to formally inform you that your engagement as ${title} with Study Grid Prep has been brought to an end, effective immediately.`
         : `This is to inform you that you have been removed from the ${title} role at Study Grid Prep, effective immediately.`, '');
-    if (extra.note) L.push('Reason / note from the team', '---------------------------', extra.note, '');
     L.push('Please stop using any access or credentials that were shared with you for this role. Your access has been / will be revoked.', '',
       'If you have any questions or believe this was a mistake, you may reply to this email and our team will get back to you.', '',
       'Thank you for your time with Study Grid Prep.', '', sign);
+  } else if (kind === 'certificate') {
+    const c = extra.cert || (CERT && CERT.buildCert(a, role)) || {};
+    const certKindName = c.kind === 'INTERN' ? 'Certificate of Internship' : (c.kind === 'ACHIEVEMENT' ? 'Certificate of Achievement' : 'Experience Certificate');
+    const vUrl = (CERT && CERT.verifyUrl(a.id)) || `https://studygridprep.online/certificate.html?v=${encodeURIComponent(a.id)}`;
+    const f = ms => ms ? new Date(ms).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' }) : '—';
+    subject = `Official ${certKindName} — ${title} | Study Grid Prep 🎓`;
+    L.push(greet, '',
+      `We are pleased to issue your official ${certKindName} from Study Grid Prep for your engagement as ${c.roleTitle || title}.`, '',
+      'Certificate details',
+      '-------------------',
+      `Certificate Type : ${certKindName}`,
+      `Designation      : ${c.roleTitle || title}`,
+      `Duration         : ${c.durationLabel || 'Completed'}`,
+      `Tenure Period    : ${f(c.startMs)} to ${f(c.endMs)}`,
+      `Certificate ID   : ${(CERT && CERT.certCode(a.id)) || 'SGP-' + a.id}`,
+      `Issued Date      : ${f(c.issuedMs || c.endMs || Date.now())}`,
+      `Signatory        : Ayush Kumar Gupta (Founder, Study Grid Prep)`, '',
+      'Access & Verification',
+      '---------------------',
+      `1. Direct Certificate & Verification Link:`,
+      `   ${vUrl}`, '',
+      `2. Careers Dashboard (Download PDF / PNG / Share):`,
+      `   ${PORTAL_URL}`, '',
+      'How to view and download your credential:',
+      '  • Open the link above to view your digitally signed official certificate.',
+      '  • Tap "Download PDF" for high-quality printing.',
+      '  • Tap "Image (PNG)" for instant digital sharing.',
+      '  • Use "Add to LinkedIn" to link your credential directly to your professional profile.', '',
+      'We appreciate your dedication and valuable contributions to Study Grid Prep and wish you every success in your future endeavors.', '',
+      ['Warm regards,', 'Ayush Kumar Gupta', 'Founder, Study Grid Prep', 'team@studygridprep.online', 'https://studygridprep.online'].join('\n'));
   }
   return { subject, body: L.join('\n') };
 }
@@ -1892,7 +1921,8 @@ function renderCerts(){
         ${prog}
         <div class="cert-row">${tick('certIssuedAt', 'fa-eye', 'Opened')}${tick('certDownloadAt', 'fa-download', 'Downloaded')}${tick('certPrintAt', 'fa-print', 'Printed')}${tick('certShareAt', 'fa-share-nodes', 'Shared')}
           <span style="flex:1;"></span>
-          ${grp === 'issued' ? `<button class="btn btn-outline btn-sm" onclick="openCert('${a.id}')"><i class="fa-solid fa-up-right-from-square"></i> Open</button><button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}')"><i class="fa-regular fa-copy"></i> Link</button>` : ''}
+          ${grp === 'issued' || (a.certOverride && a.certOverride.forceIssue) ? `<button class="btn btn-outline btn-sm" onclick="openCert('${a.id}')"><i class="fa-solid fa-up-right-from-square"></i> Open</button><button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}')"><i class="fa-regular fa-copy"></i> Link</button>` : ''}
+          <button class="btn btn-outline btn-sm" onclick="emailCert('${a.id}')" title="Send official certificate email to candidate"><i class="fa-solid fa-envelope"></i> Email Cert</button>
           <button class="btn btn-outline btn-sm" onclick="openCertEdit('${a.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
           <button class="btn btn-green btn-sm" onclick="openGiveCert('${a.id}')"><i class="fa-solid fa-certificate"></i> Give Cert</button></div>
       </div></div>`;
@@ -1914,6 +1944,14 @@ async function syncCertDoc(appId){
 }
 window.openCert = async function(appId){ try { await syncCertDoc(appId); window.open(CERT.verifyUrl(appId), '_blank', 'noopener'); } catch (e) { console.error(e); toast('Could not open certificate', 'error'); } };
 window.copyCertLink = async function(appId){ try { await syncCertDoc(appId); await navigator.clipboard.writeText(CERT.verifyUrl(appId)); toast('Verification link copied', 'success'); } catch (e) { toast(CERT.verifyUrl(appId), 'info'); } };
+window.emailCert = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  try { await syncCertDoc(appId); } catch (e) { /* sync fallback */ }
+  const c = (CERT && CERT.buildCert(a, role)) || {};
+  const { subject, body } = buildEmail('certificate', a, role, { cert: c });
+  openMail(a.email, subject, body);
+};
 window.openCertEdit = function(appId){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
   const ov = a.certOverride || {}; const c = CERT.buildCert(a, state.roles.find(r => r.id === a.roleId));
@@ -1995,8 +2033,9 @@ window.saveGiveCert = async function(appId){
     await updateDoc(doc(db, 'hiringApplications', appId), { certOverride: ov });
     a.certOverride = ov;
     await syncCertDoc(appId);
-    toast('Certificate generated — candidate can now view it', 'success');
+    toast('Certificate generated — opening email', 'success');
     closeModal(); renderCerts();
+    emailCert(appId);
   } catch(e) { console.error(e); toast('Could not generate certificate', 'error'); }
 };
 
