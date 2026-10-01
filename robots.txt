@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://studygridprep.online/sitemap.xml
+
+Sitemap: https://studygridprep.online/sitemap-content.xml

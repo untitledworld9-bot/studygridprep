@@ -1,0 +1,10 @@
+/blog/*            /content-render.html   200
+/notes/*           /content-render.html   200
+/formula-sheet/*   /content-render.html   200
+/pyq/*             /content-render.html   200
+/mock/*            /content-render.html   200
+/news/*            /content-render.html   200
+/exam-update/*     /content-render.html   200
+/college/*         /content-render.html   200
+/career/*          /content-render.html   200
+/guide/*           /content-render.html   200

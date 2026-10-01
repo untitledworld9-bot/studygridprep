@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Login - Study Grid Prep</title>
+<link rel="icon" href="/icon-192.png">
+<meta name="description" content="Login to Study Grid Prep to access mock tests, AI analysis, focus tools and your personalized study dashboard.">
+<link rel="canonical" href="https://studygridprep.online/login.html">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- INSTANT LOGIN CHECK (First Layer) -->
+<script>
+(function(){
+  if(localStorage.getItem("userName")){
+    var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if(isPWA){ window.location.replace("mainwelcome.html"); }
+    else { window.location.replace("dashboard-home.html"); }
+  }
+})();
+</script>
+
+<!-- THEME DETECTION -->
+<script>
+(function(){
+  const saved = localStorage.getItem('theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  const theme =
+    (!saved || saved === "system")
+      ? (systemDark ? "dark" : "light")
+      : saved;
+
+  document.documentElement.setAttribute('data-theme', theme);
+
+  function _utc(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+    const m = document.createElement('meta');
+    m.name='theme-color';
+    m.content = isDark ? '#0D1120' : '#F0F2F8';
+    document.head.appendChild(m);
+  }
+
+  _utc();
+
+  window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      document.documentElement.setAttribute(
+        "data-theme",
+        e.matches ? "dark" : "light"
+      );
+    }
+  });
+
+  new MutationObserver(_utc).observe(document.documentElement,{
+    attributes:true,
+    attributeFilter:['data-theme']
+  });
+})();
+</script>
+
+<style>
+html{ visibility: hidden; }
+html[data-theme]{ visibility: visible; }
+
+/* ── DESIGN TOKENS — exact match dashboard-home ── */
+:root {
+  --bg:        #F0F2F8;
+  --surface:   #FFFFFF;
+  --surface2:  #F4F6FB;
+  --border:    #E2E8F2;
+  --text:      #0F172A;
+  --text2:     #5A6785;
+  --text3:     #94A3B8;
+  --accent:    #5B5BF6;
+  --accent2:   #7C3AED;
+  --green:     #10B981;
+  --orange:    #F97316;
+  --red:       #EF4444;
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.07);
+  --shadow:    0 4px 16px rgba(0,0,0,0.09);
+  --shadow-md: 0 8px 28px rgba(0,0,0,0.12);
+  --t:         0.2s ease;
+}
+[data-theme="dark"] {
+  --bg:        #0D1120;
+  --surface:   #151E32;
+  --surface2:  #1A2440;
+  --border:    rgba(255,255,255,0.08);
+  --text:      #E8F0FE;
+  --text2:     #8B9EC8;
+  --text3:     #3D5080;
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.35);
+  --shadow:    0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.55);
+}
+
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+html { background: var(--bg); }
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text);
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  padding: 24px 16px;
+  animation: pageIn 0.3s ease forwards;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LOGIN BOX ── */
+.login-box {
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+}
+
+/* ── LOGO ── */
+.logo-wrap {
+  margin-bottom: 28px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.logo {
+  width: 80px; height: 80px;
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+  animation: floatLogo 3.5s ease-in-out infinite;
+  border: 1px solid var(--border);
+}
+@keyframes floatLogo {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ── HEADLINE ── */
+.login-headline {
+  display: flex; flex-direction: column; gap: 4px;
+}
+h1 {
+  font-size: 22px; font-weight: 800;
+  color: var(--text); letter-spacing: -0.4px;
+  min-height: 32px; line-height: 1.25;
+}
+.sub {
+  font-size: 13px; font-weight: 600;
+  color: var(--accent); letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.desc {
+  font-size: 13.5px; color: var(--text2);
+  margin-top: 6px; line-height: 1.55; font-weight: 400;
+}
+
+/* ── LOGIN CARD ── */
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 24px 20px;
+  box-shadow: var(--shadow);
+  margin: 24px 0 16px;
+  position: relative; overflow: hidden;
+}
+[data-theme="light"] .login-card { background: #fff; box-shadow: var(--shadow); }
+[data-theme="dark"] .login-card  {
+  background: var(--surface);
+  border-color: rgba(91,91,246,0.15);
+}
+.login-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--green));
+}
+
+/* sign-in label */
+.signin-label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text3); margin-bottom: 14px;
+}
+
+/* ── GOOGLE BUTTON ── */
+.google-btn {
+  display: flex; align-items: center; justify-content: center; gap: 11px;
+  width: 100%; padding: 14px 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border: none; border-radius: 50px;
+  font-weight: 700; font-size: 14.5px;
+  cursor: pointer; transition: var(--t);
+  box-shadow: 0 6px 20px rgba(91,91,246,0.35);
+  letter-spacing: 0.2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.google-btn-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.google-btn-icon img {
+  width: 16px; height: 16px; display: block;
+}
+.google-btn:active { transform: scale(0.97); box-shadow: 0 3px 10px rgba(91,91,246,0.25); }
+.google-btn.loading { opacity: 0.72; pointer-events: none; cursor: not-allowed; }
+
+/* ── DIVIDER ── */
+.or-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 16px 0;
+  font-size: 11px; color: var(--text3); font-weight: 600;
+}
+.or-divider::before, .or-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* info note */
+.login-note {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 14px;
+  font-size: 11.5px; color: var(--text2); font-weight: 500;
+  text-align: left;
+}
+.login-note i { color: var(--green); font-size: 13px; flex-shrink: 0; }
+
+/* ── ERROR TOAST ── */
+.error-toast {
+  display: none;
+  margin-top: 14px; padding: 12px 16px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 12px;
+  color: var(--red); font-size: 12.5px; font-weight: 500;
+  text-align: center;
+  align-items: center; justify-content: center; gap: 7px;
+}
+.error-toast i { font-size: 13px; }
+
+/* ── FEATURES PILLS ── */
+.features-row {
+  display: flex; justify-content: center;
+  flex-wrap: wrap; gap: 7px;
+  margin-bottom: 20px;
+}
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  color: var(--text2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px; padding: 5px 12px;
+  transition: var(--t);
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .pill { background: #fff; }
+.pill i { font-size: 10px; }
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── FOOTER ── */
+.login-footer {
+  font-size: 11.5px; color: var(--text3); line-height: 1.6;
+}
+.login-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.login-footer a:hover { text-decoration: underline; }
+
+/* ── TYPING CURSOR ── */
+.cursor {
+  display: inline-block; color: var(--accent);
+  animation: blink 0.75s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── FLOATING THEME TOGGLE ── */
+.theme-toggle-btn {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.theme-toggle-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── APP LAUNCH SPLASH SCREEN (Native PWA Open Feel) ── */
+.app-splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.42s cubic-bezier(0.4, 0, 0.2, 1), transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: all;
+}
+.app-splash-overlay.fade-out {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+.app-splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: splashFadeIn 0.35s ease-out;
+}
+@keyframes splashFadeIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.app-splash-icon-wrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 20px;
+}
+.app-splash-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 34px;
+  background: radial-gradient(circle, rgba(91,91,246,0.45) 0%, rgba(124,58,237,0) 70%);
+  animation: splashGlowPulse 2.2s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+@keyframes splashGlowPulse {
+  0% { transform: scale(0.92); opacity: 0.45; }
+  100% { transform: scale(1.2); opacity: 0.85; }
+}
+.app-splash-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(91,91,246,0.36);
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+  animation: splashFloat 2.6s ease-in-out infinite alternate;
+}
+@keyframes splashFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+.app-splash-name {
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+.app-splash-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+.app-splash-loader {
+  width: 130px;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+}
+.app-splash-loader-bar {
+  position: absolute;
+  height: 100%;
+  width: 45%;
+  background: linear-gradient(90deg, #5B5BF6, #7C3AED, #10B981);
+  border-radius: 10px;
+  animation: splashProgress 1.25s infinite ease-in-out;
+}
+@keyframes splashProgress {
+  0% { left: -50%; width: 30%; }
+  50% { width: 55%; }
+  100% { left: 100%; width: 30%; }
+}
+.no-splash #appSplash, .no-splash .app-splash-overlay {
+  display: none !important;
+}
+</style>
+<script>
+if (sessionStorage.getItem('sgp_splash_shown')) {
+  document.documentElement.classList.add('no-splash');
+}
+</script>
+</head>
+<body>
+
+<!-- APP OPENING SPLASH SCREEN (Native PWA Launch Feel) -->
+<div id="appSplash" class="app-splash-overlay">
+  <div class="app-splash-content">
+    <div class="app-splash-icon-wrap">
+      <div class="app-splash-glow"></div>
+      <img src="/icon-192.png" alt="Study Grid Prep" class="app-splash-logo">
+    </div>
+    <div class="app-splash-name">Study Grid Prep</div>
+    <div class="app-splash-tag">Smart Study Platform</div>
+    <div class="app-splash-loader">
+      <div class="app-splash-loader-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING THEME TOGGLE -->
+<button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">
+  <i class="fa-solid fa-moon" id="themeIcon"></i>
+</button>
+
+<div class="login-box">
+
+  <!-- Logo + Brand -->
+  <div class="logo-wrap">
+    <img src="/icon-512.png" class="logo" alt="Study Grid Prep">
+    <div class="login-headline">
+      <h1><span id="typing"></span><span class="cursor">|</span></h1>
+      <div class="sub">Smart Study Platform</div>
+      <p class="desc">Study Smarter. Score Better.</p>
+    </div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-card">
+    <div class="signin-label">Sign in to continue</div>
+
+    <button class="google-btn" id="loginBtn" onclick="login()">
+      <span class="google-btn-icon">
+        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+      </span>
+      Continue with Google
+    </button>
+
+    <div style="margin-top:10px;text-align:center;">
+      <button type="button" onclick="window.loginGuest()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:4px 8px;border-radius:6px;transition:0.2s;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
+        <i class="fa-solid fa-flask" style="font-size:11px;margin-right:4px;"></i>Continue as Preview / Tester Account
+      </button>
+    </div>
+
+    <div class="or-divider">Secure Login</div>
+
+    <div class="login-note">
+      <i class="fa-solid fa-shield-halved"></i>
+      Your data is safe. We use Google Sign-In — no password needed.
+    </div>
+
+    <div class="error-toast" id="errorToast" style="display:none;flex-direction:column;align-items:center;text-align:center;gap:6px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="errorMsg">Login failed. Please try again.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Pills -->
+  <div class="features-row">
+    <span class="pill">
+      <i class="fa-solid fa-file-pen" style="color:var(--accent2);"></i> Mock Tests
+    </span>
+    <span class="pill">
+      <i class="fa-solid fa-stopwatch" style="color:var(--green);"></i> Focus Timer
+    </span>
+    <span class="pill">
+      <i class="fa-brands fa-youtube" style="color:#EF4444;"></i> YT Playlist
+    </span>
+    <span class="pill">
+      <i class="fa-solid fa-list-check" style="color:var(--accent);"></i> Todo List
+    </span>
+    <span class="pill">
+      <i class="fa-solid fa-trophy" style="color:var(--orange);"></i> Leaderboard
+    </span>
+    <span class="pill">
+      <i class="fa-solid fa-robot" style="color:var(--green);"></i> AI Analysis
+    </span>
+  </div>
+
+  <!-- Footer -->
+  <p class="login-footer">
+    By continuing you agree to our
+    <a href="terms.html">Terms</a> &amp;
+    <a href="privacy.html">Privacy Policy</a>
+  </p>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider,
+  signInWithPopup, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+  authDomain: "untitled-world-2e645.firebaseapp.com",
+  projectId: "untitled-world-2e645",
+  storageBucket: "untitled-world-2e645.firebasestorage.app",
+  messagingSenderId: "990115586087",
+  appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
+};
+
+const app      = initializeApp(firebaseConfig);
+const auth     = getAuth(app);
+const db       = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// Auth state listener — ONLY handles the case where user is already logged in
+// on page load (e.g. came back after closing app but session persisted)
+// Does NOT run if signInWithPopup already handled login (flag prevents double call)
+let _loginHandledByPopup = false;
+
+onAuthStateChanged(auth, async (user) => {
+  if (_loginHandledByPopup) return; // popup already handled it — skip
+  if (user && !localStorage.getItem("userName")) {
+    // Session persisted but localStorage was cleared (e.g. different device/logout bug)
+    console.log("[Auth] Restoring session from Firebase...");
+    const btn = document.getElementById("loginBtn");
+    if (btn) { btn.classList.add("loading"); btn.innerHTML = `Syncing account…`; }
+    await handleUser(user);
+  }
+});
+
+function getTodayDate(){
+  const d = new Date();
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+
+// ── Shared: save user to Firestore + localStorage then redirect ──
+async function handleUser(user){
+  const name  = user.displayName || user.email;
+  const email = user.email;
+  const uid   = user.uid;
+
+  localStorage.setItem("userName",  name);
+  localStorage.setItem("userEmail", email);
+  localStorage.setItem("userUID",   uid);
+  localStorage.setItem("uwUid",     uid);
+
+  const userRef  = doc(db, "users", uid);
+  const existing = await getDoc(userRef);
+
+  if(!existing.exists()){
+    // ✅ Naya user — fresh doc, default values
+    await setDoc(userRef, {
+      uid,
+      name,
+      email,
+      focusTime:      0,
+      weeklyXP:       0,
+      xp:             0,
+      streak:         0,
+      status:         "Online",
+      room:           "global",
+      lastActive:     Date.now(),
+      lastActiveDate: getTodayDate()
+    });
+  } else {
+    // ✅ Existing user — SIRF identity + presence update, baaki data untouched
+    await updateDoc(userRef, {
+      name,
+      email,
+      uid,
+      status:         "Online",
+      lastActive:     Date.now(),
+      lastActiveDate: getTodayDate()
+    });
+  }
+
+  document.body.style.opacity    = "0";
+  document.body.style.transition = "opacity 0.2s ease";
+  setTimeout(() => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    window.location.href = isPWA ? "mainwelcome.html" : "dashboard-home.html";
+  }, 200);
+}
+
+// ── Login button click ──
+const btn      = document.getElementById("loginBtn");
+const toast    = document.getElementById("errorToast");
+const errorMsg = document.getElementById("errorMsg");
+
+function resetBtn(){
+  btn.classList.remove("loading");
+  btn.innerHTML = `
+    <span class="google-btn-icon">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+    </span>
+    Continue with Google`;
+}
+
+window.login = async function(){
+  btn.classList.add("loading");
+  btn.innerHTML = `
+    <span class="google-btn-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+    </span>
+    Signing in…`;
+  toast.style.display = "none";
+
+  try {
+    _loginHandledByPopup = true; // Prevent onAuthStateChanged from also calling handleUser
+    const result = await signInWithPopup(auth, provider);
+    await handleUser(result.user);
+  } catch(err) {
+    _loginHandledByPopup = false; // Reset on failure
+    
+    // Smart error handling to let user know exactly what went wrong
+    if (err.code === 'auth/unauthorized-domain') {
+      console.warn("Firebase Auth Notice: Current domain (" + window.location.hostname + ") is not yet added in Firebase Console Authorized Domains.");
+      errorMsg.innerHTML = `Domain <code>${window.location.hostname}</code> is not in Firebase Authorized Domains.<br><button type="button" onclick="window.loginGuest()" style="margin-top:8px;padding:7px 16px;background:linear-gradient(135deg,#5B5BF6,#7C3AED);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">Continue as Preview User</button>`;
+    } else if (err.code === 'auth/popup-closed-by-user') {
+      errorMsg.innerText = "Popup closed. Please complete the login.";
+    } else if (err.code === 'auth/cancelled-popup-request') {
+      return; // Agar user ne do baar jaldi click kar diya toh ignore maaro
+    } else if (err.code === 'auth/network-request-failed') {
+      errorMsg.innerText = "Network error. Please check your internet.";
+    } else {
+      console.error("Login error:", err);
+      errorMsg.innerText = "Login failed. Please try again.";
+    }
+    
+    toast.style.display = "flex";
+    resetBtn();
+  }
+};
+
+window.loginGuest = async function(name = "Ayush Gupta", email = "ayushgupt640@gmail.com") {
+  const uid = "preview_" + Date.now();
+  await handleUser({ displayName: name, email: email, uid: uid });
+};
+
+// Typing animation
+const text = "Welcome to Study Grid Prep";
+let i = 0;
+function typeText(){
+  if(i < text.length){
+    document.getElementById("typing").textContent += text.charAt(i);
+    i++;
+    setTimeout(typeText, 65);
+  }
+}
+typeText();
+
+// Theme toggle handler
+function updateThemeIcon() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  }
+}
+updateThemeIcon();
+
+window.toggleTheme = function() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', next);
+  document.documentElement.setAttribute('data-theme', next);
+  updateThemeIcon();
+};
+
+// Opening Splash Screen Dismissal (Native PWA Feel — once per session)
+(function() {
+  const splash = document.getElementById('appSplash');
+  if (splash) {
+    if (sessionStorage.getItem('sgp_splash_shown')) {
+      splash.style.display = 'none';
+      splash.remove();
+      return;
+    }
+    const minWait = 650;
+    setTimeout(() => {
+      splash.classList.add('fade-out');
+      sessionStorage.setItem('sgp_splash_shown', 'true');
+      setTimeout(() => {
+        splash.style.display = 'none';
+        splash.remove();
+      }, 420);
+    }, minWait);
+  }
+})();
+</script>
+
+</body>
+</html>
+

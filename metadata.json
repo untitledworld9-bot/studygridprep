@@ -1,0 +1,8 @@
+{
+  "name": "Study Grid Prep",
+  "description": "Smart study platform for JEE, NEET, CUET and board preparation with mock tests, focus tools and study planner.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

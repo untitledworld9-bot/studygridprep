@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.studygridprep.app",
+        "sha256_cert_fingerprints": ["39:4F:3B:8F:AA:1A:25:EE:85:3A:06:63:24:4A:C3:AD:11:A1:49:27:4F:B1:9D:34:6C:14:E9:18:79:E3:74:79"]
+      }
+    }]

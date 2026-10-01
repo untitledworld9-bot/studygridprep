@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hiring Admin – Study Grid Prep</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D1120" id="metaThemeColor">
+<link rel="icon" href="/icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>html{visibility:hidden;} html[data-theme]{visibility:visible;}</style>
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("hiring-admin-theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  document.documentElement.setAttribute("data-theme", resolveTheme());
+})();
+</script>
+
+<style>
+:root{
+  --bg:#F0F2F8; --panel:#FFFFFF; --card:#FFFFFF; --card-hover:#F4F6FB; --input:#F4F6FB; --border:#E2E8F2;
+  --text:#0F172A; --text2:#5A6785; --text3:#94A3B8;
+  --accent:#5B5BF6; --accent2:#7C3AED;
+  --red:#EF4444; --green:#16A34A; --amber:#F59E0B;
+  --shadow:0 4px 16px rgba(15,23,42,0.06); --shadow-md:0 8px 32px rgba(15,23,42,0.10);
+  --radius:14px; --radius-lg:18px; --sidebar-w:250px;
+  --t:0.18s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"]{
+  --bg:#0D1120; --panel:#141C30; --card:#151E32; --card-hover:#1A2440; --input:#1A2440; --border:rgba(255,255,255,0.08);
+  --text:#E8F0FE; --text2:#8B9EC8; --text3:#4A5C88;
+  --shadow:0 4px 16px rgba(0,0,0,0.4); --shadow-md:0 8px 32px rgba(0,0,0,0.55);
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+html{ background:var(--bg); } body{ background:var(--bg); color:var(--text); min-height:100vh; min-height:100dvh; display:flex; overflow:hidden;
+  padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+html, body{ transition:background-color .2s ease, color .2s ease; }
+::-webkit-scrollbar{ width:5px; height:5px; } ::-webkit-scrollbar-thumb{ background:rgba(120,130,170,0.25); border-radius:4px; }
+
+/* ── AUTH GATE ── */
+#authGate{ position:fixed; inset:0; z-index:9999; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-box{ width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:44px 34px; text-align:center; box-shadow:var(--shadow-md); }
+.auth-mark{ width:52px; height:52px; border-radius:15px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; margin:0 auto 16px; overflow:hidden; }
+.auth-mark img{ width:100%; height:100%; object-fit:cover; }
+.auth-google-btn img{ width:18px; height:18px; }
+#authLoading .logo-spin-wrap{ position:relative; width:64px; height:64px; display:flex; align-items:center; justify-content:center; }
+#authLoading .logo-spin-ring{ position:absolute; inset:0; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin .8s linear infinite; }
+#authLoading .logo-spin-mark{ width:34px; height:34px; border-radius:10px; overflow:hidden; }
+#authLoading .logo-spin-mark img{ width:100%; height:100%; object-fit:cover; }
+.auth-title{ font-size:18px; font-weight:800; margin-bottom:2px; }
+.auth-sub{ font-size:12px; color:var(--text3); letter-spacing:.05em; text-transform:uppercase; margin-bottom:30px; }
+.auth-google-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:13px; background:var(--input); border:1.5px solid var(--border); border-radius:12px; color:var(--text); font-size:14px; font-weight:700; cursor:pointer; transition:var(--t); }
+.auth-google-btn:hover{ border-color:var(--accent); }
+.auth-google-btn:disabled{ opacity:.5; cursor:not-allowed; }
+.auth-error{ color:var(--red); font-size:12px; margin-top:14px; min-height:16px; }
+#authLoading{ display:none; position:fixed; inset:0; z-index:9999; background:var(--bg); align-items:center; justify-content:center; flex-direction:column; gap:14px; }
+.spinner{ width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ── SIDEBAR ── */
+.mobile-topbar{ display:none; }
+.sidebar{ width:var(--sidebar-w); background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; height:100vh; height:100dvh; }
+.sidebar-header{ padding:22px 18px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.sidebar-mark{ width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; flex-shrink:0; overflow:hidden; }
+.sidebar-mark img{ width:100%; height:100%; object-fit:cover; }
+.sidebar-title{ font-size:14px; font-weight:800; line-height:1.2; }
+.sidebar-sub{ font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; }
+.sidebar-nav{ flex:1; padding:14px 10px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
+.nav-section-label{ font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; font-weight:700; padding:14px 10px 6px; }
+.nav-btn{ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:10px; background:none; border:none; color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; transition:var(--t); width:100%; text-align:left; }
+.nav-btn:hover{ background:var(--card-hover); color:var(--text); }
+.nav-btn.active{ background:rgba(91,91,246,0.1); color:var(--accent); }
+.nav-btn i{ width:18px; text-align:center; font-size:14px; }
+.nav-badge{ margin-left:auto; background:var(--red); color:#fff; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:99px; }
+.sidebar-footer{ padding:12px 10px; border-top:1px solid var(--border); }
+.theme-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 10px; margin-bottom:4px; }
+.theme-label{ font-size:12px; color:var(--text2); font-weight:600; display:flex; align-items:center; gap:8px; }
+.theme-switch{ position:relative; width:38px; height:22px; background:var(--input); border:1px solid var(--border); border-radius:99px; cursor:pointer; }
+.theme-knob{ position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--accent); transition:var(--t); }
+[data-theme="light"] .theme-knob{ transform:translateX(16px); }
+.admin-profile{ display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:var(--input); }
+.admin-avatar{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+.admin-name{ font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.admin-email{ font-size:10px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.logout-btn{ margin-left:auto; background:none; border:none; color:var(--text3); cursor:pointer; font-size:15px; }
+.logout-btn:hover{ color:var(--red); }
+.sidebar-backdrop{ display:none; }
+
+/* ── MAIN ── */
+.main{ flex:1; overflow-y:auto; padding:26px 30px; height:100vh; height:100dvh; -webkit-overflow-scrolling:touch; }
+.section{ display:none; } .section.active{ display:block; animation:fadeUp .3s ease both; }
+@keyframes fadeUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+.section-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+.section-title{ font-size:22px; font-weight:800; } .section-sub{ font-size:12.5px; color:var(--text2); margin-top:3px; }
+
+.cards-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:24px; }
+.stat-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); }
+.stat-icon{ width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:12px; background:rgba(91,91,246,0.1); color:var(--accent); }
+.stat-card.green .stat-icon{ background:rgba(22,163,74,0.1); color:var(--green); }
+.stat-card.amber .stat-icon{ background:rgba(245,158,11,0.1); color:var(--amber); }
+.stat-card.red .stat-icon{ background:rgba(239,68,68,0.1); color:var(--red); }
+.stat-label{ font-size:10.5px; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+.stat-value{ font-size:26px; font-weight:800; margin-top:5px; }
+
+.form-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px; margin-bottom:18px; box-shadow:var(--shadow); }
+.form-panel-title{ font-size:14.5px; font-weight:800; margin-bottom:16px; display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.pill{ font-size:9.5px; padding:3px 9px; border-radius:99px; background:rgba(91,91,246,0.1); color:var(--accent); font-weight:700; }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+.form-row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:14px; }
+.form-group{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.form-label{ font-size:10.5px; color:var(--text2); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.form-input, .form-select, .form-textarea{ background:var(--input); border:1.5px solid var(--border); border-radius:10px; padding:11px 13px; color:var(--text); font-size:13px; outline:none; transition:var(--t); width:100%; }
+.form-input:focus, .form-select:focus, .form-textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,91,246,0.08); }
+.form-select{ cursor:pointer; } .form-textarea{ resize:vertical; min-height:80px; }
+.form-hint{ font-size:11px; color:var(--text3); }
+
+.btn{ display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:10px; border:none; font-size:12.5px; font-weight:700; cursor:pointer; transition:var(--t); }
+.btn-primary{ background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+.btn-primary:hover{ opacity:.9; transform:translateY(-1px); }
+.btn-outline{ background:transparent; color:var(--text2); border:1.5px solid var(--border); }
+.btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
+.btn-danger{ background:rgba(239,68,68,0.1); color:var(--red); }
+.btn-danger:hover{ background:var(--red); color:#fff; }
+.btn-solid-green{ background:var(--green); color:#fff; }
+.btn-solid-green:hover{ opacity:.9; transform:translateY(-1px); }
+.next-step-card{ background:var(--input); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+.next-step-card-row{ display:flex; gap:10px; align-items:flex-start; padding:6px 0; font-size:12.5px; }
+.next-step-card-row i{ width:18px; color:var(--accent); margin-top:2px; }
+.next-step-card-label{ font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); font-weight:700; margin-bottom:2px; }
+.btn-green{ background:rgba(22,163,74,0.1); color:var(--green); }
+.btn-green:hover{ background:var(--green); color:#fff; }
+.btn-sm{ padding:7px 13px; font-size:11.5px; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; transform:none !important; }
+
+#toastContainer{ position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:9px; z-index:10000; }
+.toast{ background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; padding:13px 16px; display:flex; align-items:center; gap:10px; min-width:260px; box-shadow:var(--shadow-md); animation:toastIn .25s ease both; font-size:12.5px; font-weight:600; }
+.toast.removing{ animation:toastOut .25s ease both; }
+.toast.success{ border-left-color:var(--green); } .toast.error{ border-left-color:var(--red); } .toast.warning{ border-left-color:var(--amber); }
+@keyframes toastIn{ from{ opacity:0; transform:translateX(24px); } to{ opacity:1; transform:translateX(0); } }
+@keyframes toastOut{ to{ opacity:0; transform:translateX(24px); } }
+
+.modal-overlay{ position:fixed; inset:0; background:rgba(10,14,26,0.6); backdrop-filter:blur(3px); z-index:9500; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; padding:16px; }
+.modal-overlay.open{ opacity:1; pointer-events:all; }
+.modal-box{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:26px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow-md); }
+.modal-title{ font-size:17px; font-weight:800; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+.modal-close{ background:var(--input); border:none; color:var(--text2); font-size:14px; cursor:pointer; width:30px; height:30px; border-radius:50%; }
+.modal-footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+
+.tx-row{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border:1px solid var(--border); border-radius:12px; margin-bottom:9px; background:var(--card); gap:12px; flex-wrap:wrap; }
+.tx-row-info{ min-width:0; flex:1 1 200px; }
+.tx-row-title{ font-weight:700; font-size:13.5px; margin-bottom:2px; }
+.tx-row-sub{ font-size:11.5px; color:var(--text2); }
+.tx-row-actions{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.empty-state{ text-align:center; padding:50px 20px; color:var(--text2); }
+.empty-state i{ font-size:34px; color:var(--text3); display:block; margin-bottom:12px; }
+
+.badge{ display:inline-flex; align-items:center; font-size:10px; font-weight:700; padding:3px 10px; border-radius:99px; }
+.badge-gray{ background:var(--input); color:var(--text2); }
+.badge-green{ background:rgba(22,163,74,0.1); color:var(--green); }
+.badge-red{ background:rgba(239,68,68,0.1); color:var(--red); }
+.badge-amber{ background:rgba(245,158,11,0.1); color:var(--amber); }
+.badge-accent{ background:rgba(91,91,246,0.1); color:var(--accent); }
+
+.q-card{ background:var(--input); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+.q-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.q-index{ font-size:11px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.06em; }
+.q-remove{ background:none; border:none; color:var(--red); cursor:pointer; font-size:14px; }
+.opt-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.opt-row input[type="radio"]{ accent-color:var(--accent); width:16px; height:16px; flex-shrink:0; }
+
+.ai-box{ background:var(--input); border:1px dashed var(--border); border-radius:12px; padding:16px; margin-bottom:18px; }
+.ai-log{ min-height:40px; max-height:150px; overflow-y:auto; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:11.5px; color:var(--text2); margin-top:10px; }
+.ai-line{ padding:2px 0; } .ai-line.done{ color:var(--green); font-weight:600; } .ai-line.err{ color:var(--red); }
+
+.select-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+
+@media (max-width:1024px){
+  .sidebar{ position:fixed; z-index:8000; transform:translateX(-100%); width:250px; transition:transform .25s; }
+  .sidebar.mobile-open{ transform:translateX(0); }
+  .sidebar-backdrop{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:7999; }
+  .sidebar-backdrop.open{ display:block; }
+  .mobile-topbar{ display:flex; align-items:center; gap:12px; padding:13px 16px; background:var(--panel); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:500; }
+  .mobile-menu-btn{ width:36px; height:36px; border-radius:10px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:15px; cursor:pointer; }
+  body{ flex-direction:column; overflow:auto; }
+  .main{ height:auto; padding:18px 14px; }
+  .form-row, .form-row-3{ grid-template-columns:1fr; }
+}
+@media (min-width:1025px){ .sidebar-backdrop, .mobile-topbar{ display:none !important; } }
+
+/* ===== Hired section + offer/end modals ===== */
+.hired-card{ border:1px solid var(--border); background:var(--card); border-radius:14px; padding:16px; margin-bottom:12px; border-left:4px solid var(--accent); transition:all .2s; }
+.hired-card:hover{ box-shadow:var(--shadow); transform:translateY(-1px); }
+.hired-card.st-accepted{ border-left-color:var(--green); }
+.hired-card.st-selected{ border-left-color:var(--amber); }
+.hired-card.ended{ border-color:rgba(239,68,68,.45); border-left-color:var(--red); background:rgba(239,68,68,.05); }
+.hired-card.left{ border-left-color:var(--text3); opacity:.88; }
+.hired-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+.hired-name{ font-size:15px; font-weight:800; }
+.hired-role{ font-size:12px; color:var(--text2); margin-top:2px; }
+.hired-contact{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.hired-contact a{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:6px 10px; border-radius:99px; background:var(--input); color:var(--text); text-decoration:none; border:1px solid var(--border); }
+.hired-contact a:hover{ border-color:var(--accent); color:var(--accent); }
+.hired-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px 14px; margin-bottom:12px; }
+.hired-cell .k{ font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--text3); }
+.hired-cell .v{ font-size:12.5px; font-weight:600; margin-top:1px; word-break:break-word; }
+.hired-note{ font-size:12px; padding:9px 11px; border-radius:10px; background:rgba(239,68,68,.08); color:var(--red); margin-bottom:12px; }
+.hired-actions{ display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; border-top:1px dashed var(--border); align-items:center; }
+.role-filled{ display:inline-flex; gap:5px; align-items:center; }
+
+.emp-tag{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:99px; font-size:11px; font-weight:800; background:rgba(91,91,246,0.12); color:var(--accent); }
+.work-timer{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:99px; font-size:11px; font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums;
+  background:rgba(22,163,74,0.14); color:#16A34A; border:1px solid rgba(22,163,74,0.35); transition:background .3s,color .3s,border-color .3s; }
+.work-timer.urgent{ background:rgba(239,68,68,0.14); color:#EF4444; border-color:rgba(239,68,68,0.4); animation:urgentBlink 1.4s ease-in-out infinite; }
+@keyframes urgentBlink{ 0%,100%{ box-shadow:0 0 0 0 rgba(239,68,68,0); } 50%{ box-shadow:0 0 0 5px rgba(239,68,68,0.16); } }
+.emp-progress{ height:6px; border-radius:99px; background:rgba(22,163,74,0.16); overflow:hidden; margin-top:10px; }
+.emp-progress span{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#16A34A,#22C55E); transition:width .6s; }
+.emp-progress.urgent{ background:rgba(239,68,68,0.16); } .emp-progress.urgent span{ background:linear-gradient(90deg,#DC2626,#F87171); }
+
+.hired-side{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.hired-dur{ font-size:11px; font-weight:700; color:var(--text2); }
+.btn-upgrade{ border:1px solid rgba(22,163,74,.45); color:var(--green); background:rgba(22,163,74,.08); }
+.btn-upgrade:hover{ background:var(--green); color:#fff; }
+
+/* ===== v2: leave alert, Certification ===== */
+.nav-sub{ padding-left:34px !important; font-size:12px !important; }
+.leave-alert{ display:flex; gap:10px; align-items:center; padding:10px 12px; margin:0 0 10px; border-radius:12px; cursor:pointer; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.5); color:var(--red); animation:laPulse 1.5s infinite; }
+.leave-alert b{ display:block; font-size:12px; font-weight:800; } .leave-alert span{ font-size:10.5px; opacity:.9; }
+@keyframes laPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(239,68,68,.45); } 50%{ box-shadow:0 0 0 6px rgba(239,68,68,0); } }
+.form-select.alert{ border-color:var(--red) !important; color:var(--red); font-weight:700; animation:laPulse 1.5s infinite; }
+.hired-card.left{ opacity:1; }
+.left-ack{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:12px; padding:9px 11px; border-radius:10px; background:rgba(239,68,68,.08); color:var(--red); margin-bottom:12px; }
+.cert-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
+.cert-card{ display:flex; gap:14px; background:var(--card); border:1px solid var(--border); border-left:4px solid var(--amber); border-radius:14px; padding:14px; margin-bottom:10px; transition:.2s; }
+.cert-card:hover{ box-shadow:var(--shadow); transform:translateY(-1px); }
+.cert-card.issued{ border-left-color:var(--green); background:linear-gradient(90deg,rgba(22,163,74,.05),transparent 40%),var(--card); }
+.cert-card.na{ border-left-color:var(--red); opacity:.85; }
+.cert-mini{ width:92px; min-height:66px; border-radius:10px; padding:8px; flex-shrink:0; color:#fff; display:flex; flex-direction:column; justify-content:space-between; font-size:9px; font-weight:700; line-height:1.25; }
+.cert-mini i{ font-size:16px; } .cert-mini.INTERN{ background:linear-gradient(135deg,#5B5BF6,#7C3AED); } .cert-mini.JOB{ background:linear-gradient(135deg,#0b1226,#9a7b1f); }
+.cert-main{ flex:1; min-width:0; }
+.cert-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+.cc{ font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px; background:var(--input); color:var(--text3); display:inline-flex; gap:5px; align-items:center; }
+.cc.on{ background:rgba(22,163,74,.12); color:var(--green); }
+.seg{ display:inline-flex; background:var(--input); border-radius:11px; padding:3px; gap:2px; }
+.seg button{ border:0; background:none; padding:7px 13px; border-radius:9px; font-size:12px; font-weight:700; color:var(--text2); cursor:pointer; }
+.seg button.on{ background:var(--card); color:var(--accent); box-shadow:var(--shadow); }
+@media(max-width:600px){ .cert-mini{ display:none; } }
+</style>
+</head>
+<body>
+
+<div id="authGate" style="display:none;">
+  <div class="auth-box">
+    <div class="auth-mark"><img src="/icon-192.png" alt="Study Grid Prep"></div>
+    <div class="auth-title">Hiring Admin</div>
+    <div class="auth-sub">Study Grid Prep</div>
+    <button class="auth-google-btn" onclick="signInHiringAdmin()"><svg viewBox="0 0 24 24" style="width:18px;height:18px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+<div id="authLoading" style="display:flex;"><div class="logo-spin-wrap"><div class="logo-spin-ring"></div><div class="logo-spin-mark"><img src="/icon-192.png" alt=""></div></div><div style="font-size:12.5px;color:var(--text3);">Checking access…</div></div>
+
+<div class="mobile-topbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+  <div style="font-weight:800;font-size:14px;">Hiring Admin</div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-mark"><img src="/icon-192.png" alt="Study Grid Prep"></div>
+    <div><div class="sidebar-title">Hiring Admin</div><div class="sidebar-sub">Study Grid Prep</div></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div id="leaveAlertHost"></div>
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-btn active" data-section="dashboard" onclick="goSection('dashboard')"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
+
+    <div class="nav-section-label">Hiring</div>
+    <button class="nav-btn" data-section="roles" onclick="goSection('roles')"><i class="fa-solid fa-briefcase"></i><span>Test Manager</span></button>
+    <button class="nav-btn" data-section="applicants" onclick="goSection('applicants')"><i class="fa-solid fa-file-lines"></i><span>Applicants</span></button>
+    <button class="nav-btn" data-section="results" onclick="goSection('results')"><i class="fa-solid fa-square-poll-vertical"></i><span>Results</span><span class="nav-badge" id="resultsBadge" style="display:none;">0</span></button>
+
+    <div class="nav-section-label">People</div>
+    <button class="nav-btn" data-section="candidates" onclick="goSection('candidates')"><i class="fa-solid fa-users"></i><span>Registered Users</span></button>
+    <button class="nav-btn" data-section="hired" onclick="goSection('hired')"><i class="fa-solid fa-user-check"></i><span>Hired</span><span class="nav-badge" id="hiredBadge" style="display:none;">0</span></button>
+    <button class="nav-btn" data-section="certs" onclick="goCert('all')"><i class="fa-solid fa-award"></i><span>Certification</span></button>
+    <button class="nav-btn nav-sub" data-sub="INTERN" onclick="goCert('INTERN')"><i class="fa-solid fa-graduation-cap"></i><span>Internship</span></button>
+    <button class="nav-btn nav-sub" data-sub="JOB" onclick="goCert('JOB')"><i class="fa-solid fa-briefcase"></i><span>Job / Experience</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="theme-row">
+      <span class="theme-label"><i class="fa-solid fa-moon"></i> Theme</span>
+      <div class="theme-switch" onclick="toggleTheme()"><div class="theme-knob"></div></div>
+    </div>
+    <div class="admin-profile">
+      <div class="admin-avatar" id="adminAvatar">?</div>
+      <div style="flex:1;min-width:0;">
+        <div class="admin-name" id="adminName">—</div>
+        <div class="admin-email" id="adminEmail">—</div>
+      </div>
+      <button class="logout-btn" onclick="hiringAdminLogout()" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section class="section active" id="section-dashboard">
+    <div class="section-header">
+      <div><div class="section-title">Dashboard</div><div class="section-sub">Hiring portal at a glance</div></div>
+    </div>
+    <div class="cards-grid">
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-briefcase"></i></div><div class="stat-label">Open Roles</div><div class="stat-value" id="statOpenRoles">0</div></div>
+      <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-file-lines"></i></div><div class="stat-label">Total Applicants</div><div class="stat-value" id="statApplicants">0</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-clock"></i></div><div class="stat-label">Tests Pending Review</div><div class="stat-value" id="statPending">0</div></div>
+      <div class="stat-card green"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><div class="stat-label">Qualified</div><div class="stat-value" id="statQualified">0</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div class="stat-label">Registered Users</div><div class="stat-value" id="statCandidates">0</div></div>
+    </div>
+    <div class="form-panel">
+      <div class="form-panel-title"><i class="fa-solid fa-list-check"></i> Recent Applications</div>
+      <div id="dashRecentList"><div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div></div>
+    </div>
+  </section>
+
+  <!-- ROLES / TEST MANAGER -->
+  <section class="section" id="section-roles">
+    <div class="section-header">
+      <div><div class="section-title">Test Manager</div><div class="section-sub">Create roles, set eligibility criteria, build the qualifying test</div></div>
+      <button class="btn btn-primary" onclick="openRoleModal()"><i class="fa-solid fa-plus"></i> New Role</button>
+    </div>
+    <div id="rolesList"><div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div></div>
+  </section>
+
+  <!-- APPLICANTS -->
+  <section class="section" id="section-applicants">
+    <div class="section-header">
+      <div><div class="section-title">Applicants</div><div class="section-sub">Everyone who applied, per role</div></div>
+    </div>
+    <div class="select-row">
+      <select class="form-select" id="applicantsRoleFilter" style="max-width:280px;" onchange="renderApplicants()"><option value="all">All Roles</option></select>
+      <select class="form-select" id="applicantsStatusFilter" style="max-width:200px;" onchange="renderApplicants()">
+        <option value="all">All Status</option>
+        <option value="applied">Eligible / Applied</option>
+        <option value="not_eligible">Not Eligible</option>
+        <option value="test_completed">Test Completed</option>
+        <option value="qualified">Qualified</option>
+        <option value="not_qualified">Not Qualified</option>
+        <option value="final_selected">✅ Selected (final)</option>
+        <option value="final_not_selected">❌ Not Selected (final)</option>
+        <option value="final_pending">⏳ Qualified — decision pending</option>
+      </select>
+      <input class="form-input" id="applicantsSearch" style="max-width:220px;" placeholder="Search name / email" oninput="renderApplicants()">
+      <input class="form-input" id="applicantsSkillFilter" style="max-width:220px;" placeholder="Filter by skill (optional)" oninput="renderApplicants()">
+    </div>
+    <div id="applicantsCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div id="applicantsList"><div class="empty-state"><i class="fa-solid fa-file-lines"></i>No applicants yet.</div></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="section" id="section-results">
+    <div class="section-header">
+      <div><div class="section-title">Results</div><div class="section-sub">Auto-scored test submissions — review, qualify, and email the outcome</div></div>
+    </div>
+    <div class="select-row">
+      <select class="form-select" id="resultsRoleFilter" style="max-width:320px;" onchange="renderResults()"><option value="all">All Roles</option></select>
+      <select class="form-select" id="resultsStatusFilter" style="max-width:220px;" onchange="renderResults()">
+        <option value="all">All (Pending + Decided)</option>
+        <option value="test_completed">Pending review</option>
+        <option value="qualified">Qualified</option>
+        <option value="not_qualified">Not Qualified</option>
+      </select>
+    </div>
+    <div id="resultsCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div id="resultsList"><div class="empty-state"><i class="fa-solid fa-square-poll-vertical"></i>No completed tests yet.</div></div>
+  </section>
+
+  <!-- CANDIDATES -->
+  <section class="section" id="section-candidates">
+    <div class="section-header">
+      <div><div class="section-title">Registered Users</div><div class="section-sub">Everyone who has signed up on the hiring portal</div></div>
+    </div>
+    <div class="form-panel" style="padding:14px 16px;margin-bottom:14px;">
+      <div class="select-row">
+        <input class="form-input" id="candidatesSearch" style="flex:1;" placeholder="Search by name, email or phone…" oninput="renderCandidates()">
+        <select class="form-select" id="candidatesRoleFilter" style="max-width:260px;" onchange="renderCandidates()"><option value="all">All Roles (optional)</option></select>
+      </div>
+    </div>
+    <div id="candidatesCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div id="candidatesList"><div class="empty-state"><i class="fa-solid fa-users"></i>No registered users yet.</div></div>
+  </section>
+
+  <!-- HIRED -->
+  <section class="section" id="section-hired">
+    <div class="section-header">
+      <div><div class="section-title">Hired</div><div class="section-sub">Everyone selected — offers, acceptance, and fire / delete actions. Fired or deleted people stay here (shown last).</div></div>
+    </div>
+    <div class="form-panel" style="padding:14px 16px;margin-bottom:14px;">
+      <div class="select-row" style="margin-bottom:0;">
+        <input class="form-input" id="hiredSearch" style="flex:1;min-width:180px;" placeholder="Search by name, email or phone…" oninput="renderHired()">
+        <select class="form-select" id="hiredRoleFilter" style="max-width:260px;" onchange="renderHired()"><option value="all">All Roles (incl. closed)</option></select>
+        <select class="form-select" id="hiredStatusFilter" style="max-width:210px;" onchange="renderHired()">
+          <option value="active">Active (hired / offered)</option>
+          <option value="all">All</option>
+          <option value="accepted">Offer accepted</option>
+          <option value="offered">Offer sent</option>
+          <option value="selected">Selected — offer pending</option>
+          <option value="ending">⏳ Internship ending ≤ 10 days</option>
+          <option value="completed">🎓 Completed</option>
+          <option value="fired">Fired</option>
+          <option value="deleted">Deleted / Left</option>
+        </select>
+      </div>
+    </div>
+    <div id="hiredCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div id="hiredList"><div class="empty-state"><i class="fa-solid fa-user-check"></i>No one hired yet.</div></div>
+  </section>
+
+  <!-- CERTIFICATION -->
+  <section class="section" id="section-certs">
+    <div class="section-header">
+      <div><div class="section-title">Certification</div><div class="section-sub">Internship &amp; experience certificates are generated automatically. Verified by QR, digitally signed.</div></div>
+    </div>
+    <div class="cert-stats" id="certStats"></div>
+    <div class="form-panel" style="padding:14px 16px;margin-bottom:14px;">
+      <div class="select-row" style="margin-bottom:0;">
+        <input class="form-input" id="certSearch" style="flex:1;min-width:180px;" placeholder="Search by name, email, role or certificate ID…">
+        <div class="seg" id="certSeg"><button data-t="all" class="on">All</button><button data-t="INTERN">Internship</button><button data-t="JOB">Job</button></div>
+        <select class="form-select" id="certStatusFilter" style="max-width:190px;"><option value="all">All status</option><option value="issued">Ready (green)</option><option value="ongoing">Ongoing</option><option value="na">Not issued</option></select>
+        <select class="form-select" id="certRoleFilter" style="max-width:230px;"><option value="all">All Roles</option></select>
+      </div>
+    </div>
+    <div id="certCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div id="certList"></div>
+  </section>
+
+</main>
+
+<div id="toastContainer"></div>
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<script type="module">
+/* ================================================================
+   FIREBASE + ACTIVITY LOG LOAD (fallback paths, same pattern as
+   hiring-portal.html, so this file can sit at root or /admin/)
+================================================================ */
+async function loadFirebase(){
+  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
+  for (const src of candidates) { try { return await import(src); } catch(e){} }
+  throw new Error('firebase.js not found');
+}
+async function loadActivityLog(){
+  const candidates = ['./activity-log.js','../activity-log.js','/activity-log.js'];
+  for (const src of candidates) { try { return await import(src); } catch(e){} }
+  return { sgpLogActivity: () => {} };
+}
+
+let fb, alog;
+try {
+  fb = await loadFirebase();
+  alog = await loadActivityLog();
+} catch (e) {
+  console.error('Hiring admin init error:', e);
+  document.getElementById('authGate').innerHTML =
+    `<div class="auth-box"><div style="color:var(--red);"><i class="fa-solid fa-triangle-exclamation" style="font-size:22px;display:block;margin-bottom:10px;"></i>Couldn't connect. Please refresh the page.</div></div>`;
+  throw e;
+}
+const {
+  db, auth, provider: googleProvider, signInWithPopup, onAuthStateChanged, signOut,
+  collection, query, where, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, serverTimestamp, orderBy
+} = fb;
+const sgpLogActivity = alog.sgpLogActivity || (() => {});
+let CERT = null;
+for (const src of ['./cert-core.js','../cert-core.js','/cert-core.js']) { try { CERT = await import(src); break; } catch(e){} }
+if (!CERT) console.error('cert-core.js not found — Certification disabled');
+
+const $ = (id) => document.getElementById(id);
+let CURRENT_USER = null;
+
+const state = {
+  roles: [],
+  applications: [],
+  candidates: [],
+  editingRoleId: null,
+  criteriaDraft: [],
+  questionsDraft: [],
+};
+
+/* ================================================================
+   AUTH
+================================================================ */
+const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
+
+window.signInHiringAdmin = async function(){
+  $('authError').textContent = '';
+  const btn = document.querySelector('.auth-google-btn');
+  btn.disabled = true;
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    await checkHiringAdminAccess(result.user);
+  } catch (e) {
+    $('authError').textContent = 'Sign-in failed. Try again.';
+    btn.disabled = false;
+  }
+};
+
+async function checkHiringAdminAccess(user){
+  $('authGate').style.display = 'none';
+  $('authLoading').style.display = 'flex';
+  try {
+    const email = user.email;
+    let hasAccess = ADMIN_EMAILS.includes(email);
+    if (!hasAccess) {
+      const snap = await getDoc(doc(db, 'subAdmins', email));
+      if (snap.exists()) {
+        const r = snap.data().role;
+        hasAccess = (r === 'hiring-admin' || r === 'both' || r === 'sub-admin' || !r);
+      }
+    }
+    if (!hasAccess) {
+      await signOut(auth);
+      $('authLoading').style.display = 'none';
+      $('authGate').style.display = 'flex';
+      $('authError').textContent = "This Google account doesn't have Hiring Admin access.";
+      document.querySelector('.auth-google-btn').disabled = false;
+      return;
+    }
+    CURRENT_USER = user;
+    $('adminName').textContent = user.displayName || email.split('@')[0];
+    $('adminEmail').textContent = email;
+    $('adminAvatar').textContent = (user.displayName || email)[0].toUpperCase();
+    $('authLoading').style.display = 'none';
+    window.IS_SUB_ADMIN = true;
+    sgpLogActivity('login', 'Signed in to Hiring Admin');
+    bootData();
+  } catch (e) {
+    console.error(e);
+    $('authLoading').style.display = 'none';
+    $('authGate').style.display = 'flex';
+    $('authError').textContent = 'Something went wrong checking access.';
+  }
+}
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    checkHiringAdminAccess(user);
+  } else {
+    // No session — stop showing the loading spinner and reveal the
+    // sign-in card instead of leaving it stuck on "Checking access…".
+    $('authLoading').style.display = 'none';
+    $('authGate').style.display = 'flex';
+  }
+});
+window.hiringAdminLogout = async function(){
+  sgpLogActivity('logout', 'Signed out of Hiring Admin');
+  await signOut(auth);
+  location.reload();
+};
+
+/* ================================================================
+   NAV / THEME / TOAST / MODAL
+================================================================ */
+window.goSection = function(name){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  $('section-' + name).classList.add('active');
+  document.querySelector(`.nav-btn[data-section="${name}"]`).classList.add('active');
+  if (window.innerWidth <= 1024) toggleSidebar(false);
+};
+window.toggleSidebar = function(force){
+  const open = typeof force === 'boolean' ? force : !$('sidebar').classList.contains('mobile-open');
+  $('sidebar').classList.toggle('mobile-open', open);
+  $('sidebarBackdrop').classList.toggle('open', open);
+};
+window.toggleTheme = function(){
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('hiring-admin-theme', next);
+};
+
+function toast(msg, type = 'info'){
+  const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info', warning:'fa-triangle-exclamation' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${esc(msg)}</span>`;
+  $('toastContainer').appendChild(el);
+  setTimeout(() => { el.classList.add('removing'); setTimeout(() => el.remove(), 250); }, 3000);
+}
+window.toast = toast;
+window.closeModal = function(){ $('modalOverlay').classList.remove('open'); setTimeout(() => $('modalOverlay').innerHTML = '', 200); };
+function openModal(html){ $('modalOverlay').innerHTML = html; $('modalOverlay').classList.add('open'); }
+// Tapping the dimmed backdrop (outside the modal box) also closes it.
+$('modalOverlay').addEventListener('click', (e) => { if (e.target.id === 'modalOverlay') closeModal(); });
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function fmtDate(v){
+  if (!v) return 'Not set';
+  const d = v?.toDate ? v.toDate() : new Date(v);
+  if (isNaN(d.getTime())) return 'Not set';
+  return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function toInputDate(v){
+  if (!v) return '';
+  const d = v?.toDate ? v.toDate() : new Date(v);
+  if (isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ================================================================
+   DATA LOADING
+================================================================ */
+function bootData(){
+  onSnapshot(query(collection(db, 'hiringRoles'), orderBy('createdAt', 'desc')), snap => {
+    state.roles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderRoles(); renderDashboard(); populateRoleFilters(); renderApplicants(); renderResults(); renderHired();
+    adminAutoDeclareDueResults();
+  }, e => console.error('roles snapshot error', e));
+
+  onSnapshot(collection(db, 'hiringApplications'), snap => {
+    state.applications = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDashboard(); renderApplicants(); renderResults(); renderRoles(); renderHired();
+    adminAutoDeclareDueResults();
+  }, e => console.error('applications snapshot error', e));
+
+  onSnapshot(collection(db, 'hiringCandidates'), snap => {
+    state.candidates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort client-side (not via Firestore orderBy) — orderBy silently drops
+    // any doc missing the createdAt field entirely, which hid legitimately
+    // registered users that predate this field. Missing dates sort last.
+    state.candidates.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    renderDashboard(); renderCandidates();
+  }, e => console.error('candidates snapshot error', e));
+}
+
+function populateRoleFilters(){
+  const opts = '<option value="all">All Roles</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join('');
+  const optsCand = '<option value="all">All Roles (optional)</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join('');
+  const a = $('applicantsRoleFilter'), r = $('resultsRoleFilter'), c = $('candidatesRoleFilter');
+  const aVal = a.value, rVal = r.value, cVal = c ? c.value : 'all';
+  a.innerHTML = opts; r.innerHTML = opts;
+  if ([...a.options].some(o => o.value === aVal)) a.value = aVal;
+  if ([...r.options].some(o => o.value === rVal)) r.value = rVal;
+  if (c) {
+    c.innerHTML = optsCand;
+    if ([...c.options].some(o => o.value === cVal)) c.value = cVal;
+  }
+  const h = $('hiredRoleFilter');
+  if (h) {
+    const hVal = h.value;
+    h.innerHTML = '<option value="all">All Roles (incl. closed)</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}${isRoleClosed(r) ? ' (closed)' : ''}</option>`).join('');
+    if ([...h.options].some(o => o.value === hVal)) h.value = hVal;
+  }
+}
+
+/* ================================================================
+   DASHBOARD
+================================================================ */
+function renderDashboard(){
+  const openRoles = state.roles.filter(r => r.status === 'open').length;
+  const totalApplicants = state.applications.length;
+  const pending = state.applications.filter(a => a.status === 'test_completed').length;
+  const qualified = state.applications.filter(a => a.status === 'qualified').length;
+  $('statOpenRoles').textContent = openRoles;
+  $('statApplicants').textContent = totalApplicants;
+  $('statPending').textContent = pending;
+  $('statQualified').textContent = qualified;
+  $('statCandidates').textContent = state.candidates.length;
+  $('resultsBadge').style.display = pending > 0 ? 'inline-block' : 'none';
+  $('resultsBadge').textContent = pending;
+
+  const recent = [...state.applications].sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0)).slice(0,8);
+  $('dashRecentList').innerHTML = recent.length ? recent.map(a => {
+    const role = state.roles.find(r => r.id === a.roleId);
+    return `<div class="tx-row"><div class="tx-row-info"><div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div><div class="tx-row-sub">${esc(a.email)} · Applied ${fmtDate(a.appliedAt)}</div></div>${statusBadge(a.status)}</div>`;
+  }).join('') : '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div>';
+}
+
+function statusBadge(status){
+  const map = {
+    not_eligible: ['badge-red','Not Eligible'],
+    applied: ['badge-accent','Applied'],
+    test_completed: ['badge-amber','Test Completed'],
+    qualified: ['badge-green','Qualified'],
+    not_qualified: ['badge-red','Not Qualified'],
+  };
+  const [cls, label] = map[status] || ['badge-gray', status || 'Unknown'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+/* ================================================================
+   ROLES / TEST MANAGER
+================================================================ */
+// Mirrors the candidate-side check: a role can be admin-marked "open" but
+// past its own listed registration deadline. Kept in sync with careers.html
+// / hiring-portal.html so the admin list never shows "Open" for a role
+// candidates can no longer see as open.
+function isRoleExpired(role){
+  if (!role || !role.validThrough) return false;
+  const d = new Date(role.validThrough);
+  return !isNaN(d.getTime()) && Date.now() > d.getTime();
+}
+function isRoleClosed(role){
+  if (!role) return false;
+  return role.status !== 'open' || isRoleExpired(role);
+}
+
+function renderRoles(){
+  const host = $('rolesList');
+  if (!state.roles.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div>'; return; }
+  host.innerHTML = state.roles.map(r => {
+    const appCount = state.applications.filter(a => a.roleId === r.id).length;
+    const expired = r.status === 'open' && isRoleExpired(r);
+    const closed = isRoleClosed(r);
+    const vac = r.vacancy || 1;
+    const hiredNow = activeHiredCount(r.id);
+    const filled = hiredNow >= vac;
+    return `<div class="tx-row">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(r.title)} <span style="color:var(--text3);font-weight:500;font-size:11.5px;">· ${esc(r.department||'—')}</span></div>
+        <div class="tx-row-sub">${(r.questions||[]).length} question(s) · ${vac} vacancy · <strong style="color:${filled ? 'var(--green)' : 'var(--text2)'};">${hiredNow} of ${vac} hired</strong> · ${appCount} applicant(s) · Result on ${fmtDate(r.resultRevealAt)}${r.validThrough ? ` · Registration ${expired ? 'closed' : 'until'} ${new Date(r.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}` : ''}</div>
+      </div>
+      <div class="tx-row-actions">
+        ${filled ? '<span class="badge badge-green role-filled"><i class="fa-solid fa-circle-check"></i>All positions filled</span>' : ''}
+        ${!closed ? '<span class="badge badge-green">Open</span>' : `<span class="badge badge-gray" ${expired ? 'title="Deadline passed — status still says open in DB"' : ''}>Closed${expired ? ' (expired)' : ''}</span>`}
+        <button class="btn btn-outline btn-sm" onclick="openRoleModal('${r.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-outline btn-sm" onclick="openQuestionsModal('${r.id}')"><i class="fa-solid fa-list-check"></i> Questions</button>
+        <button class="btn ${!closed?'btn-outline':'btn-green'} btn-sm" onclick="toggleRoleStatus('${r.id}')">${!closed?'Close':'Reopen'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRole('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleRoleStatus = async function(id){
+  const role = state.roles.find(r => r.id === id); if (!role) return;
+  const closed = isRoleClosed(role);
+  if (!closed) {
+    // Simple manual close — no date involved.
+    try { await updateDoc(doc(db, 'hiringRoles', id), { status: 'closed' }); toast('Role closed', 'success'); }
+    catch(e){ console.error(e); toast('Could not update status', 'error'); }
+    return;
+  }
+  // Reopening always needs a fresh registration deadline — just flipping
+  // status back to "open" does nothing if the old validThrough date is
+  // still in the past, so send the admin to the edit form to set a new one.
+  toast('Set a new registration deadline to reopen this role', 'warning');
+  openRoleModal(id);
+};
+window.deleteRole = async function(id){
+  if (!confirm('Delete this role permanently? Applications tied to it will remain but lose their role reference.')) return;
+  try { await deleteDoc(doc(db, 'hiringRoles', id)); toast('Role deleted', 'success'); }
+  catch(e){ console.error(e); toast('Could not delete role', 'error'); }
+};
+
+window.openRoleModal = function(id){
+  const role = id ? state.roles.find(r => r.id === id) : null;
+  state.editingRoleId = id || null;
+  state.criteriaDraft = role ? JSON.parse(JSON.stringify(role.criteria || [])) : [];
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-title">${role ? 'Edit Role' : 'New Role'} <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Role Title</label><input class="form-input" id="rfTitle" value="${esc(role?.title||'')}" placeholder="e.g. Content Writer"></div>
+        <div class="form-group"><label class="form-label">Department</label><input class="form-input" id="rfDept" value="${esc(role?.department||'')}" placeholder="e.g. Content Team"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="rfDesc" placeholder="What is this role about?">${esc(role?.description||'')}</textarea></div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Vacancy</label><input class="form-input" type="number" id="rfVacancy" value="${role?.vacancy ?? 1}" min="0"></div>
+        <div class="form-group"><label class="form-label">Test Duration (min)</label><input class="form-input" type="number" id="rfDuration" value="${role?.testDurationMinutes ?? 20}" min="1"></div>
+        <div class="form-group"><label class="form-label">Pass %</label><input class="form-input" type="number" id="rfPass" value="${role?.passPercentage ?? 60}" min="0" max="100"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Card Hover Timing (ms)</label><input class="form-input" type="number" id="rfHover" value="${role?.hoverDurationMs ?? 200}" min="0"></div>
+        <div class="form-group"><label class="form-label">Result Reveal Date &amp; Time</label><input class="form-input" type="datetime-local" id="rfReveal" value="${toInputDate(role?.resultRevealAt)}"></div>
+      </div>
+      <div class="form-panel-title" style="margin-top:6px;">Job Listing Info <span class="pill">powers Google Jobs search results</span></div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Employment Type</label>
+          <select class="form-select" id="rfEmpType">
+            <option value="FULL_TIME" ${(role?.employmentType||'FULL_TIME')==='FULL_TIME'?'selected':''}>Full-time</option>
+            <option value="PART_TIME" ${role?.employmentType==='PART_TIME'?'selected':''}>Part-time</option>
+            <option value="INTERN" ${role?.employmentType==='INTERN'?'selected':''}>Internship</option>
+            <option value="CONTRACTOR" ${role?.employmentType==='CONTRACTOR'?'selected':''}>Contract / Freelance</option>
+            <option value="VOLUNTEER" ${role?.employmentType==='VOLUNTEER'?'selected':''}>Volunteer</option>
+            <option value="OTHER" ${role?.employmentType==='OTHER'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="rfLocation" value="${esc(role?.location||'')}" placeholder="e.g. Delhi (leave blank if remote)"></div>
+        <div class="form-group"><label class="form-label">Listing Valid Through</label><input class="form-input" type="date" id="rfValidThrough" value="${role?.validThrough ? role.validThrough.substring(0,10) : ''}"></div>
+      </div>
+      ${role && isRoleClosed(role) ? `
+      <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;background:rgba(245,158,11,0.08);padding:10px 12px;border-radius:10px;">
+        <input type="checkbox" id="rfReopen" style="width:16px;height:16px;">
+        <label for="rfReopen" style="font-size:12.5px;font-weight:600;color:var(--text2);cursor:pointer;">Reopen this role on save (set a new registration deadline above first)</label>
+      </div>` : ''}
+      <div class="form-panel-title" style="margin-top:6px;">Eligibility Criteria <span class="pill">shown on the role card + apply form</span></div>
+      <div id="criteriaList"></div>
+      <button class="btn btn-outline btn-sm" onclick="addCriteriaRow()"><i class="fa-solid fa-plus"></i> Add Criteria</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRole()"><i class="fa-solid fa-floppy-disk"></i> Save Role</button>
+      </div>
+    </div>
+  `);
+  renderCriteriaList();
+};
+
+function renderCriteriaList(){
+  const host = $('criteriaList'); if (!host) return;
+  if (!state.criteriaDraft.length) { host.innerHTML = '<div class="form-hint" style="margin-bottom:14px;">No criteria added — this role will be open to everyone who applies.</div>'; return; }
+  host.innerHTML = state.criteriaDraft.map((c, i) => `
+    <div class="q-card">
+      <div class="q-card-head"><span class="q-index">Criteria ${i+1}</span><button class="q-remove" onclick="removeCriteriaRow(${i})"><i class="fa-solid fa-trash"></i></button></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Field key</label><input class="form-input" value="${esc(c.field||'')}" oninput="updateCriteria(${i},'field',this.value)" placeholder="e.g. cgpa"></div>
+        <div class="form-group"><label class="form-label">Label (shown to applicant)</label><input class="form-input" value="${esc(c.label||'')}" oninput="updateCriteria(${i},'label',this.value)" placeholder="e.g. Minimum CGPA"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-select" onchange="updateCriteria(${i},'type',this.value)">
+            <option value="text" ${c.type==='text'?'selected':''}>Text</option>
+            <option value="number" ${c.type==='number'?'selected':''}>Number</option>
+            <option value="select" ${c.type==='select'?'selected':''}>Dropdown</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Operator (number only)</label>
+          <select class="form-select" onchange="updateCriteria(${i},'operator',this.value)">
+            <option value=">=" ${c.operator==='>='?'selected':''}>&ge; at least</option>
+            <option value="<=" ${c.operator==='<='?'selected':''}>&le; at most</option>
+            <option value="==" ${c.operator==='=='?'selected':''}>= exactly</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Required value</label><input class="form-input" value="${esc(c.value||'')}" oninput="updateCriteria(${i},'value',this.value)" placeholder="e.g. 7"></div>
+      </div>
+      ${c.type === 'select' ? `<div class="form-group"><label class="form-label">Dropdown options (comma separated)</label><input class="form-input" value="${esc((c.options||[]).join(', '))}" oninput="updateCriteria(${i},'options',this.value.split(',').map(s=>s.trim()).filter(Boolean))"></div>` : ''}
+    </div>
+  `).join('');
+}
+window.addCriteriaRow = function(){ state.criteriaDraft.push({ field:'', label:'', type:'text', operator:'>=', value:'', options:[] }); renderCriteriaList(); };
+window.removeCriteriaRow = function(i){ state.criteriaDraft.splice(i,1); renderCriteriaList(); };
+window.updateCriteria = function(i, key, val){ state.criteriaDraft[i][key] = val; };
+
+window.saveRole = async function(){
+  const title = $('rfTitle').value.trim();
+  if (!title) return toast('Role title is required', 'warning');
+  const revealVal = $('rfReveal').value;
+  const validThroughVal = $('rfValidThrough').value;
+  const payload = {
+    title,
+    department: $('rfDept').value.trim(),
+    description: $('rfDesc').value.trim(),
+    vacancy: parseInt($('rfVacancy').value) || 0,
+    testDurationMinutes: parseInt($('rfDuration').value) || 20,
+    passPercentage: parseInt($('rfPass').value) || 60,
+    hoverDurationMs: parseInt($('rfHover').value) || 200,
+    resultRevealAt: revealVal ? new Date(revealVal) : null,
+    criteria: state.criteriaDraft.filter(c => c.field && c.label),
+    employmentType: $('rfEmpType').value,
+    location: $('rfLocation').value.trim(),
+    validThrough: validThroughVal ? new Date(validThroughVal + 'T23:59:59').toISOString() : '',
+  };
+  const reopenBox = $('rfReopen');
+  if (reopenBox && reopenBox.checked) {
+    if (!validThroughVal || new Date(validThroughVal + 'T23:59:59').getTime() <= Date.now()) {
+      return toast('Pick a future registration deadline before reopening', 'warning');
+    }
+    payload.status = 'open';
+  }
+  try {
+    if (state.editingRoleId) {
+      await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), payload);
+      toast(payload.status === 'open' ? 'Role updated and reopened' : 'Role updated', 'success');
+    } else {
+      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', questions:[], createdAt: serverTimestamp(), datePosted: serverTimestamp() });
+      toast('Role created', 'success');
+    }
+    closeModal();
+  } catch (e) { console.error(e); toast('Could not save role', 'error'); }
+};
+
+/* ================================================================
+   QUESTIONS BUILDER (+ AI Assist)
+================================================================ */
+const AI_WORKER_URL = "https://sgp-content-ai.untitledworld9.workers.dev";
+let qAiAbort = null;
+
+window.openQuestionsModal = function(roleId){
+  const role = state.roles.find(r => r.id === roleId); if (!role) return;
+  state.editingRoleId = roleId;
+  state.questionsDraft = JSON.parse(JSON.stringify(role.questions || []));
+  openModal(`
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-title">${esc(role.title)} — Questions <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+
+      <div class="ai-box">
+        <div class="form-panel-title" style="margin-bottom:10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Assist <span class="pill">Groq</span></div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0;"><label class="form-label">How many questions</label><input class="form-input" id="qAiCount" type="number" value="5" min="1" max="20"></div>
+          <div class="form-group" style="margin-bottom:0;"><label class="form-label">Mostly which answer type</label>
+            <select class="form-select" id="qAiType"><option value="mcq">MCQ</option><option value="integer">Integer</option><option value="text">Text</option><option value="mixed">Mixed</option></select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Extra instructions (optional)</label><textarea class="form-textarea" id="qAiPrompt" placeholder="e.g. focus on grammar and SEO writing basics, medium difficulty"></textarea></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" id="qAiSendBtn" onclick="qAiGenerate()"><i class="fa-solid fa-bolt"></i> Generate</button>
+          <button class="btn btn-outline btn-sm" id="qAiStopBtn" onclick="qAiStop()" disabled>Stop</button>
+        </div>
+        <div class="ai-log" id="qAiLog"></div>
+        <div class="form-hint" style="margin-top:8px;">AI-generated questions are appended below — always review the correct answers before saving.</div>
+      </div>
+
+      <div id="qList"></div>
+      <button class="btn btn-outline btn-sm" onclick="addQuestionRow()"><i class="fa-solid fa-plus"></i> Add Question Manually</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveQuestions()"><i class="fa-solid fa-floppy-disk"></i> Save Questions</button>
+      </div>
+    </div>
+  `);
+  renderQuestionsList();
+};
+
+function blankQuestion(){ return { prompt:'', mediaType:'none', mediaUrl:'', answerType:'mcq', options:['','','',''], correctAnswer:0 }; }
+window.addQuestionRow = function(){ state.questionsDraft.push(blankQuestion()); renderQuestionsList(); };
+window.removeQuestionRow = function(i){ state.questionsDraft.splice(i,1); renderQuestionsList(); };
+window.updateQuestion = function(i, key, val){ state.questionsDraft[i][key] = val; if (key === 'answerType') renderQuestionsList(); };
+window.updateQOption = function(i, oi, val){ state.questionsDraft[i].options[oi] = val; };
+window.setQCorrectMcq = function(i, oi){ state.questionsDraft[i].correctAnswer = oi; renderQuestionsList(); };
+
+function renderQuestionsList(){
+  const host = $('qList'); if (!host) return;
+  if (!state.questionsDraft.length) { host.innerHTML = '<div class="form-hint" style="margin:10px 0;">No questions yet — use AI Assist or add one manually.</div>'; return; }
+  host.innerHTML = state.questionsDraft.map((q, i) => `
+    <div class="q-card">
+      <div class="q-card-head"><span class="q-index">Question ${i+1}</span><button class="q-remove" onclick="removeQuestionRow(${i})"><i class="fa-solid fa-trash"></i></button></div>
+      <div class="form-group"><label class="form-label">Prompt</label><textarea class="form-textarea" oninput="updateQuestion(${i},'prompt',this.value)" placeholder="Question text">${esc(q.prompt)}</textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Media (optional)</label>
+          <select class="form-select" onchange="updateQuestion(${i},'mediaType',this.value)">
+            <option value="none" ${q.mediaType==='none'?'selected':''}>None</option>
+            <option value="image" ${q.mediaType==='image'?'selected':''}>Image URL</option>
+            <option value="video" ${q.mediaType==='video'?'selected':''}>Video URL</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Media URL</label><input class="form-input" value="${esc(q.mediaUrl||'')}" oninput="updateQuestion(${i},'mediaUrl',this.value)" placeholder="https://…" ${q.mediaType==='none'?'disabled':''}></div>
+      </div>
+      <div class="form-group"><label class="form-label">Answer Type</label>
+        <select class="form-select" onchange="updateQuestion(${i},'answerType',this.value)">
+          <option value="mcq" ${q.answerType==='mcq'?'selected':''}>Multiple Choice</option>
+          <option value="integer" ${q.answerType==='integer'?'selected':''}>Integer</option>
+          <option value="text" ${q.answerType==='text'?'selected':''}>Text</option>
+        </select>
+      </div>
+      ${q.answerType === 'mcq' ? `
+        <label class="form-label" style="display:block;margin-bottom:8px;">Options — mark the correct one</label>
+        ${(q.options||['','','','']).map((opt, oi) => `
+          <div class="opt-row">
+            <input type="radio" name="correct-${i}" ${q.correctAnswer===oi?'checked':''} onchange="setQCorrectMcq(${i},${oi})">
+            <input class="form-input" value="${esc(opt)}" oninput="updateQOption(${i},${oi},this.value)" placeholder="Option ${oi+1}">
+          </div>
+        `).join('')}
+      ` : `
+        <div class="form-group"><label class="form-label">Correct Answer</label><input class="form-input" type="${q.answerType==='integer'?'number':'text'}" value="${esc(q.correctAnswer ?? '')}" oninput="updateQuestion(${i},'correctAnswer',${q.answerType==='integer'?'parseFloat(this.value)':'this.value'})"></div>
+      `}
+    </div>
+  `).join('');
+}
+
+window.saveQuestions = async function(){
+  const cleaned = state.questionsDraft.filter(q => q.prompt && q.prompt.trim());
+  try {
+    await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), { questions: cleaned });
+    toast('Questions saved', 'success');
+    closeModal();
+  } catch (e) { console.error(e); toast('Could not save questions', 'error'); }
+};
+
+function qAiLogLine(text, cls){
+  const log = $('qAiLog'); if (!log) return;
+  const line = document.createElement('div');
+  line.className = 'ai-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  log.appendChild(line); log.scrollTop = log.scrollHeight;
+}
+window.qAiStop = function(){ if (qAiAbort) qAiAbort.abort(); };
+window.qAiGenerate = async function(){
+  const role = state.roles.find(r => r.id === state.editingRoleId);
+  const count = Math.max(1, Math.min(20, parseInt($('qAiCount').value) || 5));
+  const typeChoice = $('qAiType').value;
+  const extra = $('qAiPrompt').value.trim();
+  const typeInstruction = typeChoice === 'mixed'
+    ? 'Mix of mcq, integer and text types across the questions.'
+    : `All questions must use TYPE: ${typeChoice}.`;
+  const prompt = `Write ${count} qualifying-test questions for a hiring test for the role "${role.title}" (${role.department || 'general'}). ${extra ? extra + '. ' : ''}${typeInstruction}
+Format EACH question exactly like this, separated by a line containing only ---:
+Q: <question text>
+TYPE: mcq
+A) <option 1>
+B) <option 2>
+C) <option 3>
+D) <option 4>
+ANSWER: <letter>
+---
+For TYPE: integer use "ANSWER: <number>" and no options. For TYPE: text use "ANSWER: <short text>" and no options. Do not add any extra commentary outside this format.`;
+
+  $('qAiLog').innerHTML = '';
+  qAiLogLine(`"${prompt.length > 90 ? prompt.slice(0,90) + '…' : prompt}"`);
+  $('qAiSendBtn').setAttribute('disabled','true');
+  $('qAiStopBtn').removeAttribute('disabled');
+  qAiAbort = new AbortController();
+
+  try {
+    const res = await fetch(AI_WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: qAiAbort.signal,
+      body: JSON.stringify({ prompt, action: 'generate', contentType: 'quiz', existingTitle: role.title, existingBlocks: [] })
+    });
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    const data = await res.json();
+    const rawText = Array.isArray(data.blocks) ? data.blocks.filter(b => b.text).map(b => b.text).join('\n') : (data.text || '');
+    const parsed = parseAiQuestions(rawText);
+    if (parsed.length) {
+      state.questionsDraft.push(...parsed);
+      renderQuestionsList();
+      qAiLogLine(`Added ${parsed.length} question(s) below. Review the correct answers before saving.`, 'done');
+    } else {
+      qAiLogLine("Couldn't parse any questions from the AI response — try again or add manually.", 'err');
+    }
+  } catch (e) {
+    qAiLogLine(e.name === 'AbortError' ? 'Stopped.' : `Error: ${e.message}`, 'err');
+  } finally {
+    $('qAiSendBtn').removeAttribute('disabled');
+    $('qAiStopBtn').setAttribute('disabled','true');
+    qAiAbort = null;
+  }
+};
+
+function parseAiQuestions(raw){
+  if (!raw) return [];
+  const blocks = raw.split(/\n\s*---\s*\n?/).map(b => b.trim()).filter(Boolean);
+  const out = [];
+  for (const block of blocks) {
+    const qMatch = block.match(/Q:\s*(.+)/i);
+    const typeMatch = block.match(/TYPE:\s*(mcq|integer|text)/i);
+    if (!qMatch || !typeMatch) continue;
+    const answerType = typeMatch[1].toLowerCase();
+    const answerMatch = block.match(/ANSWER:\s*(.+)/i);
+    if (!answerMatch) continue;
+    const q = { prompt: qMatch[1].trim(), mediaType:'none', mediaUrl:'', answerType, options:[], correctAnswer:null };
+    if (answerType === 'mcq') {
+      const optLines = [...block.matchAll(/^([A-D])\)\s*(.+)$/gim)];
+      if (optLines.length < 2) continue;
+      q.options = optLines.map(m => m[2].trim());
+      const letter = answerMatch[1].trim()[0].toUpperCase();
+      const idx = 'ABCD'.indexOf(letter);
+      q.correctAnswer = idx >= 0 ? idx : 0;
+    } else if (answerType === 'integer') {
+      const n = parseFloat(answerMatch[1]);
+      if (isNaN(n)) continue;
+      q.correctAnswer = n;
+    } else {
+      q.correctAnswer = answerMatch[1].trim();
+    }
+    out.push(q);
+  }
+  return out;
+}
+
+/* ================================================================
+   APPLICANTS
+================================================================ */
+function renderApplicants(){
+  const host = $('applicantsList'); if (!host) return;
+  const roleFilter = String(($('applicantsRoleFilter').value || 'all')).trim();
+  const statusFilter = String(($('applicantsStatusFilter').value || 'all')).trim();
+  const search = ($('applicantsSearch').value || '').trim().toLowerCase();
+  const skillFilterEl = $('applicantsSkillFilter');
+  const skillTerms = skillFilterEl ? skillFilterEl.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+  const totalCount = state.applications.length;
+
+  let list = state.applications.slice();
+  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId || '').trim() === roleFilter);
+  if (statusFilter === 'final_selected') list = list.filter(a => a.finalStatus === 'selected');
+  else if (statusFilter === 'final_not_selected') list = list.filter(a => a.finalStatus === 'not_selected');
+  else if (statusFilter === 'final_pending') list = list.filter(a => a.status === 'qualified' && !a.finalStatus);
+  else if (statusFilter !== 'all') list = list.filter(a => String(a.status || '').trim() === statusFilter);
+  if (search) list = list.filter(a => (a.name||'').toLowerCase().includes(search) || (a.email||'').toLowerCase().includes(search));
+
+  // Optional skill filter: keep applicants who have at least one matching skill,
+  // and remember how many of the requested skills each one matched (for sorting).
+  if (skillTerms.length) {
+    list = list.map(a => {
+      const skills = (a.skills || []).map(s => String(s).toLowerCase());
+      const matchCount = skillTerms.filter(term => skills.some(s => s.includes(term))).length;
+      return { a, matchCount };
+    }).filter(x => x.matchCount > 0)
+      .sort((x, y) => y.matchCount - x.matchCount || (y.a.appliedAt?.seconds||0) - (x.a.appliedAt?.seconds||0))
+      .map(x => x.a);
+  } else {
+    list.sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0));
+  }
+
+  const countEl = $('applicantsCount');
+  if (countEl) countEl.textContent = `Showing ${list.length} of ${totalCount} applicant${totalCount === 1 ? '' : 's'}`;
+
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-file-lines"></i>No applicants match this filter.</div>'; return; }
+
+  host.innerHTML = list.map(a => {
+    const role = state.roles.find(r => r.id === a.roleId);
+    const criteriaHtml = submittedDetails(a, role).filter(d => d.kind === 'criteria')
+      .map(d => `<span class="badge badge-gray">${esc(d.label)}: ${esc(d.value)}</span>`).join(' ');
+    const skillsHtml = (a.skills && a.skills.length)
+      ? a.skills.map(s => `<span class="badge badge-accent">${esc(s)}</span>`).join(' ')
+      : '<span class="badge badge-gray" style="opacity:0.6;">No skills listed</span>';
+    return `<div class="tx-row" style="align-items:flex-start;">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div>
+        <div class="tx-row-sub">${esc(a.email)} · ${esc(a.phone||'—')} · Applied ${fmtDate(a.appliedAt)}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${criteriaHtml}${skillsHtml}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        ${statusBadge(a.status)}
+        ${a.finalStatus === 'selected' ? '<span class="badge badge-green">Selected</span>' : a.finalStatus === 'not_selected' ? '<span class="badge badge-red">Not Selected</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ================================================================
+   RESULTS — auto-scoring + qualify/reject + email
+================================================================ */
+function scoreApplication(app, role){
+  const questions = role?.questions || [];
+  const answers = app.answers || [];
+  if (!questions.length) return { correct:0, total:0, percent:0 };
+  let correct = 0;
+  questions.forEach((q, i) => {
+    const given = answers[i];
+    if (given === null || given === undefined) return;
+    if (q.answerType === 'mcq') { if (given === q.correctAnswer) correct++; }
+    else if (q.answerType === 'integer') { if (parseFloat(given) === parseFloat(q.correctAnswer)) correct++; }
+    else { if (String(given).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++; }
+  });
+  const percent = Math.round((correct / questions.length) * 100);
+  return { correct, total: questions.length, percent };
+}
+
+// Mirrors hiring-portal.html's candidate-side auto-declare, run here too so
+// a result doesn't sit stuck showing Qualify/Reject buttons in this panel
+// just because the candidate hasn't reopened the portal since the reveal
+// time passed. Writes the same fields the "admin" flow would, but tags
+// resultDeclaredBy:'auto' so it's clearly distinguishable in the list.
+const ADMIN_autoDeclareInFlight = new Set();
+async function adminAutoDeclareDueResults(){
+  // 1) Find every test that is now past its role's reveal time.
+  const due = [];
+  for (const a of state.applications) {
+    if (a.status !== 'test_completed') continue;
+    const role = state.roles.find(r => r.id === a.roleId);
+    if (!role || !role.resultRevealAt) continue;
+    const revealDate = role.resultRevealAt.toDate ? role.resultRevealAt.toDate() : new Date(role.resultRevealAt);
+    if (isNaN(revealDate.getTime()) || Date.now() < revealDate.getTime()) continue;
+    const sc = scoreApplication(a, role);
+    if (sc.total === 0) continue;
+    due.push({ a, role, sc });
+  }
+  if (!due.length) return;
+
+  // 2) Flip them in the UI IMMEDIATELY (before the network write lands) so
+  //    the admin never sees a stale Qualify / Reject button for a result
+  //    that is already declared.
+  due.forEach(({ a, role, sc }) => {
+    a.status = sc.percent >= (role.passPercentage ?? 60) ? 'qualified' : 'not_qualified';
+    a.resultDeclaredBy = 'auto';
+    a.score = { correct: sc.correct, total: sc.total, percent: sc.percent };
+  });
+  renderDashboard(); renderResults(); renderApplicants(); renderHired();
+
+  // 3) Persist, so the candidate's side and the DB agree.
+  let saved = 0;
+  for (const { a, role, sc } of due) {
+    if (ADMIN_autoDeclareInFlight.has(a.id)) continue;
+    ADMIN_autoDeclareInFlight.add(a.id);
+    try {
+      await updateDoc(doc(db, 'hiringApplications', a.id), {
+        status: a.status,
+        score: a.score,
+        resultDeclaredAt: serverTimestamp(),
+        resultDeclaredBy: 'auto',
+      });
+      saved++;
+    } catch (e) {
+      console.error('Admin auto-declare error:', e);
+    } finally {
+      ADMIN_autoDeclareInFlight.delete(a.id);
+    }
+  }
+  if (saved) toast(`${saved} result${saved > 1 ? 's' : ''} auto-declared at reveal time`, 'success');
+}
+// Reveal time can pass while this panel is just sitting open, with no
+// Firestore event to trigger anything — so check on a timer, and again the
+// moment the tab becomes visible (phones throttle background timers).
+setInterval(adminAutoDeclareDueResults, 10000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) adminAutoDeclareDueResults(); });
+
+function renderResults(){
+  const host = $('resultsList'); if (!host) return;
+  const roleFilter = String(($('resultsRoleFilter').value || 'all')).trim();
+  const statusFilterEl = $('resultsStatusFilter');
+  const statusFilter = statusFilterEl ? String(statusFilterEl.value || 'all').trim() : 'all';
+  let list = state.applications.filter(a => ['test_completed','qualified','not_qualified'].includes(a.status));
+  const totalCount = list.length;
+  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId || '').trim() === roleFilter);
+  if (statusFilter !== 'all') list = list.filter(a => String(a.status || '').trim() === statusFilter);
+
+  // Attach each application's score once so sorting and rendering use the
+  // same numbers (and we don't recompute scoreApplication twice per item).
+  list = list.map(a => ({ a, role: state.roles.find(r => r.id === a.roleId) }))
+    .map(({a, role}) => ({ a, role, score: scoreApplication(a, role) }));
+
+  // Pending (test_completed) first — needs admin action, newest first.
+  // Qualified next, highest score first. Not-qualified last, lowest score first.
+  const statusOrder = { test_completed: 0, qualified: 1, not_qualified: 2 };
+  list.sort((x, y) => {
+    const gx = statusOrder[x.a.status] ?? 3, gy = statusOrder[y.a.status] ?? 3;
+    if (gx !== gy) return gx - gy;
+    if (x.a.status === 'qualified') return y.score.percent - x.score.percent;
+    if (x.a.status === 'not_qualified') return x.score.percent - y.score.percent;
+    return (y.a.testCompletedAt?.seconds||0) - (x.a.testCompletedAt?.seconds||0);
+  });
+
+  const countEl = $('resultsCount');
+  if (countEl) countEl.textContent = `Showing ${list.length} of ${totalCount} result${totalCount === 1 ? '' : 's'}`;
+
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-square-poll-vertical"></i>No results match this filter.</div>'; return; }
+
+  host.innerHTML = list.map(({a, role, score: {correct, total, percent}}) => {
+    const passPct = role?.passPercentage ?? 60;
+    const wouldPass = percent >= passPct;
+    return `<div class="tx-row" style="align-items:flex-start;">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div>
+        <div class="tx-row-sub">${esc(a.email)} · Score: <strong>${correct}/${total} (${percent}%)</strong> · Pass mark: ${passPct}% · ${wouldPass ? '<span style="color:var(--green);font-weight:700;">Meets pass mark</span>' : '<span style="color:var(--red);font-weight:700;">Below pass mark</span>'}</div>
+      </div>
+      <div class="tx-row-actions">
+        ${statusBadge(a.status)}
+        ${a.finalStatus === 'selected' ? hiredBadge(hiredStateOf(a)) : ''}
+        ${a.resultDeclaredBy === 'auto' ? '<span class="badge badge-gray" title="Auto-declared once the result reveal time passed, before any admin action">Auto</span>' : ''}
+        ${a.status === 'test_completed' ? `
+          <button class="btn btn-green btn-sm" onclick="finalizeResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Qualify</button>
+          <button class="btn btn-danger btn-sm" onclick="finalizeResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Reject</button>
+        ` : `<button class="btn btn-outline btn-sm" onclick="emailResult('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Result</button>
+          ${a.status === 'qualified'
+            ? `<button class="btn btn-danger btn-sm" title="Override the result" onclick="overrideResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Mark Not Qualified</button>`
+            : `<button class="btn btn-green btn-sm" title="Override the result" onclick="overrideResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Mark Qualified</button>`}`}
+        ${a.status === 'qualified' ? `
+          <button class="btn ${a.nextStep ? 'btn-outline' : 'btn-solid-green'} btn-sm" onclick="openNextStepModal('${a.id}')">
+            <i class="fa-solid ${a.nextStep ? 'fa-pen' : 'fa-calendar-check'}"></i> ${a.nextStep ? 'Edit Next Step' : 'Next Step'}
+          </button>
+        ` : ''}
+        ${a.status === 'qualified' && a.nextStep ? `
+          <button class="btn btn-outline btn-sm" onclick="emailNextStep('${a.id}')"><i class="fa-solid fa-envelope"></i> Email</button>
+          <button class="btn ${a.finalStatus === 'selected' ? 'btn-solid-green' : 'btn-outline'} btn-sm" onclick="setFinalStatus('${a.id}', true)"><i class="fa-solid fa-user-check"></i> Selected</button>
+          <button class="btn ${a.finalStatus === 'not_selected' ? 'btn-danger' : 'btn-outline'} btn-sm" onclick="setFinalStatus('${a.id}', false)"><i class="fa-solid fa-user-xmark"></i> Not Selected</button>
+        ` : ''}
+        ${a.status === 'qualified' && a.finalStatus === 'selected' ? `
+          <button class="btn ${a.offer ? 'btn-outline' : 'btn-solid-green'} btn-sm" onclick="openOfferModal('${a.id}')"><i class="fa-solid fa-gift"></i> ${a.offer ? 'Edit Offer' : 'Send Offer'}</button>
+        ` : ''}
+        ${a.status === 'qualified' && a.finalStatus === 'not_selected' ? `
+          <button class="btn btn-outline btn-sm" onclick="emailFinal('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Decision</button>
+        ` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.finalizeResult = async function(appId, qualified){
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { status: qualified ? 'qualified' : 'not_qualified', resultDeclaredAt: serverTimestamp(), resultDeclaredBy: 'admin' });
+    toast(qualified ? 'Marked as qualified' : 'Marked as not qualified', 'success');
+    emailResult(appId);
+  } catch (e) { console.error(e); toast('Could not update result', 'error'); }
+};
+
+// Admin can change a result at ANY time — including one that was declared
+// automatically once the reveal time passed.
+window.overrideResult = async function(appId, qualified){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  if (!qualified && a.finalStatus === 'selected' && !a.hiredEndType && a.offerStatus !== 'left') {
+    return toast('This person is already selected / hired. Fire or delete them from the Hired tab first, then change the result.', 'warning');
+  }
+  if (!confirm(qualified ? 'Change this result to QUALIFIED?' : 'Change this result to NOT QUALIFIED? Any interview details / decision for this role will be cleared.')) return;
+  try {
+    const patch = { status: qualified ? 'qualified' : 'not_qualified', resultDeclaredAt: serverTimestamp(), resultDeclaredBy: 'admin' };
+    if (!qualified) { patch.nextStep = null; patch.finalStatus = null; }
+    await updateDoc(doc(db, 'hiringApplications', appId), patch);
+    toast(qualified ? 'Changed to Qualified' : 'Changed to Not Qualified', 'success');
+    Object.assign(a, { status: patch.status, resultDeclaredBy: 'admin' });
+    if (!qualified) { a.nextStep = null; a.finalStatus = null; }
+    emailResult(appId);
+  } catch (e) { console.error(e); toast('Could not change result', 'error'); }
+};
+
+// Opens the admin's email client pre-filled with the outcome — works with
+// zero backend/API keys. For true one-tap automatic sending, wire this up
+// to EmailJS (emailjs.com, free tier) or a Cloudflare Worker + Resend/SendGrid
+// and replace this function's body with that API call.
+window.emailResult = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const { subject, body } = buildEmail(a.status === 'qualified' ? 'qualified' : 'not_qualified', a, role);
+  openMail(a.email, subject, body);
+};
+
+// Helper to format a Firestore Timestamp / ISO string into a
+// datetime-local input's expected "YYYY-MM-DDTHH:mm" value.
+function toDatetimeLocalValue(val){
+  if (!val) return '';
+  const d = val?.toDate ? val.toDate() : new Date(val);
+  if (isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+window.openNextStepModal = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const ns = a.nextStep || {};
+  openModal(`
+    <div class="modal-box" style="max-width:480px;">
+      <div class="modal-title">
+        Next Step — Interview
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">${esc(a.name)} · ${esc(role?.title || 'Unknown role')}</div>
+      ${(() => { const sd = submittedDetails(a, role); return `
+      <div style="border:1px dashed var(--border);background:var(--input);border-radius:12px;padding:11px 13px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;"><i class="fa-solid fa-clipboard-check"></i> Submitted by the candidate — verify in the interview (also added to the email &amp; their dashboard)</div>
+        ${sd.length ? sd.map(d => `<div style="font-size:12.5px;padding:2px 0;"><strong>${esc(d.label)}:</strong> ${esc(d.value)}</div>`).join('') : '<div style="font-size:12px;color:var(--text3);">No extra details were asked for this role.</div>'}
+        <div style="font-size:12px;padding-top:2px;"><strong>Phone:</strong> ${esc(a.phone || '—')}</div>
+      </div>`; })()}
+      <div class="form-group">
+        <label class="form-label">Topic</label>
+        <input class="form-input" id="nsTopic" placeholder="e.g. Technical + HR round" value="${esc(ns.topic || '')}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Interview Date &amp; Time</label>
+        <input class="form-input" type="datetime-local" id="nsDateTime" value="${toDatetimeLocalValue(ns.dateTime)}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Google Meet Link</label>
+        <input class="form-input" type="url" id="nsMeetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx" value="${esc(ns.meetLink || '')}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Extra Contact (optional)</label>
+        <input class="form-input" id="nsExtraContact" placeholder="e.g. WhatsApp / phone / alt. email — shown only if filled" value="${esc(ns.extraContact || '')}">
+      </div>
+      <div id="nsError" style="color:var(--red);font-size:12px;margin-bottom:6px;display:none;"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-solid-green" id="nsSendBtn" onclick="sendNextStep('${appId}')"><i class="fa-solid fa-paper-plane"></i> ${a.nextStep ? 'Update & Send' : 'Send'}</button>
+      </div>
+    </div>
+  `);
+};
+
+window.sendNextStep = async function(appId){
+  const topic = $('nsTopic').value.trim();
+  const dateTime = $('nsDateTime').value;
+  const meetLink = $('nsMeetLink').value.trim();
+  const extraContact = $('nsExtraContact').value.trim();
+  const errEl = $('nsError');
+  if (!topic || !dateTime) {
+    errEl.textContent = 'Topic and interview date & time are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = $('nsSendBtn');
+  btn.disabled = true;
+  try {
+    const nextStep = {
+      topic,
+      dateTime: new Date(dateTime).toISOString(),
+      meetLink: meetLink || '',
+      extraContact: extraContact || '',
+      sentAt: serverTimestamp(),
+    };
+    await updateDoc(doc(db, 'hiringApplications', appId), { nextStep });
+    toast('Next step sent to applicant', 'success');
+    closeModal();
+  } catch (e) {
+    console.error(e);
+    errEl.textContent = 'Could not save — please try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+  }
+};
+
+// Opens the admin's email client, pre-filled with the interview details,
+// addressed to the specific applicant by name and email. Works with zero
+// backend/API keys, same pattern as emailResult().
+window.emailNextStep = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a || !a.nextStep) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const { subject, body } = buildEmail('interview', a, role);
+  openMail(a.email, subject, body);
+};
+
+// Final hiring decision — recorded after the interview. Tapping the other
+// option later simply overwrites the decision, so admins can correct it.
+window.setFinalStatus = async function(appId, selected){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const vac = (role && role.vacancy) || 1;
+  if (selected && a.finalStatus !== 'selected') {
+    const now = activeHiredCount(a.roleId, appId);
+    if (now >= vac) {
+      toast(`All ${vac} position(s) for this role are already filled (${now} of ${vac} hired). Increase the vacancy from Test Manager → Edit to select more.`, 'warning');
+      return;
+    }
+  }
+  if (!selected && a.finalStatus === 'selected' && a.hiredEndType) return toast('This person was already fired / deleted.', 'warning');
+  if (!selected && a.finalStatus === 'selected' && !confirm('Change from Selected to Not Selected? Their offer will be withdrawn and other roles unlock for them.')) return;
+  try {
+    const patch = { finalStatus: selected ? 'selected' : 'not_selected', finalStatusAt: serverTimestamp() };
+    await updateDoc(doc(db, 'hiringApplications', appId), patch);
+    Object.assign(a, { finalStatus: patch.finalStatus });
+    if (selected) {
+      const after = activeHiredCount(a.roleId);
+      toast(after >= vac ? `Selected — all ${vac} position(s) filled 🎉` : `Selected (${after} of ${vac} hired)`, 'success');
+      if (!a.offer) openOfferModal(appId);
+    } else {
+      toast('Marked as Not Selected', 'success');
+      emailFinal(appId);
+    }
+  } catch (e) {
+    console.error(e);
+    toast('Could not update final status', 'error');
+  }
+};
+
+/* ================================================================
+   ENGAGEMENT — job type, internship duration, start / end, timers
+   (shared logic: internship = counts DOWN to its end date, every other
+   job type counts UP from the day the offer was accepted)
+================================================================ */
+const EMP_LABELS = { FULL_TIME:'Full-time', PART_TIME:'Part-time', INTERN:'Internship', CONTRACTOR:'Contract / Freelance', VOLUNTEER:'Volunteer', OTHER:'Flexible' };
+const DEFAULT_INTERN_MONTHS = 6;
+const TEN_DAYS = 10 * 86400e3;
+function toMs(v){
+  if (!v) return null;
+  if (v.toDate) return v.toDate().getTime();
+  if (v instanceof Date) return v.getTime();
+  if (typeof v.seconds === 'number') return v.seconds * 1000;
+  const d = new Date(v); return isNaN(d.getTime()) ? null : d.getTime();
+}
+function addMonthsMs(ms, n){ const d = new Date(ms); d.setMonth(d.getMonth() + Number(n)); return d.getTime(); }
+function engagement(app, role){
+  const o = (app && app.offer) || {};
+  const type = o.jobType || (role && role.employmentType) || 'FULL_TIME';
+  const isIntern = type === 'INTERN';
+  const months = isIntern ? (Number(o.durationMonths) || DEFAULT_INTERN_MONTHS) : null;
+  const start = (app && app.offerStatus === 'accepted') ? toMs(app.offerAcceptedAt) : null;
+  const end = (isIntern && start) ? addMonthsMs(start, months) : null;
+  return { type, label: EMP_LABELS[type] || 'Full-time', isIntern, months, start, end };
+}
+function empTypeText(e){ return e.label + (e.isIntern ? ` · ${e.months} months` : ''); }
+function fmtDur(ms){
+  ms = Math.max(0, ms);
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const p = n => String(n).padStart(2, '0');
+  return d > 0 ? `${d}d ${p(h)}h ${p(m)}m` : `${p(h)}:${p(m)}:${p(sec)}`;
+}
+// green countdown for internships (turns red under 10 days) / running
+// "working since" timer for every other type
+function workTimerChip(app, role){
+  const e = engagement(app, role);
+  if (!e.start) return '';
+  if (e.isIntern) {
+    const left = e.end - Date.now(); if (left <= 0) return '';
+    return `<span class="work-timer ${left < TEN_DAYS ? 'urgent' : ''}" data-mode="down" data-end="${e.end}" title="Internship ends on ${new Date(e.end).toLocaleDateString('en-IN')}"><i class="fa-solid fa-hourglass-half"></i><span>Ends in <b>${fmtDur(left)}</b></span></span>`;
+  }
+  return `<span class="work-timer" data-mode="up" data-start="${e.start}" title="Running since you accepted"><i class="fa-solid fa-circle-play"></i><span>Working since <b>${fmtDur(Date.now() - e.start)}</b></span></span>`;
+}
+function internProgressPct(app, role){
+  const e = engagement(app, role); if (!e.isIntern || !e.start) return null;
+  return Math.min(100, Math.max(0, Math.round((Date.now() - e.start) / (e.end - e.start) * 100)));
+}
+function internProgressHtml(app, role){
+  const pct = internProgressPct(app, role); if (pct === null) return '';
+  const left = (engagement(app, role).end - Date.now());
+  return `<div class="emp-progress ${left < TEN_DAYS ? 'urgent' : ''}" title="${pct}% of the internship done"><span style="width:${pct}%"></span></div>`;
+}
+// called every second — returns true once when an internship timer hits zero
+function tickWorkTimers(){
+  let ended = false; const now = Date.now();
+  document.querySelectorAll('.work-timer').forEach(el => {
+    const b = el.querySelector('b'); if (!b) return;
+    if (el.dataset.mode === 'down') {
+      const left = Number(el.dataset.end) - now;
+      if (left <= 0) { if (!el.dataset.fired) { el.dataset.fired = '1'; ended = true; } b.textContent = 'Completed'; return; }
+      b.textContent = fmtDur(left); el.classList.toggle('urgent', left < TEN_DAYS);
+    } else b.textContent = fmtDur(now - Number(el.dataset.start));
+  });
+  return ended;
+}
+
+function roleOfApp(a){ return state.roles.find(r => r.id === (a && a.roleId)); }
+
+/* ================================================================
+   SUBMITTED DETAILS — the exact values the candidate typed on the
+   application form (CGPA, qualification, ...). Shown to the admin before
+   the interview and repeated in the interview email so the candidate
+   knows what they will be asked to confirm.
+================================================================ */
+function submittedDetails(a, role){
+  const out = [];
+  const criteria = (role && Array.isArray(role.criteria)) ? role.criteria : [];
+  const labelOf = f => { const c = criteria.find(x => x.field === f); return (c && (c.label || c.field)) || f; };
+  const ans = a.criteriaAnswers || {};
+  Object.keys(ans).forEach(k => {
+    const v = ans[k];
+    if (v === '' || v === null || v === undefined) return;
+    out.push({ kind:'criteria', label: labelOf(k), value: String(v) });
+  });
+  if (a.skills && a.skills.length) out.push({ kind:'skills', label:'Skills', value: a.skills.join(', ') });
+  return out;
+}
+
+/* ================================================================
+   PROFESSIONAL EMAIL TEMPLATES
+   All emails open the admin's mail client pre-filled (to, subject,
+   body) — the admin only has to press Send.
+================================================================ */
+const PORTAL_URL = 'https://studygridprep.online/hiring-portal.html';
+function mailSign(){
+  return ['Warm regards,', 'Hiring Team', 'Study Grid Prep', 'team@studygridprep.online', 'https://studygridprep.online'].join('\n');
+}
+function openMail(to, subject, body){
+  window.open('mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
+}
+function fmtPlain(v){
+  if (!v) return 'To be announced';
+  const d = v?.toDate ? v.toDate() : new Date(v);
+  if (isNaN(d.getTime())) return 'To be announced';
+  return d.toLocaleString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function buildEmail(kind, a, role, extra){
+  extra = extra || {};
+  const title = (role && role.title) || 'the position';
+  const greet = `Dear ${(a.name || '').trim() || 'Candidate'},`;
+  const sign = mailSign();
+  const L = [];
+  let subject = '';
+
+  if (kind === 'qualified') {
+    const sc = scoreApplication(a, role);
+    subject = `Congratulations — You've Qualified for ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `Thank you for taking the time to complete the qualifying assessment for the ${title} position at Study Grid Prep.`, '',
+      `We are pleased to inform you that you have successfully cleared the assessment${sc.total ? ` with a score of ${sc.correct}/${sc.total} (${sc.percent}%)` : ''}. Congratulations on this achievement.`, '',
+      'What happens next:',
+      '  1. Our hiring team will share your interview details (date, time and meeting link) shortly.',
+      `  2. You can track every stage of your application on your Careers dashboard: ${PORTAL_URL}`, '',
+      'Please keep an eye on your inbox, including the spam folder, so you do not miss any update.', '',
+      'We look forward to speaking with you.', '', sign);
+  } else if (kind === 'not_qualified') {
+    subject = `Your Application Update — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `Thank you for your interest in the ${title} position at Study Grid Prep, and for the time and effort you put into the qualifying assessment.`, '',
+      'After careful review, we will not be moving forward with your application at this stage, as your score did not meet the required threshold for this role.', '',
+      'This decision reflects the requirements of this particular opening and not your potential. We encourage you to keep building your skills and to apply again when new roles open up — you are always welcome.', '',
+      'We wish you the very best in your career ahead.', '', sign);
+  } else if (kind === 'interview') {
+    const ns = a.nextStep || {};
+    subject = `Interview Invitation — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `Following your successful performance in the qualifying assessment, we would like to invite you to an interview for the ${title} position.`, '',
+      'Interview details',
+      '-----------------',
+      `Topic / Round : ${ns.topic || '—'}`,
+      `Date & Time   : ${fmtPlain(ns.dateTime)}`,
+      `Google Meet   : ${ns.meetLink || 'Link will be shared shortly'}`);
+    if (ns.extraContact) L.push(`Contact       : ${ns.extraContact}`);
+    const sd = submittedDetails(a, role);
+    if (sd.length) {
+      L.push('', 'Details you submitted with your application',
+        '-------------------------------------------');
+      sd.forEach(d => L.push(`${d.label} : ${d.value}`));
+      L.push('', 'Please be ready to discuss and confirm these details during the interview, and keep supporting documents (marksheets / certificates / ID) at hand for verification.');
+    }
+    L.push('',
+      'Please join 5 minutes early from a quiet place with a stable internet connection, and keep a valid photo ID handy.', '',
+      `You can view these details any time on your Careers dashboard: ${PORTAL_URL}`, '',
+      'We look forward to meeting you.', '', sign);
+  } else if (kind === 'selected') {
+    const o = extra.offer || a.offer || {};
+    subject = `Offer of Engagement — ${title} | Study Grid Prep 🎉`;
+    L.push(greet, '',
+      `Congratulations! Following your interview, we are delighted to select you for the ${title} position at Study Grid Prep. The team was impressed by your performance.`, '',
+      'Your offer',
+      '----------',
+      `Role(s) offered : ${o.roles || title}`);
+    { const e = engagement({ offer: o }, role);
+      L.push(`Engagement type : ${e.label}`);
+      if (e.isIntern) L.push(`Duration        : ${e.months} months, starting the day you accept this offer`);
+      else L.push('Duration        : Ongoing, starting the day you accept this offer'); }
+    if (o.accessUrl) L.push(`Admin access    : ${o.accessUrl}`);
+    L.push('');
+    if (o.note) L.push('How to proceed', '--------------', o.note, '');
+    L.push('To confirm your place on the team:',
+      `  1. Open your Careers dashboard: ${PORTAL_URL}`,
+      '  2. Open your offer, read the terms and tap "Accept Offer".', '');
+    const c = [];
+    if (o.phone) c.push(`Phone    : ${o.phone}`);
+    if (o.email) c.push(`Email    : ${o.email}`);
+    if (o.whatsapp) c.push(`WhatsApp : ${o.whatsapp}`);
+    if (c.length) L.push('Contact us', '----------', ...c, '');
+    L.push('Welcome aboard — we are excited to build with you.', '', sign);
+  } else if (kind === 'not_selected') {
+    subject = `Update on Your Interview — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `Thank you for interviewing for the ${title} position at Study Grid Prep. We truly appreciate the time you invested and the thought you put into every round.`, '',
+      'After careful consideration, we have decided to move forward with other candidates for this opening. This was a competitive process, and the decision was not an easy one.', '',
+      'We will keep your profile in mind for future opportunities and encourage you to apply again. We wish you every success ahead.', '', sign);
+  } else if (kind === 'conversion') {
+    const cv = extra.conversion || {};
+    const toLabel = EMP_LABELS[cv.toType] || 'a continuing role';
+    subject = `Pre-Offer: Continue with Us as ${toLabel} — ${title} | Study Grid Prep 🎉`;
+    L.push(greet, '',
+      `Your contribution during your internship as ${title} has been valuable, and the team would like you to continue with Study Grid Prep.`, '',
+      'Pre-offer details',
+      '-----------------',
+      `Role            : ${cv.roles || title}`,
+      `Engagement type : ${toLabel} (upgraded from ${EMP_LABELS[cv.fromType] || 'Internship'})`,
+      'Effective       : Immediately — your internship end date no longer applies');
+    if (cv.note) L.push('', 'Additional details', '------------------', cv.note);
+    L.push('', 'Your Careers dashboard has been updated with the new engagement type:',
+      `  ${PORTAL_URL}`, '',
+      'Please reply to this email to confirm that you would like to continue, and we will take care of the next steps.', '',
+      'Congratulations — we are excited to keep building with you.', '', sign);
+  } else if (kind === 'completion') {
+    const en = extra.eng || {};
+    const f = ms => new Date(ms).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    subject = `Internship Completion — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `This email confirms that you have successfully completed your ${en.months ? en.months + '-month ' : ''}internship as ${(a.offer && a.offer.roles) || title} at Study Grid Prep.`, '',
+      'Internship summary', '------------------',
+      `Role            : ${(a.offer && a.offer.roles) || title}`,
+      `Start date      : ${en.start ? f(en.start) : '—'}`,
+      `End date        : ${en.end ? f(en.end) : '—'}`, '');
+    if (extra.note) L.push(extra.note, '');
+    L.push('Thank you for your dedication and the work you put in. As your internship has now concluded, please stop using any access or credentials that were shared with you for this role.', '',
+      'If you need a completion letter or a reference for future applications, simply reply to this email and our team will get back to you.', '',
+      'We would love to see you again — keep an eye on our Careers page for new openings.', '',
+      'We wish you the very best ahead.', '', sign);
+  } else if (kind === 'fired' || kind === 'deleted') {
+    subject = kind === 'fired'
+      ? `Notice: End of Engagement — ${title} | Study Grid Prep`
+      : `Notice: Removal from ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      kind === 'fired'
+        ? `This is to formally inform you that your engagement as ${title} with Study Grid Prep has been brought to an end, effective immediately.`
+        : `This is to inform you that you have been removed from the ${title} role at Study Grid Prep, effective immediately.`, '');
+    if (extra.note) L.push('Reason / note from the team', '---------------------------', extra.note, '');
+    L.push('Please stop using any access or credentials that were shared with you for this role. Your access has been / will be revoked.', '',
+      'If you have any questions or believe this was a mistake, you may reply to this email and our team will get back to you.', '',
+      'Thank you for your time with Study Grid Prep.', '', sign);
+  }
+  return { subject, body: L.join('\n') };
+}
+
+// Decision email after the interview: offer mail if selected, regret mail if not.
+window.emailFinal = function(appId, offerOverride){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const kind = a.finalStatus === 'selected' ? 'selected' : 'not_selected';
+  const { subject, body } = buildEmail(kind, a, role, { offer: offerOverride });
+  openMail(a.email, subject, body);
+};
+
+/* ================================================================
+   HIRED — counts, list, offer modal, fire / delete
+================================================================ */
+// A seat is "taken" while the person is selected and has neither left
+// nor been fired/deleted — so those actions free the seat again.
+function activeHiredCount(roleId, exceptAppId){
+  return state.applications.filter(a => a.roleId === roleId && a.finalStatus === 'selected' && a.id !== exceptAppId && ['selected','offered','accepted'].includes(hiredStateOf(a))).length;
+}
+function hiredStateOf(a){
+  if (a.hiredEndType) return a.hiredEndType;
+  if (a.offerStatus === 'left') return 'left';
+  if (a.offerStatus === 'accepted') {
+    const e = engagement(a, roleOfApp(a));
+    return (e.end && Date.now() >= e.end) ? 'completed' : 'accepted';   // internship term over
+  }
+  if (a.offer) return 'offered';
+  return 'selected';
+}
+function hiredBadge(st){
+  const map = { selected:['badge-amber','Selected — offer pending'], offered:['badge-accent','Offer sent'], accepted:['badge-green','Offer accepted'], completed:['badge-accent','Completed 🎓'], left:['badge-red','Left'], fired:['badge-red','Fired'], deleted:['badge-red','Deleted'] };
+  const [cls, label] = map[st] || ['badge-gray', st];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function waUrl(num){
+  const d = String(num || '').replace(/\D/g, ''); if (!d) return '';
+  return 'https://wa.me/' + (d.length === 10 ? '91' + d : d);
+}
+
+function renderHired(){ renderHiredInner(); renderLeaveAlert(); renderCerts(); }
+function renderHiredInner(){
+  const host = $('hiredList'); if (!host) return;
+  const search = ($('hiredSearch').value || '').trim().toLowerCase();
+  const roleFilter = String($('hiredRoleFilter').value || 'all').trim();
+  const statusFilter = String($('hiredStatusFilter').value || 'active').trim();
+
+  const all = state.applications.filter(a => a.finalStatus === 'selected');
+  const activeCount = all.filter(a => ['selected','offered','accepted'].includes(hiredStateOf(a))).length;
+  const badge = $('hiredBadge');
+  if (badge) { badge.style.display = activeCount > 0 ? 'inline-block' : 'none'; badge.textContent = activeCount; }
+
+  let list = all.slice();
+  if (roleFilter !== 'all') list = list.filter(a => String(a.roleId || '').trim() === roleFilter);
+  if (search) list = list.filter(a => (a.name||'').toLowerCase().includes(search) || (a.email||'').toLowerCase().includes(search) || String(a.phone||'').includes(search));
+  if (statusFilter === 'active') list = list.filter(a => ['selected','offered','accepted'].includes(hiredStateOf(a)));
+  else if (statusFilter === 'ending') list = list.filter(a => { const e = engagement(a, roleOfApp(a)); return hiredStateOf(a) === 'accepted' && e.end && (e.end - Date.now()) < TEN_DAYS; });
+  else if (statusFilter === 'deleted') list = list.filter(a => ['deleted','left'].includes(hiredStateOf(a)));   // candidate-left lands here too
+  else if (statusFilter !== 'all') list = list.filter(a => hiredStateOf(a) === statusFilter);
+
+  // Active people first; fired / deleted / left / completed always sink to the bottom.
+  const rank = a => ['fired','deleted','left','completed'].includes(hiredStateOf(a)) ? 1 : 0;
+  list.sort((x, y) => rank(x) - rank(y) || (y.finalStatusAt?.seconds||0) - (x.finalStatusAt?.seconds||0));
+
+  const countEl = $('hiredCount');
+  if (countEl) {
+    let extra = '';
+    if (roleFilter !== 'all') {
+      const r = state.roles.find(x => x.id === roleFilter);
+      if (r) extra = ` · ${activeHiredCount(r.id)} of ${r.vacancy || 1} seats filled for ${r.title}`;
+    }
+    countEl.textContent = `Showing ${list.length} of ${all.length} selected${extra}`;
+  }
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-user-check"></i>No one matches this filter.</div>'; return; }
+
+  host.innerHTML = list.map(a => {
+    const role = state.roles.find(r => r.id === a.roleId);
+    const st = hiredStateOf(a);
+    const ended = st === 'fired' || st === 'deleted';
+    const sc = scoreApplication(a, role);
+    const o = a.offer || {};
+    const cell = (k, v) => `<div class="hired-cell"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+    const cells = [
+      cell('Score', sc.total ? `${sc.correct}/${sc.total} (${sc.percent}%)` : '—'),
+      cell('Applied', esc(fmtDate(a.appliedAt))),
+      cell('Test result', esc(fmtDate(a.resultDeclaredAt))),
+      cell('Interview', a.nextStep ? esc(fmtDate(a.nextStep.dateTime)) : '—'),
+      cell('Selected on', esc(fmtDate(a.finalStatusAt))),
+      cell('Role offered', esc(o.roles || role?.title || '—')),
+      cell('Access given', a.offer ? esc(fmtDate(o.sentAt)) : 'Not sent yet'),
+    ];
+    if (a.offerAcceptedAt) cells.push(cell('Accepted on', esc(fmtDate(a.offerAcceptedAt))));
+    if (a.offerLeftAt) cells.push(cell('Left on', esc(fmtDate(a.offerLeftAt))));
+    if (a.reinstatedAt && !a.hiredEndType) cells.push(cell('Reinstated on', esc(fmtDate(a.reinstatedAt))));
+    if (a.hiredEndAt) cells.push(cell(st === 'fired' ? 'Fired on' : 'Deleted on', esc(fmtDate(a.hiredEndAt))));
+    const wa = waUrl(a.phone);
+    const eng = engagement(a, role);
+    const timer = workTimerChip(a, role);
+    // started / ends / time-left
+    cells.push(cell('Started', eng.start ? esc(fmtDate(a.offerAcceptedAt)) : 'Not started (offer not accepted)'));
+    if (eng.end) cells.push(cell('Ends on', esc(new Date(eng.end).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }))));
+    if (a.conversion) cells.push(cell('Upgraded', `${esc(EMP_LABELS[a.conversion.fromType] || 'Internship')} → ${esc(EMP_LABELS[a.conversion.toType] || '')}`));
+    const upgradeBtn = (eng.isIntern && !ended && st !== 'left') ? `<button class="btn btn-upgrade btn-sm" onclick="openUpgradeModal('${a.id}')"><i class="fa-solid fa-arrow-trend-up"></i> Pre-offer / Upgrade</button>` : '';
+    return `<div class="hired-card st-${st} ${(ended || st === 'left') ? 'ended' : ''} ${st === 'left' ? 'left' : ''}">
+      <div class="hired-head">
+        <div><div class="hired-name">${esc(a.name || '—')}</div><div class="hired-role">${esc(role?.title || 'Unknown role')} · ${esc(role?.department || '—')}</div></div>
+        <div class="hired-side">
+          ${hiredBadge(st)}
+          ${a.offer || role ? `<span class="emp-tag"><i class="fa-solid fa-briefcase"></i>${esc(eng.label)}</span>` : ''}
+          ${eng.isIntern ? `<span class="hired-dur">${eng.months} months</span>` : (a.offer ? '<span class="hired-dur">Ongoing</span>' : '')}
+          ${timer}
+        </div>
+      </div>
+      <div class="hired-contact">
+        ${a.email ? `<a href="mailto:${esc(a.email)}"><i class="fa-solid fa-envelope"></i>${esc(a.email)}</a>` : ''}
+        ${a.phone ? `<a href="tel:${esc(a.phone)}"><i class="fa-solid fa-phone"></i>${esc(a.phone)}</a>` : ''}
+        ${wa ? `<a href="${wa}" target="_blank" rel="noopener" style="color:var(--green);"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>` : ''}
+      </div>
+      <div class="hired-grid">${cells.join('')}</div>
+      ${st === 'left' ? `<div class="left-ack"><span><i class="fa-solid fa-person-walking-arrow-right"></i> <strong>Left the team</strong> on ${esc(fmtDate(a.offerLeftAt))}${a.offerLeftBy === 'candidate' ? ' · by candidate' : ''}</span>${a.leaveAck === false ? `<button class="btn btn-danger btn-sm" onclick="ackLeave('${a.id}')"><i class="fa-solid fa-check"></i> OK, seen</button>` : '<span style="color:var(--text3);"><i class="fa-solid fa-check"></i> Acknowledged</span>'}</div>` : ''}
+      ${eng.start && eng.isIntern && st === 'accepted' ? internProgressHtml(a, role) : ''}
+      ${ended && a.hiredEndNote ? `<div class="hired-note"><strong>Admin note:</strong> ${esc(a.hiredEndNote)}</div>` : ''}
+      <div class="hired-actions">
+        ${!ended ? `<button class="btn ${a.offer ? 'btn-outline' : 'btn-solid-green'} btn-sm" onclick="openOfferModal('${a.id}')"><i class="fa-solid fa-gift"></i> ${a.offer ? 'Edit Offer' : 'Send Offer'}</button>` : ''}
+        ${a.offer && !ended ? `<button class="btn btn-outline btn-sm" onclick="emailFinal('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Offer</button>` : ''}
+        ${st === 'completed' ? `<button class="btn btn-solid-green btn-sm" onclick="emailCompletion('${a.id}')"><i class="fa-solid fa-graduation-cap"></i> Email Completion Letter</button>` : ''}
+        ${upgradeBtn}
+        ${ended ? `<button class="btn btn-outline btn-sm" onclick="emailEnd('${a.id}')"><i class="fa-solid fa-envelope"></i> Email ${st === 'fired' ? 'Fired' : 'Deleted'} Notice</button>
+        <span style="flex:1;"></span>
+        <button class="btn btn-green btn-sm" onclick="reinstateHired('${a.id}')"><i class="fa-solid fa-rotate-left"></i> Reinstate</button>` : ''}
+        ${!ended && st !== 'left' && st !== 'completed' ? `
+          <span style="flex:1;"></span>
+          <button class="btn btn-danger btn-sm" onclick="openEndModal('${a.id}','fired')"><i class="fa-solid fa-user-slash"></i> Fire</button>
+          <button class="btn btn-danger btn-sm" onclick="openEndModal('${a.id}','deleted')"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+/* ================================================================
+   LEAVE ALERT — red sidebar block until the admin opens the filter and taps OK
+================================================================ */
+function unackedLeaves(){ return state.applications.filter(a => a.finalStatus === 'selected' && a.offerStatus === 'left' && a.leaveAck === false); }
+function renderLeaveAlert(){
+  const n = unackedLeaves().length;
+  const host = $('leaveAlertHost'); if (host) host.innerHTML = n ? `<div class="leave-alert" onclick="reviewLeaves()"><i class="fa-solid fa-person-walking-arrow-right" style="font-size:18px;"></i><div><b>${n} left the team</b><span>Tap to review &amp; confirm</span></div></div>` : '';
+  const sel = $('hiredStatusFilter');
+  if (sel) { sel.classList.toggle('alert', n > 0); const o = [...sel.options].find(x => x.value === 'deleted'); if (o) o.textContent = n ? `Deleted / Left (${n} new)` : 'Deleted / Left'; }
+  const hb = $('hiredBadge'); if (hb && n) { hb.style.display = 'inline-block'; hb.style.background = 'var(--red)'; }
+}
+window.reviewLeaves = function(){ goSection('hired'); $('hiredStatusFilter').value = 'deleted'; renderHiredInner(); };
+window.ackLeave = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { leaveAck: true, leaveAckAt: serverTimestamp() });
+    a.leaveAck = true; toast('Marked as seen', 'success'); renderHired();
+  } catch (e) { console.error(e); toast('Could not update', 'error'); }
+};
+
+/* ================================================================
+   CERTIFICATION
+================================================================ */
+const certUI = { type: 'all' };
+function certRows(){
+  if (!CERT) return [];
+  return state.applications.filter(a => a.finalStatus === 'selected' && CERT.toMs(a.offerAcceptedAt)).map(a => {
+    const role = state.roles.find(r => r.id === a.roleId); const c = CERT.buildCert(a, role);
+    const grp = c.eligible ? 'issued' : (c.state === 'active' ? 'ongoing' : 'na');
+    return { a, role, c, grp };
+  });
+}
+function renderCerts(){
+  const host = $('certList'); if (!host) return;
+  if (!CERT) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>cert-core.js not found — upload it next to this file.</div>'; return; }
+  const all = certRows();
+  const hiredTotal = state.applications.filter(a => a.finalStatus === 'selected' && !a.hiredEndType).length;
+  const cnt = f => all.filter(r => r.a[f]).length;
+  const card = (cls, ico, lbl, val) => `<div class="stat-card ${cls}"><div class="stat-icon"><i class="fa-solid ${ico}"></i></div><div class="stat-label">${lbl}</div><div class="stat-value">${val}</div></div>`;
+  $('certStats').innerHTML = card('', 'fa-user-check', 'Total Hired', hiredTotal) + card('amber', 'fa-person-running', 'Working now', all.filter(r => r.grp === 'ongoing').length)
+    + card('green', 'fa-award', 'Certificates ready', all.filter(r => r.grp === 'issued').length) + card('', 'fa-download', 'Downloaded', cnt('certDownloadAt'))
+    + card('', 'fa-print', 'Printed', cnt('certPrintAt')) + card('', 'fa-share-nodes', 'Shared', cnt('certShareAt'));
+  const rf = $('certRoleFilter'), rv = rf.value;
+  rf.innerHTML = '<option value="all">All Roles</option>' + state.roles.map(r => `<option value="${r.id}">${esc(r.title)}</option>`).join(''); if ([...rf.options].some(o => o.value === rv)) rf.value = rv;
+  document.querySelectorAll('#certSeg button').forEach(b => b.classList.toggle('on', b.dataset.t === certUI.type));
+  const q = ($('certSearch').value || '').trim().toLowerCase(), sf = $('certStatusFilter').value, roleF = rf.value;
+  let list = all.filter(r => (certUI.type === 'all' || r.c.kind === certUI.type) && (sf === 'all' || r.grp === sf) && (roleF === 'all' || r.a.roleId === roleF)
+    && (!q || `${r.a.name} ${r.a.email} ${r.c.roleTitle} ${CERT.certCode(r.a.id)}`.toLowerCase().includes(q)));
+  const order = { issued: 0, ongoing: 1, na: 2 };
+  list.sort((x, y) => order[x.grp] - order[y.grp] || (y.c.endMs || 0) - (x.c.endMs || 0));
+  $('certCount').textContent = `Showing ${list.length} of ${all.length}`;
+  if (!list.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-award"></i>No certificates match this filter.</div>'; return; }
+  const fd = ms => new Date(ms).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  host.innerHTML = list.map(({ a, c, grp }) => {
+    const intern = c.kind === 'INTERN';
+    const badge = grp === 'issued' ? '<span class="badge badge-green"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i>Certificate ready</span>'
+      : grp === 'ongoing' ? '<span class="badge badge-amber">Ongoing</span>' : `<span class="badge badge-red">${c.state === 'revoked' ? 'Ended by admin' : 'Under 15 days'}</span>`;
+    let prog = '';
+    if (grp === 'ongoing') {
+      const left = intern ? Math.ceil((c.plannedEndMs - Date.now()) / 864e5) : null;
+      const pct = intern ? Math.min(100, Math.round((Date.now() - c.startMs) / (c.plannedEndMs - c.startMs) * 100)) : null;
+      prog = intern ? `<div class="hired-dur" style="margin-top:8px;">${left} day${left === 1 ? '' : 's'} left · ${pct}% done</div><div class="emp-progress"><span style="width:${pct}%"></span></div>` : `<div class="hired-dur" style="margin-top:8px;">Working ${Math.max(0, Math.floor((Date.now() - c.startMs) / 864e5))} days</div>`;
+    }
+    const tick = (f, ico, lbl) => `<span class="cc ${a[f] ? 'on' : ''}" title="${a[f] ? esc(fmtDate(a[f])) : 'Not yet'}"><i class="fa-solid ${ico}"></i>${lbl}${a[f] ? ' ✓' : ''}</span>`;
+    return `<div class="cert-card ${grp}">
+      <div class="cert-mini ${c.kind}"><i class="fa-solid fa-award"></i><div>${intern ? 'INTERNSHIP' : 'EXPERIENCE'}<br>CERTIFICATE</div></div>
+      <div class="cert-main">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><div><div class="hired-name">${esc(a.name || '—')}</div><div class="hired-role">${esc(c.roleTitle)} · ${esc(c.department || '—')} · ${intern ? 'Internship' : esc(CERT.EMP_LABELS[c.empType] || 'Job')}</div><div class="hired-role" style="font-size:11px;">${esc(a.email || '')}</div></div>${badge}</div>
+        <div class="hired-grid" style="margin-top:10px;margin-bottom:0;">
+          <div class="hired-cell"><div class="k">Duration on certificate</div><div class="v">${grp === 'ongoing' ? '—' : esc(c.durationLabel || '—')}</div></div>
+          <div class="hired-cell"><div class="k">Period</div><div class="v">${fd(c.startMs)} – ${grp === 'ongoing' ? 'ongoing' : fd(c.endMs)}</div></div>
+          <div class="hired-cell"><div class="k">Certificate ID</div><div class="v">${CERT.certCode(a.id)}</div></div></div>
+        ${prog}
+        <div class="cert-row">${tick('certIssuedAt', 'fa-eye', 'Opened')}${tick('certDownloadAt', 'fa-download', 'Downloaded')}${tick('certPrintAt', 'fa-print', 'Printed')}${tick('certShareAt', 'fa-share-nodes', 'Shared')}
+          <span style="flex:1;"></span>
+          ${grp === 'issued' ? `<button class="btn btn-outline btn-sm" onclick="openCert('${a.id}')"><i class="fa-solid fa-up-right-from-square"></i> Open</button><button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}')"><i class="fa-regular fa-copy"></i> Link</button>` : ''}
+          <button class="btn btn-outline btn-sm" onclick="openCertEdit('${a.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn-green btn-sm" onclick="openGiveCert('${a.id}')"><i class="fa-solid fa-certificate"></i> Give Cert</button></div>
+      </div></div>`;
+  }).join('');
+}
+window.renderCerts = renderCerts;
+window.goCert = function(type){
+  certUI.type = type; goSection('certs');
+  if (type !== 'all') { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); const b = document.querySelector(`.nav-btn[data-sub="${type}"]`); if (b) b.classList.add('active'); }
+  renderCerts();
+};
+$('certSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; certUI.type = b.dataset.t; renderCerts(); });
+[['certSearch', 'input'], ['certStatusFilter', 'change'], ['certRoleFilter', 'change']].forEach(([id, ev]) => $(id).addEventListener(ev, renderCerts));
+
+async function syncCertDoc(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) throw new Error('no app');
+  const c = CERT.buildCert(a, state.roles.find(r => r.id === a.roleId)); if (!c.eligible) throw new Error('not eligible');
+  await setDoc(doc(db, 'certificates', appId), { ...CERT.publicDoc(c), updatedAt: serverTimestamp() }, { merge: true });
+}
+window.openCert = async function(appId){ try { await syncCertDoc(appId); window.open(CERT.verifyUrl(appId), '_blank', 'noopener'); } catch (e) { console.error(e); toast('Could not open certificate', 'error'); } };
+window.copyCertLink = async function(appId){ try { await syncCertDoc(appId); await navigator.clipboard.writeText(CERT.verifyUrl(appId)); toast('Verification link copied', 'success'); } catch (e) { toast(CERT.verifyUrl(appId), 'info'); } };
+window.openCertEdit = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const ov = a.certOverride || {}; const c = CERT.buildCert(a, state.roles.find(r => r.id === a.roleId));
+  const dv = ov.issueDate ? toInputDate(ov.issueDate).slice(0, 10) : '';
+  openModal(`<div class="modal-box" style="max-width:480px;">
+    <div class="modal-title">Edit certificate <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · everything else is generated automatically</div>
+    <div class="form-group"><label class="form-label">Certificate type</label><select class="form-select" id="ceKind">
+      <option value="">Auto (${c.kind === 'INTERN' ? 'Internship' : 'Experience'})</option><option value="INTERN" ${ov.kind === 'INTERN' ? 'selected' : ''}>Internship</option><option value="JOB" ${ov.kind === 'JOB' ? 'selected' : ''}>Job / Experience</option></select></div>
+    <div class="form-group"><label class="form-label">Role / designation on certificate</label><input class="form-input" id="ceRole" value="${esc(ov.roleTitle || '')}" placeholder="${esc(c.roleTitle)}"></div>
+    <div class="form-group"><label class="form-label">Duration override (months, optional)</label><input class="form-input" id="ceMonths" type="number" step="0.5" min="0.5" max="60" value="${esc(ov.months || '')}" placeholder="Auto: ${esc(c.durationLabel || 'by rules')}"></div>
+    <div class="form-group"><label class="form-label">Issue date (optional)</label><input class="form-input" id="ceDate" type="date" value="${esc(dv)}"></div>
+    <div class="form-group"><label class="form-label">Custom line on certificate (optional)</label><textarea class="form-textarea" id="ceNote" maxlength="220" placeholder="Replaces the default appreciation line">${esc(ov.note || '')}</textarea></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCertEdit('${appId}')"><i class="fa-solid fa-floppy-disk"></i> Save</button></div></div>`);
+};
+window.saveCertEdit = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const o = { kind: $('ceKind').value || null, roleTitle: $('ceRole').value.trim() || null, months: parseFloat($('ceMonths').value) || null, issueDate: $('ceDate').value ? new Date($('ceDate').value + 'T12:00:00').toISOString() : null, note: $('ceNote').value.trim() || null };
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { certOverride: o });
+    a.certOverride = o;
+    try { await syncCertDoc(appId); } catch (e) { /* not eligible yet — fine */ }
+    toast('Certificate updated', 'success'); closeModal(); renderCerts();
+  } catch (e) { console.error(e); toast('Could not save', 'error'); }
+};
+
+// ---- Force-issue certificate (bypasses 15-day rule)
+window.openGiveCert = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const ov = a.certOverride || {};
+  const c = CERT.buildCert(a, state.roles.find(r => r.id === a.roleId));
+  const today = new Date().toISOString().slice(0, 10);
+  const dv = ov.issueDate ? toInputDate(ov.issueDate).slice(0, 10) : today;
+  openModal(`<div class="modal-box" style="max-width:480px;">
+    <div class="modal-title">Give Certificate <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · Force-issue a certificate regardless of duration rules.</div>
+    <div class="form-group"><label class="form-label">Certificate type</label>
+      <select class="form-select" id="gcKind">
+        <option value="INTERN" ${(ov.kind || c.kind) === 'INTERN' ? 'selected' : ''}>Internship</option>
+        <option value="JOB" ${(ov.kind || c.kind) === 'JOB' ? 'selected' : ''}>Job / Experience</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Role / designation on certificate</label>
+      <input class="form-input" id="gcRole" value="${esc(ov.roleTitle || c.roleTitle || '')}" placeholder="e.g. Content Creator"></div>
+    <div class="form-group"><label class="form-label">Duration in months <span style="font-size:10px;color:var(--text3);">(optional if label filled below)</span></label>
+      <input class="form-input" id="gcMonths" type="number" step="0.5" min="0" max="60" value="${esc(String(ov.forceIssue && ov.months != null ? ov.months : ''))}" placeholder="e.g. 0.5, 1, 1.5, 3">
+      <div class="form-hint">Whole or half months. Leave blank if you only set a label below.</div></div>
+    <div class="form-group"><label class="form-label">Duration label on certificate <span style="font-size:10px;color:var(--text3);">(overrides months if filled)</span></label>
+      <input class="form-input" id="gcDurLabel" value="${esc(ov.forceIssue ? ov.durationLabel || '' : '')}" placeholder="e.g. 10 days, 3 weeks, 1 month">
+      <div class="form-hint">Prints exactly as typed on the certificate instead of the months number.</div></div>
+    <div class="form-group"><label class="form-label">Issue date</label>
+      <input class="form-input" id="gcDate" type="date" value="${esc(dv)}"></div>
+    <div class="form-group"><label class="form-label">Custom line on certificate (optional)</label>
+      <textarea class="form-textarea" id="gcNote" maxlength="220" placeholder="Replaces the default appreciation line">${esc(ov.forceIssue ? ov.note || '' : '')}</textarea></div>
+    <div style="font-size:11.5px;color:var(--amber);padding:10px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;margin-bottom:14px;">
+      <i class="fa-solid fa-triangle-exclamation"></i> Bypasses the 15-day rule. Certificate becomes immediately visible to the candidate.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-solid-green" onclick="saveGiveCert('${appId}')"><i class="fa-solid fa-certificate"></i> Generate Certificate</button>
+    </div></div>`);
+};
+window.saveGiveCert = async function(appId){
+  const months = $('gcMonths').value.trim() !== '' ? parseFloat($('gcMonths').value) : null;
+  const durLabel = $('gcDurLabel').value.trim() || null;
+  if (months == null && !durLabel) { toast('Enter a duration — months or a label (e.g. "10 days")', 'error'); return; }
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const ov = {
+    ...(a.certOverride || {}),
+    forceIssue: true,
+    kind: $('gcKind').value || null,
+    roleTitle: $('gcRole').value.trim() || null,
+    months: months,
+    durationLabel: durLabel,
+    issueDate: $('gcDate').value ? new Date($('gcDate').value + 'T12:00:00').toISOString() : new Date().toISOString(),
+    note: $('gcNote').value.trim() || null,
+  };
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { certOverride: ov });
+    a.certOverride = ov;
+    await syncCertDoc(appId);
+    toast('Certificate generated — candidate can now view it', 'success');
+    closeModal(); renderCerts();
+  } catch(e) { console.error(e); toast('Could not generate certificate', 'error'); }
+};
+
+// ---- Offer modal (roles offered + admin access + how to proceed + contact)
+window.openOfferModal = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const o = a.offer || {};
+  openModal(`
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-title">
+        ${a.offer ? 'Edit Offer' : 'Send Offer'}
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">${esc(a.name)} · ${esc(role?.title || 'Unknown role')}</div>
+      <div class="form-group"><label class="form-label">Role(s) offered</label>
+        <input class="form-input" id="ofRoles" placeholder="e.g. Content Moderator" value="${esc(o.roles || role?.title || '')}"></div>
+      <div class="form-group"><label class="form-label">Job type <span style="font-weight:500;color:var(--text3);">(auto-filled from the role)</span></label>
+        <select class="form-select" id="ofJobType" onchange="toggleOfMonths()">
+          ${Object.entries(EMP_LABELS).map(([k, v]) => `<option value="${k}" ${k === (o.jobType || role?.employmentType || 'FULL_TIME') ? 'selected' : ''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="form-group" id="ofMonthsWrap" style="display:${(o.jobType || role?.employmentType) === 'INTERN' ? 'block' : 'none'};"><label class="form-label">Internship duration (months)</label>
+        <input class="form-input" id="ofMonths" type="number" min="1" max="24" value="${esc(o.durationMonths || DEFAULT_INTERN_MONTHS)}">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Counts down from the day the candidate accepts the offer.</div></div>
+      <div class="form-group"><label class="form-label">Admin access URL</label>
+        <input class="form-input" id="ofAccess" type="url" placeholder="https://studygridprep.online/admin…" value="${esc(o.accessUrl || '')}"></div>
+      <div class="form-group"><label class="form-label">How to proceed (note)</label>
+        <textarea class="form-textarea" id="ofNote" placeholder="e.g. Log in with your registered Google account, complete the onboarding checklist, then message the team on WhatsApp.">${esc(o.note || '')}</textarea></div>
+      <div class="form-group"><label class="form-label">Contact phone</label>
+        <input class="form-input" id="ofPhone" placeholder="10-digit number" value="${esc(o.phone || '')}"></div>
+      <div class="form-group"><label class="form-label">Contact email</label>
+        <input class="form-input" id="ofEmail" type="email" value="${esc(o.email || 'team@studygridprep.online')}"></div>
+      <div class="form-group"><label class="form-label">WhatsApp number or group link (optional)</label>
+        <input class="form-input" id="ofWa" placeholder="https://chat.whatsapp.com/… or number" value="${esc(o.whatsapp || '')}"></div>
+      <div id="ofError" style="color:var(--red);font-size:12px;margin-bottom:6px;display:none;"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-solid-green" id="ofSendBtn" onclick="sendOffer('${appId}')"><i class="fa-solid fa-paper-plane"></i> Save &amp; Open Email</button>
+      </div>
+    </div>`);
+};
+
+window.toggleOfMonths = function(){
+  const w = $('ofMonthsWrap'); if (w) w.style.display = $('ofJobType').value === 'INTERN' ? 'block' : 'none';
+};
+
+window.sendOffer = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const roles = $('ofRoles').value.trim();
+  const accessUrl = $('ofAccess').value.trim();
+  const note = $('ofNote').value.trim();
+  const phone = $('ofPhone').value.trim();
+  const email = $('ofEmail').value.trim();
+  const whatsapp = $('ofWa').value.trim();
+  const errEl = $('ofError');
+  if (!roles) { errEl.textContent = 'Please enter the role(s) offered.'; errEl.style.display = 'block'; return; }
+  if (accessUrl && !/^https?:\/\//i.test(accessUrl)) { errEl.textContent = 'Access URL must start with http:// or https://'; errEl.style.display = 'block'; return; }
+  const btn = $('ofSendBtn'); btn.disabled = true;
+  try {
+    const jobType = $('ofJobType').value;
+    const months = jobType === 'INTERN' ? Math.max(1, Math.min(24, parseInt($('ofMonths').value, 10) || DEFAULT_INTERN_MONTHS)) : null;
+    const offer = { roles, jobType, durationMonths: months, accessUrl, note, phone, email, whatsapp, sentAt: serverTimestamp() };
+    const patch = { offer };
+    if (!a.offerStatus) patch.offerStatus = 'offered';   // never reset an accepted / left offer
+    await updateDoc(doc(db, 'hiringApplications', appId), patch);
+    Object.assign(a, { offer: { ...offer, sentAt: new Date() } });
+    if (!a.offerStatus) a.offerStatus = 'offered';
+    toast('Offer saved — candidate can see it now', 'success');
+    closeModal();
+    emailFinal(appId, a.offer);
+  } catch (e) {
+    console.error(e);
+    errEl.textContent = 'Could not save — please try again.'; errEl.style.display = 'block';
+    btn.disabled = false;
+  }
+};
+
+// ---- Fire / Delete (record stays; it just moves to the bottom / its own filter)
+window.openEndModal = function(appId, type){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const fire = type === 'fired';
+  openModal(`
+    <div class="modal-box" style="max-width:480px;">
+      <div class="modal-title" style="color:var(--red);">
+        ${fire ? 'Fire' : 'Delete'} ${esc(a.name)}
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(role?.title || 'Unknown role')} · The record is kept (shown last under the ${fire ? 'Fired' : 'Deleted'} filter), the seat is freed, and they can apply to other roles again.</div>
+      <div class="form-group"><label class="form-label">Admin note (included in the email)</label>
+        <textarea class="form-textarea" id="endNote" placeholder="Reason / details for the record and the email"></textarea></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" id="endConfirmBtn" onclick="confirmEnd('${appId}','${type}')"><i class="fa-solid ${fire ? 'fa-user-slash' : 'fa-trash'}"></i> Confirm ${fire ? 'Fire' : 'Delete'} &amp; Open Email</button>
+      </div>
+    </div>`);
+};
+
+window.confirmEnd = async function(appId, type){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const note = $('endNote').value.trim();
+  const btn = $('endConfirmBtn'); btn.disabled = true;
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { hiredEndType: type, hiredEndNote: note, hiredEndAt: serverTimestamp() });
+    Object.assign(a, { hiredEndType: type, hiredEndNote: note, hiredEndAt: new Date() });
+    toast(type === 'fired' ? 'Marked as fired' : 'Marked as deleted', 'success');
+    closeModal();
+    renderHired(); renderRoles();
+    emailEnd(appId);
+  } catch (e) {
+    console.error(e);
+    toast('Could not update — please try again', 'error');
+    btn.disabled = false;
+  }
+};
+
+// ---- Pre-offer: upgrade an internship into a regular job (type changes, internship timer goes away)
+window.openUpgradeModal = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const eng = engagement(a, role);
+  openModal(`
+    <div class="modal-box" style="max-width:500px;">
+      <div class="modal-title">
+        Pre-offer / Upgrade
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · currently <strong>${esc(empTypeText(eng))}</strong>${eng.end ? ' · ends ' + esc(new Date(eng.end).toLocaleDateString('en-IN')) : ''}</div>
+      <div class="form-group"><label class="form-label">Role(s) after upgrade</label>
+        <input class="form-input" id="upRoles" value="${esc((a.offer && a.offer.roles) || role?.title || '')}"></div>
+      <div class="form-group"><label class="form-label">New job type</label>
+        <select class="form-select" id="upType">
+          ${['PART_TIME','FULL_TIME','CONTRACTOR','OTHER'].map(k => `<option value="${k}">${EMP_LABELS[k]}</option>`).join('')}
+        </select></div>
+      <div class="form-group"><label class="form-label">Note / terms (included in the email)</label>
+        <textarea class="form-textarea" id="upNote" placeholder="e.g. Hours, responsibilities, stipend discussion, joining details…"></textarea></div>
+      <div style="font-size:11.5px;color:var(--text2);margin-bottom:6px;">The candidate's card changes to the new job type right away; the internship end date is removed and a "working since" timer continues from their original start.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-solid-green" id="upBtn" onclick="confirmUpgrade('${appId}')"><i class="fa-solid fa-arrow-trend-up"></i> Upgrade &amp; Open Email</button>
+      </div>
+    </div>`);
+};
+window.confirmUpgrade = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const roles = $('upRoles').value.trim(), toType = $('upType').value, note = $('upNote').value.trim();
+  if (!roles) return toast('Enter the role(s) after upgrade', 'warning');
+  const fromType = engagement(a, role).type;
+  const btn = $('upBtn'); btn.disabled = true;
+  try {
+    const conversion = { fromType, toType, roles, note, at: serverTimestamp() };
+    await updateDoc(doc(db, 'hiringApplications', appId), {
+      'offer.jobType': toType, 'offer.durationMonths': null, 'offer.roles': roles, conversion,
+    });
+    a.offer = { ...(a.offer || {}), jobType: toType, durationMonths: null, roles };
+    a.conversion = { fromType, toType, roles, note, at: new Date() };
+    toast(`Upgraded to ${EMP_LABELS[toType]}`, 'success');
+    closeModal(); renderHired(); renderRoles();
+    const { subject, body } = buildEmail('conversion', a, role, { conversion: a.conversion });
+    openMail(a.email, subject, body);
+  } catch (e) { console.error(e); toast('Could not upgrade — please try again', 'error'); btn.disabled = false; }
+};
+
+window.emailCompletion = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const { subject, body } = buildEmail('completion', a, role, { eng: engagement(a, role) });
+  openMail(a.email, subject, body);
+};
+
+// Undo a fire / delete (e.g. clicked by mistake). Needs a free seat.
+window.reinstateHired = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a || !a.hiredEndType) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const vac = (role && role.vacancy) || 1;
+  if (activeHiredCount(a.roleId, appId) >= vac) {
+    return toast(`All ${vac} seat(s) are filled again. Increase the vacancy (Test Manager → Edit) before reinstating.`, 'warning');
+  }
+  if (!confirm(`Reinstate ${a.name}? They become active again for ${role?.title || 'this role'}.`)) return;
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), { hiredEndType: null, hiredEndNote: null, hiredEndAt: null, reinstatedAt: serverTimestamp() });
+    Object.assign(a, { hiredEndType: null, hiredEndNote: null, hiredEndAt: null });
+    toast('Reinstated', 'success');
+    renderHired(); renderRoles();
+  } catch (e) { console.error(e); toast('Could not reinstate', 'error'); }
+};
+
+let _doneIds = null;
+setInterval(() => {
+  tickWorkTimers();
+  // an internship reaching its end date frees the seat and unlocks the completion email
+  const done = new Set(state.applications.filter(a => a.finalStatus === 'selected' && hiredStateOf(a) === 'completed').map(a => a.id));
+  if (_doneIds) {
+    const fresh = [...done].filter(id => !_doneIds.has(id));
+    if (fresh.length) { renderHired(); renderRoles(); renderResults(); toast(`${fresh.length} internship${fresh.length > 1 ? 's' : ''} completed — send the completion email from Hired`, 'success'); }
+  }
+  _doneIds = done;
+}, 1000);
+
+window.emailEnd = function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a || !a.hiredEndType) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const { subject, body } = buildEmail(a.hiredEndType, a, role, { note: a.hiredEndNote });
+  openMail(a.email, subject, body);
+};
+
+/* ================================================================
+   CANDIDATES (registered users)
+================================================================ */
+function renderCandidates(){
+  const host = $('candidatesList'); if (!host) return;
+  const search = ($('candidatesSearch').value || '').trim().toLowerCase();
+  const roleFilter = $('candidatesRoleFilter') ? String($('candidatesRoleFilter').value || 'all').trim() : 'all';
+  const totalCount = state.candidates.length;
+  let list = state.candidates.slice();
+  if (search) list = list.filter(c => (c.name||'').toLowerCase().includes(search) || (c.email||'').toLowerCase().includes(search) || (c.phone||'').includes(search));
+  if (roleFilter !== 'all') {
+    const relevantUids = new Set(state.applications.filter(a => String(a.roleId || '').trim() === roleFilter).map(a => a.uid));
+    list = list.filter(c => relevantUids.has(c.id));
+  }
+
+  const countEl = $('candidatesCount');
+  if (countEl) countEl.textContent = `Showing ${list.length} of ${totalCount} user${totalCount === 1 ? '' : 's'}`;
+
+  if (!list.length) {
+    const msg = (search || roleFilter !== 'all') ? 'No registered users match this search.' : 'No registered users yet.';
+    host.innerHTML = `<div class="empty-state"><i class="fa-solid fa-users"></i>${msg}</div>`;
+    return;
+  }
+
+  host.innerHTML = list.map(c => {
+    const appCount = state.applications.filter(a => a.uid === c.id).length;
+    return `<div class="tx-row">
+      <div class="tx-row-info">
+        <div class="tx-row-title">${esc(c.name||'—')}</div>
+        <div class="tx-row-sub">${esc(c.email||'—')} · ${esc(c.phone||'—')} · Joined ${fmtDate(c.createdAt)} · ${appCount} application(s)</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ================================================================
+   FILTER SAFETY NET
+   Inline onchange/oninput attributes already trigger the renders above.
+   This adds the same bindings via addEventListener as a backup, in case
+   an inline handler ever fails to fire (e.g. some in-app WebViews are
+   inconsistent about firing onchange on native <select> pickers).
+================================================================ */
+(function bindFilterSafetyNet(){
+  const bindings = [
+    ['applicantsRoleFilter', 'change', renderApplicants],
+    ['applicantsStatusFilter', 'change', renderApplicants],
+    ['applicantsSearch', 'input', renderApplicants],
+    ['applicantsSkillFilter', 'input', renderApplicants],
+    ['resultsRoleFilter', 'change', renderResults],
+    ['resultsStatusFilter', 'change', renderResults],
+    ['candidatesSearch', 'input', renderCandidates],
+    ['candidatesRoleFilter', 'change', renderCandidates],
+    ['hiredSearch', 'input', renderHired],
+    ['hiredRoleFilter', 'change', renderHired],
+    ['hiredStatusFilter', 'change', renderHired],
+  ];
+  bindings.forEach(([id, evt, fn]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(evt, fn);
+  });
+})();
+</script>
+</body>
+</html>
