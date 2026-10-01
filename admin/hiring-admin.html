@@ -433,7 +433,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
     <div class="form-panel" style="padding:14px 16px;margin-bottom:14px;">
       <div class="select-row" style="margin-bottom:0;">
         <input class="form-input" id="certSearch" style="flex:1;min-width:180px;" placeholder="Search by name, email, role or certificate ID…">
-        <div class="seg" id="certSeg"><button data-t="all" class="on">All</button><button data-t="INTERN">Internship</button><button data-t="JOB">Job</button></div>
+        <div class="seg" id="certSeg"><button data-t="all" class="on">All</button><button data-t="INTERN">Internship</button><button data-t="JOB">Job</button><button data-t="ACHIEVEMENT">Achievement</button></div>
         <select class="form-select" id="certStatusFilter" style="max-width:190px;"><option value="all">All status</option><option value="issued">Ready (green)</option><option value="ongoing">Ongoing</option><option value="na">Not issued</option></select>
         <select class="form-select" id="certRoleFilter" style="max-width:230px;"><option value="all">All Roles</option></select>
       </div>
@@ -1806,6 +1806,7 @@ function renderHiredInner(){
         ${ended ? `<button class="btn btn-outline btn-sm" onclick="emailEnd('${a.id}')"><i class="fa-solid fa-envelope"></i> Email ${st === 'fired' ? 'Fired' : 'Deleted'} Notice</button>
         <span style="flex:1;"></span>
         <button class="btn btn-green btn-sm" onclick="reinstateHired('${a.id}')"><i class="fa-solid fa-rotate-left"></i> Reinstate</button>` : ''}
+        ${st === 'left' ? `<span style="flex:1;"></span><button class="btn btn-green btn-sm" onclick="rehireCandidate('${a.id}')"><i class="fa-solid fa-rotate-left"></i> Rehire</button>` : ''}
         ${!ended && st !== 'left' && st !== 'completed' ? `
           <span style="flex:1;"></span>
           <button class="btn btn-danger btn-sm" onclick="openEndModal('${a.id}','fired')"><i class="fa-solid fa-user-slash"></i> Fire</button>
@@ -1921,7 +1922,7 @@ window.openCertEdit = function(appId){
     <div class="modal-title">Edit certificate <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · everything else is generated automatically</div>
     <div class="form-group"><label class="form-label">Certificate type</label><select class="form-select" id="ceKind">
-      <option value="">Auto (${c.kind === 'INTERN' ? 'Internship' : 'Experience'})</option><option value="INTERN" ${ov.kind === 'INTERN' ? 'selected' : ''}>Internship</option><option value="JOB" ${ov.kind === 'JOB' ? 'selected' : ''}>Job / Experience</option></select></div>
+      <option value="">Auto (${c.kind === 'INTERN' ? 'Internship' : (c.kind === 'ACHIEVEMENT' ? 'Achievement' : 'Experience')})</option><option value="INTERN" ${ov.kind === 'INTERN' ? 'selected' : ''}>Internship</option><option value="JOB" ${ov.kind === 'JOB' ? 'selected' : ''}>Job / Experience</option><option value="ACHIEVEMENT" ${ov.kind === 'ACHIEVEMENT' ? 'selected' : ''}>Certificate of Achievement</option></select></div>
     <div class="form-group"><label class="form-label">Role / designation on certificate</label><input class="form-input" id="ceRole" value="${esc(ov.roleTitle || '')}" placeholder="${esc(c.roleTitle)}"></div>
     <div class="form-group"><label class="form-label">Duration override (months, optional)</label><input class="form-input" id="ceMonths" type="number" step="0.5" min="0.5" max="60" value="${esc(ov.months || '')}" placeholder="Auto: ${esc(c.durationLabel || 'by rules')}"></div>
     <div class="form-group"><label class="form-label">Issue date (optional)</label><input class="form-input" id="ceDate" type="date" value="${esc(dv)}"></div>
@@ -1948,11 +1949,12 @@ window.openGiveCert = function(appId){
   const dv = ov.issueDate ? toInputDate(ov.issueDate).slice(0, 10) : today;
   openModal(`<div class="modal-box" style="max-width:480px;">
     <div class="modal-title">Give Certificate <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · Force-issue a certificate regardless of duration rules.</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · Issue a verified certificate directly to the employee/intern.</div>
     <div class="form-group"><label class="form-label">Certificate type</label>
       <select class="form-select" id="gcKind">
         <option value="INTERN" ${(ov.kind || c.kind) === 'INTERN' ? 'selected' : ''}>Internship</option>
         <option value="JOB" ${(ov.kind || c.kind) === 'JOB' ? 'selected' : ''}>Job / Experience</option>
+        <option value="ACHIEVEMENT" ${(ov.kind || c.kind) === 'ACHIEVEMENT' ? 'selected' : ''}>Certificate of Achievement / Recognition</option>
       </select></div>
     <div class="form-group"><label class="form-label">Role / designation on certificate</label>
       <input class="form-input" id="gcRole" value="${esc(ov.roleTitle || c.roleTitle || '')}" placeholder="e.g. Content Creator"></div>
@@ -2181,6 +2183,32 @@ window.reinstateHired = async function(appId){
     toast('Reinstated', 'success');
     renderHired(); renderRoles();
   } catch (e) { console.error(e); toast('Could not reinstate', 'error'); }
+};
+
+// Rehire candidate who left
+window.rehireCandidate = async function(appId){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const vac = (role && role.vacancy) || 1;
+  if (activeHiredCount(a.roleId, appId) >= vac) {
+    return toast(`All ${vac} seat(s) are filled for ${role?.title || 'this role'}. Increase vacancy in Test Manager to rehire.`, 'warning');
+  }
+  if (!confirm(`Rehire ${a.name || 'this candidate'} for ${role?.title || 'this role'}? This will restore their hiring status and allow re-issuing their offer.`)) return;
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), {
+      offerStatus: 'offered',
+      offerLeftAt: null,
+      offerLeftBy: null,
+      leaveAck: true,
+      hiredEndType: null,
+      hiredEndAt: null,
+      reinstatedAt: serverTimestamp()
+    });
+    Object.assign(a, { offerStatus: 'offered', offerLeftAt: null, offerLeftBy: null, leaveAck: true, hiredEndType: null, hiredEndAt: null });
+    toast('Candidate rehired — opening offer modal', 'success');
+    renderHired(); renderRoles();
+    openOfferModal(appId);
+  } catch (e) { console.error(e); toast('Could not rehire — please try again', 'error'); }
 };
 
 let _doneIds = null;
