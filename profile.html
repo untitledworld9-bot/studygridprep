@@ -658,6 +658,7 @@ header{
         <option value="NEET">NEET UG 2027</option>
         <option value="CUET">CUET UG 2027</option>
         <option value="Boards">Board Exams 2027</option>
+        <option value="Custom">Custom / Other Exam 🎯</option>
       </select>
 
       <label class="input-label" id="editDateLabel" style="display:none;">📅 Exam Date</label>
@@ -673,6 +674,30 @@ header{
       </div>
       <!-- Fixed date chip for NEET/Boards -->
       <div class="fixed-date-chip" id="fixedDateChip" style="display:none;"></div>
+
+      <!-- Custom exam edit box -->
+      <div id="customGoalEditBox" style="display:none;margin-bottom:14px;background:var(--surface2);border:1.5px solid rgba(91,91,246,0.2);border-radius:14px;padding:12px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">1. Exam Name</div>
+        <input type="text" id="editCustomName" class="edtech-input" placeholder="e.g. UPSC CSE, NDA, GATE, Semester Exam" style="margin-bottom:10px;">
+        
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">2. Pick Icon / Emoji</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <input type="text" id="editCustomEmoji" class="edtech-input" placeholder="🎯" maxlength="4" style="width:58px;text-align:center;font-size:18px;margin-bottom:0;">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('🎯')">🎯</button>
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('🚀')">🚀</button>
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('📚')">📚</button>
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('🏛️')">🏛️</button>
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('⚖️')">⚖️</button>
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('🩺')">🩺</button>
+            <button type="button" class="date-day-pill" style="min-width:32px;height:34px;padding:0 6px;font-size:15px;" onclick="pickProfileEmoji('⚡')">⚡</button>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">3. Target Exam Date</div>
+        <input type="date" id="editCustomDate" class="edtech-input" style="margin-bottom:0;">
+      </div>
+
       <!-- Hidden value holders -->
       <input type="hidden" id="jeeSelectedDate" value="2027-01-21">
       <input type="hidden" id="cuetSelectedDate" value="2027-05-11">
@@ -791,7 +816,8 @@ const EXAMS = {
   JEE:    { date:"2027-01-21", label:"Jan 21 – 31, 2027 (Tentative)", name:"JEE Main 2027",   nta:true,  tentative:true  },
   NEET:   { date:"2027-05-03", label:"3 May 2027 (Tentative)",        name:"NEET UG 2027",    nta:true,  tentative:true  },
   CUET:   { date:"2027-05-11", label:"May 11 – 31, 2027 (Tentative)", name:"CUET UG 2027",   nta:true,  tentative:true  },
-  Boards: { date:"2027-02-15", label:"Feb 15, 2027 (Tentative)",      name:"Board Exams 2027",nta:false, tentative:true  }
+  Boards: { date:"2027-02-15", label:"Feb 15, 2027 (Tentative)",      name:"Board Exams 2027",nta:false, tentative:true  },
+  Custom: { date:"",           label:"Custom Goal",                   name:"Custom / Other Exam", nta:false, tentative:false }
 };
 
 // NTA logo URL (updated)
@@ -818,9 +844,13 @@ onAuthStateChanged(auth, async (user) => {
   const name     = profileData.displayName || user.displayName || "User";
   const email    = profileData.email       || user.email       || "";
   const goal     = profileData.goal        || localStorage.getItem("goal") || "JEE";
+  if(profileData.customExamName) localStorage.setItem("customExamName", profileData.customExamName);
+  if(profileData.customExamEmoji) localStorage.setItem("customExamEmoji", profileData.customExamEmoji);
+  if(profileData.customExamDate) localStorage.setItem("customExamDate", profileData.customExamDate);
+
   // If stored date is 2026, reset to 2027 default
   let examDate   = profileData.examDate    || localStorage.getItem("examDate") || (EXAMS[goal]?.date || "");
-  if(examDate && examDate.startsWith("2026")){ examDate = EXAMS[goal]?.date || ""; }
+  if(examDate && examDate.startsWith("2026") && goal !== "Custom"){ examDate = EXAMS[goal]?.date || ""; }
 
   localStorage.setItem("userName",  name);
   localStorage.setItem("userEmail", email);
@@ -832,10 +862,13 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function renderProfile(name, email, goal, examDate){
+  const customName = profileData.customExamName || localStorage.getItem("customExamName") || "Custom Exam";
+  const customEmoji = profileData.customExamEmoji || localStorage.getItem("customExamEmoji") || "🎯";
+
   // Header
   document.getElementById("hdAvatar").innerText = name.charAt(0).toUpperCase();
   document.getElementById("hdName").innerText   = name;
-  document.getElementById("hdBadge").innerText  = goal || "--";
+  document.getElementById("hdBadge").innerText  = (goal === "Custom") ? (customEmoji + " " + customName) : (goal || "--");
 
   // Plan badge — live Firestore watch (updates without page reload)
   function _updateProfileBadge(isSubscribed, trialExpiry) {
@@ -881,11 +914,27 @@ function renderProfile(name, email, goal, examDate){
   // Exam card
   const info = EXAMS[goal];
   const ntaCard = document.getElementById("vmNtaCard");
-  if(info && info.nta){
+  if(goal === "Custom"){
+    ntaCard.style.display = "flex";
+    document.getElementById("vmExamName").innerText = customName;
+    document.getElementById("vmBadgeYear").innerText = examDate ? (new Date(examDate).getFullYear() || "Target") : "Target";
+    const badgeTentative = document.getElementById("vmBadgeTentative");
+    if(badgeTentative){
+      badgeTentative.style.display = "";
+      badgeTentative.innerText = "Custom Goal";
+    }
+    const logoImg = document.getElementById("ntaLogoImg");
+    const logoFb  = document.getElementById("ntaFb");
+    logoImg.style.display = "none";
+    logoFb.style.display  = "flex";
+    logoFb.style.fontSize = "22px";
+    logoFb.innerText      = customEmoji;
+  } else if(info && info.nta){
     ntaCard.style.display = "flex";
     document.getElementById("vmExamName").innerText = info.name;
     document.getElementById("vmBadgeYear").innerText = "2027";
     document.getElementById("vmBadgeTentative").style.display = info.tentative ? "" : "none";
+    document.getElementById("vmBadgeTentative").innerText = "Tentative";
     const logoImg = document.getElementById("ntaLogoImg");
     const logoFb  = document.getElementById("ntaFb");
     if(LOGO_MAP[goal]){
@@ -895,6 +944,7 @@ function renderProfile(name, email, goal, examDate){
     } else {
       logoImg.style.display = "none";
       logoFb.style.display  = "flex";
+      logoFb.style.fontSize = "";
     }
   } else {
     ntaCard.style.display = "none";
@@ -910,22 +960,31 @@ function renderProfile(name, email, goal, examDate){
 
 function renderCountdown(goal, examDate){
   const card = document.getElementById("countdownCard");
-  const date = examDate || EXAMS[goal]?.date;
+  const date = examDate || (goal === "Custom" ? (profileData.customExamDate || localStorage.getItem("customExamDate")) : EXAMS[goal]?.date);
   if(!date){ card.style.display="none"; return; }
 
   const examTs  = new Date(date); examTs.setHours(0,0,0,0);
   const todayTs = new Date();     todayTs.setHours(0,0,0,0);
   const diff    = Math.ceil((examTs - todayTs) / 86400000);
 
-  document.getElementById("vmDaysExam").innerText = EXAMS[goal]?.name || goal;
-  // Show the exact selected date for JEE/CUET, otherwise use the label
-  let dateDisplay = EXAMS[goal]?.label || date;
-  if((goal==="JEE"||goal==="CUET") && examDate && examDate!==EXAMS[goal]?.date){
-    const d=new Date(examDate);
+  if(goal === "Custom"){
+    const customName = profileData.customExamName || localStorage.getItem("customExamName") || "Custom Exam";
+    const customEmoji = profileData.customExamEmoji || localStorage.getItem("customExamEmoji") || "🎯";
+    document.getElementById("vmDaysExam").innerText = customEmoji + " " + customName;
+    const d=new Date(date);
     const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    dateDisplay=d.getDate()+" "+mns[d.getMonth()]+" "+d.getFullYear()+" (Selected)";
+    document.getElementById("vmDaysDate").innerText = d.getDate()+" "+mns[d.getMonth()]+" "+d.getFullYear()+" (Target)";
+  } else {
+    document.getElementById("vmDaysExam").innerText = EXAMS[goal]?.name || goal;
+    // Show the exact selected date for JEE/CUET, otherwise use the label
+    let dateDisplay = EXAMS[goal]?.label || date;
+    if((goal==="JEE"||goal==="CUET") && examDate && examDate!==EXAMS[goal]?.date){
+      const d=new Date(examDate);
+      const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      dateDisplay=d.getDate()+" "+mns[d.getMonth()]+" "+d.getFullYear()+" (Selected)";
+    }
+    document.getElementById("vmDaysDate").innerText = dateDisplay;
   }
-  document.getElementById("vmDaysDate").innerText = dateDisplay;
 
   const doneChip   = document.getElementById("examDoneChip");
   const barWrap    = document.getElementById("countdownBarWrap");
@@ -963,6 +1022,11 @@ function checkNotifRow(){
   }
 }
 
+window.pickProfileEmoji = function(emo){
+  const el = document.getElementById("editCustomEmoji");
+  if(el) el.value = emo;
+};
+
 // ── OPEN EDIT ──
 window.openEdit = function(){
   const name  = profileData.displayName || "";
@@ -978,6 +1042,15 @@ window.openEdit = function(){
   // Pre-fill hidden date inputs
   if(eDate && goal==="JEE") document.getElementById("jeeSelectedDate").value = eDate;
   if(eDate && goal==="CUET") document.getElementById("cuetSelectedDate").value = eDate;
+
+  if(goal === "Custom"){
+    const editCName = document.getElementById("editCustomName");
+    const editCEmoji = document.getElementById("editCustomEmoji");
+    const editCDate = document.getElementById("editCustomDate");
+    if(editCName) editCName.value = profileData.customExamName || localStorage.getItem("customExamName") || "";
+    if(editCEmoji) editCEmoji.value = profileData.customExamEmoji || localStorage.getItem("customExamEmoji") || "🎯";
+    if(editCDate) editCDate.value = eDate || profileData.customExamDate || localStorage.getItem("customExamDate") || "";
+  }
   onGoalChange(eDate);
 };
 
@@ -1020,16 +1093,30 @@ window.onGoalChange = function(prefillDate){
   const cuetBox    = document.getElementById("cuetPickerBox");
   const fixedChip  = document.getElementById("fixedDateChip");
   const dateLabel  = document.getElementById("editDateLabel");
+  const customBox  = document.getElementById("customGoalEditBox");
 
   jeeBox.style.display    = "none";
   cuetBox.style.display   = "none";
   fixedChip.style.display = "none";
   dateLabel.style.display = "none";
+  if(customBox) customBox.style.display = "none";
 
   const saved = (typeof prefillDate === "string" ? prefillDate : "") || profileData.examDate || "";
 
-  if(goal === "JEE"){
+  if(goal === "Custom"){
     dateLabel.style.display = "block";
+    dateLabel.innerText = "🎯 Custom Exam Details";
+    if(customBox) customBox.style.display = "block";
+    const editCName = document.getElementById("editCustomName");
+    const editCEmoji = document.getElementById("editCustomEmoji");
+    const editCDate = document.getElementById("editCustomDate");
+    if(editCName && !editCName.value) editCName.value = profileData.customExamName || localStorage.getItem("customExamName") || "";
+    if(editCEmoji && !editCEmoji.value) editCEmoji.value = profileData.customExamEmoji || localStorage.getItem("customExamEmoji") || "🎯";
+    if(editCDate && !editCDate.value) editCDate.value = saved || profileData.customExamDate || localStorage.getItem("customExamDate") || "";
+
+  } else if(goal === "JEE"){
+    dateLabel.style.display = "block";
+    dateLabel.innerText = "📅 Exam Date";
     jeeBox.style.display    = "block";
     // Jan 21-31 2027
     const sel = (saved && saved.startsWith("2027-01") && parseInt(saved.split("-")[2])>=21) ? saved : "2027-01-21";
@@ -1037,6 +1124,7 @@ window.onGoalChange = function(prefillDate){
 
   } else if(goal === "CUET"){
     dateLabel.style.display = "block";
+    dateLabel.innerText = "📅 Exam Date";
     cuetBox.style.display   = "block";
     // May 11-31 2027
     const sel = (saved && saved.startsWith("2027-05") && parseInt(saved.split("-")[2])>=11) ? saved : "2027-05-11";
@@ -1047,6 +1135,7 @@ window.onGoalChange = function(prefillDate){
     const info = EXAMS[goal];
     if(info && info.label){
       dateLabel.style.display = "block";
+      dateLabel.innerText = "📅 Exam Date";
       fixedChip.style.display = "flex";
       fixedChip.innerHTML = `<i class="fa-solid fa-calendar-check"></i>&nbsp; ${info.label}`;
     }
@@ -1064,9 +1153,31 @@ window.saveProfile = async function(){
   }
 
   let examDate = "";
-  if(goal === "JEE")       examDate = document.getElementById("jeeSelectedDate").value  || EXAMS.JEE.date;
-  else if(goal === "CUET") examDate = document.getElementById("cuetSelectedDate").value || EXAMS.CUET.date;
-  else                     examDate = EXAMS[goal]?.date || "";
+  let extraDoc = {};
+
+  if(goal === "Custom"){
+    const editCName = document.getElementById("editCustomName");
+    const editCEmoji = document.getElementById("editCustomEmoji");
+    const editCDate = document.getElementById("editCustomDate");
+    const customName = (editCName ? editCName.value : "").trim() || "My Exam";
+    const customEmoji = (editCEmoji ? editCEmoji.value : "").trim() || "🎯";
+    examDate = (editCDate ? editCDate.value : "") || profileData.examDate || "";
+
+    profileData.customExamName = customName;
+    profileData.customExamEmoji = customEmoji;
+    profileData.customExamDate = examDate;
+
+    localStorage.setItem("customExamName", customName);
+    localStorage.setItem("customExamEmoji", customEmoji);
+    if(examDate) localStorage.setItem("customExamDate", examDate);
+    extraDoc = { customExamName: customName, customExamEmoji: customEmoji, customExamDate: examDate };
+  } else if(goal === "JEE") {
+    examDate = document.getElementById("jeeSelectedDate").value  || EXAMS.JEE.date;
+  } else if(goal === "CUET") {
+    examDate = document.getElementById("cuetSelectedDate").value || EXAMS.CUET.date;
+  } else {
+    examDate = EXAMS[goal]?.date || "";
+  }
 
   profileData.displayName = newName;
   profileData.goal        = goal;
@@ -1082,6 +1193,7 @@ window.saveProfile = async function(){
       email:       currentUser.email,
       goal:        goal,
       examDate:    examDate,
+      ...extraDoc
     }, { merge: true });
   } catch(e){ console.log("Firestore save:", e); }
 
@@ -1094,7 +1206,7 @@ window.saveProfile = async function(){
     cancelEdit();
     renderProfile(newName, currentUser.email, goal, examDate);
     window.dispatchEvent(new StorageEvent('storage', { key:'goal', newValue:goal }));
-  }, 1500);
+  }, 1200);
 };
 
 // ── NOTIFICATION ──

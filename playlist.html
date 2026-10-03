@@ -328,6 +328,151 @@ input::placeholder { color: var(--text3); }
   color: white;
 }
 
+/* Custom subject action buttons */
+.sub-actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.sub-action-btn {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: var(--t);
+  flex-shrink: 0;
+}
+.sub-action-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(91,91,246,0.1);
+}
+.sub-action-btn.delete:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+.add-sub-trigger-btn {
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px dashed var(--accent);
+  background: rgba(91,91,246,0.06);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--t);
+  font-family: 'Poppins', sans-serif;
+}
+.add-sub-trigger-btn:hover {
+  background: rgba(91,91,246,0.12);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.sub-form-box {
+  margin-top: 6px;
+  margin-bottom: 10px;
+  padding: 14px;
+  background: var(--surface2);
+  border: 1.5px solid var(--accent);
+  border-radius: 16px;
+  animation: fadeIn 0.2s ease;
+}
+.sub-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.sub-form-close {
+  background: none; border: none; font-size: 15px; color: var(--text3); cursor: pointer; padding: 2px 6px;
+}
+.sub-emoji-input {
+  width: 48px; height: 42px;
+  text-align: center;
+  font-size: 20px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+.sub-name-input {
+  flex: 1; height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  outline: none;
+}
+.sub-name-input:focus, .sub-emoji-input:focus {
+  border-color: var(--accent);
+}
+.sub-emoji-quick-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.sub-chip {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: 0.15s;
+}
+.sub-chip:hover {
+  border-color: var(--accent);
+  background: rgba(91,91,246,0.12);
+  transform: scale(1.1);
+}
+.sub-save-btn {
+  flex: 1;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: var(--t);
+}
+.sub-cancel-btn {
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text2);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--t);
+}
+
 .add-btn {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: #fff;
@@ -1823,10 +1968,12 @@ return;
 }
 
 const goal = localStorage.getItem("goal") || "JEE";
-const allSubjects = (window.GOAL_SUBJECTS && window.GOAL_SUBJECTS[goal]) || ["Physics","Chemistry","Maths"];
+const allSubjects = (window.GOAL_SUBJECTS && window.GOAL_SUBJECTS[goal]) || (typeof getGoalSubjects === "function" ? getGoalSubjects(goal) : ["Physics","Chemistry","Maths"]);
 const subjects = allSubjects.filter(s => s !== "Music");
+const videoSubjects = [...new Set(videos.map(v => v.subject).filter(s => s && s !== "Music"))];
+const combinedSubjects = [...new Set([...subjects, ...videoSubjects])];
 
-subjects.forEach(sub=>{
+combinedSubjects.forEach(sub=>{
 
 const list = videos.filter(v=>v.subject===sub);
 
@@ -1895,11 +2042,13 @@ list.forEach((video,index)=>{
 
 // MUSIC SECTION
 const musicRow = document.getElementById("musicRow");
-musicRow.innerHTML="";
-
-const musicList = videos.filter(v=>v.subject==="Music");
-
-musicList.forEach(video=>{
+if (musicRow) {
+  musicRow.innerHTML="";
+  const musicList = videos.filter(v=>v.subject==="Music");
+  if (musicList.length === 0) {
+    musicRow.innerHTML = "<p style='opacity:0.45;font-size:12.5px;padding:6px 2px;'>No study music added yet. Add lo-fi/music links to stay focused! 🎧</p>";
+  } else {
+    musicList.forEach(video=>{
     let card=document.createElement("div");
     card.className="video-card";
 
@@ -1947,7 +2096,8 @@ musicList.forEach(video=>{
     `;
     musicRow.appendChild(card);
 });
-
+  }
+}
 }
 
 
@@ -2662,7 +2812,14 @@ function buildFullPrompt(userMsg) {
     const _genericNames = ["user", "anonymous", "student", ""];
     const userName = (_firstName && !_genericNames.includes(_firstName.toLowerCase())) ? _firstName : "";
 
+    const currentGoal = localStorage.getItem("goal") || "JEE";
+    const currentExam = (currentGoal === "Custom") ? (localStorage.getItem("customExamName") || "Target Exam") : currentGoal;
+    const curVidData = (window._playlist_videos || []).find(v => v.id === aiChatVideoId);
+    const currentSub = (curVidData && curVidData.subject) ? curVidData.subject : "";
+
     const system = `Tu ek smart AI video assistant hai jo Study Grid Prep platform ka part hai.
+
+TARGET CONTEXT: Student abhi "${currentExam}" exam ki taiyari kar raha hai${currentSub ? ` (Subject: ${currentSub})` : ''}. Is exam aur topic ke according student ki doubts solve karo, accurate concepts samjhao aur guidance do.
 
 LANGUAGE: Hinglish mein baat kar — matlab Hindi aur English ka natural mix jaise real students bolte hain. "Tu/tera" style, friendly aur energetic. Scientific/technical terms (gravity, force, velocity, cell, atom, photosynthesis, etc.) ENGLISH mein hi bolna — unka Hindi anuvad mat kar. Sirf explanation Hinglish mein ho. Example: "Gravity ek force hai jo objects ko Earth ki taraf kheenchti hai" — NOT "Gurutvakarshan ek bal hai..."
 
@@ -3882,9 +4039,11 @@ async function generateQuiz() {
 
     // Build prompt for AI quiz generation
     // Use as much transcript as possible for accurate video-based questions
+    const currentQuizGoal = localStorage.getItem("goal") || "JEE";
+    const currentQuizExam = (currentQuizGoal === "Custom") ? (localStorage.getItem("customExamName") || "competitive exam") : (currentQuizGoal || "competitive exam");
     const transcriptSection = aiVideoTranscript && aiVideoTranscript.trim().length > 50
         ? `ACTUAL VIDEO TRANSCRIPT (use this to make questions — extract specific facts, formulas, steps, values from it):\n"""\n${aiVideoTranscript.slice(0, 4500)}\n"""`
-        : `Video title: "${aiChatVideoTitle || 'Study Video'}" — No transcript available. Generate standard exam-style MCQs for this topic as if it were a JEE/NEET/CUET/Boards question paper.`;
+        : `Video title: "${aiChatVideoTitle || 'Study Video'}" — No transcript available. Generate standard exam-style MCQs for this topic as if it were a ${currentQuizExam} question paper.`;
 
     const prompt = `You are a strict exam quiz generator. Generate exactly ${quizConfig.count} multiple choice questions.
 
@@ -4143,63 +4302,122 @@ function closeQuizResult() {
 </script>
 
 <script>
-// ===== DYNAMIC SUBJECT OPTIONS BASED ON GOAL =====
-(function(){
-  // Subject lists per goal — Music always at end
-  var GOAL_SUBJECTS = {
-    JEE:    ["Physics","Chemistry","Maths","Music"],
-    NEET:   ["Physics","Chemistry","Zoology","Botany","Music"],
-    CUET:   ["Physics","Chemistry","Maths","Biology","English","GAT","Music"],
-    Boards: ["Physics","Chemistry","Maths","English","Physical Education","Music"]
-  };
+// ===== DYNAMIC SUBJECT OPTIONS & CUSTOM USER SUBJECTS (FIRESTORE PERSISTENT) =====
+var BASE_GOAL_SUBJECTS = {
+  JEE:    ["Physics","Chemistry","Maths"],
+  NEET:   ["Physics","Chemistry","Zoology","Botany"],
+  CUET:   ["Physics","Chemistry","Maths","Biology","English","GAT"],
+  Boards: ["Physics","Chemistry","Maths","English","Physical Education"],
+  Custom: []
+};
 
-window.GOAL_SUBJECTS = GOAL_SUBJECTS;
+// Global emoji map for subjects
+var SUBJECT_EMOJI = {
+  Physics: "⚛️", Chemistry: "🧪", Maths: "📐", Biology: "🧬",
+  Zoology: "🦎", Botany: "🌿", English: "📖", GAT: "🧠",
+  "Physical Education": "🏃", Music: "🎵"
+};
 
-  function updateSubjectSelect(){
-    var goal = localStorage.getItem("goal") || "JEE";
-    var subjects = GOAL_SUBJECTS[goal] || GOAL_SUBJECTS["JEE"];
-    var sel = document.getElementById("subjectSelect");
-    if(!sel) return;
+function getCustomSubjectsMap() {
+  try {
+    var raw = localStorage.getItem("sgp_custom_subjects_v2");
+    if(raw) return JSON.parse(raw);
+  } catch(e){}
+  return {};
+}
 
-            // Keep current selection if it still exists in new list
-        var currentVal = sel.value;
-
-        // Rebuild options (Added 'selected hidden' so it defaults properly)
-        sel.innerHTML = '<option value="" disabled selected hidden>Select Subject</option>';
-        subjects.forEach(function(sub){
-          var opt = document.createElement("option");
-          opt.value = sub;
-          opt.textContent = sub;
-          if(sub === currentVal) opt.selected = true;
-          sel.appendChild(opt);
-        });
-
-        // If current subject no longer valid, or if it was empty, reset it explicitly
-        if(currentVal && subjects.indexOf(currentVal) === -1){
-          sel.value = "";
-        } else if (!currentVal) {
-          sel.value = ""; // Ye browser ko force karega "Select Subject" dikhane ke liye
-        }
+function saveCustomSubjectsMap(map) {
+  try {
+    localStorage.setItem("sgp_custom_subjects_v2", JSON.stringify(map));
+  } catch(e){}
+  // Sync to Firestore under users/{uid}
+  if (window.auth && window.auth.currentUser && window.db) {
+    import("./firebase.js").then(function(fb){
+      fb.setDoc(fb.doc(window.db, "users", window.auth.currentUser.uid), {
+        customSubjectsByGoal: map
+      }, { merge: true }).catch(function(err){ console.warn("Firestore custom subjects save:", err); });
+    }).catch(function(){});
   }
+}
 
-  // Run on load
-  document.addEventListener("DOMContentLoaded", updateSubjectSelect);
+function getGoalCustomSubjects(goal) {
+  var map = getCustomSubjectsMap();
+  var list = map[goal];
+  if(Array.isArray(list)) return list;
+  if(goal === "Custom") {
+    // Default subject for Custom exam if user hasn't added any yet
+    return [{ name: "Subject 1", emoji: "📚" }];
+  }
+  return [];
+}
 
-  // Update if goal changes (e.g. user navigates back from profile)
-  window.addEventListener("storage", function(e){
-    if(e.key === "goal") updateSubjectSelect();
+function getGoalSubjects(goal) {
+  var base = BASE_GOAL_SUBJECTS[goal] ? [...BASE_GOAL_SUBJECTS[goal]] : [];
+  var customItems = getGoalCustomSubjects(goal);
+  var customNames = customItems.map(function(item){
+    var n = typeof item === "string" ? item : item.name;
+    var em = typeof item === "string" ? "📚" : (item.emoji || "📚");
+    SUBJECT_EMOJI[n] = em;
+    return n;
   });
-  window.addEventListener("pageshow", updateSubjectSelect);
+  // Base subjects + User-added Custom subjects + permanent "Music" at the end
+  var combined = [...base, ...customNames, "Music"];
+  var seen = {};
+  return combined.filter(function(s){
+    if(!s || seen[s]) return false;
+    seen[s] = true;
+    return true;
+  });
+}
 
-  // Expose globally so saveAndRender can call it if needed
-  window.updateSubjectSelect = updateSubjectSelect;
-})();
+// Expose GOAL_SUBJECTS proxy object for backward compatibility
+window.GOAL_SUBJECTS = new Proxy({}, {
+  get: function(target, prop) {
+    if (typeof prop === "string") return getGoalSubjects(prop);
+    return target[prop];
+  }
+});
+window.getGoalSubjects = getGoalSubjects;
+
+function updateSubjectSelect(){
+  var goal = localStorage.getItem("goal") || "JEE";
+  var subjects = getGoalSubjects(goal);
+  var sel = document.getElementById("subjectSelect");
+  if(!sel) return;
+
+  var currentVal = sel.value;
+  sel.innerHTML = '<option value="" disabled selected hidden>Select Subject</option>';
+  subjects.forEach(function(sub){
+    var opt = document.createElement("option");
+    opt.value = sub;
+    opt.textContent = sub;
+    if(sub === currentVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  if(currentVal && subjects.indexOf(currentVal) === -1){
+    sel.value = "";
+  } else if (!currentVal) {
+    sel.value = "";
+  }
+  syncPickerUI();
+}
+
+// Run on load
+document.addEventListener("DOMContentLoaded", updateSubjectSelect);
+window.addEventListener("storage", function(e){
+  if(e.key === "goal" || e.key === "sgp_custom_subjects_v2") {
+    updateSubjectSelect();
+    if(typeof window.saveAndRender === "function") window.saveAndRender();
+  }
+});
+window.addEventListener("pageshow", updateSubjectSelect);
+window.updateSubjectSelect = updateSubjectSelect;
 </script>
 
 <script type="module" src="/index.js"></script> 
 
-
-<!-- Live subscription watch — AI button updates without page reload -->
+<!-- Live subscription & user data watch (includes custom subjects & goal sync) -->
 <script type="module">
 import { db, auth, onAuthStateChanged, onSnapshot, doc } from './firebase.js';
 onAuthStateChanged(auth, user => {
@@ -4213,6 +4431,21 @@ onAuthStateChanged(auth, user => {
     localStorage.setItem('isSubscribed', active ? 'true' : 'false');
     if (trialExpiry) localStorage.setItem('trialExpiry', String(trialExpiry));
     if (typeof window._updateAIBtnState === 'function') window._updateAIBtnState();
+
+    // Firestore persistent sync: Restore custom subjects
+    if (d.customSubjectsByGoal) {
+      localStorage.setItem('sgp_custom_subjects_v2', JSON.stringify(d.customSubjectsByGoal));
+      if (typeof window.updateSubjectSelect === 'function') window.updateSubjectSelect();
+      if (typeof window.saveAndRender === 'function') window.saveAndRender();
+    }
+    // Restore goal and custom exam info
+    if (d.goal) {
+      localStorage.setItem('goal', d.goal);
+      if (d.customExamName) localStorage.setItem('customExamName', d.customExamName);
+      if (d.customExamEmoji) localStorage.setItem('customExamEmoji', d.customExamEmoji);
+      if (d.examDate) localStorage.setItem('examDate', d.examDate);
+      if (typeof window.updateSubjectSelect === 'function') window.updateSubjectSelect();
+    }
   }, err => {
     console.warn('[Playlist sub notice]', err?.message || err);
   });
@@ -4221,13 +4454,6 @@ onAuthStateChanged(auth, user => {
 </body>
 </html>
 <script>
-// ── SUBJECT EMOJI MAP ──
-var SUBJECT_EMOJI = {
-  Physics: "⚛️", Chemistry: "🧪", Maths: "📐", Biology: "🧬",
-  Zoology: "🦎", Botany: "🌿", English: "📖", GAT: "🧠",
-  "Physical Education": "🏃", Music: "🎵"
-};
-
 function syncPickerUI() {
   var sel = document.getElementById("subjectSelect");
   var lbl = document.getElementById("subjectPickerLabel");
@@ -4243,21 +4469,50 @@ function syncPickerUI() {
   }
 }
 
+var editingSubjectOldName = null;
+
 function openSubjectModal() {
+  var goal = localStorage.getItem("goal") || "JEE";
   var sel = document.getElementById("subjectSelect");
   var list = document.getElementById("subjectCardList");
   if (!sel || !list) return;
 
+  var subjects = getGoalSubjects(goal);
+  var customItems = getGoalCustomSubjects(goal);
+  var customNameSet = new Set(customItems.map(function(c){ return typeof c === "string" ? c : c.name; }));
+  var isCustomExam = (goal === "Custom");
+
+  // Non-music subjects
+  var nonMusicSubjects = subjects.filter(function(s){ return s !== "Music"; });
+
   list.innerHTML = "";
-  var opts = sel.querySelectorAll("option:not([disabled])");
-  opts.forEach(function(opt) {
-    var sub = opt.value;
+
+  // 1. Render subject cards
+  nonMusicSubjects.forEach(function(sub) {
+    var isCustomSub = customNameSet.has(sub) || isCustomExam;
+    var isSelected = (sel.value === sub);
     var card = document.createElement("div");
-    card.className = "subject-card-item" + (sel.value === sub ? " selected" : "");
-    card.innerHTML =
-      '<span class="subject-card-emoji">' + (SUBJECT_EMOJI[sub] || "📚") + '</span>' +
-      '<span class="subject-card-name">' + sub + '</span>' +
-      '<span class="subject-card-check">' + (sel.value === sub ? "✓" : "") + '</span>';
+    card.className = "subject-card-item" + (isSelected ? " selected" : "");
+
+    var emojiSpan = '<span class="subject-card-emoji">' + (SUBJECT_EMOJI[sub] || "📚") + '</span>';
+    var nameSpan = '<span class="subject-card-name">' + sub + '</span>';
+    var checkSpan = '<span class="subject-card-check">' + (isSelected ? "✓" : "") + '</span>';
+
+    var actionsHtml = "";
+    if (isCustomSub) {
+      actionsHtml = `
+        <div class="sub-actions-wrap" onclick="event.stopPropagation()">
+          <button type="button" class="sub-action-btn edit" title="Edit Subject Name / Icon" onclick="editSubjectItem('${sub.replace(/'/g, "\\'")}')">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button type="button" class="sub-action-btn delete" title="Delete Subject" onclick="deleteSubjectItem('${sub.replace(/'/g, "\\'")}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    card.innerHTML = emojiSpan + nameSpan + actionsHtml + checkSpan;
     card.addEventListener("click", function() {
       sel.value = sub;
       syncPickerUI();
@@ -4266,7 +4521,195 @@ function openSubjectModal() {
     list.appendChild(card);
   });
 
+  // 2. Render Inline Add / Edit Subject Form Box
+  var formDiv = document.createElement("div");
+  formDiv.id = "subFormBox";
+  formDiv.className = "sub-form-box";
+  formDiv.style.display = "none";
+  formDiv.innerHTML = `
+    <div class="sub-form-header">
+      <span id="subFormTitle">Add New Subject</span>
+      <button type="button" class="sub-form-close" onclick="cancelSubjectForm()">✕</button>
+    </div>
+    <div class="sub-form-inputs">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="newSubEmoji" class="sub-emoji-input" maxlength="4" placeholder="📚" value="📚">
+        <input type="text" id="newSubName" class="sub-name-input" placeholder="Subject Name (e.g. Coding, Aptitude)">
+      </div>
+      <div class="sub-emoji-quick-chips">
+        <span class="sub-chip" onclick="selectSubEmoji('📚')">📚</span>
+        <span class="sub-chip" onclick="selectSubEmoji('⚛️')">⚛️</span>
+        <span class="sub-chip" onclick="selectSubEmoji('🧪')">🧪</span>
+        <span class="sub-chip" onclick="selectSubEmoji('📐')">📐</span>
+        <span class="sub-chip" onclick="selectSubEmoji('🧬')">🧬</span>
+        <span class="sub-chip" onclick="selectSubEmoji('💻')">💻</span>
+        <span class="sub-chip" onclick="selectSubEmoji('🧠')">🧠</span>
+        <span class="sub-chip" onclick="selectSubEmoji('📝')">📝</span>
+        <span class="sub-chip" onclick="selectSubEmoji('🎯')">🎯</span>
+        <span class="sub-chip" onclick="selectSubEmoji('⚡')">⚡</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button type="button" class="sub-save-btn" onclick="saveSubjectFromForm()"><i class="fa-solid fa-check"></i> Save Subject</button>
+        <button type="button" class="sub-cancel-btn" onclick="cancelSubjectForm()">Cancel</button>
+      </div>
+    </div>
+  `;
+  list.appendChild(formDiv);
+
+  // 3. Render "+ Add Subject" Button
+  var addBtn = document.createElement("button");
+  addBtn.id = "addSubTriggerBtn";
+  addBtn.type = "button";
+  addBtn.className = "add-sub-trigger-btn";
+  addBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Subject';
+  addBtn.onclick = function() {
+    openAddSubjectForm();
+  };
+  list.appendChild(addBtn);
+
+  // 4. Render PERMANENT Music Card at Bottom
+  var musicCard = document.createElement("div");
+  var isMusicSelected = (sel.value === "Music");
+  musicCard.className = "subject-card-item" + (isMusicSelected ? " selected" : "");
+  musicCard.style.marginTop = "6px";
+  musicCard.style.background = "linear-gradient(135deg, rgba(91,91,246,0.06), rgba(124,58,237,0.04))";
+  musicCard.innerHTML = `
+    <span class="subject-card-emoji">🎵</span>
+    <span class="subject-card-name" style="font-weight:700;">Music</span>
+    <span style="font-size:10px;padding:2px 8px;border-radius:50px;background:rgba(91,91,246,0.1);color:var(--accent);font-weight:700;margin-right:8px;">Permanent</span>
+    <span class="subject-card-check">${isMusicSelected ? "✓" : ""}</span>
+  `;
+  musicCard.addEventListener("click", function() {
+    sel.value = "Music";
+    syncPickerUI();
+    closeSubjectModal(null, true);
+  });
+  list.appendChild(musicCard);
+
   document.getElementById("subjectModalBackdrop").classList.add("open");
+}
+
+function selectSubEmoji(emo) {
+  var inp = document.getElementById("newSubEmoji");
+  if(inp) inp.value = emo;
+}
+
+function openAddSubjectForm() {
+  editingSubjectOldName = null;
+  var form = document.getElementById("subFormBox");
+  var trigger = document.getElementById("addSubTriggerBtn");
+  var title = document.getElementById("subFormTitle");
+  var nameInp = document.getElementById("newSubName");
+  var emojiInp = document.getElementById("newSubEmoji");
+
+  if(title) title.innerText = "Add New Subject";
+  if(nameInp) nameInp.value = "";
+  if(emojiInp) emojiInp.value = "📚";
+  if(form) form.style.display = "block";
+  if(trigger) trigger.style.display = "none";
+  if(nameInp) setTimeout(function(){ nameInp.focus(); }, 50);
+}
+
+function editSubjectItem(subName) {
+  editingSubjectOldName = subName;
+  var form = document.getElementById("subFormBox");
+  var trigger = document.getElementById("addSubTriggerBtn");
+  var title = document.getElementById("subFormTitle");
+  var nameInp = document.getElementById("newSubName");
+  var emojiInp = document.getElementById("newSubEmoji");
+
+  if(title) title.innerText = "Edit Subject";
+  if(nameInp) nameInp.value = subName;
+  if(emojiInp) emojiInp.value = SUBJECT_EMOJI[subName] || "📚";
+  if(form) form.style.display = "block";
+  if(trigger) trigger.style.display = "none";
+  if(nameInp) setTimeout(function(){ nameInp.focus(); }, 50);
+}
+
+function cancelSubjectForm() {
+  editingSubjectOldName = null;
+  var form = document.getElementById("subFormBox");
+  var trigger = document.getElementById("addSubTriggerBtn");
+  if(form) form.style.display = "none";
+  if(trigger) trigger.style.display = "flex";
+}
+
+function saveSubjectFromForm() {
+  var nameInp = document.getElementById("newSubName");
+  var emojiInp = document.getElementById("newSubEmoji");
+  var newName = (nameInp ? nameInp.value : "").trim();
+  var newEmoji = (emojiInp ? emojiInp.value : "").trim() || "📚";
+
+  if (!newName) {
+    if(nameInp) {
+      nameInp.style.borderColor = "#ef4444";
+      setTimeout(function(){ nameInp.style.borderColor = ""; }, 1500);
+    }
+    return;
+  }
+  if (newName.toLowerCase() === "music") {
+    alert("Music is permanently included at the bottom!");
+    return;
+  }
+
+  var goal = localStorage.getItem("goal") || "JEE";
+  var map = getCustomSubjectsMap();
+  var list = getGoalCustomSubjects(goal);
+
+  SUBJECT_EMOJI[newName] = newEmoji;
+
+  if (editingSubjectOldName) {
+    var idx = list.findIndex(function(c){ return (typeof c === "string" ? c : c.name) === editingSubjectOldName; });
+    if (idx !== -1) {
+      list[idx] = { name: newName, emoji: newEmoji };
+    } else {
+      list.push({ name: newName, emoji: newEmoji });
+    }
+    if (editingSubjectOldName !== newName && Array.isArray(videos)) {
+      videos.forEach(function(v){
+        if(v.subject === editingSubjectOldName) v.subject = newName;
+      });
+      localStorage.setItem("myVideos", JSON.stringify(videos));
+      if (typeof syncTodoToFirebase === "function") syncTodoToFirebase();
+    }
+  } else {
+    var existingIdx = list.findIndex(function(c){ return (typeof c === "string" ? c : c.name) === newName; });
+    if (existingIdx !== -1) {
+      list[existingIdx] = { name: newName, emoji: newEmoji };
+    } else {
+      list.push({ name: newName, emoji: newEmoji });
+    }
+  }
+
+  map[goal] = list;
+  saveCustomSubjectsMap(map);
+
+  updateSubjectSelect();
+  var sel = document.getElementById("subjectSelect");
+  if(sel) sel.value = newName;
+  syncPickerUI();
+
+  if(typeof window.saveAndRender === "function") window.saveAndRender();
+  openSubjectModal();
+}
+
+function deleteSubjectItem(subName) {
+  if (!confirm("Are you sure you want to remove \"" + subName + "\"?")) return;
+  var goal = localStorage.getItem("goal") || "JEE";
+  var map = getCustomSubjectsMap();
+  var list = getGoalCustomSubjects(goal);
+
+  list = list.filter(function(c){ return (typeof c === "string" ? c : c.name) !== subName; });
+  map[goal] = list;
+  saveCustomSubjectsMap(map);
+
+  var sel = document.getElementById("subjectSelect");
+  if(sel && sel.value === subName) sel.value = "";
+
+  updateSubjectSelect();
+  syncPickerUI();
+  if(typeof window.saveAndRender === "function") window.saveAndRender();
+  openSubjectModal();
 }
 
 function closeSubjectModal(e, force) {

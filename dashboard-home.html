@@ -1629,18 +1629,19 @@ body { padding-bottom: 64px; }
 }
 .set-goal-overlay{
   position:fixed; inset:0; z-index:999999;
-  background:rgba(0,0,0,0.88); backdrop-filter:blur(16px);
+  background:rgba(0,0,0,0.85); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   display:flex; align-items:center; justify-content:center;
-  padding:16px; animation:fadeIn 0.3s ease;
+  padding:14px; animation:fadeIn 0.25s ease;
 }
 .set-goal-card{
   background:var(--surface);
-  border-radius:28px; padding:30px 22px;
-  max-width:390px; width:100%; max-height:92vh; overflow-y:auto;
+  border-radius:24px; padding:22px 18px 18px;
+  max-width:410px; width:100%; max-height:88vh;
+  display:flex; flex-direction:column;
   box-shadow:0 24px 64px rgba(0,0,0,0.5);
-  animation:popScale 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  animation:popScale 0.35s cubic-bezier(0.34,1.56,0.64,1);
   border:1px solid var(--border);
-  position:relative; overflow:hidden;
+  position:relative;
 }
 [data-theme="dark"] .set-goal-card{
   background:linear-gradient(160deg,#0F1E38,#131C30);
@@ -1653,60 +1654,99 @@ body { padding-bottom: 64px; }
   position:absolute; top:0; left:0; right:0; height:4px;
   background:linear-gradient(90deg,#5B5BF6,#7C3AED,#10B981);
 }
+.set-goal-scrollable{
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding-right:2px; flex:1; min-height:0;
+  overscroll-behavior:contain;
+}
 .set-goal-badge{
   display:inline-flex; align-items:center; gap:7px;
   background:rgba(91,91,246,0.1); border:1px solid rgba(91,91,246,0.25);
-  border-radius:50px; padding:6px 16px; font-size:12px; font-weight:700;
-  color:#5B5BF6; margin-bottom:16px;
+  border-radius:50px; padding:5px 14px; font-size:11.5px; font-weight:700;
+  color:#5B5BF6; margin-bottom:12px;
 }
-.set-goal-title{ font-size:22px; font-weight:800; color:var(--text); margin-bottom:6px; letter-spacing:-0.3px; }
-.set-goal-sub{ font-size:13px; color:var(--text2); margin-bottom:22px; line-height:1.55; }
-.goal-options{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
+.set-goal-title{ font-size:20px; font-weight:800; color:var(--text); margin-bottom:4px; letter-spacing:-0.3px; }
+.set-goal-sub{ font-size:12.5px; color:var(--text2); margin-bottom:16px; line-height:1.45; }
+.goal-options{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
 .goal-option{
   background:var(--surface2); border:2px solid var(--border);
-  border-radius:18px; padding:16px 12px; text-align:center;
-  cursor:pointer; transition:all 0.22s ease;
+  border-radius:16px; padding:12px 10px; text-align:center;
+  cursor:pointer; transition:all 0.2s ease;
 }
-.goal-option:active{ transform:scale(0.94); }
+.goal-option:active{ transform:scale(0.96); }
 .goal-option.selected{
   border-color:#5B5BF6; background:rgba(91,91,246,0.08);
-  box-shadow:0 0 0 3px rgba(91,91,246,0.12);
+  box-shadow:0 0 0 3px rgba(91,91,246,0.14);
 }
-.goal-option-icon{ font-size:26px; margin-bottom:7px; display:block; }
-.goal-option-name{ font-size:15px; font-weight:800; color:var(--text); }
-.goal-option-desc{ font-size:11px; color:var(--text2); margin-top:3px; font-weight:500; }
-.sg-date-section{ margin-bottom:20px; }
-.sg-date-label{ font-size:11.5px; font-weight:700; color:var(--text2); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.6px; }
-.sg-cal-wrap{ background:var(--surface2); border:1px solid var(--border); border-radius:18px; padding:16px; }
-.sg-cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.sg-cal-nav{ background:var(--surface); border:1px solid var(--border); font-size:18px; color:var(--text2); cursor:pointer; padding:5px 12px; border-radius:10px; transition:0.15s; }
+.goal-option-icon{ font-size:24px; margin-bottom:4px; display:block; }
+.goal-option-name{ font-size:14px; font-weight:800; color:var(--text); }
+.goal-option-desc{ font-size:10.5px; color:var(--text2); margin-top:2px; font-weight:500; }
+
+.goal-option.custom-goal-card{
+  grid-column:1 / -1;
+  display:flex; align-items:center; gap:12px; padding:11px 14px; text-align:left;
+}
+.goal-option.custom-goal-card .goal-option-icon{ margin-bottom:0; font-size:24px; }
+.goal-option.custom-goal-card .goal-option-name{ font-size:14px; }
+.goal-option.custom-goal-card .goal-option-desc{ margin-top:1px; }
+
+.sg-custom-input{
+  width:100%; padding:10px 12px; border-radius:12px;
+  border:1.5px solid var(--border); background:var(--surface2);
+  color:var(--text); font-size:13.5px; font-weight:600; outline:none;
+  margin-top:4px; margin-bottom:10px; box-sizing:border-box;
+}
+.sg-custom-input:focus{ border-color:#5B5BF6; box-shadow:0 0 0 3px rgba(91,91,246,0.12); }
+.sg-emoji-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; margin-bottom:10px; }
+.sg-emoji-chip{
+  width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:10px; background:var(--surface2); border:1.5px solid var(--border);
+  font-size:16px; cursor:pointer; transition:0.15s;
+}
+.sg-emoji-chip:hover, .sg-emoji-chip.selected{
+  border-color:#5B5BF6; background:rgba(91,91,246,0.18); transform:scale(1.08);
+}
+.sg-close-btn{
+  position:absolute; right:14px; top:14px; width:28px; height:28px;
+  border-radius:50%; border:none; background:var(--surface2); color:var(--text2);
+  font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:0.15s; z-index:10;
+}
+.sg-close-btn:hover{ color:var(--text); background:rgba(255,255,255,0.12); }
+
+.sg-date-section{ margin-bottom:14px; }
+.sg-date-label{ font-size:11px; font-weight:700; color:var(--text2); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.6px; }
+.sg-cal-wrap{ background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:12px; }
+.sg-cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.sg-cal-nav{ background:var(--surface); border:1px solid var(--border); font-size:16px; color:var(--text2); cursor:pointer; padding:4px 10px; border-radius:8px; transition:0.15s; }
 .sg-cal-nav:active{ transform:scale(0.92); }
-.sg-cal-month{ font-size:14.5px; font-weight:700; color:var(--text); }
-.sg-cal-days-header{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:8px; }
-.sg-day-header{ text-align:center; font-size:10px; font-weight:600; color:var(--text3); padding:3px 0; }
-.sg-cal-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-.sg-day{ text-align:center; padding:8px 3px; font-size:12px; font-weight:500; border-radius:10px; cursor:pointer; color:var(--text2); transition:0.15s; }
+.sg-cal-month{ font-size:13.5px; font-weight:700; color:var(--text); }
+.sg-cal-days-header{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:6px; }
+.sg-day-header{ text-align:center; font-size:9.5px; font-weight:600; color:var(--text3); padding:2px 0; }
+.sg-cal-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.sg-day{ text-align:center; padding:7px 2px; font-size:11.5px; font-weight:500; border-radius:8px; cursor:pointer; color:var(--text2); transition:0.15s; }
 .sg-day:active{ background:var(--surface); }
 .sg-day.today{ color:#5B5BF6; font-weight:700; }
-.sg-day.selected-day{ background:#5B5BF6; color:#fff; font-weight:700; border-radius:10px; }
+.sg-day.selected-day{ background:#5B5BF6; color:#fff; font-weight:700; border-radius:8px; }
 .sg-day.highlight-exam{ border:1.5px solid var(--orange); color:var(--orange); font-weight:700; }
 .sg-day.other-month{ visibility:hidden; }
 .sg-fixed-date{
-  display:flex; align-items:center; gap:12px;
+  display:flex; align-items:center; gap:10px;
   background:rgba(91,91,246,0.07); border:1px solid rgba(91,91,246,0.2);
-  border-radius:14px; padding:14px 18px;
-  font-size:14px; font-weight:700; color:#5B5BF6;
+  border-radius:12px; padding:12px 14px;
+  font-size:13px; font-weight:700; color:#5B5BF6;
 }
+.sg-footer-actions{ margin-top:8px; flex-shrink:0; }
 .sg-start-btn{
-  width:100%; padding:15px; border:none; border-radius:50px;
+  width:100%; padding:13px; border:none; border-radius:50px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
-  color:#fff; font-weight:700; font-size:15px; cursor:pointer; transition:0.2s;
+  color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; transition:0.2s;
   display:flex; align-items:center; justify-content:center; gap:8px;
-  box-shadow:0 6px 20px rgba(91,91,246,0.35);
+  box-shadow:0 6px 18px rgba(91,91,246,0.32);
 }
-.sg-start-btn:disabled{ opacity:0.4; cursor:not-allowed; box-shadow:none; }
+.sg-start-btn:disabled{ opacity:0.45; cursor:not-allowed; box-shadow:none; }
 .sg-start-btn:not(:disabled):active{ transform:scale(0.97); }
-.sg-skip{ text-align:center; font-size:12.5px; color:var(--text3); margin-top:14px; cursor:pointer; transition:0.2s; }
+.sg-skip{ text-align:center; font-size:12px; color:var(--text3); margin-top:10px; cursor:pointer; transition:0.2s; }
 .sg-skip:active{ color:var(--text2); }
 
 /* ── APP LAUNCH SPLASH SCREEN (Native PWA Open Feel) ── */
@@ -2447,59 +2487,99 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
   <i class="fa-solid fa-rocket"></i>
 </div>
 
-<!-- Set Goal Popup (First Time) -->
+<!-- Set Goal Popup (First Time & Re-openable) -->
 <div id="setGoalOverlay" class="set-goal-overlay" style="display:none;">
   <div class="set-goal-card">
-    <div class="set-goal-badge">🎯 Welcome to Study Grid Prep</div>
-    <div class="set-goal-title">What's Your Target Exam?</div>
-    <div class="set-goal-sub">Select your goal to personalise your study plan &amp; countdown.</div>
-    <div class="goal-options">
-      <div class="goal-option" id="goalBtn_JEE" onclick="selectGoalOption('JEE')">
-        <div class="goal-option-icon"><img src="assets/jee.png" alt="JEE" style="width:38px;height:38px;object-fit:contain;background:white;border-radius:6px;padding:2px;"  onerror="this.outerHTML='⚛️'"></div>
-        <div class="goal-option-name">JEE</div>
-        <div class="goal-option-desc">Main 2027</div>
+    <button class="sg-close-btn" onclick="skipGoal()" aria-label="Close">✕</button>
+    <div class="set-goal-scrollable">
+      <div class="set-goal-badge">🎯 Target Goal &amp; Plan</div>
+      <div class="set-goal-title">What's Your Target Exam?</div>
+      <div class="set-goal-sub">Select your exam or add your custom goal for countdown &amp; study plan.</div>
+      <div class="goal-options">
+        <div class="goal-option" id="goalBtn_JEE" onclick="selectGoalOption('JEE')">
+          <div class="goal-option-icon"><img src="assets/jee.png" alt="JEE" style="width:36px;height:36px;object-fit:contain;background:white;border-radius:6px;padding:2px;" onerror="this.outerHTML='⚛️'"></div>
+          <div class="goal-option-name">JEE</div>
+          <div class="goal-option-desc">Main 2027</div>
+        </div>
+        <div class="goal-option" id="goalBtn_NEET" onclick="selectGoalOption('NEET')">
+          <div class="goal-option-icon"><img src="assets/neet.png" alt="NEET" style="width:36px;height:36px;object-fit:contain;" onerror="this.outerHTML='🧬'"></div>
+          <div class="goal-option-name">NEET</div>
+          <div class="goal-option-desc">UG 2027</div>
+        </div>
+        <div class="goal-option" id="goalBtn_CUET" onclick="selectGoalOption('CUET')">
+          <div class="goal-option-icon"><img src="assets/cuet.png" alt="CUET" style="width:36px;height:36px;object-fit:contain;background:white;border-radius:6px;padding:2px;" onerror="this.outerHTML='🏛️'"></div>
+          <div class="goal-option-name">CUET</div>
+          <div class="goal-option-desc">UG 2027</div>
+        </div>
+        <div class="goal-option" id="goalBtn_Boards" onclick="selectGoalOption('Boards')">
+          <div class="goal-option-icon">📚</div>
+          <div class="goal-option-name">Boards</div>
+          <div class="goal-option-desc">Class 12</div>
+        </div>
+        <!-- 5th Exam: Custom / Other Exam -->
+        <div class="goal-option custom-goal-card" id="goalBtn_Custom" onclick="selectGoalOption('Custom')">
+          <div class="goal-option-icon" id="goalIcon_Custom">🎯</div>
+          <div style="flex:1;">
+            <div class="goal-option-name" id="goalName_Custom">Custom / Other Exam</div>
+            <div class="goal-option-desc" id="goalDesc_Custom">Name, custom emoji &amp; date of your choice</div>
+          </div>
+          <i class="fa-solid fa-chevron-right" style="font-size:12px;opacity:0.6;"></i>
+        </div>
       </div>
-      <div class="goal-option" id="goalBtn_NEET" onclick="selectGoalOption('NEET')">
-        <div class="goal-option-icon"><img src="assets/neet.png" alt="NEET" style="width:38px;height:38px;object-fit:contain;" onerror="this.outerHTML='🧬'"></div>
-        <div class="goal-option-name">NEET</div>
-        <div class="goal-option-desc">UG 2027</div>
-      </div>
-      <div class="goal-option" id="goalBtn_CUET" onclick="selectGoalOption('CUET')">
-        <div class="goal-option-icon"><img src="assets/cuet.png" alt="CUET" style="width:38px;height:38px;object-fit:contain;background:white;border-radius:6px;padding:2px;"  onerror="this.outerHTML='🏛️'"></div>
-        <div class="goal-option-name">CUET</div>
-        <div class="goal-option-desc">UG 2027</div>
-      </div>
-      <div class="goal-option" id="goalBtn_Boards" onclick="selectGoalOption('Boards')">
-        <div class="goal-option-icon">📚</div>
-        <div class="goal-option-name">Boards</div>
-        <div class="goal-option-desc">Class 12</div>
+
+      <div class="sg-date-section" id="sgDateSection" style="display:none;">
+        <div class="sg-date-label" id="sgDateLabel">📅 Select Exam Date</div>
+        <div id="sgCalendarWrap" class="sg-cal-wrap" style="display:none;">
+          <div class="sg-cal-header">
+            <button class="sg-cal-nav" onclick="sgCalNav(-1)">‹</button>
+            <div class="sg-cal-month" id="sgCalMonth">April 2026</div>
+            <button class="sg-cal-nav" onclick="sgCalNav(1)">›</button>
+          </div>
+          <div class="sg-cal-days-header">
+            <div class="sg-day-header">Su</div><div class="sg-day-header">Mo</div>
+            <div class="sg-day-header">Tu</div><div class="sg-day-header">We</div>
+            <div class="sg-day-header">Th</div><div class="sg-day-header">Fr</div>
+            <div class="sg-day-header">Sa</div>
+          </div>
+          <div class="sg-cal-days" id="sgCalDays"></div>
+        </div>
+        <div class="sg-fixed-date" id="sgFixedDate" style="display:none;">
+          <span style="font-size:20px;">📅</span>
+          <span id="sgFixedDateText"></span>
+        </div>
+
+        <!-- Custom Exam Details Form -->
+        <div id="sgCustomSection" style="display:none;margin-top:6px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">1. Exam Name</div>
+          <input type="text" id="sgCustomName" class="sg-custom-input" placeholder="e.g. UPSC CSE, NDA, GATE, Semester Exam" oninput="onCustomGoalInput()">
+          
+          <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">2. Pick Icon / Emoji</div>
+          <div class="sg-emoji-chips" id="sgEmojiChips">
+            <span class="sg-emoji-chip selected" onclick="pickCustomEmoji('🎯', this)">🎯</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('🚀', this)">🚀</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('📚', this)">📚</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('🏛️', this)">🏛️</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('⚖️', this)">⚖️</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('🩺', this)">🩺</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('💼', this)">💼</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('🔬', this)">🔬</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('🎓', this)">🎓</span>
+            <span class="sg-emoji-chip" onclick="pickCustomEmoji('⚡', this)">⚡</span>
+          </div>
+          <input type="text" id="sgCustomEmojiCustom" maxlength="4" class="sg-custom-input" placeholder="Or type custom emoji (e.g. 🌟)" style="margin-top:-4px;" oninput="pickCustomEmoji(this.value, null)">
+
+          <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">3. Exam Target Date</div>
+          <input type="date" id="sgCustomDateInput" class="sg-custom-input" onchange="onCustomGoalInput()">
+        </div>
       </div>
     </div>
-    <div class="sg-date-section" id="sgDateSection" style="display:none;">
-      <div class="sg-date-label" id="sgDateLabel">📅 Select Exam Date</div>
-      <div id="sgCalendarWrap" class="sg-cal-wrap" style="display:none;">
-        <div class="sg-cal-header">
-          <button class="sg-cal-nav" onclick="sgCalNav(-1)">‹</button>
-          <div class="sg-cal-month" id="sgCalMonth">April 2026</div>
-          <button class="sg-cal-nav" onclick="sgCalNav(1)">›</button>
-        </div>
-        <div class="sg-cal-days-header">
-          <div class="sg-day-header">Su</div><div class="sg-day-header">Mo</div>
-          <div class="sg-day-header">Tu</div><div class="sg-day-header">We</div>
-          <div class="sg-day-header">Th</div><div class="sg-day-header">Fr</div>
-          <div class="sg-day-header">Sa</div>
-        </div>
-        <div class="sg-cal-days" id="sgCalDays"></div>
-      </div>
-      <div class="sg-fixed-date" id="sgFixedDate" style="display:none;">
-        <span style="font-size:20px;">📅</span>
-        <span id="sgFixedDateText"></span>
-      </div>
+
+    <div class="sg-footer-actions">
+      <button class="sg-start-btn" id="sgStartBtn" onclick="confirmGoal()" disabled>
+        <i class="fa-solid fa-rocket"></i> Set Goal &amp; Start Prep 🚀
+      </button>
+      <div class="sg-skip" onclick="skipGoal()">Skip for now →</div>
     </div>
-    <button class="sg-start-btn" id="sgStartBtn" onclick="confirmGoal()" disabled>
-      <i class="fa-solid fa-rocket"></i> Start My Prep 🚀
-    </button>
-    <div class="sg-skip" onclick="skipGoal()">Skip for now →</div>
   </div>
 </div>
 
@@ -2653,7 +2733,15 @@ function syncUserData(){
   if(pwaName) pwaName.textContent=name;
   if(pwaEmail) pwaEmail.textContent=email;
   if(pwaAvatar) pwaAvatar.textContent=name.charAt(0).toUpperCase();
-  if(pwaGoal&&goal) pwaGoal.textContent="Goal: "+goal;
+  if(pwaGoal&&goal){
+    if(goal === "Custom"){
+      var cName = localStorage.getItem("customExamName") || "Custom Exam";
+      var cEmo = localStorage.getItem("customExamEmoji") || "🎯";
+      pwaGoal.textContent = cEmo + " " + cName;
+    } else {
+      pwaGoal.textContent = "Goal: " + goal;
+    }
+  }
 }
 syncUserData();
 window.addEventListener("pageshow",syncUserData);
@@ -3304,6 +3392,12 @@ window.closeExamPopup=function(){
   const todayKey=new Date().toDateString();
   if(localStorage.getItem("examPopupShown")===todayKey) return;
   const EXAM_NAMES={JEE:"JEE Main 2027",NEET:"NEET UG 2027",CUET:"CUET UG 2027",Boards:"Board Exams 2027"};
+  let examDisplayName = EXAM_NAMES[goal] || goal;
+  let examDisplayEmoji = "📚";
+  if(goal === "Custom"){
+    examDisplayName = localStorage.getItem("customExamName") || "Custom Exam";
+    examDisplayEmoji = localStorage.getItem("customExamEmoji") || "🎯";
+  }
   // Format examDate nicely (e.g. "21 Jan 2027")
   const examDateObj=new Date(examDate);
   const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -3312,19 +3406,19 @@ window.closeExamPopup=function(){
   const todayTs=new Date();todayTs.setHours(0,0,0,0);
   const daysLeft=Math.ceil((examTs-todayTs)/86400000);
   if(daysLeft<=0) return;
-  document.getElementById("popupExamName").innerText=EXAM_NAMES[goal]||goal;
+  document.getElementById("popupExamName").innerText=examDisplayName;
   document.getElementById("popupDaysBig").innerText=daysLeft;
   document.getElementById("popupExamDate").innerText=examDateLabel;
   // Update logo based on goal
   var GOAL_LOGOS={JEE:"assets/jee.png",NEET:"assets/neet.png",CUET:"assets/cuet.png"};
   var logoImg=document.getElementById("popupLogoImg");
   var logoFb=document.getElementById("popupLogoFb");
-  if(GOAL_LOGOS[goal]){
+  if(goal !== "Custom" && GOAL_LOGOS[goal]){
     if(logoImg){ logoImg.src=GOAL_LOGOS[goal]; logoImg.style.display=""; }
     if(logoFb) logoFb.style.display="none";
   } else {
     if(logoImg) logoImg.style.display="none";
-    if(logoFb){ logoFb.style.display="flex"; logoFb.innerText="📚"; }
+    if(logoFb){ logoFb.style.display="flex"; logoFb.innerText=(goal === "Custom" ? examDisplayEmoji : "📚"); }
   }
   document.getElementById("popupFireEmoji").innerText=daysLeft<=10?"🔥🔥":daysLeft<=30?"🔥":"💪";
   const usedPct=Math.max(0,Math.min(100,Math.round(((365-daysLeft)/365)*100)));
@@ -3333,7 +3427,7 @@ window.closeExamPopup=function(){
   setTimeout(()=>{
     document.getElementById("examDailyPopup").style.display="flex";
     localStorage.setItem("examPopupShown",todayKey);
-  },2000);
+  }, 1400);
 })();
 </script>
 
@@ -3455,6 +3549,15 @@ onAuthStateChanged(auth, user => {
     const text=h>0?`${h}h ${m}m`:`${m}m`;
     const el=document.getElementById("todayFocusValue");
     if(el) el.innerText=text;
+
+    // Restore goal and custom exam fields from Firestore
+    if(data.goal){
+      localStorage.setItem("goal", data.goal);
+      if(data.examDate) localStorage.setItem("examDate", data.examDate);
+      if(data.customExamName) localStorage.setItem("customExamName", data.customExamName);
+      if(data.customExamEmoji) localStorage.setItem("customExamEmoji", data.customExamEmoji);
+      if(typeof syncUserData === "function") syncUserData();
+    }
   }, err => {
     console.warn("[Dashboard] User doc live notice:", err?.message || err);
   });
@@ -3467,13 +3570,18 @@ import { db, auth } from "./firebase.js";
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.saveGoalToFirebase=function(goal,examDate){
+window.saveGoalToFirebase=function(goal,examDate,extra){
   if(!auth.currentUser) return;
   const userId=auth.currentUser.uid;
-  setDoc(doc(db,"users",userId),{
+  const payload={
     goal:goal,
     examDate:examDate||""
-  },{merge:true}).catch(()=>{});
+  };
+  if(extra && typeof extra === 'object'){
+    if(extra.customExamName !== undefined) payload.customExamName = extra.customExamName;
+    if(extra.customExamEmoji !== undefined) payload.customExamEmoji = extra.customExamEmoji;
+  }
+  setDoc(doc(db,"users",userId),payload,{merge:true}).catch(()=>{});
 };
 
 window._saveRatingToFirebase=function(stars,msg){
@@ -4146,36 +4254,112 @@ var SG_EXAM_CONFIG = {
 
 var sgSelectedGoal=null, sgSelectedDate=null, sgCalYear=2026, sgCalMonth=3;
 var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+var selectedCustomEmoji = "🎯";
 
-function selectGoalOption(goal){
-  sgSelectedGoal=goal; sgSelectedDate=null;
-  document.getElementById("sgStartBtn").disabled=true;
-  ["JEE","NEET","CUET","Boards"].forEach(function(k){
-    var b=document.getElementById("goalBtn_"+k);
-    if(b) b.classList.toggle("selected",k===goal);
-  });
-  var cfg=SG_EXAM_CONFIG[goal];
-  var dateSection=document.getElementById("sgDateSection");
-  var calWrap=document.getElementById("sgCalendarWrap");
-  var fixedDiv=document.getElementById("sgFixedDate");
-  var fixedText=document.getElementById("sgFixedDateText");
-  dateSection.style.display="block";
-  if(cfg.fixedLabel){
-    calWrap.style.display="none"; fixedDiv.style.display="flex";
-    fixedText.innerText=cfg.fixedLabel;
-    sgSelectedDate=cfg.defaultDate;
-    document.getElementById("sgStartBtn").disabled=false;
+function pickCustomEmoji(emo, el){
+  if(!emo) emo = "🎯";
+  selectedCustomEmoji = emo.trim();
+  var chips = document.querySelectorAll(".sg-emoji-chip");
+  chips.forEach(function(c){ c.classList.remove("selected"); });
+  if(el){
+    el.classList.add("selected");
   } else {
-    fixedDiv.style.display="none"; calWrap.style.display="block";
-    sgCalYear=cfg.defaultYear; sgCalMonth=cfg.defaultMonth;
-    sgSelectedDate=cfg.defaultDate;
-    renderSgCal();
-    document.getElementById("sgStartBtn").disabled=false;
+    chips.forEach(function(c){
+      if(c.innerText.trim() === emo.trim()) c.classList.add("selected");
+    });
+  }
+  var iconCustom = document.getElementById("goalIcon_Custom");
+  if(iconCustom) iconCustom.innerText = selectedCustomEmoji;
+  onCustomGoalInput();
+}
+
+function onCustomGoalInput(){
+  var nameEl = document.getElementById("sgCustomName");
+  var dateEl = document.getElementById("sgCustomDateInput");
+  var name = (nameEl ? nameEl.value : "").trim();
+  var date = dateEl ? dateEl.value : "";
+  var startBtn = document.getElementById("sgStartBtn");
+  if(sgSelectedGoal === "Custom"){
+    if(name.length > 0 && date){
+      if(startBtn) startBtn.disabled = false;
+      sgSelectedDate = date;
+    } else {
+      if(startBtn) startBtn.disabled = true;
+      sgSelectedDate = null;
+    }
   }
 }
 
+function selectGoalOption(goal){
+  sgSelectedGoal = goal;
+  sgSelectedDate = null;
+  var startBtn = document.getElementById("sgStartBtn");
+  if(startBtn) startBtn.disabled = true;
+
+  ["JEE","NEET","CUET","Boards","Custom"].forEach(function(k){
+    var b = document.getElementById("goalBtn_" + k);
+    if(b) b.classList.toggle("selected", k === goal);
+  });
+
+  var dateSection = document.getElementById("sgDateSection");
+  var calWrap = document.getElementById("sgCalendarWrap");
+  var fixedDiv = document.getElementById("sgFixedDate");
+  var fixedText = document.getElementById("sgFixedDateText");
+  var customSection = document.getElementById("sgCustomSection");
+  var dateLabel = document.getElementById("sgDateLabel");
+
+  if(!dateSection) return;
+  dateSection.style.display = "block";
+
+  if(goal === "Custom"){
+    if(dateLabel) dateLabel.innerText = "🎯 Customize Your Exam";
+    if(calWrap) calWrap.style.display = "none";
+    if(fixedDiv) fixedDiv.style.display = "none";
+    if(customSection) customSection.style.display = "block";
+
+    var savedName = localStorage.getItem("customExamName") || "";
+    var savedEmoji = localStorage.getItem("customExamEmoji") || "🎯";
+    var savedDate = localStorage.getItem("customExamDate") || localStorage.getItem("examDate") || "";
+    var nameInput = document.getElementById("sgCustomName");
+    var dateInput = document.getElementById("sgCustomDateInput");
+
+    if(nameInput && !nameInput.value && savedName) nameInput.value = savedName;
+    if(dateInput && !dateInput.value && savedDate) dateInput.value = savedDate;
+    pickCustomEmoji(savedEmoji, null);
+    onCustomGoalInput();
+  } else {
+    if(dateLabel) dateLabel.innerText = "📅 Select Exam Date";
+    if(customSection) customSection.style.display = "none";
+    var cfg = SG_EXAM_CONFIG[goal];
+    if(cfg && cfg.fixedLabel){
+      if(calWrap) calWrap.style.display = "none";
+      if(fixedDiv) fixedDiv.style.display = "flex";
+      if(fixedText) fixedText.innerText = cfg.fixedLabel;
+      sgSelectedDate = cfg.defaultDate;
+      if(startBtn) startBtn.disabled = false;
+    } else if(cfg) {
+      if(fixedDiv) fixedDiv.style.display = "none";
+      if(calWrap) calWrap.style.display = "block";
+      sgCalYear = cfg.defaultYear;
+      sgCalMonth = cfg.defaultMonth;
+      sgSelectedDate = cfg.defaultDate;
+      renderSgCal();
+      if(startBtn) startBtn.disabled = false;
+    }
+  }
+
+  // Smooth scroll so the date / custom section is automatically visible without hiding set button
+  setTimeout(function(){
+    var scrollable = document.querySelector(".set-goal-scrollable");
+    var targetEl = (goal === "Custom") ? customSection : dateSection;
+    if(scrollable && targetEl){
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 60);
+}
+
 function renderSgCal(){
-  if(!sgSelectedGoal) return;
+  if(!sgSelectedGoal || !SG_EXAM_CONFIG[sgSelectedGoal]) return;
   var cfg=SG_EXAM_CONFIG[sgSelectedGoal];
   var monthKey=sgCalYear+"-"+String(sgCalMonth+1).padStart(2,"0");
   var highlights=cfg.highlights[monthKey]||[];
@@ -4206,18 +4390,45 @@ function sgCalNav(dir){
 }
 function confirmGoal(){
   if(!sgSelectedGoal) return;
-  var examDate=sgSelectedDate||SG_EXAM_CONFIG[sgSelectedGoal].defaultDate;
-  localStorage.setItem("goal",sgSelectedGoal);
-  localStorage.setItem("examDate",examDate);
-  localStorage.setItem("goalSetDone","true");
-  var pwaGoal=document.getElementById("pwaGoal");
-  if(pwaGoal) pwaGoal.innerText="Goal: "+sgSelectedGoal;
-  var overlay=document.getElementById("setGoalOverlay");
-  overlay.style.opacity="0"; overlay.style.transition="opacity 0.25s ease";
-  setTimeout(function(){overlay.style.display="none";overlay.style.opacity="";},260);
-  window.dispatchEvent(new StorageEvent("storage",{key:"goal",newValue:sgSelectedGoal}));
-  // Save goal to Firestore so admin panel reflects it
-  if(typeof window.saveGoalToFirebase==="function") window.saveGoalToFirebase(sgSelectedGoal,examDate);
+  var examDate = "";
+  var extraData = {};
+  var pwaGoal = document.getElementById("pwaGoal");
+
+  if(sgSelectedGoal === "Custom"){
+    var nameInput = document.getElementById("sgCustomName");
+    var dateInput = document.getElementById("sgCustomDateInput");
+    var customName = (nameInput ? nameInput.value : "").trim() || "My Exam";
+    var customEmoji = selectedCustomEmoji || "🎯";
+    examDate = (dateInput ? dateInput.value : "") || sgSelectedDate;
+
+    if(!examDate){
+      var d = new Date(); d.setFullYear(d.getFullYear()+1);
+      examDate = d.toISOString().slice(0,10);
+    }
+
+    localStorage.setItem("goal", "Custom");
+    localStorage.setItem("customExamName", customName);
+    localStorage.setItem("customExamEmoji", customEmoji);
+    localStorage.setItem("customExamDate", examDate);
+    localStorage.setItem("examDate", examDate);
+    extraData = { customExamName: customName, customExamEmoji: customEmoji };
+
+    if(pwaGoal) pwaGoal.innerText = customEmoji + " " + customName;
+  } else {
+    examDate = sgSelectedDate || SG_EXAM_CONFIG[sgSelectedGoal].defaultDate;
+    localStorage.setItem("goal", sgSelectedGoal);
+    localStorage.setItem("examDate", examDate);
+    if(pwaGoal) pwaGoal.innerText = "Goal: " + sgSelectedGoal;
+  }
+
+  localStorage.setItem("goalSetDone", "true");
+  var overlay = document.getElementById("setGoalOverlay");
+  overlay.style.opacity = "0"; overlay.style.transition = "opacity 0.25s ease";
+  setTimeout(function(){ overlay.style.display = "none"; overlay.style.opacity = ""; }, 260);
+  window.dispatchEvent(new StorageEvent("storage", { key: "goal", newValue: sgSelectedGoal }));
+
+  // Save goal to Firestore so admin panel, playlist, and profile reflect it
+  if(typeof window.saveGoalToFirebase === "function") window.saveGoalToFirebase(sgSelectedGoal, examDate, extraData);
 }
 function skipGoal(){
   localStorage.setItem("goalSetDone","true");
