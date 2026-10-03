@@ -1238,18 +1238,50 @@
     <div class="section-header">
       <div>
         <div class="section-title">User Management</div>
-        <div class="section-subtitle">All PWA & website users with live status</div>
+        <div class="section-subtitle">All PWA & website users with live status & exam tracking</div>
       </div>
       <div class="live-dot">Live</div>
     </div>
 
+    <!-- Exam Goals Breakdown & Quick Filter -->
+    <div id="userExamBadgesRow" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="exam-filter-chip active" id="chipExamAll" onclick="setUserExamFilter('all', this)" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);color:var(--text-primary);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+        🎯 All Goals <span id="cntAllGoals" style="background:rgba(255,255,255,0.14);padding:1px 6px;border-radius:10px;font-size:11px;">0</span>
+      </button>
+      <button class="exam-filter-chip" id="chipExamJee" onclick="setUserExamFilter('jee', this)" style="background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.25);color:var(--accent-amber);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+        ⚛️ JEE <span id="cntJee" style="background:rgba(255,184,48,0.2);padding:1px 6px;border-radius:10px;font-size:11px;">0</span>
+      </button>
+      <button class="exam-filter-chip" id="chipExamNeet" onclick="setUserExamFilter('neet', this)" style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.25);color:var(--accent-green);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+        🩺 NEET <span id="cntNeet" style="background:rgba(0,229,160,0.2);padding:1px 6px;border-radius:10px;font-size:11px;">0</span>
+      </button>
+      <button class="exam-filter-chip" id="chipExamCuet" onclick="setUserExamFilter('cuet', this)" style="background:rgba(0,224,255,0.08);border:1px solid rgba(0,224,255,0.25);color:var(--accent-cyan);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+        🎓 CUET <span id="cntCuet" style="background:rgba(0,224,255,0.2);padding:1px 6px;border-radius:10px;font-size:11px;">0</span>
+      </button>
+      <button class="exam-filter-chip" id="chipExamBoards" onclick="setUserExamFilter('boards', this)" style="background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.25);color:var(--accent-violet);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+        📖 Boards <span id="cntBoards" style="background:rgba(124,92,252,0.2);padding:1px 6px;border-radius:10px;font-size:11px;">0</span>
+      </button>
+      <button class="exam-filter-chip" id="chipExamCustom" onclick="setUserExamFilter('custom', this)" style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.3);color:#F472B6;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;">
+        ✨ 5th Custom Exam <span id="cntCustom" style="background:rgba(236,72,153,0.22);padding:1px 6px;border-radius:10px;font-size:11px;">0</span>
+      </button>
+    </div>
+
     <div class="table-card">
-      <div class="table-header">
+      <div class="table-header" style="flex-wrap:wrap;gap:10px;">
         <div class="table-title">All Users</div>
-        <div class="search-box">
-          <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-          <input type="text" id="userSearch" placeholder="Search by name or email…"
-                 oninput="filterUsers()" />
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <select id="userExamFilter" onchange="filterUsers()" class="form-select" style="max-width:170px;height:38px;padding:6px 10px;font-size:12px;background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.12);color:var(--text-primary);border-radius:8px;">
+            <option value="all">🎯 All Goals / Exams</option>
+            <option value="jee">⚛️ JEE</option>
+            <option value="neet">🩺 NEET</option>
+            <option value="cuet">🎓 CUET</option>
+            <option value="boards">📖 Boards</option>
+            <option value="custom">✨ 5th Custom Exam</option>
+          </select>
+          <div class="search-box">
+            <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" id="userSearch" placeholder="Search name, email, exam…"
+                   oninput="filterUsers()" />
+          </div>
         </div>
       </div>
       <div class="table-scroll" style="max-height:65vh;">
@@ -1644,6 +1676,11 @@
             <option value="all">All Users (PWA + Website)</option>
             <option value="pwa">PWA Users Only</option>
             <option value="web">Website Users Only</option>
+            <option value="jee">⚛️ JEE Students Only</option>
+            <option value="neet">🩺 NEET Students Only</option>
+            <option value="cuet">🎓 CUET Students Only</option>
+            <option value="boards">📖 Board Exam Students Only</option>
+            <option value="custom">✨ 5th Custom Exam Students Only</option>
             <option value="user">Specific User</option>
           </select>
         </div>

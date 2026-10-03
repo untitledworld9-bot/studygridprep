@@ -1761,26 +1761,87 @@ function updateUserStats() {
   // Playlist watch time
   if ($("playlistWatchTime")) animateStat($("playlistWatchTime"), playlistHours);
 
+  // Exam breakdown counts (JEE, NEET, CUET, Boards, and 5th Custom Exam)
+  const cntAll = users.length;
+  let cntJee = 0, cntNeet = 0, cntCuet = 0, cntBoards = 0, cntCustom = 0;
+  users.forEach(u => {
+    const g = (u.goal || "").toUpperCase();
+    if (g === "JEE") cntJee++;
+    else if (g === "NEET") cntNeet++;
+    else if (g === "CUET") cntCuet++;
+    else if (g === "BOARDS") cntBoards++;
+    else if (g === "CUSTOM" || u.customExamName || (!["JEE", "NEET", "CUET", "BOARDS", ""].includes(g) && g)) cntCustom++;
+  });
+  if ($("cntAllGoals")) $("cntAllGoals").textContent = cntAll;
+  if ($("cntJee")) $("cntJee").textContent = cntJee;
+  if ($("cntNeet")) $("cntNeet").textContent = cntNeet;
+  if ($("cntCuet")) $("cntCuet").textContent = cntCuet;
+  if ($("cntBoards")) $("cntBoards").textContent = cntBoards;
+  if ($("cntCustom")) $("cntCustom").textContent = cntCustom;
+
   // Cache online users list for modal
   STATE.onlineUsersList = onlineUsers;
 }
+
+let currentExamFilter = "all";
+
+window.setUserExamFilter = (exam, btn) => {
+  currentExamFilter = (exam || "all").toLowerCase();
+  const sel = $("userExamFilter");
+  if (sel) sel.value = currentExamFilter;
+  document.querySelectorAll(".exam-filter-chip").forEach(el => el.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  else {
+    const chipId = "chipExam" + (currentExamFilter === "all" ? "All" : currentExamFilter.charAt(0).toUpperCase() + currentExamFilter.slice(1));
+    const targetChip = document.getElementById(chipId);
+    if (targetChip) targetChip.classList.add("active");
+  }
+  renderUserTable();
+};
+
+window.filterUsers = () => {
+  const sel = $("userExamFilter");
+  if (sel && sel.value.toLowerCase() !== currentExamFilter) {
+    currentExamFilter = sel.value.toLowerCase();
+    document.querySelectorAll(".exam-filter-chip").forEach(el => el.classList.remove("active"));
+    const chipId = "chipExam" + (currentExamFilter === "all" ? "All" : currentExamFilter.charAt(0).toUpperCase() + currentExamFilter.slice(1));
+    const targetChip = document.getElementById(chipId);
+    if (targetChip) targetChip.classList.add("active");
+  }
+  renderUserTable();
+};
 
 /**
  * Build the full users table with current search filter applied.
  */
 function renderUserTable() {
-  const query = ($("userSearch")?.value || "").toLowerCase();
-  const rows  = STATE.allUsers.filter(u =>
-    !query ||
-    (u.name  || "").toLowerCase().includes(query) ||
-    (u.email || "").toLowerCase().includes(query)
-  );
+  const query = ($("userSearch")?.value || "").toLowerCase().trim();
+  const examFilter = currentExamFilter.toLowerCase();
+  const rows  = STATE.allUsers.filter(u => {
+    const qMatch = !query ||
+      (u.name  || "").toLowerCase().includes(query) ||
+      (u.email || "").toLowerCase().includes(query) ||
+      (u.goal  || "").toLowerCase().includes(query) ||
+      (u.customExamName || "").toLowerCase().includes(query);
+    if (!qMatch) return false;
+
+    if (examFilter !== "all") {
+      const uGoal = (u.goal || "").toLowerCase();
+      const hasCustom = uGoal === "custom" || Boolean(u.customExamName) || (!["jee", "neet", "cuet", "boards", ""].includes(uGoal) && Boolean(uGoal));
+      if (examFilter === "custom") {
+        if (!hasCustom) return false;
+      } else {
+        if (uGoal !== examFilter) return false;
+      }
+    }
+    return true;
+  });
 
   const tbody = $("userTable");
   if (!tbody) return;
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
       No users found</td></tr>`;
     return;
   }
@@ -1798,12 +1859,26 @@ function renderUserTable() {
     const uid     = escHtml(u.id);
     const uname   = escHtml(u.name || u.email || u.id);
 
-    // Goal pill
+    // Goal pill — support JEE, NEET, CUET, Boards, and 5th Custom Exam
+    let goalLabel = goal;
+    let goalEmoji = "🎯";
+    let isCustom  = false;
+    if (goal === "Custom" || u.customExamName || (!["JEE","NEET","CUET","Boards"].includes(goal) && goal)) {
+      isCustom  = true;
+      goalLabel = u.customExamName || (goal === "Custom" ? "Custom Exam" : goal);
+      goalEmoji = u.customExamEmoji || "✨";
+    }
+    const goalDateText = u.examDate ? ` (${u.examDate})` : "";
+    const pillBorder = isCustom ? "rgba(236,72,153,0.35)" : "rgba(0,224,255,.15)";
+    const pillBg = isCustom ? "rgba(236,72,153,0.12)" : "rgba(0,224,255,.07)";
+    const pillColor = isCustom ? "#F472B6" : "var(--accent-cyan)";
+
     const goalHtml = goal
       ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;
-           background:rgba(0,224,255,.07);border:1px solid rgba(0,224,255,.15);
-           border-radius:20px;padding:2px 9px;font-size:10px;color:var(--accent-cyan);font-weight:600;">
-           🎯 ${escHtml(goal)}</div>`
+           background:${pillBg};border:1px solid ${pillBorder};
+           border-radius:20px;padding:2px 9px;font-size:10px;color:${pillColor};font-weight:600;"
+           title="${escHtml(goalLabel + goalDateText)}">
+           ${escHtml(goalEmoji)} ${escHtml(goalLabel)}${u.examDate ? `<span style="opacity:0.8;font-size:9px;margin-left:2px;">• ${escHtml(u.examDate)}</span>` : ''}</div>`
       : "";
 
     // Todos pill
@@ -1967,8 +2042,7 @@ function renderDashRecent() {
   `).join("");
 }
 
-/** Filter users table when search input changes */
-window.filterUsers = () => renderUserTable();
+// filterUsers is implemented above with exam filter synchronization
 window.filterPerformance = () => renderPerformanceSection(STATE.allUsers);
 
 /** Delete a user document from Firestore */
@@ -2062,6 +2136,19 @@ function renderOnlineUsersModal() {
         <div>
           <div style="font-weight:600;font-size:13px;">${name}</div>
           <div style="font-size:11px;color:var(--text-muted);">${email}</div>
+          ${(() => {
+            const goal = u.goal || u.studyGoal || null;
+            if (!goal) return "";
+            let goalLabel = goal;
+            let goalEmoji = "🎯";
+            let isCustom = false;
+            if (goal === "Custom" || u.customExamName || (!["JEE","NEET","CUET","Boards"].includes(goal) && goal)) {
+              isCustom = true;
+              goalLabel = u.customExamName || (goal === "Custom" ? "Custom Exam" : goal);
+              goalEmoji = u.customExamEmoji || "✨";
+            }
+            return `<div style="font-size:10px;color:${isCustom ? '#F472B6' : 'var(--accent-cyan)'};font-weight:600;margin-top:2px;">${escHtml(goalEmoji)} ${escHtml(goalLabel)}</div>`;
+          })()}
         </div>
       </div>
 

@@ -275,6 +275,15 @@ async function loadUserData() {
       }
       if (d.lastStreakDate !== undefined) localStorage.setItem(STREAK_DATE_KEY, d.lastStreakDate || "");
 
+      // Restore saved goal and custom exam details if present
+      if (d.goal) {
+        localStorage.setItem("goal", d.goal);
+        if (d.examDate) localStorage.setItem("examDate", d.examDate);
+        if (d.customExamName) localStorage.setItem("customExamName", d.customExamName);
+        if (d.customExamEmoji) localStorage.setItem("customExamEmoji", d.customExamEmoji);
+        localStorage.setItem("goalSetDone", "true");
+      }
+
       // Runs on every page, not just dashboard-home.html — see comment above.
       await _checkStreakBreak(d);
 

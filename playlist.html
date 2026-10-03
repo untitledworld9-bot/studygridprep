@@ -1284,9 +1284,17 @@ input::placeholder { color: var(--text3); }
 .ai-chat-header-sub { font-size: 10px; color: var(--text2); }
 
 .ai-header-robot {
-  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: var(--accent);
   flex-shrink: 0;
-  animation: robotBob 2s ease-in-out infinite;
+  animation: robotBob 2.5s ease-in-out infinite;
 }
 @keyframes robotBob {
   0%,100% { transform: translateY(0) rotate(0deg); }
@@ -3537,7 +3545,13 @@ window.updateVideoTitle = function(id, newTitle) {
             <div class="ai-trigger-dot"></div>
             LIVE
         </div>
-        <div class="ai-header-robot">🤖</div>
+        <div class="ai-header-robot" title="Video AI Assistant">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73A2 2 0 0 1 10 4a2 2 0 0 1 2-2z"/>
+              <circle cx="9" cy="14" r="1" fill="currentColor"/>
+              <circle cx="15" cy="14" r="1" fill="currentColor"/>
+            </svg>
+        </div>
     </div>
     <div class="ai-chat-messages" id="aiChatMessages"></div>
     <div class="ai-chat-input-row">

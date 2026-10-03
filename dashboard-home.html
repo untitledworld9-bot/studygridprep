@@ -3488,6 +3488,30 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 onAuthStateChanged(auth, user => {
   if(!user) return;
 
+  // Immediate fast-restore of saved goal from Firestore if localStorage was cleared
+  getDoc(doc(db, "users", user.uid)).then(snap => {
+    if(snap.exists()){
+      const d = snap.data();
+      if(d.goal){
+        localStorage.setItem("goal", d.goal);
+        if(d.examDate) localStorage.setItem("examDate", d.examDate);
+        if(d.customExamName) localStorage.setItem("customExamName", d.customExamName);
+        if(d.customExamEmoji) localStorage.setItem("customExamEmoji", d.customExamEmoji);
+        localStorage.setItem("goalSetDone", "true");
+        if(window._goalPromptTimer){
+          clearTimeout(window._goalPromptTimer);
+          window._goalPromptTimer = null;
+        }
+        var overlay = document.getElementById("setGoalOverlay");
+        if(overlay) {
+          overlay.style.display = "none";
+          overlay.style.opacity = "";
+        }
+        if(typeof syncUserData === "function") syncUserData();
+      }
+    }
+  }).catch(()=>{});
+
   // FIX-DAILY-RESET: focusTime must roll over to 0 at the start of each new
   // day. script.js (timer.html) already does this, but if the user opens
   // the dashboard first (without visiting timer.html that day) the field
@@ -3556,6 +3580,16 @@ onAuthStateChanged(auth, user => {
       if(data.examDate) localStorage.setItem("examDate", data.examDate);
       if(data.customExamName) localStorage.setItem("customExamName", data.customExamName);
       if(data.customExamEmoji) localStorage.setItem("customExamEmoji", data.customExamEmoji);
+      localStorage.setItem("goalSetDone", "true");
+      if(window._goalPromptTimer){
+        clearTimeout(window._goalPromptTimer);
+        window._goalPromptTimer = null;
+      }
+      var overlay = document.getElementById("setGoalOverlay");
+      if(overlay) {
+        overlay.style.display = "none";
+        overlay.style.opacity = "";
+      }
       if(typeof syncUserData === "function") syncUserData();
     }
   }, err => {
@@ -4220,13 +4254,15 @@ window.addEventListener("load", function(){
 
 <!-- ===== SET GOAL POPUP JS ===== -->
 <script>
-// Show set-goal popup first time (no goal set yet)
+// Show set-goal popup ONLY for genuinely new users (no goal in localStorage or Firestore)
 (function(){
-  if(localStorage.getItem("goal")) return; // already set
-  setTimeout(function(){
+  if(localStorage.getItem("goal") || localStorage.getItem("goalSetDone") === "true") return; // already set
+  // Allow time for Firebase Auth & Firestore to hydrate saved goal first
+  window._goalPromptTimer = setTimeout(function(){
+    if(localStorage.getItem("goal") || localStorage.getItem("goalSetDone") === "true") return;
     var overlay=document.getElementById("setGoalOverlay");
     if(overlay) overlay.style.display="flex";
-  }, 900);
+  }, 2600);
 })();
 
 var SG_EXAM_CONFIG = {

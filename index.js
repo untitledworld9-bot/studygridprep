@@ -27,6 +27,7 @@ import { db } from "./firebase.js";
 import {
   collection,
   doc,
+  getDoc,
   updateDoc,
   setDoc,
   onSnapshot,
@@ -240,12 +241,24 @@ function initAnnouncements() {
       if (seen.announcements.has(id))        return;
       if (data.target === "pwa" && !isPWA()) return;
       if (data.target === "web" && isPWA())  return;
-      // User targeting: if target is a specific user, only show to that user
+      // User or exam targeting
       if (data.target && data.target !== "all" && data.target !== "pwa" && data.target !== "web" && data.target !== "both") {
         const curUser  = CURRENT_USER || "";
         const curEmail = (localStorage.getItem("userEmail") || localStorage.getItem("email") || "").toLowerCase();
+        const curGoal  = (localStorage.getItem("goal") || "").toLowerCase();
         const tgt      = data.target.toLowerCase();
-        if (tgt !== curUser.toLowerCase() && tgt !== curEmail) return;
+        const isExamTgt = ["jee", "neet", "cuet", "boards", "custom"].includes(tgt) || tgt.startsWith("exam:");
+        if (isExamTgt) {
+          const matchGoal = tgt.replace("exam:", "");
+          const isUserCustom = curGoal === "custom" || (!["jee","neet","cuet","boards",""].includes(curGoal) && Boolean(localStorage.getItem("customExamName")));
+          if (matchGoal === "custom") {
+            if (!isUserCustom) return;
+          } else {
+            if (curGoal !== matchGoal) return;
+          }
+        } else if (tgt !== curUser.toLowerCase() && tgt !== curEmail) {
+          return;
+        }
       }
       // Page targeting: only show if page matches or is "all"
       const curPage = getCurrentPage();
@@ -1329,6 +1342,22 @@ async function initPresence() {
       lastActive:  Date.now(),
       status:      "online"
     }, { merge: true });
+
+    // Restore goal from Firestore if localStorage was cleared
+    if (!localStorage.getItem("goal")) {
+      getDoc(doc(db, "users", uid)).then(snap => {
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.goal) {
+            localStorage.setItem("goal", d.goal);
+            if (d.examDate) localStorage.setItem("examDate", d.examDate);
+            if (d.customExamName) localStorage.setItem("customExamName", d.customExamName);
+            if (d.customExamEmoji) localStorage.setItem("customExamEmoji", d.customExamEmoji);
+            localStorage.setItem("goalSetDone", "true");
+          }
+        }
+      }).catch(() => {});
+    }
   } catch(e) { console.warn("[Presence] init failed:", e); }
 
   // Heartbeat every 60s
