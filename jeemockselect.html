@@ -380,44 +380,37 @@ main {
 }
 
 /* ======================================================
-   YEAR GROUP CARDS (accordion — one card per year)
+   YEAR CARDS (Year selection screen)
 ====================================================== */
-.tests-list {
+.years-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  display: none;
 }
 
-.year-group {
+.year-card {
+  position: relative;
+  background: var(--card-bg);
   border: 1.5px solid var(--card-border);
   border-radius: 20px;
-  overflow: hidden;
-  background: var(--card-bg);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-  opacity: 0;
-  transform: translateY(16px);
-  animation: cardSlide 0.45s ease forwards;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-.year-group.open {
-  border-color: var(--exam-color);
-  box-shadow: 0 8px 24px var(--exam-color-glow);
-}
-
-.year-header {
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 20px;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cardSlide 0.4s ease forwards;
   -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  transition: background 0.2s ease;
 }
-.year-group.open .year-header {
-  background: rgba(245,158,11,0.06);
+.year-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245,158,11,0.45);
+  box-shadow: 0 8px 24px var(--exam-color-glow);
 }
+.year-card:active { transform: scale(0.98); }
 
 .year-badge {
   width: 52px;
@@ -435,60 +428,88 @@ main {
   box-shadow: 0 4px 12px var(--exam-color-glow);
 }
 
-.year-header-text { flex: 1; min-width: 0; }
-.year-header-title {
+.year-card-text { flex: 1; min-width: 0; }
+.year-card-title {
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   line-height: 1.25;
 }
-.year-header-sub {
+.year-card-sub {
   font-size: 12px;
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
-.year-chevron {
-  width: 30px;
-  height: 30px;
+.year-tap-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--surface2);
-  border: 1.5px solid var(--card-border);
+  background: rgba(245,158,11,0.12);
+  border: 1.5px solid rgba(245,158,11,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
-  font-size: 13px;
-  flex-shrink: 0;
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
-}
-.year-group.open .year-chevron {
-  transform: rotate(180deg);
   color: var(--exam-color);
-  background: rgba(245,158,11,0.12);
-  border-color: rgba(245,158,11,0.4);
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.year-card:hover .year-tap-btn {
+  background: var(--exam-color);
+  color: #fff;
+  transform: translateX(3px);
+  box-shadow: 0 4px 12px var(--exam-color-glow);
 }
 
-.year-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+/* ======================================================
+   TESTS LIST & SESSION FILTER (Test selection screen)
+====================================================== */
+.session-filter-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 14px 2px;
+  margin-bottom: 4px;
+  scrollbar-width: none;
 }
-.year-body-inner {
+.session-filter-row::-webkit-scrollbar { display: none; }
+.session-pill {
+  padding: 7px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  font-family: 'Poppins', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+.session-pill:hover {
+  color: var(--text);
+  border-color: rgba(245,158,11,0.35);
+}
+.session-pill.active {
+  background: rgba(245,158,11,0.14);
+  border-color: rgba(245,158,11,0.5);
+  color: var(--exam-color);
+  box-shadow: 0 2px 8px var(--exam-color-glow);
+}
+
+.tests-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 0 14px 14px;
-  scrollbar-width: thin;
+  gap: 12px;
 }
-.year-body-inner::-webkit-scrollbar { width: 4px; }
-.year-body-inner::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
 
 .session-divider {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 4px 0 2px;
+  margin: 10px 0 4px;
 }
 .session-divider::before {
   content: '';
@@ -499,7 +520,7 @@ main {
 .session-divider span {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--exam-color);
   white-space: nowrap;
@@ -950,7 +971,7 @@ main {
   HEADER
 ====================================================== -->
 <header>
-  <a class="back-btn" onclick="navigate('mock-home.html')" title="Back" role="button">
+  <a class="back-btn" id="headerBackBtn" onclick="handleHeaderBack()" title="Back" role="button">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </a>
 
@@ -960,7 +981,7 @@ main {
        alt="NTA" style="width:26px;height:26px;object-fit:contain;border-radius:6px;"
        onerror="this.style.display='none';this.parentElement.innerHTML='<svg width=\'18\' height=\'18\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M22 10L12 5 2 10l10 5 10-5Z\'></path><path d=\'M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5\'></path></svg>';">
     </div>
-    <h1 class="header-title">JEE Main Mock Tests</h1>
+    <h1 class="header-title" id="headerTitle">JEE Main Mock Tests</h1>
   </div>
 
   <div class="header-profile-btn" id="headerProfileBtn" onclick="navigate('profile.html')" title="Profile" role="button">
@@ -974,16 +995,6 @@ main {
 <main>
   <div class="content-wrap">
 
-    <div class="section-header">
-      <div class="section-title">
-        <span>Select Test</span>
-      </div>
-      <div class="section-subtitle">
-        <span class="nta-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4Z"></path></svg> NTA Official Pattern</span>
-        JEE Mains pattern
-      </div>
-    </div>
-
     <div class="tests-loading" id="testsLoading">
       <div class="spinner"></div>
       <div class="loading-text">Loading tests…</div>
@@ -994,7 +1005,42 @@ main {
       <p>No JEE tests available yet.<br>Check back soon — new tests are added regularly.</p>
     </div>
 
-    <div class="tests-list" id="testsList"></div>
+    <!-- VIEW 1: YEAR SELECTION -->
+    <div id="viewYears">
+      <div class="section-header">
+        <div class="section-title">
+          <span>Select Year</span>
+        </div>
+        <div class="section-subtitle">
+          <span class="nta-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4Z"></path></svg> NTA Official Pattern</span>
+          Choose examination year
+        </div>
+      </div>
+
+      <div class="years-list" id="yearsList"></div>
+    </div>
+
+    <!-- VIEW 2: TEST SELECTION FOR CHOSEN YEAR -->
+    <div id="viewTests" style="display:none;">
+      <div class="section-header">
+        <div class="section-title">
+          <span id="testViewTitle">Select Tests</span>
+        </div>
+        <div class="section-subtitle">
+          <span class="nta-badge" id="testViewYearBadge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4Z"></path></svg> JEE Mains 2025</span>
+          <span id="testViewSub">January (Session 1) & April (Session 2)</span>
+        </div>
+      </div>
+
+      <!-- Quick Session Filter Pills -->
+      <div class="session-filter-row" id="sessionFilterRow">
+        <button class="session-pill active" id="pillSessionAll" onclick="setSessionFilter('all')">All Tests</button>
+        <button class="session-pill" id="pillSession1" onclick="setSessionFilter('1')">Session 1 (Jan)</button>
+        <button class="session-pill" id="pillSession2" onclick="setSessionFilter('2')">Session 2 (Apr)</button>
+      </div>
+
+      <div class="tests-list" id="testsList"></div>
+    </div>
 
   </div>
 </main>
@@ -1142,9 +1188,15 @@ function initPage(user) {
    Within year: sorted by test date → most recent (later month) on top
    onSnapshot: auto-updates when admin adds/removes tests
 ──────────────────────────────────────────────────────── */
+let allJeeTests = [];
+let currentSelectedYear = null;
+let currentSessionFilter = 'all';
+
+/* ─── Real-time Firestore listener ───────────────────────
+   Collection: "mockTests"
+   Filter:     exam == "jee", status == "published"
+──────────────────────────────────────────────────────── */
 function listenTests() {
-  // TWO equality filters only — no composite index needed.
-  // Grouping/sorting happens client-side.
   const q = query(
     collection(db, 'mockTests'),
     where('exam',   '==', 'jee'),
@@ -1152,195 +1204,326 @@ function listenTests() {
   );
 
   onSnapshot(q, (snap) => {
-    const tests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderYearGroups(tests);
+    allJeeTests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderYearsList();
+
+    // Check if URL has ?year=XXXX to auto-open
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramYear = urlParams.get('year');
+    if (paramYear && !currentSelectedYear) {
+      const yearExists = allJeeTests.some(t => String(t.year || 'Other') === String(paramYear));
+      if (yearExists) {
+        openYearTests(paramYear, false);
+      }
+    } else if (currentSelectedYear) {
+      renderTestsForCurrentYear();
+    }
   }, (err) => {
     console.warn('Firestore JEE notice:', err?.message || err);
     showEmpty();
   });
 }
 
-/* Returns a sortable timestamp for a test: prefers the admin-set
-   date field (so tests sort by actual exam month, not upload order),
-   falls back to createdAt if no date was set. */
-function getTestSortTime(test) {
+/* ─── Bulletproof test date, month, shift, and session parser ───
+   Ensures January Session 1 tests always come first, and strictly ordered:
+   22 Jan Shift 1 -> 22 Jan Shift 2 -> 23 Jan Shift 1 -> 23 Jan Shift 2, etc.
+   Followed by April Session 2 tests.
+*/
+function parseTestSortDetails(test) {
+  let year = parseInt(test.year) || 0;
+  let month = -1; // 0 = Jan, 1 = Feb, ... 3 = Apr, etc.
+  let day = 0;
+  let shift = 1;
+
+  // 1. Check test.date if present
   if (test.date) {
-    const t = new Date(test.date).getTime();
-    if (!isNaN(t)) return t;
-  }
-  const ca = test.createdAt?.seconds ? test.createdAt.seconds * 1000 : (test.createdAt || 0);
-  return ca;
-}
-
-// JEE Mains runs two sessions a year — Session 1 in January, Session 2
-// (e.g. April) later. Groups tests within a year by month so Session 2
-// tests get their own labeled section instead of just tacking onto the
-// bottom of the list looking like more Session 1 tests.
-function getTestMonth(test) {
-  const t = getTestSortTime(test);
-  if (!t) return null;
-  return new Date(t).getMonth(); // 0 = January
-}
-function getTestSession(test) {
-  const m = getTestMonth(test);
-  return (m === null || m === 0) ? 1 : 2; // January (or unknown) → Session 1, anything later → Session 2
-}
-
-/* ─── Render test cards ───────────────────────────────── */
-/* --- Get completed testIds (same logic as cuetmockselect) --- */
-function getInProgressTestId() {
-  const completedIds = getCompletedTestIds();
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('mockTestProgress_')) {
-        const testId = key.replace('mockTestProgress_', '');
-        if (completedIds.has(testId)) continue;
-        const raw = localStorage.getItem(key);
-        if (!raw) continue;
-        const data = JSON.parse(raw);
-        if (data && data.remainingSeconds > 0) return testId;
+    const strDate = String(test.date).trim();
+    const isoParts = strDate.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if (isoParts) {
+      year = parseInt(isoParts[1]) || year;
+      month = (parseInt(isoParts[2]) || 1) - 1;
+      day = parseInt(isoParts[3]) || 0;
+    } else {
+      const d = new Date(strDate);
+      if (!isNaN(d.getTime())) {
+        year = d.getFullYear() || year;
+        month = d.getMonth();
+        day = d.getDate();
       }
     }
-  } catch(_) {}
-  return null;
+  }
+
+  // 2. Parse from testName and shift text
+  const combined = ((test.testName || '') + ' ' + (test.shift || '')).toLowerCase();
+
+  // Month map
+  const monthMap = {
+    jan: 0, january: 0,
+    feb: 1, february: 1,
+    mar: 2, march: 2,
+    apr: 3, april: 3,
+    may: 4,
+    jun: 5, june: 5,
+    jul: 6, july: 6,
+    aug: 7, august: 7,
+    sep: 8, sept: 8, september: 8,
+    oct: 9, october: 9,
+    nov: 10, november: 10,
+    dec: 11, december: 11
+  };
+  const mMatch = combined.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/i);
+  if (mMatch && mMatch[1]) {
+    const key = mMatch[1].toLowerCase();
+    if (monthMap[key] !== undefined) {
+      month = monthMap[key];
+    }
+  }
+
+  // Day of the month
+  const dayWithMonthMatch = combined.match(/(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+                         || combined.match(/(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(\d{1,2})/i);
+  if (dayWithMonthMatch && dayWithMonthMatch[1]) {
+    day = parseInt(dayWithMonthMatch[1]);
+  } else if (!day) {
+    const rawNum = combined.match(/\b(\d{1,2})\b/);
+    if (rawNum && parseInt(rawNum[1]) <= 31) {
+      day = parseInt(rawNum[1]);
+    }
+  }
+
+  // Shift: 1 or 2
+  if (test.shift) {
+    const s = String(test.shift).toLowerCase();
+    if (s.includes('2') || s.includes('ii') || s.includes('evening') || s.includes('afternoon')) shift = 2;
+    else if (s.includes('1') || s.includes('i') || s.includes('morning')) shift = 1;
+  }
+  const shiftFromTitle = combined.match(/(?:shift|s)\s*[-_:]?\s*([12])/i);
+  if (shiftFromTitle && shiftFromTitle[1]) {
+    shift = parseInt(shiftFromTitle[1]);
+  }
+
+  // Session: January/February (months 0, 1) = Session 1; March/April/May (months 2, 3, 4) = Session 2
+  const session = (month >= 0 && month <= 1) ? 1 : (month >= 2 ? 2 : 1);
+  const effectiveMonth = month >= 0 ? month : 0;
+
+  // Composite sorting score:
+  // session (10,000,000) + month (100,000) + day (100) + shift (1)
+  const score = (session * 10000000) + (effectiveMonth * 100000) + (day * 100) + shift;
+
+  return {
+    score,
+    session,
+    month: effectiveMonth,
+    day,
+    shift,
+    year
+  };
 }
 
-function getCompletedTestIds() {
-  try {
-    const completed = new Set();
-    const history = JSON.parse(localStorage.getItem('testHistory') || '[]');
-    history.forEach(x => { if (x.testId) completed.add(x.testId); });
-    try {
-      const last = JSON.parse(localStorage.getItem('lastTestResult') || '{}');
-      if (last && last.submittedAt && last.testId) completed.add(last.testId);
-    } catch(_) {}
-    return completed;
-  } catch(_) { return new Set(); }
-}
-
-function renderYearGroups(tests) {
+/* ─── Render Year Cards (View 1) ─────────────────────── */
+function renderYearsList() {
   const loading = document.getElementById('testsLoading');
   const empty   = document.getElementById('testsEmpty');
-  const list    = document.getElementById('testsList');
+  const viewY   = document.getElementById('viewYears');
+  const yearsListEl = document.getElementById('yearsList');
 
-  loading.style.display = 'none';
+  if (loading) loading.style.display = 'none';
 
-  if (!tests || tests.length === 0) {
+  if (!allJeeTests || allJeeTests.length === 0) {
     showEmpty();
     return;
   }
 
-  empty.style.display = 'none';
-  list.style.display  = 'flex';
-  list.innerHTML      = '';
+  if (empty) empty.style.display = 'none';
+  if (viewY && !currentSelectedYear) viewY.style.display = 'block';
 
-  // ── Group by year ──
-  const groups = new Map(); // year -> tests[]
-  tests.forEach(t => {
+  // Group by year
+  const groups = new Map();
+  allJeeTests.forEach(t => {
     const y = t.year || 'Other';
     if (!groups.has(y)) groups.set(y, []);
     groups.get(y).push(t);
   });
 
-  // ── Sort each year's tests: earliest exam date first, so tests read in
-  // the same sequential order as the actual exam (22 Jan Shift 1, 22 Jan
-  // Shift 2, 23 Jan Shift 1, ...) regardless of the order they were
-  // uploaded in — uploading a new test no longer jumps it to the top.
-  groups.forEach(arr => arr.sort((a, b) => getTestSortTime(a) - getTestSortTime(b)));
-
-  // ── Sort years descending: newest year on top ──
+  // Sort years descending (e.g. 2025, 2024...)
   const sortedYears = Array.from(groups.keys()).sort((a, b) => {
-    const an = typeof a === 'number' ? a : -Infinity;
-    const bn = typeof b === 'number' ? b : -Infinity;
+    const an = typeof a === 'number' ? a : parseInt(a) || -Infinity;
+    const bn = typeof b === 'number' ? b : parseInt(b) || -Infinity;
     return bn - an;
   });
 
-  let cardIndex = 0;
-  sortedYears.forEach((year, groupIdx) => {
+  yearsListEl.innerHTML = '';
+  sortedYears.forEach((year, idx) => {
     const yearTests = groups.get(year);
-    const group = document.createElement('div');
-    group.className = 'year-group';
-    group.style.animationDelay = `${0.06 + groupIdx * 0.08}s`;
-
-    const body = document.createElement('div');
-    body.className = 'year-body';
-    const bodyInner = document.createElement('div');
-    bodyInner.className = 'year-body-inner';
-
-    // Split into Session 1 (January) / Session 2 (later, e.g. April) —
-    // yearTests is already sorted chronologically, so this just partitions
-    // it in place without re-ordering anything.
-    const session1 = yearTests.filter(t => getTestSession(t) === 1);
-    const session2 = yearTests.filter(t => getTestSession(t) === 2);
-
-    session1.forEach(test => {
-      bodyInner.appendChild(buildCard(test, cardIndex++));
-    });
-    if (session2.length) {
-      const divider = document.createElement('div');
-      divider.className = 'session-divider';
-      divider.innerHTML = `<span>Session 2</span>`;
-      bodyInner.appendChild(divider);
-      session2.forEach(test => {
-        bodyInner.appendChild(buildCard(test, cardIndex++));
-      });
-    }
-    body.appendChild(bodyInner);
-
-    group.innerHTML = `
-      <div class="year-header">
-        <div class="year-badge">${year}</div>
-        <div class="year-header-text">
-          <div class="year-header-title">JEE Mains ${year}</div>
-          <div class="year-header-sub">${yearTests.length} test${yearTests.length !== 1 ? 's' : ''} available</div>
-        </div>
-        <div class="year-chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+    const card = document.createElement('div');
+    card.className = 'year-card';
+    card.style.animationDelay = `${0.05 + idx * 0.08}s`;
+    card.innerHTML = `
+      <div class="year-badge">${year}</div>
+      <div class="year-card-text">
+        <div class="year-card-title">JEE Mains ${year}</div>
+        <div class="year-card-sub">${yearTests.length} test${yearTests.length !== 1 ? 's' : ''} available</div>
+      </div>
+      <div class="year-tap-btn" title="View Tests">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
       </div>
     `;
-    group.appendChild(body);
-
-    const header = group.querySelector('.year-header');
-    header.addEventListener('click', () => toggleYearGroup(group, body, bodyInner));
-
-    list.appendChild(group);
-    // All years start collapsed — user taps to expand (matches FAQ-style accordion).
+    card.addEventListener('click', () => openYearTests(year));
+    yearsListEl.appendChild(card);
   });
 }
 
-// Year card should only grow a little as tests are added — beyond this cap,
-// the list inside scrolls instead of the card pushing the page down further.
-const YEAR_BODY_MAX_PX = Math.round(Math.min(window.innerHeight * 0.52, 520));
+/* ─── Navigation between Year Selection & Test Selection ─── */
+window.openYearTests = function(year, pushHistory = true) {
+  currentSelectedYear = year;
+  currentSessionFilter = 'all';
 
-function toggleYearGroup(group, body, bodyInner, forceOpen) {
-  const isOpen = group.classList.contains('open');
-  if (forceOpen === true && isOpen) return;
-  if (forceOpen === false && !isOpen) return;
+  // Update header title to "Select Tests"
+  const headerTitle = document.getElementById('headerTitle');
+  if (headerTitle) headerTitle.textContent = 'Select Tests';
 
-  const willOpen = forceOpen === true ? true : (forceOpen === false ? false : !isOpen);
+  const viewBadge = document.getElementById('testViewYearBadge');
+  if (viewBadge) {
+    viewBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4Z"></path></svg> JEE Mains ${year}`;
+  }
+  const viewSub = document.getElementById('testViewSub');
+  if (viewSub) {
+    viewSub.textContent = `All shifts & sessions for ${year}`;
+  }
 
-  if (willOpen) {
-    group.classList.add('open');
-    const needed = bodyInner.scrollHeight;
-    if (needed > YEAR_BODY_MAX_PX) {
-      body.style.maxHeight = YEAR_BODY_MAX_PX + 'px';
-      bodyInner.style.overflowY = 'auto';
-      bodyInner.style.webkitOverflowScrolling = 'touch';
-    } else {
-      body.style.maxHeight = needed + 'px';
-      bodyInner.style.overflowY = 'visible';
-    }
+  // Switch views
+  const viewYears = document.getElementById('viewYears');
+  const viewTests = document.getElementById('viewTests');
+  if (viewYears) viewYears.style.display = 'none';
+  if (viewTests) viewTests.style.display = 'block';
+
+  renderTestsForCurrentYear();
+
+  if (pushHistory) {
+    history.pushState({ view: 'tests', year }, '', `?year=${year}`);
+  }
+};
+
+window.backToYearSelection = function(pushHistory = true) {
+  currentSelectedYear = null;
+
+  // Restore header title to "JEE Main Mock Tests"
+  const headerTitle = document.getElementById('headerTitle');
+  if (headerTitle) headerTitle.textContent = 'JEE Main Mock Tests';
+
+  const viewYears = document.getElementById('viewYears');
+  const viewTests = document.getElementById('viewTests');
+  if (viewTests) viewTests.style.display = 'none';
+  if (viewYears) viewYears.style.display = 'block';
+
+  if (pushHistory) {
+    history.pushState({ view: 'years' }, '', window.location.pathname);
+  }
+};
+
+window.handleHeaderBack = function() {
+  const viewTests = document.getElementById('viewTests');
+  if (viewTests && viewTests.style.display !== 'none') {
+    backToYearSelection();
   } else {
-    group.classList.remove('open');
-    body.style.maxHeight = '0px';
-    bodyInner.style.overflowY = 'hidden';
+    navigate('mock-home.html');
+  }
+};
+
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.view === 'tests' && e.state.year) {
+    openYearTests(e.state.year, false);
+  } else {
+    backToYearSelection(false);
+  }
+});
+
+window.setSessionFilter = function(filter) {
+  currentSessionFilter = filter;
+  document.querySelectorAll('.session-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.id === ('pillSession' + (filter === 'all' ? 'All' : filter)));
+  });
+  renderTestsForCurrentYear();
+};
+
+/* ─── Render Tests for Selected Year (View 2) ────────── */
+function renderTestsForCurrentYear() {
+  const list = document.getElementById('testsList');
+  if (!list || !currentSelectedYear) return;
+
+  list.innerHTML = '';
+  list.style.display = 'flex';
+
+  // Filter tests for selected year
+  const yearTests = allJeeTests.filter(t => String(t.year || 'Other') === String(currentSelectedYear));
+
+  if (yearTests.length === 0) {
+    list.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);font-size:13px;">
+        No tests found for JEE Mains ${currentSelectedYear}.
+      </div>`;
+    return;
+  }
+
+  // Sort tests chronologically: January Session 1 (day & shift asc), then April Session 2
+  yearTests.sort((a, b) => {
+    const da = parseTestSortDetails(a);
+    const db = parseTestSortDetails(b);
+    return da.score - db.score;
+  });
+
+  const session1Tests = yearTests.filter(t => parseTestSortDetails(t).session === 1);
+  const session2Tests = yearTests.filter(t => parseTestSortDetails(t).session === 2);
+
+  // Update session pill counts
+  const pAll = document.getElementById('pillSessionAll');
+  const pS1  = document.getElementById('pillSession1');
+  const pS2  = document.getElementById('pillSession2');
+  if (pAll) pAll.textContent = `All Tests (${yearTests.length})`;
+  if (pS1)  pS1.textContent  = `Session 1 - Jan (${session1Tests.length})`;
+  if (pS2)  pS2.textContent  = `Session 2 - Apr (${session2Tests.length})`;
+
+  // Filter based on active session
+  let displayedS1 = currentSessionFilter === '2' ? [] : session1Tests;
+  let displayedS2 = currentSessionFilter === '1' ? [] : session2Tests;
+
+  let cardIndex = 0;
+
+  if (displayedS1.length > 0) {
+    if (currentSessionFilter === 'all' && session2Tests.length > 0) {
+      const div1 = document.createElement('div');
+      div1.className = 'session-divider';
+      div1.innerHTML = `<span>Session 1 · January</span>`;
+      list.appendChild(div1);
+    }
+    displayedS1.forEach(test => {
+      list.appendChild(buildCard(test, cardIndex++));
+    });
+  }
+
+  if (displayedS2.length > 0) {
+    const div2 = document.createElement('div');
+    div2.className = 'session-divider';
+    div2.innerHTML = `<span>Session 2 · April</span>`;
+    list.appendChild(div2);
+    displayedS2.forEach(test => {
+      list.appendChild(buildCard(test, cardIndex++));
+    });
   }
 }
 
 function showEmpty() {
-  document.getElementById('testsLoading').style.display = 'none';
-  document.getElementById('testsEmpty').style.display   = 'flex';
-  document.getElementById('testsList').style.display    = 'none';
+  const loading = document.getElementById('testsLoading');
+  const empty   = document.getElementById('testsEmpty');
+  const viewY   = document.getElementById('viewYears');
+  const viewT   = document.getElementById('viewTests');
+  if (loading) loading.style.display = 'none';
+  if (empty)   empty.style.display   = 'flex';
+  if (viewY)   viewY.style.display   = 'none';
+  if (viewT)   viewT.style.display   = 'none';
 }
 
 function buildCard(test, index) {
