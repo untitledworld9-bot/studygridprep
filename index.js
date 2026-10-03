@@ -1343,21 +1343,29 @@ async function initPresence() {
       status:      "online"
     }, { merge: true });
 
-    // Restore goal from Firestore if localStorage was cleared
-    if (!localStorage.getItem("goal")) {
-      getDoc(doc(db, "users", uid)).then(snap => {
-        if (snap.exists()) {
-          const d = snap.data();
-          if (d.goal) {
-            localStorage.setItem("goal", d.goal);
-            if (d.examDate) localStorage.setItem("examDate", d.examDate);
-            if (d.customExamName) localStorage.setItem("customExamName", d.customExamName);
-            if (d.customExamEmoji) localStorage.setItem("customExamEmoji", d.customExamEmoji);
-            localStorage.setItem("goalSetDone", "true");
-          }
+    // Restore or sync goal between localStorage & Firestore
+    getDoc(doc(db, "users", uid)).then(snap => {
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.goal) {
+          if (!localStorage.getItem("goal")) localStorage.setItem("goal", d.goal);
+          if (d.examDate && !localStorage.getItem("examDate")) localStorage.setItem("examDate", d.examDate);
+          if (d.customExamName && !localStorage.getItem("customExamName")) localStorage.setItem("customExamName", d.customExamName);
+          if (d.customExamEmoji && !localStorage.getItem("customExamEmoji")) localStorage.setItem("customExamEmoji", d.customExamEmoji);
+          localStorage.setItem("goalSetDone", "true");
         }
-      }).catch(() => {});
-    }
+        const localCName = localStorage.getItem("customExamName");
+        const localCEmoji = localStorage.getItem("customExamEmoji");
+        if (localCName && (!d.customExamName || d.customExamName === "Custom" || !d.goal)) {
+          updateDoc(doc(db, "users", uid), {
+            goal: d.goal || "Custom",
+            customExamName: localCName,
+            customExamEmoji: localCEmoji || "🎯",
+            studyGoal: localCName
+          }).catch(() => {});
+        }
+      }
+    }).catch(() => {});
   } catch(e) { console.warn("[Presence] init failed:", e); }
 
   // Heartbeat every 60s

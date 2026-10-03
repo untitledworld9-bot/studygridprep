@@ -3509,6 +3509,18 @@ onAuthStateChanged(auth, user => {
         }
         if(typeof syncUserData === "function") syncUserData();
       }
+
+      // Auto-heal: If localStorage has custom exam name but Firestore doc is missing it, sync to Firestore
+      const localCName = localStorage.getItem("customExamName");
+      const localCEmoji = localStorage.getItem("customExamEmoji");
+      if(localCName && (!d.customExamName || d.customExamName === "Custom" || !d.goal)){
+        updateDoc(doc(db, "users", user.uid), {
+          goal: d.goal || "Custom",
+          customExamName: localCName,
+          customExamEmoji: localCEmoji || "🎯",
+          studyGoal: localCName
+        }).catch(()=>{});
+      }
     }
   }).catch(()=>{});
 
@@ -3614,6 +3626,13 @@ window.saveGoalToFirebase=function(goal,examDate,extra){
   if(extra && typeof extra === 'object'){
     if(extra.customExamName !== undefined) payload.customExamName = extra.customExamName;
     if(extra.customExamEmoji !== undefined) payload.customExamEmoji = extra.customExamEmoji;
+  }
+  if(goal === "Custom"){
+    if(!payload.customExamName) payload.customExamName = localStorage.getItem("customExamName") || "Custom Exam";
+    if(!payload.customExamEmoji) payload.customExamEmoji = localStorage.getItem("customExamEmoji") || "🎯";
+    payload.studyGoal = payload.customExamName;
+  } else {
+    payload.studyGoal = goal;
   }
   setDoc(doc(db,"users",userId),payload,{merge:true}).catch(()=>{});
 };

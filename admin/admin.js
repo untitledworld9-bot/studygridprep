@@ -1762,25 +1762,40 @@ function updateUserStats() {
   if ($("playlistWatchTime")) animateStat($("playlistWatchTime"), playlistHours);
 
   // Exam breakdown counts (JEE, NEET, CUET, Boards, and 5th Custom Exam)
-  const cntAll = users.length;
-  let cntJee = 0, cntNeet = 0, cntCuet = 0, cntBoards = 0, cntCustom = 0;
-  users.forEach(u => {
-    const g = (u.goal || "").toUpperCase();
-    if (g === "JEE") cntJee++;
-    else if (g === "NEET") cntNeet++;
-    else if (g === "CUET") cntCuet++;
-    else if (g === "BOARDS") cntBoards++;
-    else if (g === "CUSTOM" || u.customExamName || (!["JEE", "NEET", "CUET", "BOARDS", ""].includes(g) && g)) cntCustom++;
-  });
-  if ($("cntAllGoals")) $("cntAllGoals").textContent = cntAll;
-  if ($("cntJee")) $("cntJee").textContent = cntJee;
-  if ($("cntNeet")) $("cntNeet").textContent = cntNeet;
-  if ($("cntCuet")) $("cntCuet").textContent = cntCuet;
-  if ($("cntBoards")) $("cntBoards").textContent = cntBoards;
-  if ($("cntCustom")) $("cntCustom").textContent = cntCustom;
+  updateExamBadgeCounts();
 
   // Cache online users list for modal
   STATE.onlineUsersList = onlineUsers;
+}
+
+/** Compute and update live exam goal counters across all chips */
+function updateExamBadgeCounts() {
+  const users = STATE.allUsers || [];
+  const cntAll = users.length;
+  let cntJee = 0, cntNeet = 0, cntCuet = 0, cntBoards = 0, cntCustom = 0;
+
+  users.forEach(u => {
+    const rawG = (u.goal || u.studyGoal || u.examGoal || "").trim().toUpperCase();
+    const rawN = (u.customExamName || u.customExam || u.customName || u.examName || u.targetExam || "").trim();
+    if (rawG === "JEE") cntJee++;
+    else if (rawG === "NEET") cntNeet++;
+    else if (rawG === "CUET") cntCuet++;
+    else if (rawG === "BOARDS") cntBoards++;
+    else if (rawG === "CUSTOM" || rawN || (!["JEE", "NEET", "CUET", "BOARDS", ""].includes(rawG) && rawG)) {
+      cntCustom++;
+    }
+  });
+
+  const setCnt = (id, val) => {
+    const el = $(id);
+    if (el) el.textContent = String(val);
+  };
+  setCnt("cntAllGoals", cntAll);
+  setCnt("cntJee", cntJee);
+  setCnt("cntNeet", cntNeet);
+  setCnt("cntCuet", cntCuet);
+  setCnt("cntBoards", cntBoards);
+  setCnt("cntCustom", cntCustom);
 }
 
 let currentExamFilter = "all";
@@ -1789,49 +1804,64 @@ window.setUserExamFilter = (exam, btn) => {
   currentExamFilter = (exam || "all").toLowerCase();
   const sel = $("userExamFilter");
   if (sel) sel.value = currentExamFilter;
-  document.querySelectorAll(".exam-filter-chip").forEach(el => el.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-  else {
-    const chipId = "chipExam" + (currentExamFilter === "all" ? "All" : currentExamFilter.charAt(0).toUpperCase() + currentExamFilter.slice(1));
-    const targetChip = document.getElementById(chipId);
-    if (targetChip) targetChip.classList.add("active");
+
+  document.querySelectorAll(".exam-filter-chip").forEach(el => {
+    el.classList.remove("active");
+    el.style.boxShadow = "none";
+    el.style.filter = "none";
+  });
+
+  const chipMap = {
+    all: "chipExamAll",
+    jee: "chipExamJee",
+    neet: "chipExamNeet",
+    cuet: "chipExamCuet",
+    boards: "chipExamBoards",
+    custom: "chipExamCustom"
+  };
+  const targetChip = btn || document.getElementById(chipMap[currentExamFilter] || "chipExamAll");
+  if (targetChip) {
+    targetChip.classList.add("active");
+    targetChip.style.boxShadow = "0 0 12px rgba(255,255,255,0.22)";
+    targetChip.style.filter = "brightness(1.2)";
   }
   renderUserTable();
 };
 
 window.filterUsers = () => {
   const sel = $("userExamFilter");
-  if (sel && sel.value.toLowerCase() !== currentExamFilter) {
-    currentExamFilter = sel.value.toLowerCase();
-    document.querySelectorAll(".exam-filter-chip").forEach(el => el.classList.remove("active"));
-    const chipId = "chipExam" + (currentExamFilter === "all" ? "All" : currentExamFilter.charAt(0).toUpperCase() + currentExamFilter.slice(1));
-    const targetChip = document.getElementById(chipId);
-    if (targetChip) targetChip.classList.add("active");
+  if (sel) {
+    const val = (sel.value || "all").toLowerCase();
+    window.setUserExamFilter(val, null);
+  } else {
+    renderUserTable();
   }
-  renderUserTable();
 };
 
 /**
  * Build the full users table with current search filter applied.
  */
 function renderUserTable() {
+  updateExamBadgeCounts();
   const query = ($("userSearch")?.value || "").toLowerCase().trim();
   const examFilter = currentExamFilter.toLowerCase();
   const rows  = STATE.allUsers.filter(u => {
+    const rawG = (u.goal || u.studyGoal || u.examGoal || "").toLowerCase().trim();
+    const rawN = (u.customExamName || u.customExam || u.customName || u.examName || u.targetExam || "").toLowerCase().trim();
+
     const qMatch = !query ||
       (u.name  || "").toLowerCase().includes(query) ||
       (u.email || "").toLowerCase().includes(query) ||
-      (u.goal  || "").toLowerCase().includes(query) ||
-      (u.customExamName || "").toLowerCase().includes(query);
+      rawG.includes(query) ||
+      rawN.includes(query);
     if (!qMatch) return false;
 
     if (examFilter !== "all") {
-      const uGoal = (u.goal || "").toLowerCase();
-      const hasCustom = uGoal === "custom" || Boolean(u.customExamName) || (!["jee", "neet", "cuet", "boards", ""].includes(uGoal) && Boolean(uGoal));
+      const isCustomUser = rawG === "custom" || Boolean(rawN) || (!["jee", "neet", "cuet", "boards", ""].includes(rawG) && Boolean(rawG));
       if (examFilter === "custom") {
-        if (!hasCustom) return false;
+        if (!isCustomUser) return false;
       } else {
-        if (uGoal !== examFilter) return false;
+        if (rawG !== examFilter) return false;
       }
     }
     return true;
@@ -1854,31 +1884,66 @@ function renderUserTable() {
     const xp       = studyXP + timerXP;   // combined total for display + level
     const level   = adminGetLevel(xp);
     const badge   = adminGetBadge(xp);
-    const goal    = u.goal || u.studyGoal || null;
     const todos   = u.todos || u.todoCount || null;
     const uid     = escHtml(u.id);
     const uname   = escHtml(u.name || u.email || u.id);
 
     // Goal pill — support JEE, NEET, CUET, Boards, and 5th Custom Exam
-    let goalLabel = goal;
-    let goalEmoji = "🎯";
-    let isCustom  = false;
-    if (goal === "Custom" || u.customExamName || (!["JEE","NEET","CUET","Boards"].includes(goal) && goal)) {
-      isCustom  = true;
-      goalLabel = u.customExamName || (goal === "Custom" ? "Custom Exam" : goal);
-      goalEmoji = u.customExamEmoji || "✨";
-    }
-    const goalDateText = u.examDate ? ` (${u.examDate})` : "";
-    const pillBorder = isCustom ? "rgba(236,72,153,0.35)" : "rgba(0,224,255,.15)";
-    const pillBg = isCustom ? "rgba(236,72,153,0.12)" : "rgba(0,224,255,.07)";
-    const pillColor = isCustom ? "#F472B6" : "var(--accent-cyan)";
+    const rawGoal = (u.goal || u.studyGoal || u.examGoal || "").trim();
+    const rawName = (u.customExamName || u.customExam || u.customName || u.examName || u.targetExam || "").trim();
+    const rawEmoji = (u.customExamEmoji || u.customEmoji || u.examEmoji || "").trim();
+    const upperG = rawGoal.toUpperCase();
+    const isStandard = ["JEE", "NEET", "CUET", "BOARDS"].includes(upperG);
 
-    const goalHtml = goal
-      ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;
+    let isCustom = false;
+    let goalLabel = "";
+    let goalEmoji = "🎯";
+    let pillBorder = "rgba(0,224,255,.2)";
+    let pillBg = "rgba(0,224,255,.08)";
+    let pillColor = "var(--accent-cyan)";
+
+    if (upperG === "CUSTOM" || rawName || (!isStandard && upperG && upperG !== "")) {
+      isCustom = true;
+      goalLabel = rawName || (upperG !== "CUSTOM" && rawGoal ? rawGoal : "Custom Exam");
+      goalEmoji = rawEmoji || "✨";
+      pillBorder = "rgba(236,72,153,0.38)";
+      pillBg = "rgba(236,72,153,0.12)";
+      pillColor = "#F472B6";
+    } else if (isStandard) {
+      goalLabel = upperG === "BOARDS" ? "Boards" : upperG;
+      if (upperG === "JEE") {
+        goalEmoji = "⚛️";
+        pillBorder = "rgba(255,184,48,0.35)";
+        pillBg = "rgba(255,184,48,0.1)";
+        pillColor = "var(--accent-amber)";
+      } else if (upperG === "NEET") {
+        goalEmoji = "🩺";
+        pillBorder = "rgba(0,229,160,0.35)";
+        pillBg = "rgba(0,229,160,0.1)";
+        pillColor = "var(--accent-green)";
+      } else if (upperG === "CUET") {
+        goalEmoji = "🎓";
+        pillBorder = "rgba(0,224,255,0.35)";
+        pillBg = "rgba(0,224,255,0.1)";
+        pillColor = "var(--accent-cyan)";
+      } else if (upperG === "BOARDS") {
+        goalEmoji = "📖";
+        pillBorder = "rgba(124,92,252,0.35)";
+        pillBg = "rgba(124,92,252,0.1)";
+        pillColor = "var(--accent-violet)";
+      }
+    } else {
+      goalLabel = rawGoal;
+      goalEmoji = "🎯";
+    }
+
+    const goalDateText = u.examDate ? ` (${u.examDate})` : "";
+    const goalHtml = goalLabel
+      ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;
            background:${pillBg};border:1px solid ${pillBorder};
-           border-radius:20px;padding:2px 9px;font-size:10px;color:${pillColor};font-weight:600;"
+           border-radius:20px;padding:3px 10px;font-size:11px;color:${pillColor};font-weight:700;"
            title="${escHtml(goalLabel + goalDateText)}">
-           ${escHtml(goalEmoji)} ${escHtml(goalLabel)}${u.examDate ? `<span style="opacity:0.8;font-size:9px;margin-left:2px;">• ${escHtml(u.examDate)}</span>` : ''}</div>`
+           <span>${escHtml(goalEmoji)}</span> <span>${escHtml(goalLabel)}</span>${u.examDate ? `<span style="opacity:0.75;font-size:9px;margin-left:2px;font-weight:500;">• ${escHtml(u.examDate)}</span>` : ''}</div>`
       : "";
 
     // Todos pill
@@ -2137,17 +2202,33 @@ function renderOnlineUsersModal() {
           <div style="font-weight:600;font-size:13px;">${name}</div>
           <div style="font-size:11px;color:var(--text-muted);">${email}</div>
           ${(() => {
-            const goal = u.goal || u.studyGoal || null;
-            if (!goal) return "";
-            let goalLabel = goal;
-            let goalEmoji = "🎯";
+            const rawGoal = (u.goal || u.studyGoal || u.examGoal || "").trim();
+            const rawName = (u.customExamName || u.customExam || u.customName || u.examName || u.targetExam || "").trim();
+            const rawEmoji = (u.customExamEmoji || u.customEmoji || u.examEmoji || "").trim();
+            const upperG = rawGoal.toUpperCase();
+            const isStandard = ["JEE", "NEET", "CUET", "BOARDS"].includes(upperG);
+
             let isCustom = false;
-            if (goal === "Custom" || u.customExamName || (!["JEE","NEET","CUET","Boards"].includes(goal) && goal)) {
+            let goalLabel = "";
+            let goalEmoji = "🎯";
+            let pillColor = "var(--accent-cyan)";
+
+            if (upperG === "CUSTOM" || rawName || (!isStandard && upperG && upperG !== "")) {
               isCustom = true;
-              goalLabel = u.customExamName || (goal === "Custom" ? "Custom Exam" : goal);
-              goalEmoji = u.customExamEmoji || "✨";
+              goalLabel = rawName || (upperG !== "CUSTOM" && rawGoal ? rawGoal : "Custom Exam");
+              goalEmoji = rawEmoji || "✨";
+              pillColor = "#F472B6";
+            } else if (isStandard) {
+              goalLabel = upperG === "BOARDS" ? "Boards" : upperG;
+              if (upperG === "JEE") { goalEmoji = "⚛️"; pillColor = "var(--accent-amber)"; }
+              else if (upperG === "NEET") { goalEmoji = "🩺"; pillColor = "var(--accent-green)"; }
+              else if (upperG === "CUET") { goalEmoji = "🎓"; pillColor = "var(--accent-cyan)"; }
+              else if (upperG === "BOARDS") { goalEmoji = "📖"; pillColor = "var(--accent-violet)"; }
+            } else {
+              goalLabel = rawGoal;
             }
-            return `<div style="font-size:10px;color:${isCustom ? '#F472B6' : 'var(--accent-cyan)'};font-weight:600;margin-top:2px;">${escHtml(goalEmoji)} ${escHtml(goalLabel)}</div>`;
+            if (!goalLabel) return "";
+            return `<div style="font-size:10px;color:${pillColor};font-weight:700;margin-top:2px;">${escHtml(goalEmoji)} ${escHtml(goalLabel)}</div>`;
           })()}
         </div>
       </div>
