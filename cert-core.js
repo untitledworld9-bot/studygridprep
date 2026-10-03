@@ -68,7 +68,44 @@ export function certTitle(kind){
   return 'Experience Certificate';
 }
 
-/* app = hiringApplications doc (+id), role = hiringRoles doc */
+/* Dedicated Achievement Certificate builder */
+export function buildAchievementCert(app, role, now = Date.now()){
+  const ach = (app && app.achievementCert) || ((app && app.certOverride && app.certOverride.kind === 'ACHIEVEMENT') ? app.certOverride : null);
+  if (!ach) return null;
+  const o = (app && app.offer) || {};
+  const start = toMs(ach.startMs || app.offerAcceptedAt) || now;
+  const issueDate = ach.issueDate ? toMs(ach.issueDate) : (toMs(ach.issuedAt) || now);
+  const certName = (ach.name || app.certName || app.name || '').trim();
+  const months = ach.months != null && ach.months !== '' ? Number(ach.months) : null;
+  const days = Math.max(0, Math.floor((issueDate - start) / 864e5));
+  const durLabel = ach.durationLabel || (months != null ? fmtMonths(months, days) : (days > 0 ? `${days} Days` : '1 Month'));
+
+  return {
+    id: (app ? app.id : '') + '-achieve',
+    baseAppId: app ? app.id : '',
+    uid: app ? app.uid : '',
+    name: certName,
+    empType: o.jobType || (role && role.employmentType) || 'FULL_TIME',
+    roleTitle: ach.roleTitle || o.roles || (role && role.title) || 'Outstanding Contributor',
+    department: (role && role.department) || '',
+    kind: 'ACHIEVEMENT',
+    startMs: start,
+    endMs: issueDate,
+    plannedMonths: null,
+    plannedEndMs: null,
+    days,
+    months,
+    durationLabel: durLabel,
+    eligible: true,
+    state: 'completed',
+    issuedMs: issueDate,
+    note: ach.note || '',
+    forceIssued: true,
+    isAchievement: true
+  };
+}
+
+/* Base Experience / Internship certificate (tied to engagement tenure) */
 export function buildCert(app, role, now = Date.now()){
   const o = (app && app.offer) || {}, ov = (app && app.certOverride) || {};
   const empType = o.jobType || (role && role.employmentType) || 'FULL_TIME';
@@ -77,24 +114,27 @@ export function buildCert(app, role, now = Date.now()){
   const start = toMs(app && app.offerAcceptedAt);
   const certName = (ov.name || app.certName || app.name || '').trim();
 
+  // If certOverride is strictly for an Achievement cert, we keep kind as INTERN or JOB for the base tenure
+  const baseKind = (ov.kind && ov.kind !== 'ACHIEVEMENT') ? ov.kind : (intern ? 'INTERN' : 'JOB');
+
   const base = {
     id: app ? app.id : '',
     uid: app ? app.uid : '',
     name: certName,
     empType,
-    roleTitle: ov.roleTitle || o.roles || (role && role.title) || 'Team Member',
+    roleTitle: (ov.kind !== 'ACHIEVEMENT' ? ov.roleTitle : null) || o.roles || (role && role.title) || 'Team Member',
     department: (role && role.department) || '',
-    kind: ov.kind || (intern ? 'INTERN' : 'JOB'),
+    kind: baseKind,
     startMs: start,
     plannedMonths: intern ? plannedMonths : null,
-    note: ov.note || '',
+    note: (ov.kind !== 'ACHIEVEMENT' ? ov.note : '') || '',
   };
 
   if (app && app.hiredEndType) return { ...base, state: 'revoked', eligible: false };
   if (!start) return { ...base, state: 'none', eligible: false };
 
-  // Admin force-issue — bypasses the 15-day rule entirely
-  if (ov.forceIssue) {
+  // Manual force issue ONLY applies if it was not solely an achievement certificate
+  if (ov.forceIssue && ov.kind !== 'ACHIEVEMENT') {
     const forceEnd = ov.issueDate ? toMs(ov.issueDate) : now;
     const forceMonths = ov.months != null && ov.months !== '' ? Number(ov.months) : null;
     const forceDays = Math.max(0, Math.floor((forceEnd - start) / 864e5));
@@ -130,11 +170,11 @@ export function buildCert(app, role, now = Date.now()){
   const d = certDuration(start, end);
   const full = plannedEnd && end >= plannedEnd;
   let months = full ? plannedMonths : d.months;
-  if (ov.months != null && ov.months !== '') months = Number(ov.months);
+  if (ov.months != null && ov.months !== '' && ov.kind !== 'ACHIEVEMENT') months = Number(ov.months);
   
-  const eligible = state !== 'active' && (full || d.eligible || ov.months != null || ov.forceIssue);
-  const issued = ov.issueDate ? toMs(ov.issueDate) : end;
-  const durationLabel = ov.durationLabel || fmtMonths(months, d.days);
+  const eligible = state !== 'active' && (full || d.eligible || (ov.months != null && ov.kind !== 'ACHIEVEMENT'));
+  const issued = (ov.issueDate && ov.kind !== 'ACHIEVEMENT') ? toMs(ov.issueDate) : end;
+  const durationLabel = (ov.durationLabel && ov.kind !== 'ACHIEVEMENT') ? ov.durationLabel : fmtMonths(months, d.days);
 
   return {
     ...base,
@@ -147,6 +187,16 @@ export function buildCert(app, role, now = Date.now()){
     eligible,
     issuedMs: issued
   };
+}
+
+/* Returns all certificates for this application (Achievement + Experience) */
+export function getAllCerts(app, role, now = Date.now()){
+  const list = [];
+  const ach = buildAchievementCert(app, role, now);
+  if (ach) list.push(ach);
+  const exp = buildCert(app, role, now);
+  if (exp) list.push(exp);
+  return list;
 }
 
 /* what gets mirrored to the public `certificates/{id}` doc (QR verification) */
@@ -166,5 +216,6 @@ export function publicDoc(c){
     note: c.note || '',
     status: 'valid',
     forceIssued: !!c.forceIssued,
+    isAchievement: !!c.isAchievement,
   };
 }

@@ -440,7 +440,22 @@ async function verifyMode(id){
   $('app').innerHTML = `<div class="brand"><img src="/icon-192.png" alt="Study Grid Prep">Study Grid Prep · Certificate Verification</div>
     <div class="card vcard" id="vc"><div class="vseal"><div class="scan"></div></div><div class="vt">Verifying…</div><div class="vs">Checking this certificate against Study Grid Prep records</div></div><div id="vprev"></div>`;
   const t0 = Date.now(); let d = null;
-  try { const s = await getDoc(doc(db, 'certificates', id)); if (s.exists()) d = s.data(); } catch(e) { console.warn(e); }
+  const baseId = id.replace(/-achieve$/, '');
+  try {
+    const s = await getDoc(doc(db, 'certificates', id));
+    if (s.exists()) {
+      d = s.data();
+    } else if (id.endsWith('-achieve')) {
+      const baseSnap = await getDoc(doc(db, 'hiringApplications', baseId));
+      if (baseSnap.exists()) {
+        const app = { id: baseSnap.id, ...baseSnap.data() };
+        const roleSnap = await getDoc(doc(db, 'hiringRoles', app.roleId));
+        const role = roleSnap.exists() ? { id: roleSnap.id, ...roleSnap.data() } : null;
+        const ach = core.buildAchievementCert ? core.buildAchievementCert(app, role) : null;
+        if (ach) d = core.publicDoc(ach);
+      }
+    }
+  } catch(e) { console.warn(e); }
   await new Promise(r => setTimeout(r, Math.max(0, 1300 - (Date.now() - t0))));
   const vc = $('vc');
   if (!d || d.status === 'revoked') {
@@ -449,12 +464,13 @@ async function verifyMode(id){
     return;
   }
   const c = { ...d, id };
+  const isAch = c.kind === 'ACHIEVEMENT';
   vc.innerHTML = `<div class="vseal"><div class="pulse"></div><svg class="shield" viewBox="0 0 100 100"><path class="sh" d="M50 6 14 20v28c0 22 15 38 36 46 21-8 36-24 36-46V20z"/><path class="ck" d="m33 50 12 12 23-26"/></svg></div>
-    <div class="vt" style="color:var(--green)">Verified ✓</div><div class="vs">Official ${c.kind === 'INTERN' ? 'internship' : (c.kind === 'ACHIEVEMENT' ? 'achievement' : 'experience')} certificate from <b>Study Grid Prep</b></div>
+    <div class="vt" style="color:var(--green)">Verified ✓</div><div class="vs">Official ${c.kind === 'INTERN' ? 'internship' : (isAch ? 'Certificate of Achievement' : 'experience')} certificate from <b>Study Grid Prep</b></div>
     <div class="vtable">
       <div><b>Recipient Name</b><span>${esc(c.name)}</span></div>
-      <div><b>${c.kind === 'INTERN' ? 'Internship Role' : 'Designation'}</b><span>${esc(c.roleTitle)}</span></div>
-      <div><b>Total Experience / Duration</b><span>${esc(c.durationLabel)}</span></div>
+      <div><b>${isAch ? 'Honored Role / Recognition' : (c.kind === 'INTERN' ? 'Internship Role' : 'Designation')}</b><span>${esc(c.roleTitle)}</span></div>
+      <div><b>${isAch ? 'Recognition / Duration' : 'Total Experience / Duration'}</b><span>${esc(c.durationLabel)}</span></div>
       <div><b>Tenure Period</b><span>${fD(c.startMs)} – ${fD(c.endMs)}</span></div>
       <div><b>Authorized Signatory</b><span>Ayush Kumar Gupta (Founder)</span></div>
       <div><b>Certificate ID</b><span>${certCode(id)}</span></div>
@@ -476,9 +492,13 @@ async function loadOwner(user){
   S.apps = as.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.finalStatus === 'selected' && toMs(a.offerAcceptedAt)).sort((a, b) => toMs(b.offerAcceptedAt) - toMs(a.offerAcceptedAt));
   const want = P.get('app');
   S.cur = S.apps.find(a => a.id === want) || S.apps[0] || null;
+  const wantTab = P.get('t');
+  if (wantTab === 'achieve') S.viewType = 'achievement';
+  else if (wantTab === 'exp') S.viewType = 'experience';
   renderOwner();
 }
-window.pick = id => { S.cur = S.apps.find(a => a.id === id); renderOwner(); };
+window.pick = id => { S.cur = S.apps.find(a => a.id === id); S.viewType = null; renderOwner(); };
+window.switchView = function(t){ S.viewType = t; renderOwner(); };
 
 /* ---- One-Time Edit Name Modal ---- */
 window.openNameModal = function(){
@@ -513,7 +533,8 @@ window.saveCertName = async function(){
       name: val,
       nameConfirmed: true,
       'certOverride.name': val,
-      'certOverride.nameConfirmed': true
+      'certOverride.nameConfirmed': true,
+      'achievementCert.name': val
     });
     S.cur.certName = val;
     S.cur.name = val;
@@ -535,10 +556,29 @@ async function renderOwner(){
   const head = topbar('Certificate');
   if (!S.cur) { $('app').innerHTML = head + `<div class="card center"><i class="fa-solid fa-award big"></i><div class="h3">No certificate yet</div><div class="p2">Your certificate appears here once you accept an offer and start working.</div></div>`; return; }
   const role = S.roles.find(r => r.id === S.cur.roleId);
-  const c = S.c = buildCert(S.cur, role);
-  const chips = S.apps.length > 1 ? `<div class="chips">${S.apps.map(a => `<div class="chip ${a.id === S.cur.id ? 'on' : ''}" onclick="pick('${a.id}')">${esc((S.roles.find(r => r.id === a.roleId) || {}).title || 'Role')}</div>`).join('')}</div>` : '';
+  const baseCert = buildCert(S.cur, role);
+  const achCert = core.buildAchievementCert ? core.buildAchievementCert(S.cur, role) : null;
+  const hasAch = !!achCert;
+
+  if (!S.viewType) {
+    if (hasAch && baseCert.state === 'active') S.viewType = 'achievement';
+    else S.viewType = 'experience';
+  }
+
+  const c = S.c = (S.viewType === 'achievement' && hasAch) ? achCert : baseCert;
+
+  const appChips = S.apps.length > 1 ? `<div class="chips">${S.apps.map(a => `<div class="chip ${a.id === S.cur.id ? 'on' : ''}" onclick="pick('${a.id}')">${esc((S.roles.find(r => r.id === a.roleId) || {}).title || 'Role')}</div>`).join('')}</div>` : '';
+
+  let certSwitcher = '';
+  if (hasAch) {
+    certSwitcher = `<div class="chips" style="margin-bottom:14px;">
+      <button class="chip ${S.viewType === 'achievement' ? 'on' : ''}" onclick="switchView('achievement')" style="font-weight:700;"><i class="fa-solid fa-trophy" style="color:#F59E0B;margin-right:6px;"></i> Certificate of Achievement</button>
+      <button class="chip ${S.viewType === 'experience' ? 'on' : ''}" onclick="switchView('experience')" style="font-weight:700;"><i class="fa-solid fa-award" style="color:var(--accent);margin-right:6px;"></i> ${role && role.employmentType === 'INTERN' ? 'Internship' : 'Experience'} Certificate</button>
+    </div>`;
+  }
+
   const kindName = certTitle(c.kind);
-  let html = head + `<div class="sub">${kindName} — auto-generated, digitally signed and verifiable with a QR code.</div>` + chips;
+  let html = head + `<div class="sub">${kindName} — auto-generated, digitally signed and verifiable with a QR code.</div>` + appChips + certSwitcher;
 
   // Has the candidate already confirmed their name once?
   const isNameConfirmed = S.cur.nameConfirmed === true || (S.cur.certOverride && S.cur.certOverride.nameConfirmed === true);
@@ -569,7 +609,7 @@ async function renderOwner(){
   } else if (!c.eligible) {
     html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-clock"></i></div><div><div class="h3">Certificate not issued</div><div class="p2">A minimum of ${SGP.minDays} days of work is required. You worked ${c.days} day${c.days === 1 ? '' : 's'}.</div></div></div></div>`;
   } else {
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico"><i class="fa-solid fa-circle-check"></i></div><div><div class="h3">Your certificate is ready 🎉</div><div class="p2">${esc(c.name)} · ${esc(c.durationLabel)} · ${fD(c.startMs)} – ${fD(c.endMs)}</div></div></div>
+    html += `<div class="card"><div class="ok-head"><div class="ok-ico"><i class="fa-solid fa-circle-check"></i></div><div><div class="h3">${c.kind === 'ACHIEVEMENT' ? 'Certificate of Achievement Awarded 🏆' : 'Your certificate is ready 🎉'}</div><div class="p2">${esc(c.name)} · ${esc(c.durationLabel)} · ${fD(c.startMs)} – ${fD(c.endMs)}</div></div></div>
       <div id="pv"></div>
       <div class="acts">
         <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
@@ -582,9 +622,9 @@ async function renderOwner(){
       <div class="linkbox"><i class="fa-solid fa-link"></i><span style="flex:1">${verifyUrl(c.id)}</span><button class="btn" style="padding:6px 10px" onclick="copyLink()"><i class="fa-regular fa-copy"></i></button></div></div>
       <div class="card"><div class="grid2">
         <div><div class="k">Certificate ID</div><div class="v">${certCode(c.id)}</div></div>
-        <div><div class="k">Type</div><div class="v">${c.kind === 'INTERN' ? 'Internship' : (c.kind === 'ACHIEVEMENT' ? 'Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')')}</div></div>
+        <div><div class="k">Type</div><div class="v">${c.kind === 'INTERN' ? 'Internship' : (c.kind === 'ACHIEVEMENT' ? 'Certificate of Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')')}</div></div>
         <div><div class="k">Designation</div><div class="v">${esc(c.roleTitle)}</div></div>
-        <div><div class="k">Duration</div><div class="v">${esc(c.durationLabel)}</div></div>
+        <div><div class="k">Duration / Recognition</div><div class="v">${esc(c.durationLabel)}</div></div>
         <div><div class="k">Signatory</div><div class="v">Ayush Kumar Gupta (Founder)</div></div>
         <div><div class="k">Issued Date</div><div class="v">${fD(c.issuedMs || c.endMs)}</div></div>
         <div><div class="k">Status</div><div class="v" style="color:var(--green)">Verified ✓</div></div>
