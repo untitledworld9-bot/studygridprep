@@ -1572,134 +1572,7 @@ input::placeholder { color: var(--text3); }
   border: none !important;
 }
 
-/* In-App Landscape Mode on #playerOverlay (No Chrome www.youtube.com banner) */
-#playerOverlay.in-landscape-mode {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: 100vw !important;
-  max-height: 100vh !important;
-  background: #000 !important;
-  z-index: 2147483640 !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-#playerOverlay.in-landscape-mode .player-header,
-#playerOverlay.in-landscape-mode .notes-section {
-  display: none !important;
-}
-#playerOverlay.in-landscape-mode .video-wrapper {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: 100vw !important;
-  max-height: 100vh !important;
-  aspect-ratio: unset !important;
-  z-index: 2147483645 !important;
-  background: #000 !important;
-}
-#playerOverlay.in-landscape-mode .video-wrapper .player-video-container {
-  width: 100% !important;
-  height: 100% !important;
-}
-#playerOverlay.in-landscape-mode .video-wrapper iframe {
-  width: 100% !important;
-  height: 100% !important;
-  border: none !important;
-}
 
-/* CSS Landscape rotation fallback (when phone is in portrait without orientation.lock) */
-.video-wrapper.is-css-rotated-landscape {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: 100vh !important;
-  height: 100vw !important;
-  transform: translate(-50%, -50%) rotate(90deg) !important;
-  transform-origin: center center !important;
-  z-index: 2147483647 !important;
-  background: #000 !important;
-  aspect-ratio: unset !important;
-}
-
-/* Landscape / Portrait Toggle Button with Auto-Fade */
-.video-landscape-toggle-btn {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 50;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  pointer-events: auto;
-}
-
-.video-landscape-toggle-btn.btn-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: scale(0.82) !important;
-}
-
-.video-landscape-toggle-btn.btn-visible {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: scale(1) !important;
-}
-
-.video-landscape-toggle-btn:hover {
-  background: rgba(99, 102, 241, 0.92);
-  border-color: rgba(255, 255, 255, 0.6);
-  transform: scale(1.08) !important;
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
-}
-.video-landscape-toggle-btn:active {
-  transform: scale(0.92) !important;
-}
-
-.video-wrapper:fullscreen .video-landscape-toggle-btn,
-.video-wrapper:-webkit-full-screen .video-landscape-toggle-btn,
-.video-wrapper.is-landscape-fullscreen .video-landscape-toggle-btn,
-.video-wrapper.is-css-rotated-landscape .video-landscape-toggle-btn,
-#playerOverlay.in-landscape-mode .video-landscape-toggle-btn {
-  position: fixed !important;
-  right: 20px !important;
-  bottom: 20px !important;
-  z-index: 2147483647 !important;
-  width: 42px !important;
-  height: 42px !important;
-  background: rgba(15, 23, 42, 0.88) !important;
-}
-
-.video-landscape-toggle-btn.is-active .icon-expand {
-  display: none !important;
-}
-.video-landscape-toggle-btn.is-active .icon-compress {
-  display: block !important;
-}
-.video-landscape-toggle-btn:not(.is-active) .icon-expand {
-  display: block !important;
-}
-.video-landscape-toggle-btn:not(.is-active) .icon-compress {
-  display: none !important;
-}
 
 .focus-lock-btn {
   margin-left: auto;
@@ -2531,11 +2404,6 @@ document.getElementById("videoNotes").value = savedNotes;
 document.getElementById("playerOverlay").style.display = "flex";
 document.querySelector(".back-home-btn").style.display = "none";
 
-// Reset landscape button state and show temporarily
-if (typeof showLandscapeButtonTemporarily === "function") {
-  showLandscapeButtonTemporarily(3500);
-}
-
 // 🔒 Focus Lock: Reset and show button
 focusLocked = false;
 const _flBtn = document.getElementById("focusLockBtn");
@@ -2664,138 +2532,17 @@ function closePlayer() {
 }
 
 /* ══════════════════════════════════════════
-   📺 YOUTUBE LANDSCAPE / FULLSCREEN CONTROLLER
-   - Pure In-App YouTube-style landscape mode (No intrusive Chrome fullscreen popup/banner)
-   - Screen orientation lock to landscape (with unlock on exit)
-   - Auto-fading rotate button: fades out after 3.5s of inactivity, reappears immediately on tap/touch
-   - Works across mobile phones, tablets, and laptops
-   - Safe CSS fallback rotation for devices with locked system orientation
+   📺 YOUTUBE FULLSCREEN & ORIENTATION CONTROLLER
+   - Synchronized with YouTube player native fullscreen events
+   - Handles orientation lock/unlock cleanly
 ══════════════════════════════════════════ */
 let isPlayerLandscape = false;
-let _landscapeBtnHideTimer = null;
 
-function updateLandscapeButtonUI(isLandscape) {
-  const btn = document.getElementById("videoLandscapeToggleBtn");
-  if (!btn) return;
-  if (isLandscape) {
-    btn.classList.add("is-active");
-    btn.setAttribute("title", "Exit Landscape (Portrait)");
-    btn.setAttribute("aria-label", "Exit Landscape Mode");
-  } else {
-    btn.classList.remove("is-active");
-    btn.setAttribute("title", "Landscape Mode");
-    btn.setAttribute("aria-label", "Enter Landscape Mode");
-  }
-}
-
-// Shows rotation button and sets a smooth auto-fade timer (default 3.5s)
-function showLandscapeButtonTemporarily(duration = 3500) {
-  const btn = document.getElementById("videoLandscapeToggleBtn");
-  if (!btn) return;
-  const overlay = document.getElementById("playerOverlay");
-  if (!overlay || getComputedStyle(overlay).display === "none") {
-    btn.classList.remove("btn-visible");
-    btn.classList.add("btn-hidden");
-    return;
-  }
-  btn.classList.remove("btn-hidden");
-  btn.classList.add("btn-visible");
-
-  if (_landscapeBtnHideTimer) clearTimeout(_landscapeBtnHideTimer);
-  _landscapeBtnHideTimer = setTimeout(() => {
-    btn.classList.remove("btn-visible");
-    btn.classList.add("btn-hidden");
-  }, duration);
-}
-
-// Interaction listener: tap anywhere on screen/video reveals button
-function _onPlayerInteraction() {
-  const overlay = document.getElementById("playerOverlay");
-  if (overlay && getComputedStyle(overlay).display !== "none") {
-    showLandscapeButtonTemporarily(3500);
-  }
-}
-
-// Listen to touches, pointer clicks, and iframe focus shifts
-document.addEventListener("touchstart", (e) => {
-  _onPlayerInteraction();
-}, { passive: true });
-
-document.addEventListener("pointerdown", (e) => {
-  _onPlayerInteraction();
-}, { passive: true });
-
-document.addEventListener("mousemove", (e) => {
-  _onPlayerInteraction();
-}, { passive: true });
-
-window.addEventListener("blur", () => {
-  // Triggers when user clicks inside the YouTube player iframe
-  _onPlayerInteraction();
-});
-
-async function enterPlayerLandscape() {
-  const wrapper = document.getElementById("videoWrapper");
-  const overlay = document.getElementById("playerOverlay");
-  if (!wrapper || !overlay) return;
-
-  isPlayerLandscape = true;
-  updateLandscapeButtonUI(true);
-  showLandscapeButtonTemporarily(3500);
-
-  // 1. In-App full landscape immersion (no native requestFullscreen to avoid Chrome "www.youtube.com" banner)
-  overlay.classList.add("in-landscape-mode");
-  wrapper.classList.add("is-landscape-fullscreen");
-
-  // 2. Lock screen orientation to landscape
-  let orientationLocked = false;
-  if (screen.orientation && typeof screen.orientation.lock === "function") {
-    try {
-      await screen.orientation.lock("landscape");
-      orientationLocked = true;
-    } catch (e1) {
-      try {
-        await screen.orientation.lock("landscape-primary");
-        orientationLocked = true;
-      } catch (e2) {
-        console.warn("Screen orientation lock error:", e2);
-      }
-    }
-  }
-
-  // 3. Fallback: if orientation lock is not supported or device remains portrait, apply CSS 90deg rotation
-  const isStillPortrait = window.innerHeight > window.innerWidth;
-  if (isStillPortrait && !orientationLocked) {
-    wrapper.classList.add("is-css-rotated-landscape");
-  } else {
-    wrapper.classList.remove("is-css-rotated-landscape");
-  }
-}
-
-async function exitPlayerLandscape() {
-  const wrapper = document.getElementById("videoWrapper");
-  const overlay = document.getElementById("playerOverlay");
+function exitPlayerLandscape() {
   isPlayerLandscape = false;
-  updateLandscapeButtonUI(false);
-  showLandscapeButtonTemporarily(3500);
-
-  // 1. Unlock screen orientation
   if (screen.orientation && typeof screen.orientation.unlock === "function") {
-    try {
-      screen.orientation.unlock();
-    } catch (e) {}
+    try { screen.orientation.unlock(); } catch (e) {}
   }
-
-  // 2. Remove in-landscape classes
-  if (overlay) {
-    overlay.classList.remove("in-landscape-mode");
-  }
-  if (wrapper) {
-    wrapper.classList.remove("is-landscape-fullscreen");
-    wrapper.classList.remove("is-css-rotated-landscape");
-  }
-
-  // 3. Exit native fullscreen if active
   const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
   if (isFs) {
     const exitFs = document.exitFullscreen ||
@@ -2803,61 +2550,29 @@ async function exitPlayerLandscape() {
                    document.mozCancelFullScreen ||
                    document.msExitFullscreen;
     if (exitFs) {
-      try {
-        await exitFs.call(document);
-      } catch (e) {}
+      try { exitFs.call(document); } catch (e) {}
     }
   }
 }
 
-window.togglePlayerLandscape = function(e) {
-  if (e) {
-    e.stopPropagation();
-    e.preventDefault();
-  }
-  if (isPlayerLandscape) {
-    exitPlayerLandscape();
-  } else {
-    enterPlayerLandscape();
-  }
-};
-
-// Global listener for native fullscreen events (e.g. if user taps YouTube iframe's own native button)
+// Global listener for native fullscreen events (when user clicks YouTube's native fullscreen button)
 function onNativeFullscreenChange() {
   const fsEl = document.fullscreenElement ||
                document.webkitFullscreenElement ||
                document.mozFullScreenElement ||
                document.msFullscreenElement;
 
-  const wrapper = document.getElementById("videoWrapper");
-  const overlay = document.getElementById("playerOverlay");
-
   if (fsEl) {
     isPlayerLandscape = true;
-    updateLandscapeButtonUI(true);
-    showLandscapeButtonTemporarily(3500);
-
     if (screen.orientation && typeof screen.orientation.lock === "function") {
       screen.orientation.lock("landscape").catch(() => {
         screen.orientation.lock("landscape-primary").catch(() => {});
       });
     }
-
-    if (overlay) overlay.classList.add("in-landscape-mode");
-    if (wrapper) wrapper.classList.add("is-landscape-fullscreen");
   } else {
     isPlayerLandscape = false;
-    updateLandscapeButtonUI(false);
-    showLandscapeButtonTemporarily(3500);
-
     if (screen.orientation && typeof screen.orientation.unlock === "function") {
       try { screen.orientation.unlock(); } catch (e) {}
-    }
-
-    if (overlay) overlay.classList.remove("in-landscape-mode");
-    if (wrapper) {
-      wrapper.classList.remove("is-landscape-fullscreen");
-      wrapper.classList.remove("is-css-rotated-landscape");
     }
   }
 }
@@ -2866,19 +2581,6 @@ document.addEventListener("fullscreenchange", onNativeFullscreenChange);
 document.addEventListener("webkitfullscreenchange", onNativeFullscreenChange);
 document.addEventListener("mozfullscreenchange", onNativeFullscreenChange);
 document.addEventListener("MSFullscreenChange", onNativeFullscreenChange);
-
-// Handle physical orientation changes
-window.addEventListener("orientationchange", () => {
-  const wrapper = document.getElementById("videoWrapper");
-  if (!wrapper) return;
-  setTimeout(() => {
-    if (window.innerWidth > window.innerHeight) {
-      wrapper.classList.remove("is-css-rotated-landscape");
-    } else if (isPlayerLandscape) {
-      wrapper.classList.add("is-css-rotated-landscape");
-    }
-  }, 100);
-});
 
 /* ─────────────────────────────────────────────────────────────
    WATCH TIME TRACKER + MOTIVATION POPUPS
@@ -3907,14 +3609,6 @@ window.updateVideoTitle = function(id, newTitle) {
     </div>
     <div class="video-wrapper" id="videoWrapper">
         <div class="player-video-container" id="playerVideoContainer"></div>
-        <button class="video-landscape-toggle-btn" id="videoLandscapeToggleBtn" onclick="togglePlayerLandscape(event)" title="Landscape Mode" aria-label="Toggle Landscape Mode">
-            <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-            </svg>
-            <svg class="icon-compress" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-                <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/>
-            </svg>
-        </button>
     </div>
     <div class="notes-section">
         <div class="notes-header-row">
