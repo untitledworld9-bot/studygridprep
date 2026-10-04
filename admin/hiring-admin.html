@@ -2262,10 +2262,10 @@ async function syncCertDoc(appId){
 window.openCert = async function(appId, kind){
   try {
     await syncCertDoc(appId);
-    let targetId = appId;
-    if (kind === 'POSITION') targetId = `${appId}-position`;
-    else if (kind === 'ACHIEVEMENT') targetId = `${appId}-achieve`;
-    window.open(CERT.verifyUrl(targetId), '_blank', 'noopener');
+    let tab = 'exp';
+    if (kind === 'POSITION') tab = 'position';
+    else if (kind === 'ACHIEVEMENT') tab = 'achieve';
+    window.open(`/certificate.html?app=${encodeURIComponent(appId)}&t=${tab}`, '_blank', 'noopener');
   } catch (e) { console.error(e); toast('Could not open certificate', 'error'); }
 };
 

@@ -59,7 +59,10 @@ export function certCode(id){
 }
 
 export function verifyUrl(id){
-  return SGP.publicBase + 'certificate.html?v=' + encodeURIComponent(id);
+  const base = (typeof window !== 'undefined' && window.location && window.location.origin)
+    ? (window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/'))
+    : SGP.publicBase;
+  return base + 'certificate.html?v=' + encodeURIComponent(id);
 }
 
 export function certTitle(kind){
@@ -71,7 +74,11 @@ export function certTitle(kind){
 
 /* Dedicated Position / Role Certificate builder */
 export function buildPositionCert(app, role, now = Date.now()){
-  const pos = (app && (app.positionCert || (app.certOverride && app.certOverride.positionCert))) || null;
+  const pos = (app && (
+    app.positionCert || 
+    (app.certOverride && app.certOverride.positionCert) ||
+    (app.certOverride && (app.certOverride.kind === 'POSITION' || app.certOverride.kind === 'ROLE') ? app.certOverride : null)
+  )) || null;
   if (!pos) return null; // Only available if explicitly given by Admin!
   const o = (app && app.offer) || {};
   const start = toMs(pos.startMs || pos.startDate || (app && app.offerAcceptedAt)) || now;

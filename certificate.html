@@ -486,18 +486,21 @@ async function verifyMode(id){
     const s = await getDoc(doc(db, 'certificates', id));
     if (s.exists()) {
       d = s.data();
-    } else if (id.endsWith('-achieve') || id.endsWith('-position')) {
+    } else {
       const baseSnap = await getDoc(doc(db, 'hiringApplications', baseId));
       if (baseSnap.exists()) {
         const app = { id: baseSnap.id, ...baseSnap.data() };
         const roleSnap = await getDoc(doc(db, 'hiringRoles', app.roleId));
         const role = roleSnap.exists() ? { id: roleSnap.id, ...roleSnap.data() } : null;
-        if (id.endsWith('-position')) {
+        if (id.endsWith('-position') || app.positionCert) {
           const pos = core.buildPositionCert ? core.buildPositionCert(app, role) : null;
           if (pos) d = core.publicDoc(pos);
-        } else {
+        } else if (id.endsWith('-achieve') || app.achievementCert) {
           const ach = core.buildAchievementCert ? core.buildAchievementCert(app, role) : null;
           if (ach) d = core.publicDoc(ach);
+        } else {
+          const exp = core.buildCert ? core.buildCert(app, role) : null;
+          if (exp && exp.eligible) d = core.publicDoc(exp);
         }
       }
     }
@@ -522,6 +525,9 @@ async function verifyMode(id){
       <div><b>Authorized Signatory</b><span>Ayush Kumar Gupta (Founder)</span></div>
       <div><b>Certificate ID</b><span>${certCode(id)}</span></div>
       <div><b>Issued Date</b><span>${fD(c.issuedMs || c.endMs || Date.now())}</span></div>
+    </div>
+    <div style="margin-top:16px;text-align:center;">
+      <a href="/certificate.html?app=${encodeURIComponent(baseId)}&t=${isPos ? 'position' : (isAch ? 'achieve' : 'exp')}" class="btn p" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font-weight:700;"><i class="fa-solid fa-up-right-from-square"></i> Open Full Certificate Viewer</a>
     </div>`;
   paint($('vprev'), c);
 }
@@ -534,11 +540,47 @@ window.signIn = async () => { try { await signInWithPopup(auth, provider); } cat
 
 async function loadOwner(user){
   S.user = user;
-  const [as, rs] = await Promise.all([getDocs(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid))), getDocs(collection(db, 'hiringRoles'))]);
-  S.roles = rs.docs.map(d => ({ id: d.id, ...d.data() }));
-  S.apps = as.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.finalStatus === 'selected' && toMs(a.offerAcceptedAt)).sort((a, b) => toMs(b.offerAcceptedAt) - toMs(a.offerAcceptedAt));
   const want = P.get('app');
-  S.cur = S.apps.find(a => a.id === want) || S.apps[0] || null;
+  let directApp = null;
+  if (want) {
+    try {
+      const snap = await getDoc(doc(db, 'hiringApplications', want));
+      if (snap.exists()) {
+        directApp = { id: snap.id, ...snap.data() };
+      }
+    } catch(e) { console.warn('directApp load error', e); }
+  }
+
+  const queries = [
+    getDocs(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid))),
+    getDocs(collection(db, 'hiringRoles'))
+  ];
+  if (user && user.email) {
+    queries.push(getDocs(query(collection(db, 'hiringApplications'), where('email', '==', user.email))));
+  }
+  const [asUid, rs, asEmail] = await Promise.all(queries);
+
+  S.roles = rs.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  const appMap = new Map();
+  if (directApp) appMap.set(directApp.id, directApp);
+  asUid.docs.forEach(d => appMap.set(d.id, { id: d.id, ...d.data() }));
+  if (asEmail) asEmail.docs.forEach(d => appMap.set(d.id, { id: d.id, ...d.data() }));
+
+  S.apps = Array.from(appMap.values()).filter(a => {
+    const hasPos = !!(a.positionCert || (a.certOverride && a.certOverride.positionCert) || (a.certOverride && (a.certOverride.kind === 'POSITION' || a.certOverride.kind === 'ROLE')));
+    const hasAch = !!(a.achievementCert || (a.certOverride && a.certOverride.achievementCert) || (a.certOverride && a.certOverride.kind === 'ACHIEVEMENT'));
+    const hasExp = !!(a.certOverride && a.certOverride.forceIssue);
+    const isSelected = a.finalStatus === 'selected' || ['accepted','completed','left'].includes(a.offerStatus);
+    return hasPos || hasAch || hasExp || isSelected || !!a.offerAcceptedAt;
+  }).sort((a, b) => toMs(b.offerAcceptedAt || b.createdAt) - toMs(a.offerAcceptedAt || a.createdAt));
+
+  if (want && appMap.has(want)) {
+    S.cur = appMap.get(want);
+  } else {
+    S.cur = S.apps.find(a => a.id === want) || directApp || S.apps[0] || null;
+  }
+
   const wantTab = P.get('t');
   if (wantTab === 'position' || wantTab === 'role') S.viewType = 'position';
   else if (wantTab === 'achieve' || wantTab === 'achievement') S.viewType = 'achievement';
@@ -620,7 +662,7 @@ async function renderOwner(){
     else if (urlTab === 'exp' || urlTab === 'intern' || urlTab === 'experience') S.viewType = 'experience';
     else if (hasPos && baseCert.state === 'active') S.viewType = 'position';
     else if (hasAch && baseCert.state === 'active') S.viewType = 'achievement';
-    else S.viewType = 'experience';
+    else S.viewType = hasPos ? 'position' : (hasAch ? 'achievement' : 'experience');
   }
 
   // Safety fallback if active tab not available
@@ -685,7 +727,14 @@ async function renderOwner(){
   } else if (!c.eligible) {
     html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-clock"></i></div><div><div class="h3">Certificate not issued</div><div class="p2">A minimum of ${SGP.minDays} days of work is required. You worked ${c.days} day${c.days === 1 ? '' : 's'}.</div></div></div></div>`;
   } else {
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico"><i class="fa-solid fa-circle-check"></i></div><div><div class="h3">${c.kind === 'ACHIEVEMENT' ? 'Certificate of Achievement Awarded 🏆' : 'Your certificate is ready 🎉'}</div><div class="p2">${esc(c.name)} · ${esc(c.durationLabel)} · ${fD(c.startMs)} – ${fD(c.endMs)}</div></div></div>
+    const isAch = c.kind === 'ACHIEVEMENT';
+    const isPos = c.kind === 'POSITION' || c.kind === 'ROLE' || c.isPosition;
+    const headerTitle = isAch ? 'Certificate of Achievement Awarded 🏆' : (isPos ? 'Official Certificate of Position & Appointment 🎖️' : 'Your certificate is ready 🎉');
+    const headerSub = isPos
+      ? `${esc(c.name)} · ${esc(c.roleTitle)} · ${c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active & Serving)' : fD(c.startMs) + ' – ' + fD(c.endMs)}`
+      : `${esc(c.name)} · ${esc(c.durationLabel)} · ${fD(c.startMs)} – ${fD(c.endMs)}`;
+
+    html += `<div class="card"><div class="ok-head"><div class="ok-ico" style="${isPos ? 'background:rgba(37,99,235,0.15);color:#2563EB;' : ''}"><i class="fa-solid ${isPos ? 'fa-id-badge' : (isAch ? 'fa-trophy' : 'fa-circle-check')}"></i></div><div><div class="h3">${headerTitle}</div><div class="p2">${headerSub}</div></div></div>
       <div id="pv"></div>
       <div class="acts">
         <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
@@ -698,11 +747,11 @@ async function renderOwner(){
       <div class="linkbox"><i class="fa-solid fa-link"></i><span style="flex:1">${verifyUrl(c.id)}</span><button class="btn" style="padding:6px 10px" onclick="copyLink()"><i class="fa-regular fa-copy"></i></button></div></div>
       <div class="card"><div class="grid2">
         <div><div class="k">Certificate ID</div><div class="v">${certCode(c.id)}</div></div>
-        <div><div class="k">Type</div><div class="v">${c.kind === 'INTERN' ? 'Internship' : (c.kind === 'ACHIEVEMENT' ? 'Certificate of Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')')}</div></div>
-        <div><div class="k">Designation</div><div class="v">${esc(c.roleTitle)}</div></div>
-        <div><div class="k">Duration / Recognition</div><div class="v">${esc(c.durationLabel)}</div></div>
+        <div><div class="k">Type</div><div class="v">${isPos ? 'Position & Appointment' : (c.kind === 'INTERN' ? 'Internship' : (isAch ? 'Certificate of Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')'))}</div></div>
+        <div><div class="k">${isPos ? 'Official Appointed Position' : 'Designation'}</div><div class="v">${esc(c.roleTitle)}</div></div>
+        <div><div class="k">${isPos ? 'Status / Engagement' : 'Duration / Recognition'}</div><div class="v">${isPos && c.isCurrent ? 'Currently Active / Present' : esc(c.durationLabel)}</div></div>
         <div><div class="k">Signatory</div><div class="v">Ayush Kumar Gupta (Founder)</div></div>
-        <div><div class="k">Issued Date</div><div class="v">${fD(c.issuedMs || c.endMs)}</div></div>
+        <div><div class="k">Issued Date</div><div class="v">${fD(c.issuedMs || c.endMs || Date.now())}</div></div>
         <div><div class="k">Status</div><div class="v" style="color:var(--green)">Verified ✓</div></div>
       </div></div>`;
     $('app').innerHTML = html; paint($('pv'), c); publish(c); return;
@@ -712,7 +761,7 @@ async function renderOwner(){
 
 function fmtDur(ms){ ms = Math.max(0, ms); const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60, p = n => String(n).padStart(2, '0'); return d > 0 ? `${d}d ${p(h)}h ${p(m)}m` : `${p(h)}:${p(m)}:${p(x)}`; }
 async function publish(c){
-  try { await setDoc(doc(db, 'certificates', c.id), { ...publicDoc(c), uid: S.user.uid, updatedAt: serverTimestamp() }, { merge:true }); await mark('certIssuedAt'); }
+  try { await setDoc(doc(db, 'certificates', c.id), { ...publicDoc(c), uid: (S.user && S.user.uid) || c.uid || '', updatedAt: serverTimestamp() }, { merge:true }); await mark('certIssuedAt'); }
   catch(e) { console.warn('publish cert', e); }
 }
 
@@ -743,8 +792,39 @@ window.confirmLeave = async function(){
 
 /* ================= BOOT ================= */
 const vid = P.get('v');
-if (vid) verifyMode(vid);
-else onAuthStateChanged(auth, u => { if (u) loadOwner(u).catch(e => { console.error(e); $('app').innerHTML = topbar('Certificate') + '<div class="card center"><i class="fa-solid fa-triangle-exclamation big"></i>Could not load. Please refresh.</div>'; }); else authView(); });
+const appIdParam = P.get('app');
+if (vid) {
+  verifyMode(vid);
+} else {
+  onAuthStateChanged(auth, async u => {
+    if (u) {
+      loadOwner(u).catch(e => {
+        console.error(e);
+        $('app').innerHTML = topbar('Certificate') + '<div class="card center"><i class="fa-solid fa-triangle-exclamation big"></i>Could not load. Please refresh.</div>';
+      });
+    } else if (appIdParam) {
+      try {
+        const snap = await getDoc(doc(db, 'hiringApplications', appIdParam));
+        if (snap.exists()) {
+          const directApp = { id: snap.id, ...snap.data() };
+          const rs = await getDocs(collection(db, 'hiringRoles'));
+          S.roles = rs.docs.map(d => ({ id: d.id, ...d.data() }));
+          S.apps = [directApp];
+          S.cur = directApp;
+          const wantTab = P.get('t');
+          if (wantTab === 'position' || wantTab === 'role') S.viewType = 'position';
+          else if (wantTab === 'achieve' || wantTab === 'achievement') S.viewType = 'achievement';
+          else if (wantTab === 'exp' || wantTab === 'intern' || wantTab === 'experience') S.viewType = 'experience';
+          renderOwner();
+          return;
+        }
+      } catch(e) { console.warn('boot appId fallback', e); }
+      authView();
+    } else {
+      authView();
+    }
+  });
+}
 </script>
 </body>
 </html>

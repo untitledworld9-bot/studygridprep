@@ -1566,8 +1566,8 @@ function renderRolesGrid(){
       const eff2 = getEffectiveResult(applied, role);
       if (eff2.status === 'applied' && canTakeTest(role)) { applyLabel = 'Start Test'; btnAction = `startTestById('${role.id}')`; }
       const isIntern = role.employmentType === 'INTERN';
-      const hasAch = !!(applied.achievementCert || (applied.certOverride && applied.certOverride.achievementCert));
-      const hasPos = !!(applied.positionCert || (applied.certOverride && applied.certOverride.positionCert));
+      const hasAch = !!(applied.achievementCert || (applied.certOverride && applied.certOverride.achievementCert) || (applied.certOverride && applied.certOverride.kind === 'ACHIEVEMENT'));
+      const hasPos = !!(applied.positionCert || (applied.certOverride && applied.certOverride.positionCert) || (applied.certOverride && (applied.certOverride.kind === 'POSITION' || applied.certOverride.kind === 'ROLE')));
       const hasExpCert = !!(applied.certOverride && applied.certOverride.forceIssue && applied.certOverride.kind !== 'ACHIEVEMENT' && applied.certOverride.kind !== 'POSITION');
       const os = offerState(applied);
 
@@ -2215,8 +2215,10 @@ function renderOfferSection(app, role){
       </div>`;
   }
   let tail = '';
-  if (st === 'left') tail += `<div class="offer-actions"><a class="offer-btn mail" href="${leaveMail}"><i class="fa-solid fa-envelope"></i> Email team</a></div>`;
-  if (['accepted','left','completed'].includes(st)) tail += `<div class="offer-actions" style="margin-top:10px;"><a class="offer-btn cert" href="certificate.html?app=${app.id}"><i class="fa-solid fa-award"></i> ${st === 'accepted' ? 'Certificate' : 'View certificate'}</a></div>`;
+  if (['accepted','left','completed'].includes(st)) {
+    const hasPos = !!(app.positionCert || (app.certOverride && app.certOverride.positionCert));
+    tail += `<div class="offer-actions" style="margin-top:10px;"><a class="offer-btn cert" href="certificate.html?app=${app.id}${hasPos ? '&t=position' : ''}"><i class="fa-solid fa-award"></i> ${hasPos ? 'Position Certificate' : (st === 'accepted' ? 'Certificate' : 'View certificate')}</a></div>`;
+  }
   return hero + statusPill + details + action + tail;
 }
 
