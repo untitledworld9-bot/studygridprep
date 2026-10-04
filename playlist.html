@@ -2360,9 +2360,15 @@ window.addEventListener("pageshow", () => {
 
 let saved = localStorage.getItem("time_"+id) || 0;
 
-// Naya Logic: Agar video ka subject "Music" hai, toh hamesha 0 second se start karo
 let currentVidData = videos.find(v => v.id === id);
-if (currentVidData && currentVidData.subject === "Music") {
+const isMusicVideo = !!(currentVidData && (
+    currentVidData.subject === "Music" || 
+    currentVidData.category === "Music" || 
+    (currentVidData.subject && String(currentVidData.subject).toLowerCase() === "music")
+));
+
+// Naya Logic: Agar video ka subject "Music" hai, toh hamesha 0 second se start karo
+if (isMusicVideo) {
     saved = 0;
 }
 
@@ -2403,6 +2409,12 @@ document.getElementById("videoNotes").value = savedNotes;
 // 3. Naya player dikhao aur Back button chhupao
 document.getElementById("playerOverlay").style.display = "flex";
 document.querySelector(".back-home-btn").style.display = "none";
+
+// 4. Update Header Title: "Music Mode" if music video, else "Study Mode"
+const playerTitleEl = document.querySelector(".player-title") || document.getElementById("playerTitle");
+if (playerTitleEl) {
+    playerTitleEl.textContent = isMusicVideo ? "Music Mode" : "Study Mode";
+}
 
 // 🔒 Focus Lock: Reset and show button
 focusLocked = false;
@@ -2494,6 +2506,8 @@ function forceClosePlayer() {
         if (icon) icon.textContent = "🔒";
         if (label) label.textContent = "Focus Lock";
     }
+    const pTitle = document.querySelector(".player-title") || document.getElementById("playerTitle");
+    if (pTitle) pTitle.textContent = "Study Mode";
     _flushWatchTime(); // ← track watch time when player force-closed
     document.getElementById("playerOverlay").style.display = "none";
     document.getElementById("playerVideoContainer").innerHTML = "";
@@ -2524,6 +2538,8 @@ function closePlayer() {
         if (icon) icon.textContent = "🔒";
         if (label) label.textContent = "Focus Lock";
     }
+    const pTitle = document.querySelector(".player-title") || document.getElementById("playerTitle");
+    if (pTitle) pTitle.textContent = "Study Mode";
     if (flHideTimer) clearTimeout(flHideTimer);
     _flushWatchTime(); // ← track watch time when player closed normally
     document.getElementById("playerOverlay").style.display = "none"; 
@@ -2967,9 +2983,17 @@ async function fetchYouTubeTranscript(videoId) {
 }
 
 function buildFullPrompt(userMsg) {
+    const curVidData = (window._playlist_videos || []).find(v => v.id === aiChatVideoId);
+    const currentSub = (curVidData && curVidData.subject) ? curVidData.subject : "";
+    const isMusic = !!(curVidData && (
+        curVidData.subject === "Music" || 
+        curVidData.category === "Music" || 
+        (curVidData.subject && String(curVidData.subject).toLowerCase() === "music")
+    ));
+
     const transcriptSection = aiVideoTranscript
-        ? `\n\nVIDEO KA ACTUAL TRANSCRIPT (real content):\n"""\n${aiVideoTranscript}\n"""\nIs transcript ke basis pe EXACT content batao — kya padhaya, kya discuss hua.`
-        : `\n\nTranscript nahi mila — lekin video ka real title "${aiChatVideoTitle}" hai, uspe based confidently baat karo.`;
+        ? `\n\nVIDEO KA ACTUAL TRANSCRIPT (real content):\n"""\n${aiVideoTranscript}\n"""\nIs transcript ke basis pe EXACT content batao.`
+        : `\n\nTranscript nahi mila — lekin track/video ka real title "${aiChatVideoTitle}" hai, uspe based confidently baat karo.`;
 
     // Get real user name from localStorage (set by profile.html) or Firebase auth
     const _rawName = (typeof localStorage !== "undefined" && localStorage.getItem("userName")) || 
@@ -2981,10 +3005,40 @@ function buildFullPrompt(userMsg) {
 
     const currentGoal = localStorage.getItem("goal") || "JEE";
     const currentExam = (currentGoal === "Custom") ? (localStorage.getItem("customExamName") || "Target Exam") : currentGoal;
-    const curVidData = (window._playlist_videos || []).find(v => v.id === aiChatVideoId);
-    const currentSub = (curVidData && curVidData.subject) ? curVidData.subject : "";
 
-    const system = `Tu ek smart AI video assistant hai jo Study Grid Prep platform ka part hai.
+    let system = "";
+
+    if (isMusic) {
+        system = `Tu ek smart, knowledgeable aur energetic AI Music & Study Vibes Companion hai jo Study Grid Prep platform ka part hai.
+
+TARGET CONTEXT: User abhi "Music Mode" mein hai aur yeh music / song / lo-fi playlist track sun raha hai (Subject: Music).
+Tera primary thought process, thinking style aur response MUSIC, SONGS, LYRICS, ARTIST, GENRE, BEATS, MOOD aur FOCUS VIBES ke around centered hona chahiye.
+
+MUSIC THINKING & KNOWLEDGE GUIDELINES:
+- Track & Artist Details: Song/track ka artist, singer, music producer/composer, album/movie, release context aur genre (Lo-Fi, Synthwave, Chillhop, Classical, Acoustic, Bollywood, Pop, Hip-Hop, Indie, EDM, Ambient, Rock).
+- Lyrics, Poetry & Meaning: Agar lyrics ya song background pooche, toh lyrics ka deep emotional meaning, poetry, hook line aur aesthetic vibe Hinglish mein clearly explain karo.
+- Study Focus & Brain Effects: Yeh music study session mein kaise helpful hai (e.g. bina lyrics wale instrumental / binaural beats alpha brain waves induce karte hain, concentration boost karte hain aur anxiety/burnout reduce karte hain).
+- Music Recommendations: Agar user aur gaane maange ya vibe continue karna chahe, toh similar mood ke acche tracks recommend karo [SONG:Song Name - Artist|YouTube URL] format mein ya naam ke saath.
+- Instruments & Sound: Beats, tempo/BPM, instruments used (acoustic guitar, piano, flute, 808 bass, violin, synth pads) ke baare mein interesting trivia share karo.
+- Padhai / General Doubts: Agar user music sunte sunte koi study ya general sawal bhi pooche, toh clearly answer do par music lover vibe aur positive energy ke saath.
+
+LANGUAGE: Hinglish mein baat kar — natural mix of Hindi & English. "Tu/tera/yaar/bhai" style, cool, friendly aur music-loving tone.
+${userName ? `User ka naam: "${userName}" — greet karte waqt use karo.` : `User ka naam nahi pata — "yaar/bhai" use karo.`}
+
+User abhi yeh music track sun raha hai:
+Title: "${aiChatVideoTitle}"
+URL: ${aiChatVideoUrl || ("https://www.youtube.com/watch?v=" + aiChatVideoId)}
+${transcriptSection}
+
+EMOJI (MANDATORY in responses):
+- Music & Beats: 🎵🎧 | Chill & Relax: ✨☕ | Vibes & Energy: 🔥🚀 | Instruments: 🎸🎹 | Tips & Recs: 💡🎶
+
+CONTENT RULES:
+- "Mujhe nahi pata" kabhi mat bol — hamesha interesting music context, mood aur insights provide karo.
+- Formats: Important points mein bullet list ya bold text use karo.
+- Conversation end pe: "Kaisa lag raha hai yeh track? Koi aur gaana ya mood recommend karoon? 🎧✨"`;
+    } else {
+        system = `Tu ek smart AI video assistant hai jo Study Grid Prep platform ka part hai.
 
 TARGET CONTEXT: Student abhi "${currentExam}" exam ki taiyari kar raha hai${currentSub ? ` (Subject: ${currentSub})` : ''}. Is exam aur topic ke according student ki doubts solve karo, accurate concepts samjhao aur guidance do.
 
@@ -3049,6 +3103,7 @@ PLATFORM RULES:
   * Agar user Study Grid Prep ka YouTube channel maange → "Yeh raha hamara channel [YOUTUBE]"
   * Quiz score context: ${window._lastQuizSummary ? "User ne recently ek quiz diya: " + window._lastQuizSummary + ". Agar relevant lage toh iska mention karo aur encourage karo." : ""}
 - Conversation end pe: "Any query related to this video? 😊"`;
+    }
 
     const convo = aiChatHistory
         .filter(m => m.role === "user" || m.role === "assistant")
@@ -3164,6 +3219,23 @@ function openAIChat() {
     aiChatVideoId  = window._playlist_currentVideo || null;
     const vidsList = window._playlist_videos || [];
     const vidData  = vidsList.find(v => v.id === aiChatVideoId);
+    const isMusic = !!(vidData && (
+        vidData.subject === "Music" || 
+        vidData.category === "Music" || 
+        (vidData.subject && String(vidData.subject).toLowerCase() === "music")
+    ));
+
+    // Update modal UI based on Music or Study mode
+    const chatHeaderTitleEl = document.querySelector(".ai-chat-header-title");
+    if (chatHeaderTitleEl) {
+        chatHeaderTitleEl.textContent = isMusic ? "Music AI Assistant 🎵" : "Video AI Assistant";
+    }
+    const inputEl = document.getElementById("aiChatInput");
+    if (inputEl) {
+        inputEl.placeholder = isMusic 
+            ? "Is track/song ke baare mein kuch bhi pucho (lyrics, vibe, artist)..." 
+            : "Is video ke baare mein kuch bhi pucho...";
+    }
 
     // Get saved URL (added when video was added to playlist)
     aiChatVideoUrl = (vidData && vidData.url) ? vidData.url : "";
@@ -3221,7 +3293,7 @@ function openAIChat() {
     if (hasHistory) {
         // Already showed history — just fetch title + transcript silently, no new AI greeting
         titlePromise.then(realTitle => {
-            aiChatVideoTitle = realTitle || aiChatVideoTitle || "YouTube Video";
+            aiChatVideoTitle = realTitle || aiChatVideoTitle || (isMusic ? "Music Track" : "YouTube Video");
             if (subEl) subEl.textContent = aiChatVideoTitle.length > 38
                 ? aiChatVideoTitle.slice(0, 36) + "…"
                 : aiChatVideoTitle;
@@ -3241,7 +3313,7 @@ function openAIChat() {
 
     titlePromise
         .then(realTitle => {
-            aiChatVideoTitle = realTitle || aiChatVideoTitle || "YouTube Video";
+            aiChatVideoTitle = realTitle || aiChatVideoTitle || (isMusic ? "Music Track" : "YouTube Video");
             if (subEl) subEl.textContent = aiChatVideoTitle.length > 38
                 ? aiChatVideoTitle.slice(0, 36) + "…"
                 : aiChatVideoTitle;
@@ -3249,7 +3321,10 @@ function openAIChat() {
         })
         .then(transcript => {
             aiVideoTranscript = transcript;
-            const prompt = buildFullPrompt("Is video ka summary bata — isme kya hai, main points kya hain?");
+            const initialQuestion = isMusic 
+                ? "Is music/song track ke baare mein bata — artist, genre, mood/vibe kya hai, aur study/focus ya relaxation ke liye yeh kaisa hai?"
+                : "Is video ka summary bata — isme kya hai, main points kya hain?";
+            const prompt = buildFullPrompt(initialQuestion);
             return callGroqWorker(prompt);
         })
         .then(reply => {
