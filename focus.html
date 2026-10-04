@@ -464,25 +464,39 @@ const timerBox = document.getElementById("timerBox");
 
 // ✅ Tell SW to schedule a background notification for when timer ends
 function scheduleSwNotification() {
-    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
+    if ("serviceWorker" in navigator) {
+        const msg = {
             type: 'SCHEDULE_NOTIFICATION',
             id: 'focus_timer',
             endTime: targetEndTime,
-            title: 'Study Timer',
-            body: 'Session Completed \uD83D\uDE80 Great Job!',
+            title: 'Study Timer ⏳',
+            body: 'Session Completed 🚀 Great Job!',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
             url: '/focus.html'
-        });
+        };
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage(msg);
+        }
+        navigator.serviceWorker.ready.then(reg => {
+            if (reg.active) reg.active.postMessage(msg);
+        }).catch(()=>{});
     }
 }
 
 // ✅ Cancel SW background notification (when page is open and handles it itself)
 function cancelSwNotification() {
-    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
+    if ("serviceWorker" in navigator) {
+        const msg = {
             type: 'CANCEL_NOTIFICATION',
             id: 'focus_timer'
-        });
+        };
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage(msg);
+        }
+        navigator.serviceWorker.ready.then(reg => {
+            if (reg.active) reg.active.postMessage(msg);
+        }).catch(()=>{});
     }
 }
 

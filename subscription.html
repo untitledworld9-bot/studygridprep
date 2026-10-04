@@ -1297,8 +1297,14 @@ window.renderStateFull = function(state){
   const statusSub    = document.getElementById('statusBannerSub');
   const footerLine   = document.getElementById('footerLine');
 
+  const mainTitleEl = document.querySelector('.main-title');
+  const mainSubEl   = document.querySelector('.main-sub');
+
   // ── CASE 1: Subscribed (PRO active) ──
   if (state.isSubscribed) {
+    if (mainTitleEl) mainTitleEl.textContent = 'Pro Plan Active 👑';
+    if (mainSubEl)   mainSubEl.textContent   = 'You have full access to all mock tests, AI chat & deep analytics';
+
     proCard.classList.add('active', 'pro-active');
     proCard.classList.remove('locked');
     document.getElementById('freePlanCard').classList.add('hide-when-subscribed');
@@ -1329,6 +1335,9 @@ window.renderStateFull = function(state){
 
   // ── CASE 2: Payment pending (Under Review) ──
   if (state.payPending) {
+    if (mainTitleEl) mainTitleEl.textContent = 'Payment In Review ⏳';
+    if (mainSubEl)   mainSubEl.textContent   = 'We are verifying your transaction — access will unlock shortly';
+
     proCard.classList.remove('active', 'pro-active', 'locked');
     document.getElementById('freePlanCard').classList.remove('hide-when-subscribed');
     statusBanner.style.display = 'none';
@@ -1349,6 +1358,9 @@ window.renderStateFull = function(state){
   }
 
   // ── CASE 3: Normal (not subscribed, not pending) ──
+  if (mainTitleEl) mainTitleEl.textContent = 'Choose Your Plan';
+  if (mainSubEl)   mainSubEl.textContent   = 'Study smarter with the plan that fits you';
+
   document.getElementById('freePlanCard').classList.remove('hide-when-subscribed');
   proCard.classList.remove('pro-active');
   statusBanner.style.display = 'none';

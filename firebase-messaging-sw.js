@@ -1,9 +1,4 @@
-// ─── Untitled World – FCM Background Messaging Service Worker ────────────────
-// Must be named exactly "firebase-messaging-sw.js" for FCM to work.
-// Handles push notifications when PWA is CLOSED or in BACKGROUND.
-// When PWA is OPEN → index.js Firestore listener handles in-app notifications.
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Study Grid Prep – FCM Background Messaging Service Worker ──────────────
 importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js");
 
@@ -17,56 +12,89 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+function savePushToIndexedDB(notifData) {
+  try {
+    const req = indexedDB.open("sgp_push_db", 1);
+    req.onupgradeneeded = function(e) {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("push_notifs")) {
+        db.createObjectStore("push_notifs", { keyPath: "id" });
+      }
+    };
+    req.onsuccess = function(e) {
+      const db = e.target.result;
+      const tx = db.transaction("push_notifs", "readwrite");
+      const store = tx.objectStore("push_notifs");
+      const id = notifData.id || "push_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+      store.put({
+        id: id,
+        title: notifData.title || "Study Grid Prep",
+        body: notifData.body || "",
+        image: notifData.image || null,
+        icon: notifData.icon || "/icon-192.png",
+        url: notifData.url || "/",
+        ts: notifData.ts || Date.now(),
+        source: "push"
+      });
+    };
+  } catch(err) {
+    console.warn("[FCM SW] IDB save error:", err);
+  }
+}
+
 // ── BACKGROUND MESSAGE ─────────────────────────────────────────────────────
-// payload.notification → title/body set in Firebase Console or FCM API
-// payload.data         → custom keys, e.g. { url: "/todo.html" }
 messaging.onBackgroundMessage(function(payload) {
   const notification = payload.notification || {};
   const data         = payload.data         || {};
 
-  const title = notification.title  || "Untitled World";
-  const body  = notification.body   || "";
-  const url   = data.url            || "/";
-  const image = notification.image  || data.image || null; // ← ADD
+  const title = notification.title || data.title || "Study Grid Prep";
+  const body  = notification.body  || data.body  || data.message || "";
+  const url   = data.url || notification.click_action || "/";
+  const image = notification.image || data.image || data.imageUrl || null;
 
   self.registration.showNotification(title, {
     body,
     icon    : "/icon-192.png",
     badge   : "/icon-192.png",
-    image   : image || undefined,    // ← ADD — yahi poster dikhata hai!
+    image   : image || undefined,
     vibrate : [200, 100, 200],
     data    : { url },
     actions : [{ action: "open", title: "Open" }]
   });
-});
-// ── NOTIFICATION CLICK ─────────────────────────────────────────────────────
-// Tapping the notification opens the app at the correct page.
-// data.url is set from payload.data.url sent by admin/FCM.
-self.addEventListener("notificationclick", function(event) {
 
+  savePushToIndexedDB({ title, body, image, icon: "/icon-192.png", url, ts: Date.now() });
+
+  self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: "PUSH_NOTIFICATION",
+        notification: { title, body, image, icon: "/icon-192.png", url, ts: Date.now() }
+      });
+    });
+  });
+});
+
+// ── NOTIFICATION CLICK ─────────────────────────────────────────────────────
+self.addEventListener("notificationclick", function(event) {
   event.notification.close();
 
-  const rawUrl     = (event.notification.data && event.notification.data.url) || "/";
-  const absoluteUrl = rawUrl.startsWith("http")
-    ? rawUrl
-    : "https://untitledworld.us.cc" + rawUrl;
+  const rawUrl = (event.notification.data && event.notification.data.url) || "/";
+  const origin = self.location.origin;
+  const absoluteUrl = rawUrl.startsWith("http") ? rawUrl : (origin + (rawUrl.startsWith("/") ? "" : "/") + rawUrl);
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true })
       .then(clientList => {
-        // If a tab already shows that exact URL, focus it
         for (const client of clientList) {
           if (client.url === absoluteUrl && "focus" in client) {
             return client.focus();
           }
         }
-        // If any app tab is open, navigate it to the target URL
         for (const client of clientList) {
-          if (client.url.includes("untitledworld.us.cc") && "navigate" in client) {
+          if (client.url.startsWith(origin) && "navigate" in client) {
             return client.navigate(absoluteUrl).then(c => c && c.focus());
           }
         }
-        // Otherwise open a new window
         if (clients.openWindow) {
           return clients.openWindow(absoluteUrl);
         }

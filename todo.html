@@ -1238,23 +1238,37 @@ pointer-events:none;">
 
     // ── SW background notification helpers (like focus.html) ──
     function scheduleSwTodoNotif(task, endTime) {
-      if (!("serviceWorker" in navigator) || !navigator.serviceWorker.controller) return;
-      navigator.serviceWorker.controller.postMessage({
+      if (!("serviceWorker" in navigator)) return;
+      const msg = {
         type: 'SCHEDULE_NOTIFICATION',
         id: 'todo_task_' + task.id,
         endTime: endTime,
         title: '⏰ Task Reminder',
-        body: task.name + ' — 1 minute to go!',
+        body: task.name + (task.time ? ` (${task.time})` : '') + ' — Time to study!',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
         url: '/todo.html'
-      });
+      };
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage(msg);
+      }
+      navigator.serviceWorker.ready.then(reg => {
+        if (reg.active) reg.active.postMessage(msg);
+      }).catch(()=>{});
     }
 
     function cancelSwTodoNotif(taskId) {
-      if (!("serviceWorker" in navigator) || !navigator.serviceWorker.controller) return;
-      navigator.serviceWorker.controller.postMessage({
+      if (!("serviceWorker" in navigator)) return;
+      const msg = {
         type: 'CANCEL_NOTIFICATION',
         id: 'todo_task_' + taskId
-      });
+      };
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage(msg);
+      }
+      navigator.serviceWorker.ready.then(reg => {
+        if (reg.active) reg.active.postMessage(msg);
+      }).catch(()=>{});
     }
 
     // Schedule per-task time alerts

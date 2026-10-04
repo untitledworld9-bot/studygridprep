@@ -11,19 +11,117 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+function savePushToIndexedDB(notifData) {
+  try {
+    const req = indexedDB.open("sgp_push_db", 1);
+    req.onupgradeneeded = function(e) {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("push_notifs")) {
+        db.createObjectStore("push_notifs", { keyPath: "id" });
+      }
+    };
+    req.onsuccess = function(e) {
+      const db = e.target.result;
+      const tx = db.transaction("push_notifs", "readwrite");
+      const store = tx.objectStore("push_notifs");
+      const id = notifData.id || "push_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+      store.put({
+        id: id,
+        title: notifData.title || "Study Grid Prep",
+        body: notifData.body || "",
+        image: notifData.image || null,
+        icon: notifData.icon || "/icon-192.png",
+        url: notifData.url || "/",
+        ts: notifData.ts || Date.now(),
+        source: "push"
+      });
+    };
+  } catch(err) {
+    console.warn("[SW] IDB push save error:", err);
+  }
+}
+
 messaging.onBackgroundMessage(function(payload) {
-  const n = payload.notification;
+  const n = payload.notification || {};
   const d = payload.data || {};
 
-  self.registration.showNotification(n.title, {
-    body: n.body,
+  const title = n.title || d.title || "Study Grid Prep";
+  const body = n.body || d.body || d.message || "";
+  const image = n.image || d.image || d.imageUrl || null;
+  const url = d.url || n.click_action || "/";
+
+  self.registration.showNotification(title, {
+    body: body,
     icon: APP_ICON,
     badge: APP_ICON,
-    image: n.image || d.image || null,
+    image: image,
     vibrate: [200, 100, 200],
     requireInteraction: true,
-    data: { url: d.url || "/" }
+    data: { url: url }
   });
+
+  savePushToIndexedDB({
+    title,
+    body,
+    image,
+    icon: APP_ICON,
+    url,
+    ts: Date.now()
+  });
+
+  self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: "PUSH_NOTIFICATION",
+        notification: {
+          title,
+          body,
+          image,
+          icon: APP_ICON,
+          url,
+          ts: Date.now()
+        }
+      });
+    });
+  });
+});
+
+self.addEventListener("push", function(event) {
+  if (!event.data) return;
+  let payload = {};
+  try {
+    payload = event.data.json();
+  } catch(e) {
+    payload = { notification: { body: event.data.text() } };
+  }
+  const n = payload.notification || payload;
+  const d = payload.data || {};
+  const title = n.title || d.title || "Study Grid Prep";
+  const body = n.body || d.body || d.message || "";
+  const image = n.image || d.image || d.imageUrl || null;
+  const url = d.url || n.click_action || "/";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: body,
+      icon: APP_ICON,
+      badge: APP_ICON,
+      image: image,
+      vibrate: [200, 100, 200],
+      requireInteraction: true,
+      data: { url: url }
+    }).then(() => {
+      savePushToIndexedDB({ title, body, image, icon: APP_ICON, url, ts: Date.now() });
+      return self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: "PUSH_NOTIFICATION",
+            notification: { title, body, image, icon: APP_ICON, url, ts: Date.now() }
+          });
+        });
+      });
+    })
+  );
 });
 
 // ─────────────────────────────────────────────────────────────

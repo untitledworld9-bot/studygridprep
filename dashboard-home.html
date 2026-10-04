@@ -3481,23 +3481,55 @@ function formatTimeAgo(ts){
 
 // ─── PWA PUSH NOTIFICATIONS → render in panel ───
 (function(){
+  // Helper to read push notifs from IndexedDB
+  async function _getIndexedDBNotifs(){
+    return new Promise(resolve => {
+      try {
+        const req = indexedDB.open("sgp_push_db", 1);
+        req.onupgradeneeded = function(e) {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("push_notifs")) {
+            db.createObjectStore("push_notifs", { keyPath: "id" });
+          }
+        };
+        req.onsuccess = function(e) {
+          const db = e.target.result;
+          const tx = db.transaction("push_notifs", "readonly");
+          const store = tx.objectStore("push_notifs");
+          const getAllReq = store.getAll();
+          getAllReq.onsuccess = function() {
+            resolve(getAllReq.result || []);
+          };
+          getAllReq.onerror = () => resolve([]);
+        };
+        req.onerror = () => resolve([]);
+      } catch(e) {
+        resolve([]);
+      }
+    });
+  }
+
   // Store push notifs in localStorage so they persist across reloads
   function _getPushNotifs(){
     try{ return JSON.parse(localStorage.getItem("pwa_push_notifs")||"[]"); }catch(e){ return []; }
   }
   function _savePushNotifs(arr){
-    localStorage.setItem("pwa_push_notifs", JSON.stringify(arr.slice(0,20)));
+    localStorage.setItem("pwa_push_notifs", JSON.stringify(arr.slice(0,30)));
   }
-  function _addPushNotif(title, body, imageUrl, ts){
+  function _addPushNotif(title, body, imageUrl, ts, id){
     const arr = _getPushNotifs();
-    arr.unshift({ title, body, imageUrl, ts: ts || Date.now(), source:"push" });
+    const notifId = id || ("push_" + (ts || Date.now()) + "_" + Math.random().toString(36).substring(2,6));
+    arr.unshift({ id: notifId, title, body, imageUrl, image: imageUrl, ts: ts || Date.now(), source:"push" });
     _savePushNotifs(arr);
     return arr;
   }
 
   // Merge push notifs into panel display
-  window._mergePushAndRender = function(firebaseNotifs){
+  window._mergePushAndRender = async function(firebaseNotifs){
     const pushNotifs = _getPushNotifs();
+    let idbNotifs = [];
+    try { idbNotifs = await _getIndexedDBNotifs(); } catch(e){}
+
     // Also include admin Firestore notifications
     let adminNotifs=[];
     try{ adminNotifs=JSON.parse(localStorage.getItem("pwa_admin_notifs")||"[]"); }catch(e){}
@@ -3507,11 +3539,12 @@ function formatTimeAgo(ts){
     // Deduplicate by id/ts across all sources
     const seenTs=new Set();
     const combined = [
-      ...adminNotifs.map(n=>({...n,isPush:true})),
+      ...idbNotifs.map(n=>({...n, isPush:true})),
+      ...adminNotifs.map(n=>({...n, isPush:true})),
       ...pushNotifs.map(n=>({...n, isPush:true})),
       ...(firebaseNotifs||[])
     ].filter(n=>{
-      const key=n.id||(n.ts+"_"+n.title);
+      const key = n.id || ((n.ts || 0) + "_" + (n.title || ''));
       if(seenTs.has(key)) return false;
       seenTs.add(key); return true;
     }).sort((a,b)=>(b.ts||0)-(a.ts||0));
@@ -3531,26 +3564,36 @@ function formatTimeAgo(ts){
       return;
     }
 
-    list.innerHTML = combined.slice(0,30).map(n=>{
-      const imgUrl = n.image || n.imageUrl || '';
+    list.innerHTML = combined.slice(0,40).map(n=>{
+      const imgUrl = n.image || n.imageUrl || n.img || n.mediaUrl || '';
       const imgHtml = imgUrl
-        ? `<div class="notif-img-wrap" style="margin-top:8px;border-radius:12px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);max-height:180px;">
-             <img src="${imgUrl}" style="width:100%;height:auto;max-height:180px;object-fit:cover;display:block;border-radius:11px;" onerror="this.parentElement.style.display='none'" loading="lazy">
+        ? `<div class="notif-img-wrap" style="margin-top:10px;border-radius:14px;overflow:hidden;background:var(--surface2);border:1.5px solid var(--border);max-height:190px;box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+             <img src="${imgUrl}" style="width:100%;height:auto;max-height:190px;object-fit:cover;display:block;border-radius:12px;" onerror="this.parentElement.style.display='none'" loading="lazy">
            </div>`
         : '';
-      const iconDisplay = (n.icon && typeof n.icon === "string" && n.icon.trim())
-        ? (n.icon.length <= 4 ? `<span style="font-size:22px;">${n.icon}</span>` : `<span style="font-size:16px;">📢</span>`)
-        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B5BF6" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+      
+      let iconDisplay = '';
+      if(n.icon && typeof n.icon === 'string' && n.icon.trim()){
+        if(n.icon.startsWith('http') || n.icon.startsWith('/') || n.icon.startsWith('assets/')){
+          iconDisplay = `<img src="${n.icon}" style="width:24px;height:24px;object-fit:contain;border-radius:6px;" onerror="this.outerHTML='📢'">`;
+        } else if(n.icon.length <= 4){
+          iconDisplay = `<span style="font-size:22px;">${n.icon}</span>`;
+        } else {
+          iconDisplay = `<span style="font-size:18px;">📢</span>`;
+        }
+      } else {
+        iconDisplay = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B5BF6" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+      }
       
       return `<div class="notif-item">
         <div class="notif-item-icon" style="background:rgba(91,91,246,0.1);border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${iconDisplay}
         </div>
         <div class="notif-item-text" style="flex:1;min-width:0;">
-          <div class="notif-item-title" style="font-weight:700;font-size:13px;color:var(--text);">${n.title||'Notification'}</div>
-          ${n.body ? `<div class="notif-item-body" style="color:var(--text2);font-size:12px;margin-top:3px;line-height:1.45;word-break:break-word;">${n.body}</div>` : ''}
+          <div class="notif-item-title" style="font-weight:700;font-size:13.5px;color:var(--text);line-height:1.4;">${n.title||'Notification'}</div>
+          ${(n.body||n.message) ? `<div class="notif-item-body" style="color:var(--text2);font-size:12px;margin-top:4px;line-height:1.45;word-break:break-word;">${n.body||n.message}</div>` : ''}
           ${imgHtml}
-          <div class="notif-item-time" style="margin-top:6px;font-size:10.5px;color:var(--text3);font-weight:500;">${formatTimeAgo(n.ts)}</div>
+          <div class="notif-item-time" style="margin-top:7px;font-size:10.5px;color:var(--text3);font-weight:500;">${formatTimeAgo(n.ts)}</div>
         </div>
       </div>`;
     }).join('');
@@ -3574,8 +3617,9 @@ function formatTimeAgo(ts){
         _addPushNotif(
           notif.title || "Study Grid Prep",
           notif.body || notif.message || "",
-          notif.image || notif.icon || "",
-          Date.now()
+          notif.image || notif.imageUrl || notif.icon || "",
+          notif.ts || Date.now(),
+          notif.id
         );
         // Show unread dot
         const dot = document.getElementById("notifUnreadDot");
@@ -3587,16 +3631,19 @@ function formatTimeAgo(ts){
   }
 
   // Load persisted push + admin notifs on startup
-  window.addEventListener("load", function(){
+  window.addEventListener("load", async function(){
     const pushNotifs = _getPushNotifs();
     let adminNotifs=[];
     try{ adminNotifs=JSON.parse(localStorage.getItem("pwa_admin_notifs")||"[]"); }catch(e){}
-    const allPersisted = [...adminNotifs, ...pushNotifs];
+    let idbNotifs = [];
+    try{ idbNotifs = await _getIndexedDBNotifs(); }catch(e){}
+    const allPersisted = [...adminNotifs, ...pushNotifs, ...idbNotifs];
     if(allPersisted.length > 0){
       const dot = document.getElementById("notifUnreadDot");
       const lastSeen = parseInt(localStorage.getItem("notifLastSeen")||"0");
       const hasNew = allPersisted.some(n=>(n.ts||0)>lastSeen);
       if(dot && hasNew) dot.style.display = "block";
+      window._mergePushAndRender(window._lastFirebaseNotifs || []);
     }
   });
 })();
@@ -4049,45 +4096,50 @@ onAuthStateChanged(auth, async user => {
   const userVal=user.email||user.uid;
 
   // ── ADMIN NOTIFICATIONS: show in in-app panel ──
-  try{
+  try {
     const targetSet = new Set(["all"]);
-    if (user.email) targetSet.add(user.email);
+    if (user.email) targetSet.add(user.email.toLowerCase());
     if (user.uid) targetSet.add(user.uid);
-    if (user.displayName) targetSet.add(user.displayName);
+    if (user.displayName) targetSet.add(user.displayName.toLowerCase());
     const lsUser = localStorage.getItem("userName");
-    if (lsUser) targetSet.add(lsUser);
+    if (lsUser) targetSet.add(lsUser.toLowerCase());
     const lsEmail = localStorage.getItem("userEmail");
-    if (lsEmail) targetSet.add(lsEmail);
+    if (lsEmail) targetSet.add(lsEmail.toLowerCase());
 
     const validTargets = Array.from(targetSet).filter(Boolean);
-    const adminQ = query(
-      collection(db,"notifications"),
-      where("target","in", validTargets)
-    );
-    onSnapshot(adminQ, snap=>{
-      // Build fresh map from Firestore — always sync all matching notifications
+
+    function handleNotifSnapshot(snap) {
       const firestoreMap = {};
-      snap.forEach(docSnap=>{
+      snap.forEach(docSnap => {
         const d = docSnap.data();
-        firestoreMap[docSnap.id] = {
-          id:       docSnap.id,
-          title:    d.title || "Notification",
-          body:     d.body  || d.message || "",
-          icon:     d.icon  || "📢",
-          imageUrl: d.image || d.imageUrl || d.mediaUrl || "",
-          ts:       typeof d.time === "number" ? d.time : (d.sentAt?.toMillis?.() || Date.now()),
-          source:   "admin"
-        };
+        const dTarget = (d.target || "").toString().toLowerCase().trim();
+        const dUser   = (d.user || d.userId || d.email || "").toString().toLowerCase().trim();
+        
+        const isBroadcast = dTarget === "all" || (!dTarget && !dUser);
+        const isUserMatch = validTargets.some(t => t === dTarget || t === dUser);
+
+        if (isBroadcast || isUserMatch) {
+          firestoreMap[docSnap.id] = {
+            id:       docSnap.id,
+            title:    d.title || "Notification",
+            body:     d.body  || d.message || d.text || "",
+            icon:     d.icon  || "📢",
+            imageUrl: d.image || d.imageUrl || d.mediaUrl || "",
+            image:    d.image || d.imageUrl || d.mediaUrl || "",
+            ts:       typeof d.time === "number" ? d.time : (d.sentAt?.toMillis?.() || Date.now()),
+            source:   "admin"
+          };
+        }
       });
 
       // Merge with existing localStorage
       let existing = [];
-      try{ existing = JSON.parse(localStorage.getItem("pwa_admin_notifs")||"[]"); }catch(e){}
+      try { existing = JSON.parse(localStorage.getItem("pwa_admin_notifs")||"[]"); }catch(e){}
 
       const existingNonAdmin = existing.filter(n => n.source !== "admin");
       const merged = [...Object.values(firestoreMap), ...existingNonAdmin]
         .sort((a,b)=>(b.ts||0)-(a.ts||0))
-        .slice(0,40);
+        .slice(0,50);
 
       localStorage.setItem("pwa_admin_notifs", JSON.stringify(merged));
 
@@ -4097,10 +4149,22 @@ onAuthStateChanged(auth, async user => {
       // Show unread dot if there are notifications newer than last seen
       const lastSeen = parseInt(localStorage.getItem("notifLastSeen")||"0");
       const hasUnread = merged.some(n => (n.ts||0) > lastSeen);
-      const dot=document.getElementById("notifUnreadDot");
+      const dot = document.getElementById("notifUnreadDot");
       if(dot) dot.style.display = hasUnread ? "block" : "none";
-    }, e=>console.log("[AdminNotif]",e));
-  }catch(ex){ console.log("[AdminNotif setup]",ex); }
+    }
+
+    try {
+      const qOrdered = query(collection(db, "notifications"), orderBy("time", "desc"), limit(40));
+      onSnapshot(qOrdered, handleNotifSnapshot, err => {
+        console.warn("[AdminNotif ordered fallback]:", err?.message);
+        const qSimple = query(collection(db, "notifications"), limit(40));
+        onSnapshot(qSimple, handleNotifSnapshot, e => console.log("[AdminNotif simple]", e));
+      });
+    } catch(e) {
+      const qSimple = query(collection(db, "notifications"), limit(40));
+      onSnapshot(qSimple, handleNotifSnapshot, ex => console.log("[AdminNotif fallback]", ex));
+    }
+  } catch(ex){ console.log("[AdminNotif setup]", ex); }
 
   // Expose a global helper so midnight reset can clear Firestore too
   window._resetDailyXPFirestore = function(){
