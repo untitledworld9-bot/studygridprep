@@ -472,12 +472,6 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
       Continue with Google
     </button>
 
-    <div style="margin-top:10px;text-align:center;">
-      <button type="button" onclick="window.loginGuest()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:4px 8px;border-radius:6px;transition:0.2s;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
-        <i class="fa-solid fa-flask" style="font-size:11px;margin-right:4px;"></i>Continue as Preview / Tester Account
-      </button>
-    </div>
-
     <div class="or-divider">Secure Login</div>
 
     <div class="login-note">
@@ -659,7 +653,7 @@ window.login = async function(){
     // Smart error handling to let user know exactly what went wrong
     if (err.code === 'auth/unauthorized-domain') {
       console.warn("Firebase Auth Notice: Current domain (" + window.location.hostname + ") is not yet added in Firebase Console Authorized Domains.");
-      errorMsg.innerHTML = `Domain <code>${window.location.hostname}</code> is not in Firebase Authorized Domains.<br><button type="button" onclick="window.loginGuest()" style="margin-top:8px;padding:7px 16px;background:linear-gradient(135deg,#5B5BF6,#7C3AED);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">Continue as Preview User</button>`;
+      errorMsg.innerText = "This domain is not authorized for login. Please contact support.";
     } else if (err.code === 'auth/popup-closed-by-user') {
       errorMsg.innerText = "Popup closed. Please complete the login.";
     } else if (err.code === 'auth/cancelled-popup-request') {
