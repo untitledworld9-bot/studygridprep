@@ -885,7 +885,7 @@ header{
 /* Base square card */
 .sq-card{
   border-radius:20px; padding:16px 14px;
-  cursor:pointer; transition:all 0.22s ease;
+  cursor:pointer; transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease;
   box-shadow:var(--shadow);
   position:relative; overflow:hidden;
   min-height:160px;
@@ -893,11 +893,17 @@ header{
   text-decoration:none;
   -webkit-tap-highlight-color:transparent;
   background:var(--surface);
+  will-change:transform, box-shadow;
 }
+.sq-card:hover{ transform:translateY(-6px) scale(1.02); }
 .sq-card:active{ transform:scale(0.96); box-shadow:none; }
 
 /* Mock Test — purple theme */
 .sq-card-mock{ border:1.5px solid rgba(124,58,237,0.22); }
+.sq-card-mock:hover{
+  border-color:rgba(124,58,237,0.55);
+  box-shadow:0 16px 32px -6px rgba(124,58,237,0.25), 0 0 20px rgba(99,102,241,0.2);
+}
 [data-theme="dark"] .sq-card-mock{ background:var(--surface); border-color:rgba(124,58,237,0.22); }
 [data-theme="light"] .sq-card-mock{ background:#fff; border:1.5px solid rgba(124,58,237,0.2); }
 
