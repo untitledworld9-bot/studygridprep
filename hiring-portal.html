@@ -1565,40 +1565,47 @@ function renderRolesGrid(){
     if (applied) {
       const eff2 = getEffectiveResult(applied, role);
       if (eff2.status === 'applied' && canTakeTest(role)) { applyLabel = 'Start Test'; btnAction = `startTestById('${role.id}')`; }
-      const hasAch = applied.achievementCert || (applied.certOverride && (applied.certOverride.achievementCert || applied.certOverride.kind === 'ACHIEVEMENT'));
-      const hasExpCert = applied.certOverride && applied.certOverride.forceIssue && applied.certOverride.kind !== 'ACHIEVEMENT';
+      const isIntern = role.employmentType === 'INTERN';
+      const hasAch = !!(applied.achievementCert || (applied.certOverride && applied.certOverride.achievementCert));
+      const hasPos = !!(applied.positionCert || (applied.certOverride && applied.certOverride.positionCert));
+      const hasExpCert = !!(applied.certOverride && applied.certOverride.forceIssue && applied.certOverride.kind !== 'ACHIEVEMENT' && applied.certOverride.kind !== 'POSITION');
       const os = offerState(applied);
+
+      // Distinct Certificate Strip Generators
+      const certExpStrip = () => `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#0F766E,#0D9488);margin-top:8px;box-shadow:0 6px 18px rgba(15,118,110,0.3);" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>🎓 Official ${isIntern ? 'Internship' : 'Experience'} Certificate Ready<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      const certPosStrip = () => `<div class="role-offer-strip" style="background:linear-gradient(120deg,#1E40AF,#2563EB,#3B82F6);margin-top:8px;box-shadow:0 6px 18px rgba(37,99,235,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=position'"><i class="fa-solid fa-id-badge"></i>🎖️ Certificate of Position &amp; Appointment<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      const certAchStrip = () => `<div class="role-offer-strip" style="background:linear-gradient(120deg,#D97706,#F59E0B,#D97706);margin-top:8px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement Awarded<i class="fa-solid fa-chevron-right chev"></i></div>`;
+
       if (os) {
         nextStepBadge = '';
         if (os === 'fired' || os === 'deleted') {
           finalStatusClass = 'final-not-selected'; applyLabel = 'View Details';
           resultBanner = `<div class="role-state-banner red"><i class="fa-solid fa-user-slash"></i>${os === 'fired' ? 'Your engagement has ended (Fired)' : 'Removed from the team'}</div>`;
-          if (hasAch) {
-            offerStrip = `<div class="role-offer-strip" style="background:linear-gradient(120deg,#F59E0B,#D97706,#F59E0B);margin-top:10px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement Awarded<i class="fa-solid fa-chevron-right chev"></i></div>`;
-          }
+          offerStrip = '';
+          if (hasExpCert) offerStrip += certExpStrip();
+          if (hasPos) offerStrip += certPosStrip();
+          if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'left') {
           finalStatusClass = 'final-not-selected'; applyLabel = 'View Certificate';
           btnAction = `location.href='certificate.html?app=${applied.id}&t=exp'`;
           resultBanner = `<div class="role-state-banner red" style="cursor:pointer;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-person-walking-arrow-right"></i>You left this role · Tap to view Experience Certificate</div>`;
-          offerStrip = `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#0EA5E9,#6366F1);margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-award"></i>🎓 Your Experience Certificate is Ready<i class="fa-solid fa-chevron-right chev"></i></div>`;
-          if (hasAch) {
-            offerStrip += `<div class="role-offer-strip" style="background:linear-gradient(120deg,#F59E0B,#D97706,#F59E0B);margin-top:8px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement<i class="fa-solid fa-chevron-right chev"></i></div>`;
-          }
+          offerStrip = certExpStrip();
+          if (hasPos) offerStrip += certPosStrip();
+          if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'completed') {
           applyLabel = 'View Certificate'; btnAction = `location.href='certificate.html?app=${applied.id}&t=exp'`;
           resultBanner = `<div class="role-state-banner green" style="cursor:pointer;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship completed 🎓 · Tap to view Certificate</div>`;
-          offerStrip = `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#16A34A,#22C55E);margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-award"></i>🎓 Certificate Ready — Tap to Open<i class="fa-solid fa-chevron-right chev"></i></div>`;
-          if (hasAch) {
-            offerStrip += `<div class="role-offer-strip" style="background:linear-gradient(120deg,#F59E0B,#D97706,#F59E0B);margin-top:8px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement<i class="fa-solid fa-chevron-right chev"></i></div>`;
-          }
+          offerStrip = `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#16A34A,#22C55E);margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>🎓 Internship Certificate Ready — Tap to Open<i class="fa-solid fa-chevron-right chev"></i></div>`;
+          if (hasPos) offerStrip += certPosStrip();
+          if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'accepted') {
           applyLabel = 'View Offer'; btnAction = `openOfferModal('${role.id}')`;
           resultBanner = '';
           workChip = workTimerChip(applied, role);
           offerStrip = `<div class="role-offer-strip done" onclick="openOfferModal('${role.id}')"><i class="fa-solid fa-handshake"></i>Offer accepted — you're on the team<i class="fa-solid fa-chevron-right chev"></i></div>${internProgressHtml(applied, role)}`;
-          if (hasAch) {
-            offerStrip += `<div class="role-offer-strip" style="background:linear-gradient(120deg,#F59E0B,#D97706,#F59E0B);animation:stripShift 3s linear infinite;margin-top:8px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement Awarded — Tap to View<i class="fa-solid fa-chevron-right chev"></i></div>`;
-          }
+          if (hasExpCert) offerStrip += certExpStrip();
+          if (hasPos) offerStrip += certPosStrip();
+          if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'offered') {
           applyLabel = 'View Offer'; btnAction = `openOfferModal('${role.id}')`;
           offerStrip = `<div class="role-offer-strip" onclick="openOfferModal('${role.id}')"><i class="fa-solid fa-gift"></i>🎉 Offer received — tap to open<i class="fa-solid fa-chevron-right chev"></i></div>`;

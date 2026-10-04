@@ -47,6 +47,13 @@ a{color:var(--accent);text-decoration:none;}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
 .chip{padding:7px 13px;border-radius:99px;font-size:12px;font-weight:700;background:var(--surface);border:1px solid var(--border);cursor:pointer;color:var(--text2);}
 .chip.on{background:rgba(91,91,246,.12);color:var(--accent);border-color:var(--accent);}
+.cert-nav-filter{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:5px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.cert-nav-btn{flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;border:0;background:transparent;color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;}
+.cert-nav-btn:hover{background:var(--surface);color:var(--text);}
+.cert-nav-btn.on{background:var(--card);color:var(--text);box-shadow:var(--shadow);border:1px solid var(--border);}
+.cert-nav-btn.t-exp.on{border-color:rgba(15,118,110,0.4);color:#0F766E;}
+.cert-nav-btn.t-pos.on{border-color:rgba(37,99,235,0.4);color:#2563EB;}
+.cert-nav-btn.t-ach.on{border-color:rgba(217,119,6,0.4);color:#D97706;}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 16px;}
 .k{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);} .v{font-size:13px;font-weight:600;margin-top:1px;word-break:break-word;}
 .ok-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
@@ -172,19 +179,35 @@ a{color:var(--accent);text-decoration:none;}
 .sgc.achievement .ds{background:rgba(22,163,74,.15);border:1px solid rgba(74,222,128,.4);color:#bbf7d0;}
 .sgc.achievement .qr img{border:2px solid #f59e0b;}
 
-/* 3. Job / Experience theme (Navy & Gold) */
-.sgc.job{background:radial-gradient(circle at 100% 0,rgba(212,175,55,.16),transparent 40%),linear-gradient(135deg,#0b1226,#162447);color:#f6f1e1;}
-.sgc.job .frame{border:2px solid #d4af37;}
-.sgc.job .frame2{border:1px solid rgba(212,175,55,.4);}
-.sgc.job .org{color:#e7c75a;}
-.sgc.job .tag{color:#d4af37;}
-.sgc.job .title{color:#e7c75a;}
-.sgc.job .kind{color:#d4af37;}
-.sgc.job .name{border-color:#d4af37;color:#fff;}
-.sgc.job .c2{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.45);color:#f6f1e1;}
-.sgc.job .ln{background:#d4af37;}
-.sgc.job .ds{background:rgba(22,163,74,.14);border:1px solid rgba(74,222,128,.4);color:#bbf7d0;}
-.sgc.job .qr img{border:2px solid #d4af37;}
+/* 3. Job / Experience theme (Clean White & Emerald / Deep Slate) */
+.sgc.job{background:radial-gradient(circle at 0 0,#f0fdfa,transparent 42%),radial-gradient(circle at 100% 100%,#f8fafc,transparent 42%),#fff;color:#0f172a;}
+.sgc.job .band{position:absolute;left:0;top:0;bottom:0;width:22px;background:linear-gradient(180deg,#0d9488,#0284c7);}
+.sgc.job .frame{border:2px solid #5eead4;}
+.sgc.job .frame2{border:1px dashed #cbd5e1;}
+.sgc.job .org{color:#0f766e;}
+.sgc.job .tag{color:#0d9488;}
+.sgc.job .title{color:#0f766e;}
+.sgc.job .kind{color:#0284c7;}
+.sgc.job .name{border-color:#5eead4;color:#0f172a;}
+.sgc.job .c2{background:#f0fdfa;border:1px solid #99f6e4;color:#115e59;}
+.sgc.job .ln{background:#0f766e;}
+.sgc.job .ds{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;}
+.sgc.job .qr img{border:2px solid #5eead4;}
+
+/* 4. Position & Appointment theme (Clean White with Royal Sapphire / Indigo) */
+.sgc.position{background:radial-gradient(circle at 0 0,#eff6ff,transparent 42%),radial-gradient(circle at 100% 100%,#eef2ff,transparent 42%),#fff;color:#0f172a;}
+.sgc.position .band{position:absolute;left:0;top:0;bottom:0;width:22px;background:linear-gradient(180deg,#2563eb,#7c3aed);}
+.sgc.position .frame{border:2px solid #93c5fd;}
+.sgc.position .frame2{border:1px dashed #c7d2fe;}
+.sgc.position .org{color:#1d4ed8;}
+.sgc.position .tag{color:#2563eb;}
+.sgc.position .title{color:#1e40af;}
+.sgc.position .kind{color:#4338ca;}
+.sgc.position .name{border-color:#93c5fd;color:#0f172a;}
+.sgc.position .c2{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;}
+.sgc.position .ln{background:#2563eb;}
+.sgc.position .ds{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;}
+.sgc.position .qr img{border:2px solid #93c5fd;}
 </style>
 </head>
 <body>
@@ -205,7 +228,7 @@ async function loadMod(list){ for (const s of list) { try { return await import(
 const fb = await loadMod(['./firebase.js','/firebase.js','../firebase.js'].map(p => p + '?cb=' + Date.now()));
 const core = await loadMod(['./cert-core.js','/cert-core.js','../cert-core.js']);
 const { db, auth, provider, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, serverTimestamp, signInWithPopup, onAuthStateChanged } = fb;
-const { SGP, EMP_LABELS, buildCert, publicDoc, certDuration, certCode, verifyUrl, certTitle, toMs } = core;
+const { SGP, EMP_LABELS, buildCert, buildPositionCert, buildAchievementCert, publicDoc, certDuration, certCode, verifyUrl, certTitle, toMs } = core;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
@@ -271,6 +294,7 @@ function exactHandwrittenSignatureSvg(color = '#E7C75A'){
 function certHtml(c, qr, fp){
   const intern = c.kind === 'INTERN';
   const achievement = c.kind === 'ACHIEVEMENT';
+  const position = c.kind === 'POSITION' || c.kind === 'ROLE' || c.isPosition;
   const role = esc(c.roleTitle), dur = esc(c.durationLabel || '1 Month');
   const signatoryName = "Ayush Kumar Gupta";
   const signatoryTitle = "Founder, Study Grid Prep";
@@ -280,9 +304,24 @@ function certHtml(c, qr, fp){
   let bodyText = '';
   let chips = [];
   let themeClass = 'job';
-  let sigColor = '#E7C75A';
+  let sigColor = '#0F766E';
 
-  if (intern) {
+  if (position) {
+    themeClass = 'position';
+    titleTop = 'CERTIFICATE';
+    kindSub = c.isExecutive ? 'OF EXECUTIVE APPOINTMENT & POSITION' : 'OF APPOINTMENT & POSITION';
+    sigColor = '#2563EB';
+    if (c.isExecutive) {
+      bodyText = `has been officially appointed to and holds the executive leadership position of <b>${role}</b> at <b>Study Grid Prep</b>, effective from <b>${fD(c.startMs)}</b>${c.isCurrent ? ' (Active &amp; Ongoing)' : ' to <b>' + fD(c.endMs) + '</b>'}.${c.note ? ' ' + esc(c.note) : ' In recognition of strategic leadership, exemplary dedication, and key contributions to the institution.'}`;
+    } else {
+      bodyText = `is officially certified as holding the position of <b>${role}</b> at <b>Study Grid Prep</b>, appointed on <b>${fD(c.startMs)}</b>${c.isCurrent ? ' and actively serving in this capacity' : ' through <b>' + fD(c.endMs) + '</b>'}.${c.note ? ' ' + esc(c.note) : ' We acknowledge their official standing, responsibilities, and ongoing dedication to our smart study platform.'}`;
+    }
+    chips = [
+      ['OFFICIAL POSITION', role],
+      ['ENGAGEMENT STATUS', c.isCurrent ? 'Currently Active / Present' : (c.durationLabel || 'Completed Tenure')],
+      ['ISSUED ON', fD(c.issuedMs || c.endMs || Date.now())]
+    ];
+  } else if (intern) {
     themeClass = 'intern';
     titleTop = 'CERTIFICATE';
     kindSub = 'OF INTERNSHIP';
@@ -301,14 +340,14 @@ function certHtml(c, qr, fp){
     bodyText = `has been awarded this <b>Certificate of Achievement</b> at <b>Study Grid Prep</b> as <b>${role}</b> in recognition of outstanding performance and valuable contributions from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>.${c.note ? ' ' + esc(c.note) : ' We commend their excellence and wish them continued success in all future endeavors.'}`;
     chips = [
       ['DESIGNATION', role],
-      ['RECOGNITION', 'Outstanding Contributor'],
+      ['TENURE PERIOD', `${fD(c.startMs)} – ${fD(c.endMs)}`],
       ['ISSUED ON', fD(c.issuedMs || c.endMs)]
     ];
   } else {
     themeClass = 'job';
     titleTop = 'EXPERIENCE';
     kindSub = 'CERTIFICATE';
-    sigColor = '#E7C75A';
+    sigColor = '#0F766E';
     bodyText = `has worked with <b>Study Grid Prep</b> as <b>${role}</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total experience of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this tenure, they contributed professionally and reliably to the team. We wish them every success ahead.'}`;
     chips = [
       ['DESIGNATION', role],
@@ -317,8 +356,10 @@ function certHtml(c, qr, fp){
     ];
   }
 
+  const sealColor = position ? '#2563eb' : (intern ? '#6366f1' : (achievement ? '#f59e0b' : '#0d9488'));
+
   return `<div class="sgc ${themeClass}">
-    ${intern ? '<div class="band"></div>' : ''}
+    ${intern || position || !achievement ? '<div class="band"></div>' : ''}
     <div class="frame"></div>
     <div class="frame2"></div>
 
@@ -362,7 +403,7 @@ function certHtml(c, qr, fp){
     </div>
 
     <svg class="seal" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="47" fill="${intern ? '#6366f1' : (achievement ? '#f59e0b' : '#c99a22')}"/>
+      <circle cx="50" cy="50" r="47" fill="${sealColor}"/>
       <circle cx="50" cy="50" r="40" fill="none" stroke="#fff" stroke-opacity=".75" stroke-dasharray="2 3"/>
       <path d="m50 24 6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.4L50 56.9l-13 6.9 2.5-14.4L29 39.3l14.5-2.1z" fill="#fff"/>
       <text x="50" y="80" text-anchor="middle" font-size="7.5" font-weight="700" fill="#fff" letter-spacing="1.2">VERIFIED</text>
@@ -440,19 +481,24 @@ async function verifyMode(id){
   $('app').innerHTML = `<div class="brand"><img src="/icon-192.png" alt="Study Grid Prep">Study Grid Prep · Certificate Verification</div>
     <div class="card vcard" id="vc"><div class="vseal"><div class="scan"></div></div><div class="vt">Verifying…</div><div class="vs">Checking this certificate against Study Grid Prep records</div></div><div id="vprev"></div>`;
   const t0 = Date.now(); let d = null;
-  const baseId = id.replace(/-achieve$/, '');
+  const baseId = id.replace(/-(achieve|position)$/, '');
   try {
     const s = await getDoc(doc(db, 'certificates', id));
     if (s.exists()) {
       d = s.data();
-    } else if (id.endsWith('-achieve')) {
+    } else if (id.endsWith('-achieve') || id.endsWith('-position')) {
       const baseSnap = await getDoc(doc(db, 'hiringApplications', baseId));
       if (baseSnap.exists()) {
         const app = { id: baseSnap.id, ...baseSnap.data() };
         const roleSnap = await getDoc(doc(db, 'hiringRoles', app.roleId));
         const role = roleSnap.exists() ? { id: roleSnap.id, ...roleSnap.data() } : null;
-        const ach = core.buildAchievementCert ? core.buildAchievementCert(app, role) : null;
-        if (ach) d = core.publicDoc(ach);
+        if (id.endsWith('-position')) {
+          const pos = core.buildPositionCert ? core.buildPositionCert(app, role) : null;
+          if (pos) d = core.publicDoc(pos);
+        } else {
+          const ach = core.buildAchievementCert ? core.buildAchievementCert(app, role) : null;
+          if (ach) d = core.publicDoc(ach);
+        }
       }
     }
   } catch(e) { console.warn(e); }
@@ -465,16 +511,17 @@ async function verifyMode(id){
   }
   const c = { ...d, id };
   const isAch = c.kind === 'ACHIEVEMENT';
+  const isPos = c.kind === 'POSITION' || c.kind === 'ROLE' || c.isPosition;
   vc.innerHTML = `<div class="vseal"><div class="pulse"></div><svg class="shield" viewBox="0 0 100 100"><path class="sh" d="M50 6 14 20v28c0 22 15 38 36 46 21-8 36-24 36-46V20z"/><path class="ck" d="m33 50 12 12 23-26"/></svg></div>
-    <div class="vt" style="color:var(--green)">Verified ✓</div><div class="vs">Official ${c.kind === 'INTERN' ? 'internship' : (isAch ? 'Certificate of Achievement' : 'experience')} certificate from <b>Study Grid Prep</b></div>
+    <div class="vt" style="color:var(--green)">Verified ✓</div><div class="vs">Official ${isPos ? 'Certificate of Position & Appointment' : (c.kind === 'INTERN' ? 'Internship Certificate' : (isAch ? 'Certificate of Achievement' : 'Experience Certificate'))} from <b>Study Grid Prep</b></div>
     <div class="vtable">
       <div><b>Recipient Name</b><span>${esc(c.name)}</span></div>
-      <div><b>${isAch ? 'Honored Role / Recognition' : (c.kind === 'INTERN' ? 'Internship Role' : 'Designation')}</b><span>${esc(c.roleTitle)}</span></div>
-      <div><b>${isAch ? 'Recognition / Duration' : 'Total Experience / Duration'}</b><span>${esc(c.durationLabel)}</span></div>
-      <div><b>Tenure Period</b><span>${fD(c.startMs)} – ${fD(c.endMs)}</span></div>
+      <div><b>${isPos ? 'Official Appointed Position' : (isAch ? 'Honored Role / Recognition' : (c.kind === 'INTERN' ? 'Internship Role' : 'Designation'))}</b><span>${esc(c.roleTitle)}</span></div>
+      <div><b>${isPos ? 'Engagement Status' : (isAch ? 'Recognition / Duration' : 'Total Experience / Duration')}</b><span>${c.isCurrent ? 'Currently Active / Present' : esc(c.durationLabel)}</span></div>
+      <div><b>${isPos ? 'Appointed / Start Date' : 'Tenure Period'}</b><span>${isPos && c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active)' : `${fD(c.startMs)} – ${fD(c.endMs)}`}</span></div>
       <div><b>Authorized Signatory</b><span>Ayush Kumar Gupta (Founder)</span></div>
       <div><b>Certificate ID</b><span>${certCode(id)}</span></div>
-      <div><b>Issued Date</b><span>${fD(c.issuedMs || c.endMs)}</span></div>
+      <div><b>Issued Date</b><span>${fD(c.issuedMs || c.endMs || Date.now())}</span></div>
     </div>`;
   paint($('vprev'), c);
 }
@@ -493,11 +540,12 @@ async function loadOwner(user){
   const want = P.get('app');
   S.cur = S.apps.find(a => a.id === want) || S.apps[0] || null;
   const wantTab = P.get('t');
-  if (wantTab === 'achieve') S.viewType = 'achievement';
-  else if (wantTab === 'exp') S.viewType = 'experience';
+  if (wantTab === 'position' || wantTab === 'role') S.viewType = 'position';
+  else if (wantTab === 'achieve' || wantTab === 'achievement') S.viewType = 'achievement';
+  else if (wantTab === 'exp' || wantTab === 'intern' || wantTab === 'experience') S.viewType = 'experience';
   renderOwner();
 }
-window.pick = id => { S.cur = S.apps.find(a => a.id === id); S.viewType = null; renderOwner(); };
+window.pick = id => { S.cur = S.apps.find(a => a.id === id); renderOwner(); };
 window.switchView = function(t){ S.viewType = t; renderOwner(); };
 
 /* ---- One-Time Edit Name Modal ---- */
@@ -534,7 +582,8 @@ window.saveCertName = async function(){
       nameConfirmed: true,
       'certOverride.name': val,
       'certOverride.nameConfirmed': true,
-      'achievementCert.name': val
+      'achievementCert.name': val,
+      'positionCert.name': val
     });
     S.cur.certName = val;
     S.cur.name = val;
@@ -558,22 +607,49 @@ async function renderOwner(){
   const role = S.roles.find(r => r.id === S.cur.roleId);
   const baseCert = buildCert(S.cur, role);
   const achCert = core.buildAchievementCert ? core.buildAchievementCert(S.cur, role) : null;
+  const posCert = core.buildPositionCert ? core.buildPositionCert(S.cur, role) : null;
   const hasAch = !!achCert;
+  const hasPos = !!posCert;
+  const isIntern = role && role.employmentType === 'INTERN';
 
+  // Ensure active viewType respects URL tab or user toggle
+  const urlTab = P.get('t');
   if (!S.viewType) {
-    if (hasAch && baseCert.state === 'active') S.viewType = 'achievement';
+    if ((urlTab === 'position' || urlTab === 'role') && hasPos) S.viewType = 'position';
+    else if ((urlTab === 'achieve' || urlTab === 'achievement') && hasAch) S.viewType = 'achievement';
+    else if (urlTab === 'exp' || urlTab === 'intern' || urlTab === 'experience') S.viewType = 'experience';
+    else if (hasPos && baseCert.state === 'active') S.viewType = 'position';
+    else if (hasAch && baseCert.state === 'active') S.viewType = 'achievement';
     else S.viewType = 'experience';
   }
 
-  const c = S.c = (S.viewType === 'achievement' && hasAch) ? achCert : baseCert;
+  // Safety fallback if active tab not available
+  if (S.viewType === 'position' && !hasPos) S.viewType = hasAch ? 'achievement' : 'experience';
+  if (S.viewType === 'achievement' && !hasAch) S.viewType = hasPos ? 'position' : 'experience';
+
+  let c = baseCert;
+  if (S.viewType === 'position' && hasPos) c = posCert;
+  else if (S.viewType === 'achievement' && hasAch) c = achCert;
+  S.c = c;
 
   const appChips = S.apps.length > 1 ? `<div class="chips">${S.apps.map(a => `<div class="chip ${a.id === S.cur.id ? 'on' : ''}" onclick="pick('${a.id}')">${esc((S.roles.find(r => r.id === a.roleId) || {}).title || 'Role')}</div>`).join('')}</div>` : '';
 
+  // Clean 3-Filter Segmented Tab Bar at the Top
   let certSwitcher = '';
-  if (hasAch) {
-    certSwitcher = `<div class="chips" style="margin-bottom:14px;">
-      <button class="chip ${S.viewType === 'achievement' ? 'on' : ''}" onclick="switchView('achievement')" style="font-weight:700;"><i class="fa-solid fa-trophy" style="color:#F59E0B;margin-right:6px;"></i> Certificate of Achievement</button>
-      <button class="chip ${S.viewType === 'experience' ? 'on' : ''}" onclick="switchView('experience')" style="font-weight:700;"><i class="fa-solid fa-award" style="color:var(--accent);margin-right:6px;"></i> ${role && role.employmentType === 'INTERN' ? 'Internship' : 'Experience'} Certificate</button>
+  if (hasPos || hasAch) {
+    certSwitcher = `<div class="cert-nav-filter">
+      <button class="cert-nav-btn t-exp ${S.viewType === 'experience' ? 'on' : ''}" onclick="switchView('experience')">
+        <i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>
+        <span>${isIntern ? 'Internship Certificate' : 'Experience Certificate'}</span>
+      </button>
+      ${hasPos ? `<button class="cert-nav-btn t-pos ${S.viewType === 'position' ? 'on' : ''}" onclick="switchView('position')">
+        <i class="fa-solid fa-id-badge"></i>
+        <span>Certificate of Position</span>
+      </button>` : ''}
+      ${hasAch ? `<button class="cert-nav-btn t-ach ${S.viewType === 'achievement' ? 'on' : ''}" onclick="switchView('achievement')">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Certificate of Achievement</span>
+      </button>` : ''}
     </div>`;
   }
 
