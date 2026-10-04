@@ -1040,28 +1040,48 @@ input::placeholder { color: var(--text3); }
   z-index: 100000; display: none; flex-direction: column;
 }
 .player-header {
-  display: flex; align-items: center; padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px; min-height: 52px; max-height: 52px;
+  padding: 0 12px;
   background: var(--header-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  gap: 8px;
 }
 .close-player-btn {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   color: var(--text);
-  border-radius: 12px;
-  padding: 8px 16px;
+  border-radius: 10px;
+  padding: 6px 11px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   transition: var(--t);
-  display: flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 4px;
   box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .close-player-btn:active { transform: scale(0.95); }
-.player-title { color: var(--accent); margin-left: 14px; font-size: 15px; font-weight: 700; flex: 1; transition: var(--t); }
+.player-title {
+  color: var(--accent);
+  font-size: 13.5px;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.2;
+  transition: var(--t);
+}
 .player-video-container { width: 100%; aspect-ratio: 16/9; background: #000; flex-shrink: 0; }
 .player-video-container iframe { width: 100%; height: 100%; border: none; }
 
@@ -1106,9 +1126,15 @@ input::placeholder { color: var(--text3); }
 .player-overlay.is-music-mode .player-title {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   font-weight: 800;
+  font-size: 13.5px;
   letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
   background: linear-gradient(135deg, #7C3AED, #6366F1, #9333EA);
   background-size: 200% 200%;
   -webkit-background-clip: text;
@@ -1134,14 +1160,14 @@ input::placeholder { color: var(--text3); }
 .music-wave-bars {
   display: inline-flex;
   align-items: flex-end;
-  gap: 2.5px;
-  height: 14px;
-  width: 14px;
+  gap: 2px;
+  height: 12px;
+  width: 12px;
   flex-shrink: 0;
   vertical-align: middle;
 }
 .music-wave-bars span {
-  width: 2.5px;
+  width: 2px;
   background: linear-gradient(to top, #7C3AED, #C084FC);
   border-radius: 2px;
   display: inline-block;
@@ -1703,24 +1729,26 @@ input::placeholder { color: var(--text3); }
 
 
 .focus-lock-btn {
-  margin-left: auto;
+  margin-left: 0;
   display: none;
   align-items: center;
-  gap: 5px;
-  padding: 6px 13px;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 10px;
   border-radius: 20px;
   background: var(--surface2);
   border: 1.5px solid var(--border);
   color: var(--text2);
-  font-size: 11.5px; font-weight: 600;
+  font-size: 11px; font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   cursor: pointer;
   transition: opacity 0.45s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   user-select: none; -webkit-tap-highlight-color: transparent;
   white-space: nowrap; flex-shrink: 0;
 }
-.focus-lock-btn .fl-icon { font-size: 13px; }
+.focus-lock-btn .fl-icon { font-size: 11.5px; }
+.focus-lock-btn .fl-label { font-size: 11px; }
 .focus-lock-btn.fl-show { display: flex; opacity: 1; }
 .focus-lock-btn.fl-dim { opacity: 0.28; }
 .focus-lock-btn.fl-locked {
@@ -1730,6 +1758,16 @@ input::placeholder { color: var(--text3); }
   box-shadow: 0 0 10px rgba(91,91,246,0.2);
 }
 .focus-lock-btn.fl-glow { opacity: 1 !important; box-shadow: 0 0 18px rgba(91,91,246,0.5); }
+
+@media (max-width: 400px) {
+  .player-header { padding: 0 8px; gap: 6px; }
+  .close-player-btn { padding: 5px 9px; font-size: 11.5px; }
+  .player-title { font-size: 12.5px; }
+  .player-overlay.is-music-mode .player-title { font-size: 12.5px; gap: 4px; }
+  .focus-lock-btn { padding: 4px 8px; font-size: 10.5px; }
+  .focus-lock-btn .fl-icon { font-size: 10.5px; }
+  .focus-lock-btn .fl-label { font-size: 10.5px; }
+}
 
 @keyframes flShake {
   0%,100%{ transform: translateX(0); }
