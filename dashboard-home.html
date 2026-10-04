@@ -415,16 +415,148 @@ header{
 }
 
 .header-right-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+
 .header-streak-badge{
-  display:flex; align-items:center; gap:4px;
-  background:rgba(249,115,22,0.12); border:1.5px solid rgba(249,115,22,0.3);
-  border-radius:50px; padding:6px 12px;
-  font-size:13px; font-weight:700; color:var(--orange);
-  cursor:pointer; transition:var(--t);
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 12px 5px 9px;
+  border-radius:50px;
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  color:var(--text);
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
-.header-streak-badge:active{ transform:scale(0.93); }
-.streak-fire-anim{ display:inline-block; animation:firePulse 1.4s ease-in-out infinite; }
-@keyframes firePulse{ 0%,100%{ transform:scale(1) rotate(-3deg); } 50%{ transform:scale(1.2) rotate(3deg); } }
+.header-streak-badge:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(249,115,22,0.2);
+}
+.header-streak-badge:active{
+  transform:scale(0.94);
+}
+.streak-icon-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+}
+.streak-fire-anim{
+  display:inline-block;
+  font-size:15px;
+  line-height:1;
+  transition:transform 0.2s ease;
+  animation:firePulse 1.6s ease-in-out infinite;
+}
+@keyframes firePulse{
+  0%, 100%{ transform:scale(1) rotate(-3deg); }
+  50%{ transform:scale(1.18) rotate(3deg); }
+}
+.streak-goal-dot{
+  position:absolute;
+  bottom:-2px;
+  right:-3px;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--text3);
+  border:1.5px solid var(--surface);
+  transition:all 0.25s ease;
+}
+.streak-goal-dot.done{
+  background:#10B981;
+  box-shadow:0 0 6px rgba(16,185,129,0.85);
+}
+.streak-goal-dot.pending{
+  background:#F59E0B;
+  animation:goalDotBlink 2s infinite ease-in-out;
+}
+@keyframes goalDotBlink{
+  0%, 100%{ transform:scale(0.9); opacity:0.6; }
+  50%{ transform:scale(1.2); opacity:1; box-shadow:0 0 6px rgba(245,158,11,0.9); }
+}
+.streak-count-col{
+  display:flex;
+  align-items:baseline;
+  gap:2.5px;
+  line-height:1;
+}
+.streak-count-num{
+  font-size:13.5px;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-0.2px;
+}
+.streak-count-unit{
+  font-size:10px;
+  font-weight:700;
+  color:var(--text2);
+  text-transform:uppercase;
+  letter-spacing:0.3px;
+}
+
+/* ── STREAK MOTIVATION TIERS ── */
+.header-streak-badge.tier-0{
+  background:rgba(148,163,184,0.08);
+  border-color:rgba(148,163,184,0.25);
+  color:var(--text2);
+}
+.header-streak-badge.tier-0 .streak-fire-anim{
+  filter:grayscale(0.5);
+  animation:none;
+}
+.header-streak-badge.tier-spark{
+  background:linear-gradient(135deg,rgba(249,115,22,0.12),rgba(251,146,60,0.08));
+  border-color:rgba(249,115,22,0.35);
+  color:#EA580C;
+}
+[data-theme="dark"] .header-streak-badge.tier-spark{
+  color:#FB923C;
+  border-color:rgba(249,115,22,0.4);
+}
+.header-streak-badge.tier-blaze{
+  background:linear-gradient(135deg,rgba(249,115,22,0.18),rgba(239,68,68,0.1));
+  border-color:rgba(249,115,22,0.45);
+  color:#EA580C;
+  box-shadow:0 3px 12px rgba(249,115,22,0.18);
+}
+[data-theme="dark"] .header-streak-badge.tier-blaze{
+  color:#F97316;
+}
+.header-streak-badge.tier-week{
+  background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.14));
+  border-color:rgba(245,158,11,0.55);
+  color:#D97706;
+  box-shadow:0 4px 16px rgba(245,158,11,0.22);
+}
+[data-theme="dark"] .header-streak-badge.tier-week{
+  color:#FBBF24;
+}
+.header-streak-badge.tier-master{
+  background:linear-gradient(135deg,rgba(168,85,247,0.16),rgba(249,115,22,0.16));
+  border-color:rgba(168,85,247,0.5);
+  color:#9333EA;
+  box-shadow:0 4px 18px rgba(168,85,247,0.25);
+}
+[data-theme="dark"] .header-streak-badge.tier-master{
+  color:#C084FC;
+}
+.header-streak-badge.tier-legend{
+  background:linear-gradient(135deg,rgba(251,191,36,0.25),rgba(244,63,94,0.15));
+  border-color:rgba(251,191,36,0.65);
+  color:#B45309;
+  box-shadow:0 4px 20px rgba(251,191,36,0.32);
+}
+[data-theme="dark"] .header-streak-badge.tier-legend{
+  color:#FDE68A;
+}
 
 .notif-dot-btn{
   position:relative; width:36px; height:36px; border-radius:11px;
@@ -1042,24 +1174,27 @@ header{
 /* ─── STREAK WEEK POPUP (tap on header fire badge) ─── */
 .streak-week-overlay{
   position:fixed; inset:0; z-index:9999999;
-  background:rgba(0,0,0,0.55); backdrop-filter:blur(10px);
+  background:rgba(0,0,0,0.65); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   display:flex; align-items:flex-end; justify-content:center;
   padding-bottom:80px; animation:overlayIn 0.25s ease;
 }
 .streak-week-card{
   background:var(--surface);
   border-radius:28px; padding:24px 20px 22px;
-  width:93%; max-width:390px;
+  width:93%; max-width:410px;
   position:relative;
   border:1px solid var(--border);
-  box-shadow:0 -4px 40px rgba(0,0,0,0.3);
+  box-shadow:0 -4px 40px rgba(0,0,0,0.35);
   animation:slideUp 0.35s cubic-bezier(0.34,1.4,0.64,1);
+  max-height:86vh;
+  overflow-y:auto;
 }
 [data-theme="dark"] .streak-week-card{
   background:linear-gradient(160deg,#0F1E38,#131C30);
-  border-color:rgba(249,115,22,0.2);
+  border-color:rgba(249,115,22,0.25);
 }
 [data-theme="light"] .streak-week-card{ background:#fff; }
+
 .streak-week-close{
   position:absolute; top:14px; right:14px;
   width:30px; height:30px; border-radius:50%;
@@ -1067,54 +1202,123 @@ header{
   color:var(--text2); font-size:13px; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   transition:0.2s; -webkit-tap-highlight-color:transparent;
+  z-index:2;
 }
 .streak-week-close:active{ transform:scale(0.9); }
+
 .streak-week-header{
-  display:flex; align-items:center; gap:12px; margin-bottom:16px;
+  display:flex; align-items:center; gap:13px; margin-bottom:14px;
 }
 .streak-week-fire{
-  width:48px; height:48px; border-radius:16px;
-  background:rgba(249,115,22,0.12); border:1.5px solid rgba(249,115,22,0.25);
+  width:52px; height:52px; border-radius:18px;
+  background:linear-gradient(135deg,rgba(249,115,22,0.18),rgba(239,68,68,0.1));
+  border:1.5px solid rgba(249,115,22,0.35);
   display:flex; align-items:center; justify-content:center;
+  font-size:24px;
   animation:firePulse 1.4s ease-in-out infinite;
+  box-shadow:0 4px 14px rgba(249,115,22,0.2);
+  flex-shrink:0;
 }
 .streak-week-info{ flex:1; }
 .streak-week-count{
-  font-size:22px; font-weight:900; color:var(--orange);
+  font-size:24px; font-weight:900; color:var(--orange);
   letter-spacing:-0.5px; line-height:1;
+  display:flex; align-items:baseline; gap:5px;
 }
-.streak-week-label{ font-size:12px; color:var(--text2); margin-top:2px; font-weight:500; }
+.streak-week-count span{
+  font-size:13px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;
+}
+.streak-week-label{ font-size:12px; color:var(--text2); margin-top:3px; font-weight:500; }
+
+/* Today's Goal Progress Box */
+.streak-today-goal-box{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:12px 14px;
+  margin-bottom:14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.stg-row{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:12px; font-weight:600; color:var(--text);
+}
+.stg-badge{
+  font-size:10px; font-weight:700; padding:2px 8px; border-radius:50px;
+  display:inline-flex; align-items:center; gap:4px;
+}
+.stg-badge.done{
+  background:rgba(16,185,129,0.14); color:#10B981; border:1px solid rgba(16,185,129,0.3);
+}
+.stg-badge.pending{
+  background:rgba(245,158,11,0.14); color:#F59E0B; border:1px solid rgba(245,158,11,0.3);
+}
+.stg-bar-wrap{
+  height:7px; background:var(--border); border-radius:99px; overflow:hidden;
+}
+.stg-bar-fill{
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg,#F97316,#10B981);
+  transition:width 0.6s cubic-bezier(0.34,1.2,0.64,1);
+}
+.stg-note{
+  font-size:11px; color:var(--text2); line-height:1.4;
+}
+
 /* 7-day row */
 .streak-week-days{
-  display:flex; align-items:stretch; gap:6px; margin-bottom:16px;
+  display:flex; align-items:stretch; gap:6px; margin-bottom:12px;
 }
 .streak-week-day{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
-  padding:10px 4px 8px;
+  padding:9px 3px 7px;
   border-radius:14px; border:1.5px solid var(--border);
   background:var(--surface2); position:relative;
   transition:all 0.2s ease;
 }
 .streak-week-day.done{
-  background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.35);
+  background:rgba(249,115,22,0.12); border-color:rgba(249,115,22,0.4);
 }
 .streak-week-day.missed{
-  background:rgba(239,68,68,0.05); border-color:rgba(239,68,68,0.18);
+  background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.2);
 }
 .streak-week-day.today{
-  border-color:var(--accent); background:rgba(91,91,246,0.07);
-  box-shadow:0 0 0 2px rgba(91,91,246,0.15);
+  border-color:var(--accent); background:rgba(91,91,246,0.09);
+  box-shadow:0 0 0 2px rgba(91,91,246,0.18);
 }
-.streak-week-day-icon{ font-size:16px; line-height:1; }
+.streak-week-day-icon{ font-size:15px; line-height:1; }
 .streak-week-day-name{ font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.3px; }
 .streak-week-day.today .streak-week-day-name{ color:var(--accent); }
+
 /* Message line */
 .streak-week-msg{
-  font-size:13px; color:var(--text2); text-align:center;
+  font-size:12.5px; color:var(--text2); text-align:center;
   line-height:1.5; font-weight:500; padding:10px 12px;
-  background:var(--surface2); border-radius:12px;
+  background:var(--surface2); border-radius:14px;
   border:1px solid var(--border);
+  margin-bottom:12px;
 }
+
+/* Action shortcuts */
+.streak-quick-actions{
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.streak-action-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:9px 12px; border-radius:12px;
+  background:linear-gradient(135deg,rgba(91,91,246,0.1),rgba(124,58,237,0.06));
+  border:1px solid rgba(91,91,246,0.22);
+  color:var(--text); font-size:12px; font-weight:700;
+  text-decoration:none; transition:0.2s;
+  cursor:pointer;
+}
+.streak-action-btn:hover{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff; border-color:transparent;
+}
+.streak-action-btn:active{ transform:scale(0.96); }
 
 /* ─── STREAK BREAK POPUP ─── */
 .streak-break-overlay{
@@ -1888,8 +2092,15 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
     <span class="site-title-sub" id="headerSubText">Let's achieve your goals today!</span>
   </div>
   <div class="header-right-actions">
-    <div id="headerStreakBadge" class="header-streak-badge" onclick="openStreakWeekPopup()" title="Your study streak">
-      <span class="streak-fire-anim">🔥</span><span id="headerStreakNum">0</span>
+    <div id="headerStreakBadge" class="header-streak-badge tier-0" onclick="openStreakWeekPopup()" title="Study Streak • Tap to view daily goal tracker" role="button" tabindex="0">
+      <div class="streak-icon-wrap">
+        <span class="streak-fire-anim" id="headerStreakIcon">🔥</span>
+        <span class="streak-goal-dot pending" id="headerGoalDot" title="Daily goal status"></span>
+      </div>
+      <div class="streak-count-col">
+        <span class="streak-count-num" id="headerStreakNum">0</span>
+        <span class="streak-count-unit" id="headerStreakUnit">d</span>
+      </div>
     </div>
     <div class="notif-dot-btn" onclick="openNotifPanel()" id="notifDotBtn" title="Notifications">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2374,27 +2585,49 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
   </div>
 </div>
 
-<!-- Streak Week Popup (tap fire badge in header) -->
+<!-- Streak Week & Daily Goal Motivation Hub (tap fire badge in header) -->
 <div id="streakWeekOverlay" class="streak-week-overlay" style="display:none;" onclick="closeStreakWeekPopup()">
   <div class="streak-week-card" onclick="event.stopPropagation()">
-    <button class="streak-week-close" onclick="closeStreakWeekPopup()">✕</button>
+    <button class="streak-week-close" onclick="closeStreakWeekPopup()" title="Close">✕</button>
+    
     <div class="streak-week-header">
-      <div class="streak-week-fire">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2C7 8 5 11 5 14a7 7 0 0 0 14 0c0-3-2-6-7-12z" fill="#F97316" opacity="0.9"/>
-          <path d="M12 8c0 0-3 3-3 6a3 3 0 0 0 6 0c0-2-1-4-3-6z" fill="#FCD34D"/>
-          <circle cx="12" cy="18" r="1.2" fill="#fff" opacity="0.8"/>
-        </svg>
-      </div>
+      <div class="streak-week-fire" id="swPopupFireIcon">🔥</div>
       <div class="streak-week-info">
-        <div class="streak-week-count" id="swPopupCount">0 🔥</div>
-        <div class="streak-week-label">Day Streak · Last 7 Days</div>
+        <div class="streak-week-count"><span id="swPopupCount">0</span> <span>Days Streak</span></div>
+        <div class="streak-week-label">Consecutive Daily Goals Achieved</div>
       </div>
     </div>
-    <!-- 7-day row -->
+
+    <!-- Today's Daily Goal Progress Box -->
+    <div class="streak-today-goal-box">
+      <div class="stg-row">
+        <span>Today's Daily Target</span>
+        <span id="swGoalBadge" class="stg-badge pending">⏳ In Progress</span>
+      </div>
+      <div class="stg-bar-wrap">
+        <div id="swGoalBarFill" class="stg-bar-fill" style="width: 0%;"></div>
+      </div>
+      <div class="stg-row" style="font-size:11px;color:var(--text2);font-weight:500;">
+        <span id="swGoalXpText">0 / 10 XP</span>
+        <span id="swGoalStatusTip">Earn 10 XP today to keep streak alive</span>
+      </div>
+    </div>
+
+    <!-- 7-day consistency calendar row -->
     <div class="streak-week-days" id="streakWeekDaysRow"></div>
-    <!-- Message -->
-    <div class="streak-week-msg" id="streakWeekMsg">Complete today's daily goal to grow your streak!</div>
+
+    <!-- Motivational Message -->
+    <div class="streak-week-msg" id="streakWeekMsg">Complete today's daily goal (10 XP) to build your study habit!</div>
+
+    <!-- Quick study actions to earn XP & protect streak -->
+    <div class="streak-quick-actions">
+      <a href="focus.html" class="streak-action-btn">
+        <i class="fa-solid fa-stopwatch" style="color:var(--green,#10B981);"></i> Focus Timer
+      </a>
+      <a href="content-hub.html" class="streak-action-btn">
+        <i class="fa-brands fa-youtube" style="color:#EF4444;"></i> Watch Playlist
+      </a>
+    </div>
   </div>
 </div>
 
@@ -2806,25 +3039,105 @@ window.addEventListener("storage",syncUserData);
 })();
 
 
+// ─── VISUAL STUDY STREAK COUNTER & DAILY GOAL CONTROLLER ───
+window.updateHeaderStreakBadge = function(streak, dailyXP) {
+  const badge = document.getElementById("headerStreakBadge");
+  const numEl = document.getElementById("headerStreakNum");
+  const unitEl = document.getElementById("headerStreakUnit");
+  const iconEl = document.getElementById("headerStreakIcon");
+  const dotEl = document.getElementById("headerGoalDot");
+
+  const count = parseInt(streak, 10) || 0;
+  const xp = parseInt(dailyXP, 10) || 0;
+  const isGoalDone = xp >= 10;
+
+  if (numEl) numEl.textContent = count;
+  if (unitEl) unitEl.textContent = count === 1 ? "day" : "days";
+
+  if (badge) {
+    badge.classList.remove("tier-0", "tier-spark", "tier-blaze", "tier-week", "tier-master", "tier-legend");
+    if (count === 0) badge.classList.add("tier-0");
+    else if (count <= 3) badge.classList.add("tier-spark");
+    else if (count <= 6) badge.classList.add("tier-blaze");
+    else if (count <= 13) badge.classList.add("tier-week");
+    else if (count <= 29) badge.classList.add("tier-master");
+    else badge.classList.add("tier-legend");
+
+    badge.title = `🔥 ${count} Day Streak • Today's Goal: ${isGoalDone ? "Completed (10/10 XP) ✅" : xp + "/10 XP (In progress)"}`;
+  }
+
+  if (iconEl) {
+    if (count >= 30) iconEl.textContent = "👑";
+    else if (count >= 14) iconEl.textContent = "⚡";
+    else iconEl.textContent = "🔥";
+  }
+
+  if (dotEl) {
+    dotEl.className = "streak-goal-dot " + (isGoalDone ? "done" : "pending");
+    dotEl.title = isGoalDone ? "Today's daily goal achieved! Streak secured." : "Daily goal in progress. Earn 10 XP today to keep streak alive.";
+  }
+};
+
 // ─── STREAK WEEK POPUP (header fire badge tap) ───
 window.openStreakWeekPopup = function(){
   const overlay = document.getElementById("streakWeekOverlay");
   if(!overlay) return;
   const streak = window._currentStreak || parseInt(localStorage.getItem("uw_streak")||"0")||0;
   const history = window._streakHistory || [];
+
+  const todayStr = new Date().toDateString();
+  const savedDate = localStorage.getItem("dailyXPDate");
+  const rawDailyXP = (savedDate === todayStr) ? parseInt(localStorage.getItem("dailyXP")||"0", 10) : 0;
+  const hitFlag = localStorage.getItem("dailyGoalHit_" + todayStr);
+  const dailyXP = (hitFlag === "1") ? Math.max(rawDailyXP, 10) : rawDailyXP;
+  const isGoalDone = dailyXP >= 10 || isTodayDone(history);
+
+  // Update popup badge & count
+  const countEl = document.getElementById("swPopupCount");
+  if(countEl) countEl.textContent = streak;
+
+  const fireIcon = document.getElementById("swPopupFireIcon");
+  if(fireIcon) {
+    if(streak >= 30) fireIcon.textContent = "👑";
+    else if(streak >= 14) fireIcon.textContent = "⚡";
+    else fireIcon.textContent = "🔥";
+  }
+
+  // Update Today's Daily Target Box
+  const goalBadge = document.getElementById("swGoalBadge");
+  const goalBarFill = document.getElementById("swGoalBarFill");
+  const goalXpText = document.getElementById("swGoalXpText");
+  const goalStatusTip = document.getElementById("swGoalStatusTip");
+
+  const progressPct = Math.min(100, Math.round((dailyXP / 10) * 100));
+
+  if(goalBadge) {
+    goalBadge.className = "stg-badge " + (isGoalDone ? "done" : "pending");
+    goalBadge.innerHTML = isGoalDone ? `✓ Goal Completed` : `⏳ In Progress`;
+  }
+  if(goalBarFill) {
+    goalBarFill.style.width = Math.max(progressPct, isGoalDone ? 100 : (dailyXP > 0 ? 15 : 4)) + "%";
+  }
+  if(goalXpText) {
+    goalXpText.textContent = `${Math.min(dailyXP, 10)} / 10 XP`;
+  }
+  if(goalStatusTip) {
+    if(isGoalDone) goalStatusTip.textContent = "🎉 Streak secured for today! Come back tomorrow!";
+    else goalStatusTip.textContent = `${10 - Math.min(dailyXP, 10)} XP remaining today to protect your streak!`;
+  }
+
   // Build 7-day row
   buildStreakWeekRow(history, streak);
-  // Count & message
-  const countEl = document.getElementById("swPopupCount");
-  if(countEl) countEl.textContent = streak + " 🔥";
+
+  // Motivational message
   const msgEl = document.getElementById("streakWeekMsg");
   if(msgEl){
-    const todayDone = isTodayDone(history);
-    if(streak===0) msgEl.textContent="Start your streak! Complete today's daily goal (10 XP) to earn Day 1! 💪";
-    else if(todayDone) msgEl.textContent=`🔥 ${streak} days in a row — incredible! Come back tomorrow to keep it going!`;
-    else if(streak===1) msgEl.textContent="You're on Day 1! Complete today's daily goal to keep your streak alive! 🚀";
-    else msgEl.textContent=`${streak} days strong! Don't break the chain — complete today's goal! 🎯`;
+    if(streak === 0) msgEl.textContent = "Start your study streak today! Complete 10 XP daily target to unlock Day 1 🔥";
+    else if(isGoalDone) msgEl.textContent = `🔥 ${streak} day streak locked in! Consistency is your secret weapon. Keep shining!`;
+    else if(streak === 1) msgEl.textContent = "You started your streak yesterday! Complete today's target to reach Day 2! 🚀";
+    else msgEl.textContent = `🎯 ${streak} days strong! Don't let your streak break — earn your daily XP today!`;
   }
+
   overlay.style.display="flex";
   requestAnimationFrame(()=>{ overlay.style.opacity="1"; });
 };
@@ -2863,7 +3176,7 @@ function buildStreakWeekRow(history, streak){
     const icon = document.createElement("div");
     icon.className = "streak-week-day-icon";
     if(done) icon.textContent="🔥";
-    else if(isToday) icon.textContent="⭐";
+    else if(isToday) icon.textContent=done?"🔥":"⭐";
     else if(missed&&streak>0) icon.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
     else icon.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
 
@@ -3843,7 +4156,10 @@ onAuthStateChanged(auth, async user => {
     const _xpRender = (_hitFlag==="1") ? Math.max(_xpToShow,10) : _xpToShow;
 
     // Instant streak display
-    const hnum=document.getElementById("headerStreakNum"); if(hnum) hnum.textContent=_cachedStreak;
+    if(window.updateHeaderStreakBadge) window.updateHeaderStreakBadge(_cachedStreak, _xpRender);
+    else {
+      const hnum=document.getElementById("headerStreakNum"); if(hnum) hnum.textContent=_cachedStreak;
+    }
     const sval=document.getElementById("streakStatVal"); if(sval) sval.textContent=_cachedStreak;
 
     // Instant XP bar fill
@@ -3954,7 +4270,11 @@ onAuthStateChanged(auth, async user => {
     await updateDoc(userRef,{lastActiveDate:today}).catch(()=>{});
   }
   localStorage.setItem("uw_streak",streak);
-  document.getElementById("headerStreakNum").textContent=streak;
+  const _todayInitXP = (localStorage.getItem("dailyXPDate") === today) ? parseInt(localStorage.getItem("dailyXP")||"0") : 0;
+  if(window.updateHeaderStreakBadge) window.updateHeaderStreakBadge(streak, _todayInitXP);
+  else {
+    const hn=document.getElementById("headerStreakNum"); if(hn) hn.textContent=streak;
+  }
   const sv=document.getElementById("streakStatVal"); if(sv) sv.textContent=streak;
   checkStreakMilestone(streak);
 
@@ -4009,18 +4329,22 @@ onAuthStateChanged(auth, async user => {
     window._currentStreak = d.streak||0;
     // Always keep header + stat bar in sync with live Firestore
     const liveStreak = d.streak||0;
-    const hnum=document.getElementById("headerStreakNum"); if(hnum) hnum.textContent=liveStreak;
-    const sval=document.getElementById("streakStatVal"); if(sval) sval.textContent=liveStreak;
     localStorage.setItem("uw_streak", liveStreak);
+
+    const hitFlag = localStorage.getItem("dailyGoalHit_"+todayStr);
+    const xpToRender = (hitFlag === "1") ? Math.max(dailyXP, 10) : dailyXP;
+
+    if(window.updateHeaderStreakBadge) window.updateHeaderStreakBadge(liveStreak, xpToRender);
+    else {
+      const hnum=document.getElementById("headerStreakNum"); if(hnum) hnum.textContent=liveStreak;
+    }
+    const sval=document.getElementById("streakStatVal"); if(sval) sval.textContent=liveStreak;
 
     const displayXP=Math.min(dailyXP,10);
     const el=document.getElementById("dailyXpDisplay");
 
     localStorage.setItem("dailyXP",dailyXP);
     localStorage.setItem("dailyXPDate",todayStr);
-
-    const hitFlag = localStorage.getItem("dailyGoalHit_"+todayStr);
-    const xpToRender = (hitFlag === "1") ? Math.max(dailyXP, 10) : dailyXP;
 
     if(window.updateDailyGoalBar){
       window.updateDailyGoalBar(xpToRender);

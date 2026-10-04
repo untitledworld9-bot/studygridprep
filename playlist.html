@@ -1016,6 +1016,21 @@ input::placeholder { color: var(--text3); }
 .study-section { padding-top: 108px !important; }
 
 .stats-box { display: flex; gap: 8px; align-items: center; }
+#streakBox {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 50px;
+  background: rgba(249,115,22,0.12); border: 1.5px solid rgba(249,115,22,0.32);
+  color: var(--orange, #F97316); font-size: 12px; font-weight: 700;
+  cursor: default; transition: all 0.2s ease;
+  box-shadow: 0 1px 6px rgba(249,115,22,0.1);
+}
+#xpBox {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 50px;
+  background: rgba(91,91,246,0.10); border: 1.5px solid rgba(91,91,246,0.25);
+  color: var(--accent); font-size: 12px; font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
 
 /* ── PLAYER OVERLAY ── */
 .player-overlay {
@@ -2344,7 +2359,10 @@ function renderStreak(){
   if(!count) count = parseInt(localStorage.getItem("uw_streak") || "0", 10);
 
   let box = document.getElementById("streakBox");
-  if(box) box.innerText = "🔥 " + count;
+  if(box) {
+    box.innerHTML = `<span style="display:inline-block;animation:firePulse 1.6s ease-in-out infinite;">🔥</span> ${count} ${count===1?'day':'days'}`;
+    box.title = `${count} Day Study Streak • Consecutive daily goals achieved`;
+  }
 }
 
 // ── When UW Core finishes auth → re-render streak immediately ──
