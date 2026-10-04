@@ -442,7 +442,11 @@ header{
   -webkit-tap-highlight-color:transparent;
 }
 .nav-item:active{transform:scale(0.94);}
-.nav-item.active,.nav-item:hover{color:var(--accent)!important;}
+.nav-item.active{color:var(--accent)!important;}
+@media(hover:hover) and (pointer:fine){
+  .nav-item:hover{color:var(--accent)!important;}
+}
+.nav-item:focus, .nav-item:focus-visible{outline:none;}
 .nav-icon{font-size:20px;line-height:1;width:1em;height:1em;transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1),color 0.15s ease;}
 .nav-item.active .nav-icon{color:var(--accent);transform:scale(1.15);}
 
@@ -802,21 +806,23 @@ header{
 
 /* ═══ RESPONSIVE — Phone + Tablet ═══════════════════════════════════════════ */
 
-/* Catch-all: ANY viewport 600px+ wide gets centered into a phone-width
-   column by default, regardless of orientation/height — prevents the
-   header/bottom-nav/content from stretching full-bleed on tablet sizes
-   that don't match one of the more specific breakpoints below. */
+/* Responsive styling for tablet and desktop (600px+) */
 @media(min-width:600px){
-  .page{max-width:420px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
-  header{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .bottom-nav{max-width:420px;left:50%;transform:translateX(-50%);right:auto;border-radius:18px 18px 0 0;}
-  .music-panel{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  #chatBox{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  #networkBar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .rooms-panel{max-width:420px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
+  .page{max-width:100%;width:100%;left:0;right:0;transform:none;margin:0;}
+  header{max-width:100%;width:100%;left:0;right:0;transform:none;padding:0 24px;}
+  .bottom-nav{max-width:100%;width:100%;left:0;right:0;transform:none;border-radius:0;justify-content:center;gap:clamp(16px, 5vw, 64px);}
+  .timer-wrapper{max-width:580px;margin:0 auto;}
+  #statusCard{max-width:580px;margin-left:auto;margin-right:auto;}
+  .room-section{max-width:580px;margin-left:auto;margin-right:auto;}
+  .session-box{max-width:580px;margin-left:auto;margin-right:auto;}
+  .music-panel{max-width:520px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:520px;left:50%;transform:translateX(-50%);right:auto;}
+  #networkBar{max-width:100%;left:0;right:0;transform:none;}
+  .rooms-panel{max-width:520px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
   .rooms-panel.open{transform:translateX(-50%) translateY(0);}
-  .rooms-join-bar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .social-sheet{max-width:420px;left:50%;transform:translateX(-50%);}
+  .rooms-join-bar{max-width:520px;left:50%;transform:translateX(-50%);right:auto;}
+  .social-sheet{max-width:520px;left:50%;transform:translateX(-50%);}
+  .dropdown{right:20px;left:auto;transform:none;}
 }
 
 /* Very small phones (≤360px wide) */
@@ -996,22 +1002,26 @@ header{
 }
 
 @media(min-width:1025px) and (orientation:landscape){
-  .page{max-width:420px;margin:0 auto;left:50%;transform:translateX(-50%);right:auto;width:100%;}
-  header{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .bottom-nav{max-width:420px;left:50%;transform:translateX(-50%);right:auto;border-radius:18px 18px 0 0;}
-  .music-panel{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  #chatBox{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
-  .dropdown{right:auto;left:50%;transform:translateX(160px);}
-  #networkBar{max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
+  .page{max-width:100%;margin:0 auto;left:0;right:0;transform:none;width:100%;}
+  header{max-width:100%;left:0;right:0;transform:none;padding:0 32px;}
+  .bottom-nav{max-width:100%;left:0;right:0;transform:none;border-radius:0;justify-content:center;gap:clamp(24px, 6vw, 72px);}
+  .timer-wrapper{max-width:620px;margin:0 auto;}
+  #statusCard{max-width:620px;margin-left:auto;margin-right:auto;}
+  .room-section{max-width:620px;margin-left:auto;margin-right:auto;}
+  .session-box{max-width:620px;margin-left:auto;margin-right:auto;}
+  .music-panel{max-width:520px;left:50%;transform:translateX(-50%);right:auto;}
+  #chatBox{max-width:520px;left:50%;transform:translateX(-50%);right:auto;}
+  .dropdown{right:24px;left:auto;transform:none;}
+  #networkBar{max-width:100%;left:0;right:0;transform:none;}
 
-  .timer-ring{width:230px;height:230px;}
-  .time-display{font-size:56px;}
-  .action-btn{width:200px;padding:14px;font-size:14px;}
-  .mode-row{max-width:260px;}
+  .timer-ring{width:240px;height:240px;}
+  .time-display{font-size:58px;}
+  .action-btn{width:210px;padding:14px;font-size:14.5px;}
+  .mode-row{max-width:280px;}
 
-  .rooms-panel{max-width:420px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
+  .rooms-panel{max-width:520px;left:50%;transform:translateX(-50%) translateY(100%);right:auto;}
   .rooms-panel.open{transform:translateX(-50%) translateY(0);}
-  .social-sheet{max-width:420px;left:50%;transform:translateX(-50%);}
+  .social-sheet{max-width:520px;left:50%;transform:translateX(-50%);}
 }
 
 /* ═══ PULSE DOT ══════════════════════════════════════════════════════════════ */
