@@ -577,11 +577,20 @@ header{
   position:fixed; top:0; left:0; width:280px; height:100%;
   background:var(--sidebar-bg);
   border-right:1px solid var(--border);
-  padding:0 0 90px 0; overflow-y:auto;
+  padding:0 0 90px 0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
   transform:translateX(-100%);
   transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
   z-index:99999;
   box-shadow:8px 0 40px rgba(0,0,0,0.15);
+}
+.pwa-sidebar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .pwa-sidebar.active{ transform:translateX(0); }
 [data-theme="dark"] .pwa-sidebar{ background:#0E1628 !important; border-right-color:rgba(255,255,255,0.07); box-shadow:8px 0 40px rgba(0,0,0,0.5); }
@@ -2593,7 +2602,7 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
     <div class="streak-week-header">
       <div class="streak-week-fire" id="swPopupFireIcon">🔥</div>
       <div class="streak-week-info">
-        <div class="streak-week-count"><span id="swPopupCount">0</span> <span>Days Streak</span></div>
+        <div class="streak-week-count"><span id="swPopupCount">0</span> <span id="swPopupUnit">DAYS STREAK</span></div>
         <div class="streak-week-label">Consecutive Daily Goals Achieved</div>
       </div>
     </div>
@@ -2621,10 +2630,10 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
 
     <!-- Quick study actions to earn XP & protect streak -->
     <div class="streak-quick-actions">
-      <a href="focus.html" class="streak-action-btn">
+      <a href="timer.html" class="streak-action-btn">
         <i class="fa-solid fa-stopwatch" style="color:var(--green,#10B981);"></i> Focus Timer
       </a>
-      <a href="content-hub.html" class="streak-action-btn">
+      <a href="playlist.html" class="streak-action-btn">
         <i class="fa-brands fa-youtube" style="color:#EF4444;"></i> Watch Playlist
       </a>
     </div>
@@ -3096,6 +3105,9 @@ window.openStreakWeekPopup = function(){
   const countEl = document.getElementById("swPopupCount");
   if(countEl) countEl.textContent = streak;
 
+  const unitEl = document.getElementById("swPopupUnit");
+  if(unitEl) unitEl.textContent = (streak === 1) ? "DAY STREAK" : "DAYS STREAK";
+
   const fireIcon = document.getElementById("swPopupFireIcon");
   if(fireIcon) {
     if(streak >= 30) fireIcon.textContent = "👑";
@@ -3160,25 +3172,35 @@ function buildStreakWeekRow(history, streak){
   if(!row) return;
   const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const today = new Date();
+
+  const todayStr = new Date().toDateString();
+  const savedDate = localStorage.getItem("dailyXPDate");
+  const rawDailyXP = (savedDate === todayStr) ? parseInt(localStorage.getItem("dailyXP")||"0", 10) : 0;
+  const hitFlag = localStorage.getItem("dailyGoalHit_" + todayStr);
+  const dailyXP = (hitFlag === "1") ? Math.max(rawDailyXP, 10) : rawDailyXP;
+  const todayGoalDone = dailyXP >= 10 || isTodayDone(history);
+
   row.innerHTML="";
   for(let i=6;i>=0;i--){
     const d = new Date(today);
     d.setDate(today.getDate()-i);
     const iso = d.toISOString().slice(0,10);
     const isToday = (i===0);
-    const done = (history||[]).includes(iso);
-    // missed: not done AND in the past AND streak history had activity nearby
-    const missed = !done && !isToday && i > 0;
+    const done = isToday ? todayGoalDone : (history||[]).includes(iso);
 
     const col = document.createElement("div");
-    col.className = "streak-week-day" + (done?" done":"") + (missed&&streak>0?" missed":"") + (isToday?" today":"");
+    col.className = "streak-week-day" + (done ? " done" : "") + (isToday ? " today" : "");
 
     const icon = document.createElement("div");
     icon.className = "streak-week-day-icon";
-    if(done) icon.textContent="🔥";
-    else if(isToday) icon.textContent=done?"🔥":"⭐";
-    else if(missed&&streak>0) icon.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-    else icon.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
+    if(done) {
+      icon.textContent = "🔥";
+    } else if(isToday) {
+      icon.innerHTML = `<span class="streak-fire-anim" style="display:inline-block;animation:firePulse 1.4s infinite;font-size:15px;opacity:0.85;">🔥</span>`;
+    } else {
+      // Clean, elegant dot for past inactive days
+      icon.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="var(--text3)" opacity="0.3"><circle cx="12" cy="12" r="8"/></svg>`;
+    }
 
     const label = document.createElement("div");
     label.className = "streak-week-day-name";
