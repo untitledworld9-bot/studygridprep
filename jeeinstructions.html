@@ -29,15 +29,21 @@
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+  });
 })();
 
 window.matchMedia("(prefers-color-scheme: dark)")
 .addEventListener("change", function(e){
   if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
+    var resolved = e.matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = resolved === "dark" ? "#0D1120" : "#F0F2F8";
+    });
   }
 });
 </script>
@@ -135,11 +141,11 @@ body {
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
-  animation: pageIn 0.32s ease forwards;
+  animation: pageIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ======================================================
@@ -150,7 +156,7 @@ body {
   background: var(--bg);
   z-index: 99999;
   opacity: 0; pointer-events: none;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #pageTransition.leaving { opacity: 1; pointer-events: all; }
 
@@ -160,8 +166,7 @@ body {
 header {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  height: 60px;
+  padding: max(14px, env(safe-area-inset-top)) 16px 14px;
   background: var(--header-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -169,10 +174,6 @@ header {
   flex-shrink: 0;
   z-index: 1000;
   gap: 12px;
-}
-[data-theme="light"] header {
-  background: rgba(255,255,255,0.97) !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
 }
 
 .back-btn {
