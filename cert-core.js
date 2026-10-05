@@ -72,6 +72,12 @@ export function certTitle(kind){
   return 'Experience Certificate';
 }
 
+export function isExecRole(roleTitle){
+  const str = String(roleTitle || '').trim().toLowerCase();
+  if (!str) return false;
+  return /(founder|co-founder|co-ceo|ceo|cto|coo|cfo|cmo|cpo|cro|cio|cso|cdo|chief|managing\s+director|executive\s+director|director|chairperson|chairman|chairwoman|board\s+member|trustee|president|vice\s+president|\bvp\b|\bevp\b|\bsvp\b|\bavp\b|head\s+of|\bhead\b|principal|partner|managing\s+partner|general\s+partner|general\s+manager|\bgm\b|operations\s+lead|team\s+lead|\blead\b|executive)/i.test(str);
+}
+
 /* Dedicated Position / Role Certificate builder */
 export function buildPositionCert(app, role, now = Date.now()){
   const pos = (app && (
@@ -80,16 +86,16 @@ export function buildPositionCert(app, role, now = Date.now()){
     (app.certOverride && (app.certOverride.kind === 'POSITION' || app.certOverride.kind === 'ROLE') ? app.certOverride : null)
   )) || null;
   if (!pos) return null; // Only available if explicitly given by Admin!
-  const o = (app && app.offer) || {};
-  const start = toMs(pos.startMs || pos.startDate || (app && app.offerAcceptedAt)) || now;
+  const o = (app && app.offer) || {}, ov = (app && app.certOverride) || {};
+  const start = toMs(pos.startMs || pos.startDate || ov.startMs || ov.startDate || (app && app.offerAcceptedAt)) || now;
   const isCurrent = pos.isCurrent !== false && (pos.isCurrent === true || (!pos.endDate && !pos.endMs));
-  const end = isCurrent ? null : (toMs(pos.endMs || pos.endDate) || now);
-  const issueDate = pos.issueDate ? toMs(pos.issueDate) : (toMs(pos.issuedAt) || now);
-  const certName = (pos.name || app.certName || app.name || '').trim();
-  const roleTitle = (pos.roleTitle || pos.positionTitle || o.roles || (role && role.title) || 'Team Member').trim();
+  const end = isCurrent ? null : (toMs(pos.endMs || pos.endDate || ov.endMs || ov.endDate) || now);
+  const issueDate = pos.issueDate ? toMs(pos.issueDate) : (ov.issueDate ? toMs(ov.issueDate) : (toMs(pos.issuedAt) || now));
+  const certName = (pos.name || ov.name || app.certName || app.name || '').trim();
+  const roleTitle = (pos.roleTitle || (ov.kind === 'POSITION' ? ov.roleTitle : null) || pos.positionTitle || o.roles || (role && role.title) || 'Team Member').trim();
   
   // Duration or tenure calculation
-  let durLabel = pos.durationLabel || '';
+  let durLabel = pos.durationLabel || (ov.kind === 'POSITION' ? ov.durationLabel : '') || '';
   let months = null, days = null;
   if (!isCurrent && end && start) {
     const d = certDuration(start, end);
@@ -104,7 +110,7 @@ export function buildPositionCert(app, role, now = Date.now()){
   }
 
   // Detect executive / leadership roles for high-prestige phrasing
-  const isExecutive = /(founder|co-founder|director|chief|head|lead|president|vp|vice president|manager|partner|advisor)/i.test(roleTitle);
+  const isExecutive = isExecRole(roleTitle);
 
   return {
     id: (app ? app.id : '') + '-position',
@@ -126,7 +132,7 @@ export function buildPositionCert(app, role, now = Date.now()){
     eligible: true,
     state: 'completed',
     issuedMs: issueDate,
-    note: pos.note || '',
+    note: pos.note || ov.note || '',
     forceIssued: true,
     isPosition: true,
     isExecutive
@@ -137,15 +143,16 @@ export function buildPositionCert(app, role, now = Date.now()){
 export function buildAchievementCert(app, role, now = Date.now()){
   const ach = (app && (app.achievementCert || (app.certOverride && app.certOverride.achievementCert))) || null;
   if (!ach) return null; // Only available if explicitly given by Admin!
-  const o = (app && app.offer) || {};
-  const start = toMs(ach.startMs || ach.startDate || (app && app.offerAcceptedAt)) || now;
-  const end = toMs(ach.endMs || ach.endDate) || (ach.issueDate ? toMs(ach.issueDate) : (toMs(ach.issuedAt) || now));
-  const issueDate = ach.issueDate ? toMs(ach.issueDate) : (toMs(ach.issuedAt) || now);
-  const certName = (ach.name || app.certName || app.name || '').trim();
+  const o = (app && app.offer) || {}, ov = (app && app.certOverride) || {};
+  const start = toMs(ach.startMs || ach.startDate || ov.startMs || ov.startDate || (app && app.offerAcceptedAt)) || now;
+  const end = toMs(ach.endMs || ach.endDate || ov.endMs || ov.endDate) || (ach.issueDate ? toMs(ach.issueDate) : (toMs(ach.issuedAt) || now));
+  const issueDate = ach.issueDate ? toMs(ach.issueDate) : (ov.issueDate ? toMs(ov.issueDate) : (toMs(ach.issuedAt) || now));
+  const certName = (ach.name || ov.name || app.certName || app.name || '').trim();
+  const roleTitle = (ach.roleTitle || (ov.kind === 'ACHIEVEMENT' ? ov.roleTitle : null) || o.roles || (role && role.title) || 'Outstanding Contributor').trim();
   const d = certDuration(start, end);
-  const months = ach.months != null && ach.months !== '' ? Number(ach.months) : d.months;
+  const months = ach.months != null && ach.months !== '' ? Number(ach.months) : (ov.months != null && ov.months !== '' ? Number(ov.months) : d.months);
   const days = d.days;
-  const durLabel = ach.durationLabel || (months != null && months > 0 ? fmtMonths(months, days) : (days > 0 ? `${days} Day${days === 1 ? '' : 's'}` : '1 Month'));
+  const durLabel = ach.durationLabel || (ov.kind === 'ACHIEVEMENT' ? ov.durationLabel : '') || (months != null && months > 0 ? fmtMonths(months, days) : (days > 0 ? `${days} Day${days === 1 ? '' : 's'}` : '1 Month'));
 
   return {
     id: (app ? app.id : '') + '-achieve',
@@ -153,7 +160,7 @@ export function buildAchievementCert(app, role, now = Date.now()){
     uid: app ? app.uid : '',
     name: certName,
     empType: o.jobType || (role && role.employmentType) || 'FULL_TIME',
-    roleTitle: ach.roleTitle || o.roles || (role && role.title) || 'Outstanding Contributor',
+    roleTitle,
     department: (role && role.department) || '',
     kind: 'ACHIEVEMENT',
     startMs: start,
@@ -166,9 +173,10 @@ export function buildAchievementCert(app, role, now = Date.now()){
     eligible: true,
     state: 'completed',
     issuedMs: issueDate,
-    note: ach.note || '',
+    note: ach.note || (ov.kind === 'ACHIEVEMENT' ? ov.note : '') || '',
     forceIssued: true,
-    isAchievement: true
+    isAchievement: true,
+    isExecutive: isExecRole(roleTitle)
   };
 }
 
@@ -183,18 +191,21 @@ export function buildCert(app, role, now = Date.now()){
 
   // Base kind is INTERN or JOB
   const baseKind = (ov.kind && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION') ? ov.kind : (intern ? 'INTERN' : 'JOB');
+  const roleTitle = (ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION' ? ov.roleTitle : null) || o.roles || (role && role.title) || (intern ? 'Intern' : 'Team Member');
+  const isExecutive = isExecRole(roleTitle);
 
   const base = {
     id: app ? app.id : '',
     uid: app ? app.uid : '',
     name: certName,
     empType,
-    roleTitle: (ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION' ? ov.roleTitle : null) || o.roles || (role && role.title) || (intern ? 'Intern' : 'Team Member'),
+    roleTitle,
     department: (role && role.department) || '',
     kind: baseKind,
     startMs: start,
     plannedMonths: intern ? plannedMonths : null,
     note: (ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION' ? ov.note : '') || '',
+    isExecutive
   };
 
   if (app && app.hiredEndType) return { ...base, state: 'revoked', eligible: false };

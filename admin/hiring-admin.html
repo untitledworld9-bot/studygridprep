@@ -2007,8 +2007,13 @@ function renderCerts(){
     const intern = c.kind === 'INTERN';
     const phone = a.phone || (state.candidates.find(cand => cand.id === a.uid) || {}).phone || '';
 
+    const pos = a.positionCert || (a.certOverride && a.certOverride.positionCert);
+
     // Badges
     let badges = [];
+    if (pos) {
+      badges.push(`<span class="badge" style="background:rgba(37,99,235,0.15);color:#2563EB;border:1px solid rgba(37,99,235,0.3);"><i class="fa-solid fa-id-badge"></i> Position Issued</span>`);
+    }
     if (ach) {
       badges.push(`<span class="badge" style="background:rgba(245,158,11,0.15);color:#D97706;border:1px solid rgba(245,158,11,0.3);"><i class="fa-solid fa-trophy"></i> Achievement Awarded</span>`);
     }
@@ -2030,9 +2035,9 @@ function renderCerts(){
     const tick = (f, ico, lbl) => `<span class="cc ${a[f] ? 'on' : ''}" title="${a[f] ? esc(fmtDate(a[f])) : 'Not yet'}"><i class="fa-solid ${ico}"></i>${lbl}${a[f] ? ' ✓' : ''}</span>`;
 
     return `<div class="cert-card ${grp}">
-      <div class="cert-mini ${ach ? 'achievement' : c.kind}">
+      <div class="cert-mini ${pos ? 'position' : (ach ? 'achievement' : c.kind)}">
         <i class="fa-solid fa-award"></i>
-        <div>${intern ? 'INTERNSHIP' : (ach ? 'ACHIEVEMENT' : 'EXPERIENCE')}<br>CERTIFICATE</div>
+        <div>${pos ? 'POSITION &amp;<br>APPOINTMENT' : (intern ? 'INTERNSHIP' : (ach ? 'ACHIEVEMENT' : 'EXPERIENCE'))}<br>CERTIFICATE</div>
       </div>
       <div class="cert-main">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -2050,24 +2055,30 @@ function renderCerts(){
           <div class="hired-cell"><div class="k">Certificate ID</div><div class="v">${CERT.certCode(a.id)}</div></div>
         </div>
         ${prog}
-        <div class="cert-row" style="margin-top:12px;">
+        <div class="cert-row" style="margin-top:12px;gap:8px;flex-wrap:wrap;">
           ${tick('certIssuedAt', 'fa-eye', 'Opened')}${tick('certDownloadAt', 'fa-download', 'Downloaded')}${tick('certPrintAt', 'fa-print', 'Printed')}${tick('certShareAt', 'fa-share-nodes', 'Shared')}
           <span style="flex:1;"></span>
+
+          <!-- Position Certificate Actions -->
+          ${pos ? `
+            <button class="btn btn-outline btn-sm" onclick="openCert('${a.id}','POSITION')" style="color:#2563EB;border-color:rgba(37,99,235,0.4);" title="View Official Position Certificate"><i class="fa-solid fa-id-badge"></i> Position</button>
+            <button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}','POSITION')" style="color:#2563EB;border-color:rgba(37,99,235,0.4);" title="Copy Position Certificate Link"><i class="fa-regular fa-copy"></i> Pos Link</button>
+            <button class="btn btn-outline btn-sm" onclick="openCertEdit('${a.id}','POSITION')" style="color:#2563EB;border-color:rgba(37,99,235,0.4);" title="Edit Position Certificate / Role"><i class="fa-solid fa-pen"></i> Edit Position</button>
+          ` : `
+            <button class="btn btn-outline btn-sm" onclick="openPositionModal('${a.id}')" style="color:#2563EB;border-color:rgba(37,99,235,0.3);" title="Issue Position Certificate"><i class="fa-solid fa-id-badge"></i> Add Position</button>
+          `}
 
           <!-- Achievement Actions -->
           ${ach ? `
             <button class="btn btn-outline btn-sm" onclick="openCert('${a.id}','ACHIEVEMENT')" style="color:#D97706;border-color:rgba(245,158,11,0.4);" title="View Achievement Certificate"><i class="fa-solid fa-trophy"></i> Achievement</button>
-            <button class="btn btn-outline btn-sm" onclick="emailCert('${a.id}','ACHIEVEMENT')" style="color:#D97706;border-color:rgba(245,158,11,0.4);" title="Email Achievement Certificate"><i class="fa-solid fa-envelope"></i> Email Achievement</button>
+            <button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}','ACHIEVEMENT')" style="color:#D97706;border-color:rgba(245,158,11,0.4);" title="Copy Achievement Link"><i class="fa-regular fa-copy"></i> Ach Link</button>
+            <button class="btn btn-outline btn-sm" onclick="openCertEdit('${a.id}','ACHIEVEMENT')" style="color:#D97706;border-color:rgba(245,158,11,0.4);" title="Edit Achievement Certificate"><i class="fa-solid fa-pen"></i> Edit Achievement</button>
           ` : ''}
 
           <!-- Base Experience / Intern Actions -->
-          ${grp === 'issued' || (a.certOverride && a.certOverride.forceIssue && a.certOverride.kind !== 'ACHIEVEMENT') ? `
-            <button class="btn btn-outline btn-sm" onclick="openCert('${a.id}','${c.kind}')"><i class="fa-solid fa-up-right-from-square"></i> Open</button>
-            <button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}','${c.kind}')"><i class="fa-regular fa-copy"></i> Link</button>
-            <button class="btn btn-outline btn-sm" onclick="emailCert('${a.id}','${c.kind}')" title="Send official certificate email"><i class="fa-solid fa-envelope"></i> Email Cert</button>
-          ` : ''}
-
-          <button class="btn btn-outline btn-sm" onclick="openCertEdit('${a.id}')"><i class="fa-solid fa-pen"></i> Edit Dates</button>
+          <button class="btn btn-outline btn-sm" onclick="openCert('${a.id}','${c.kind}')" title="Open Experience Certificate"><i class="fa-solid fa-up-right-from-square"></i> Open</button>
+          <button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}','${c.kind}')" title="Copy Experience Certificate Link"><i class="fa-regular fa-copy"></i> Link</button>
+          <button class="btn btn-outline btn-sm" onclick="openCertEdit('${a.id}','EXP')" title="Edit Experience / Internship Certificate Designation &amp; Dates"><i class="fa-solid fa-pen"></i> Edit Exp</button>
           <button class="btn btn-green btn-sm" onclick="openGiveCert('${a.id}')"><i class="fa-solid fa-certificate"></i> ${isPending ? 'Review &amp; Issue' : 'Give Cert'}</button>
         </div>
       </div>
@@ -2259,14 +2270,20 @@ async function syncCertDoc(appId){
   }
 }
 
-window.openCert = async function(appId, kind){
-  try {
-    await syncCertDoc(appId);
-    let tab = 'exp';
-    if (kind === 'POSITION') tab = 'position';
-    else if (kind === 'ACHIEVEMENT') tab = 'achieve';
-    window.open(`/certificate.html?app=${encodeURIComponent(appId)}&t=${tab}`, '_blank', 'noopener');
-  } catch (e) { console.error(e); toast('Could not open certificate', 'error'); }
+window.openCert = function(appId, kind){
+  let tab = 'exp';
+  if (kind === 'POSITION') tab = 'position';
+  else if (kind === 'ACHIEVEMENT') tab = 'achieve';
+  const targetUrl = `/certificate.html?app=${encodeURIComponent(appId)}&t=${tab}`;
+  
+  // Background doc sync
+  syncCertDoc(appId).catch(e => console.warn('syncCertDoc error', e));
+
+  // Open synchronously to avoid browser popup blockers
+  const win = window.open(targetUrl, '_blank');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+    window.location.href = targetUrl;
+  }
 };
 
 window.copyCertLink = async function(appId, kind){
@@ -2396,7 +2413,7 @@ window.openGivePositionCert = function(appId){
   </div>`);
 
   window.checkExecTitle = function(val){
-    const isEx = /(founder|co-founder|director|chief|head|lead|president|vp|vice president|manager|partner|advisor)/i.test(val);
+    const isEx = CERT.isExecRole ? CERT.isExecRole(val) : /(founder|co-founder|co-ceo|ceo|cto|coo|cfo|cmo|cpo|cro|cio|chief|managing\s+director|director|president|vice\s+president|\bvp\b|head|principal|partner|general\s+manager|executive|board|advisor|lead)/i.test(val);
     const eb = $('execBadge'); if (eb) eb.style.display = isEx ? 'block' : 'none';
   };
   window.togglePosEnd = function(curr){
@@ -2404,6 +2421,7 @@ window.openGivePositionCert = function(appId){
   };
   checkExecTitle(posTitle);
 };
+window.openPositionModal = window.openGivePositionCert;
 
 window.savePositionCert = async function(appId){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
@@ -2477,78 +2495,219 @@ window.revokePositionCert = async function(appId){
   }
 };
 
-window.openCertEdit = function(appId){
+window.openCertEdit = function(appId, targetKind = ''){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
   const ov = a.certOverride || {};
-  const ach = a.achievementCert || {};
-  const pos = a.positionCert || {};
+  const ach = a.achievementCert || (ov.achievementCert || {});
+  const pos = a.positionCert || (ov.positionCert || {});
   const role = state.roles.find(r => r.id === a.roleId);
   const c = CERT.buildCert(a, role);
   const today = toInputDateYMD(new Date());
 
-  const startVal = toInputDateYMD(ov.startDate || ov.startMs || ach.startDate || ach.startMs || pos.startDate || pos.startMs || a.offerAcceptedAt || a.createdAt) || today;
-  const endVal = toInputDateYMD(ov.endDate || ov.endMs || ach.endDate || ach.endMs || pos.endDate || pos.endMs || a.offerLeftAt) || today;
-  const dv = toInputDateYMD(ov.issueDate || ach.issueDate || pos.issueDate) || today;
+  // Determine active target certificate to edit
+  let activeKind = targetKind || ov.kind || c.kind;
+  if (!targetKind) {
+    if (a.achievementCert) activeKind = 'ACHIEVEMENT';
+    else if (a.positionCert) activeKind = 'POSITION';
+  }
 
-  openModal(`<div class="modal-box" style="max-width:500px;">
-    <div class="modal-title">Edit Certificate <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">${esc(a.name)} · Edit dates, designation and recognition details</div>
-    <div class="form-group"><label class="form-label">Certificate type</label><select class="form-select" id="ceKind">
-      <option value="">Auto (${c.kind === 'INTERN' ? 'Internship' : (c.kind === 'ACHIEVEMENT' ? 'Achievement' : 'Experience')})</option>
-      <option value="INTERN" ${ov.kind === 'INTERN' ? 'selected' : ''}>Internship</option>
-      <option value="JOB" ${ov.kind === 'JOB' ? 'selected' : ''}>Job / Experience</option>
-      <option value="ACHIEVEMENT" ${ov.kind === 'ACHIEVEMENT' || a.achievementCert ? 'selected' : ''}>Certificate of Achievement</option>
-      <option value="POSITION" ${ov.kind === 'POSITION' || a.positionCert ? 'selected' : ''}>Certificate of Position</option></select></div>
-    <div class="form-group"><label class="form-label">Role / designation on certificate</label><input class="form-input" id="ceRole" value="${esc(ov.roleTitle || ach.roleTitle || pos.roleTitle || '')}" placeholder="${esc(c.roleTitle)}"></div>
+  // Pre-fill fields based on active certificate type
+  let curName = a.certName || a.name || '';
+  let curRole = (role && role.title) || c.roleTitle || '';
+  let startVal = toInputDateYMD(a.offerAcceptedAt || a.createdAt) || today;
+  let endVal = toInputDateYMD(a.offerLeftAt) || today;
+  let dv = today;
+  let curMonths = '';
+  let curDurLabel = '';
+  let curNote = '';
+
+  if (activeKind === 'ACHIEVEMENT' && (a.achievementCert || ov.kind === 'ACHIEVEMENT')) {
+    curName = ach.name || curName;
+    curRole = ach.roleTitle || curRole;
+    startVal = toInputDateYMD(ach.startDate || ach.startMs) || startVal;
+    endVal = toInputDateYMD(ach.endDate || ach.endMs) || endVal;
+    dv = toInputDateYMD(ach.issueDate || ach.issuedMs) || dv;
+    curMonths = ach.months != null ? ach.months : '';
+    curDurLabel = ach.durationLabel || '';
+    curNote = ach.note || '';
+  } else if (activeKind === 'POSITION' && (a.positionCert || ov.kind === 'POSITION')) {
+    curName = pos.name || curName;
+    curRole = pos.roleTitle || curRole;
+    startVal = toInputDateYMD(pos.startDate || pos.startMs) || startVal;
+    endVal = toInputDateYMD(pos.endDate || pos.endMs) || '';
+    dv = toInputDateYMD(pos.issueDate || pos.issuedMs) || dv;
+    curMonths = pos.months != null ? pos.months : '';
+    curDurLabel = pos.durationLabel || '';
+    curNote = pos.note || '';
+  } else {
+    curName = ov.name || curName;
+    curRole = ov.roleTitle || curRole;
+    startVal = toInputDateYMD(ov.startDate || ov.startMs) || startVal;
+    endVal = toInputDateYMD(ov.endDate || ov.endMs) || endVal;
+    dv = toInputDateYMD(ov.issueDate || ov.issuedMs) || dv;
+    curMonths = ov.months != null ? ov.months : '';
+    curDurLabel = ov.durationLabel || '';
+    curNote = ov.note || '';
+  }
+
+  const isExec = CERT.isExecRole ? CERT.isExecRole(curRole) : false;
+
+  openModal(`<div class="modal-box" style="max-width:540px;">
+    <div class="modal-title"><i class="fa-solid fa-pen-to-square" style="color:var(--accent);margin-right:8px;"></i>Edit Certificate &amp; Designation <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Recipient: <b>${esc(a.name || 'Candidate')}</b> (${esc(a.email || '')}) · Customize official designation, dates &amp; credentials</div>
+    
+    <div class="form-group">
+      <label class="form-label">Target Certificate Type</label>
+      <select class="form-select" id="ceKind">
+        <option value="INTERN" ${activeKind === 'INTERN' ? 'selected' : ''}>🎓 Certificate of Internship</option>
+        <option value="JOB" ${activeKind === 'JOB' || activeKind === 'EXP' ? 'selected' : ''}>💼 Experience Certificate</option>
+        <option value="ACHIEVEMENT" ${activeKind === 'ACHIEVEMENT' ? 'selected' : ''}>🏆 Certificate of Achievement (Honor &amp; Recognition)</option>
+        <option value="POSITION" ${activeKind === 'POSITION' ? 'selected' : ''}>🎖️ Certificate of Position &amp; Appointment</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Legal Name on Certificate</label>
+      <input class="form-input" id="ceName" value="${esc(curName)}" placeholder="Recipient Full Legal Name">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Designation / Role Title on Certificate</label>
+      <input class="form-input" id="ceRole" value="${esc(curRole)}" placeholder="e.g. Co-Founder, CEO, Director, Content Creator" oninput="checkExecTitleCertEdit(this.value)">
+      <div id="ceExecBadge" style="display:${isExec ? 'block' : 'none'};margin-top:6px;font-size:11.5px;font-weight:700;color:#D97706;background:rgba(245,158,11,0.12);padding:6px 10px;border-radius:8px;border:1px solid rgba(245,158,11,0.3);">
+        👑 <b>Executive &amp; C-Suite Standing:</b> Prestige Gold Theme &amp; Commission Citation will apply automatically.
+      </div>
+    </div>
+
     <div class="form-row-2">
       <div class="form-group"><label class="form-label">Working Start Date</label><input class="form-input" id="ceStart" type="date" value="${esc(startVal)}" onchange="recalcDur()"></div>
       <div class="form-group"><label class="form-label">Working End / Completed Date</label><input class="form-input" id="ceEnd" type="date" value="${esc(endVal)}" onchange="recalcDur()"></div>
     </div>
     <div class="form-row-2">
-      <div class="form-group"><label class="form-label">Duration in months</label><input class="form-input" id="ceMonths" type="number" step="0.5" min="0" max="60" value="${esc(ov.months != null ? ov.months : '')}" placeholder="Auto"></div>
-      <div class="form-group"><label class="form-label">Duration Label</label><input class="form-input" id="ceDurLabel" value="${esc(ov.durationLabel || '')}" placeholder="e.g. 6 Months"></div>
+      <div class="form-group"><label class="form-label">Duration in months</label><input class="form-input" id="ceMonths" type="number" step="0.5" min="0" max="60" value="${esc(curMonths)}" placeholder="Auto"></div>
+      <div class="form-group"><label class="form-label">Duration Label</label><input class="form-input" id="ceDurLabel" value="${esc(curDurLabel)}" placeholder="e.g. 6 Months, Active Standing"></div>
     </div>
     <div class="form-group"><label class="form-label">Official Issue Date</label><input class="form-input" id="ceDate" type="date" value="${esc(dv)}"></div>
-    <div class="form-group"><label class="form-label">Custom line on certificate (optional)</label><textarea class="form-textarea" id="ceNote" maxlength="220" placeholder="Replaces the default appreciation line">${esc(ov.note || ach.note || pos.note || '')}</textarea></div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCertEdit('${appId}')"><i class="fa-solid fa-floppy-disk"></i> Save</button></div></div>`);
+    <div class="form-group"><label class="form-label">Custom line on certificate (optional)</label><textarea class="form-textarea" id="ceNote" maxlength="220" placeholder="Replaces the default appreciation line">${esc(curNote)}</textarea></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCertEdit('${appId}')"><i class="fa-solid fa-floppy-disk"></i> Save Certificate Changes</button></div></div>`);
+
+  window.checkExecTitleCertEdit = function(val){
+    const eb = $('ceExecBadge');
+    if (eb) eb.style.display = (CERT.isExecRole && CERT.isExecRole(val)) ? 'block' : 'none';
+  };
 };
 
 window.saveCertEdit = async function(appId){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  const certName = $('ceName') ? $('ceName').value.trim() : '';
+  const roleTitle = $('ceRole').value.trim() || null;
   const startVal = $('ceStart').value || null;
   const endVal = $('ceEnd').value || null;
   const issueVal = $('ceDate').value || null;
-  const startMs = startVal ? new Date(startVal + 'T00:00:00').getTime() : null;
-  const endMs = endVal ? new Date(endVal + 'T00:00:00').getTime() : null;
-  const issueDateMs = issueVal ? new Date(issueVal + 'T12:00:00').getTime() : null;
+  const startMs = startVal ? new Date(startVal + 'T00:00:00').getTime() : Date.now();
+  const endMs = endVal ? new Date(endVal + 'T00:00:00').getTime() : Date.now();
+  const issueDateMs = issueVal ? new Date(issueVal + 'T12:00:00').getTime() : endMs;
+  const selectedKind = $('ceKind').value;
+  const note = $('ceNote').value.trim() || '';
 
-  const o = {
-    kind: $('ceKind').value || null,
-    roleTitle: $('ceRole').value.trim() || null,
-    startDate: startVal,
-    startMs: startMs,
-    endDate: endVal,
-    endMs: endMs,
-    months: parseFloat($('ceMonths').value) || null,
-    durationLabel: $('ceDurLabel').value.trim() || null,
-    issueDate: issueVal ? new Date(issueVal + 'T12:00:00').toISOString() : null,
-    issuedMs: issueDateMs,
-    note: $('ceNote').value.trim() || null
-  };
+  const d = CERT.certDuration(startMs, endMs);
+  const months = $('ceMonths').value.trim() !== '' ? parseFloat($('ceMonths').value) : d.months;
+  const durLabel = $('ceDurLabel').value.trim() || CERT.fmtMonths(months, d.days) || (months ? `${months} Month${months===1?'':'s'}` : `${d.days} Days`);
+
   try {
-    await updateDoc(doc(db, 'hiringApplications', appId), { certOverride: o });
-    a.certOverride = o;
-    if (a.achievementCert) {
-      a.achievementCert = { ...a.achievementCert, ...o };
-      await updateDoc(doc(db, 'hiringApplications', appId), { achievementCert: a.achievementCert });
+    const updatePayload = {
+      ...(certName ? { certName, name: certName } : {})
+    };
+
+    if (selectedKind === 'POSITION') {
+      const pos = {
+        kind: 'POSITION',
+        name: certName || a.name || 'Team Member',
+        roleTitle: roleTitle || ((role && role.title) || 'Team Member'),
+        department: (role && role.department) || 'Core Team',
+        startDate: startVal,
+        startMs,
+        endDate: endVal,
+        endMs: endVal ? endMs : null,
+        isCurrent: !endVal,
+        durationLabel: durLabel,
+        issueDate: issueVal ? new Date(issueVal + 'T12:00:00').toISOString() : new Date().toISOString(),
+        issuedMs: issueDateMs,
+        note,
+        issuedAt: (a.positionCert && a.positionCert.issuedAt) || new Date().toISOString()
+      };
+      updatePayload.positionCert = pos;
+      updatePayload['certOverride.positionCert'] = pos;
+      a.positionCert = pos;
+      if (!a.certOverride) a.certOverride = {};
+      a.certOverride.positionCert = pos;
+      const posCertObj = CERT.buildPositionCert ? CERT.buildPositionCert(a, role) : null;
+      if (posCertObj) {
+        await setDoc(doc(db, 'certificates', appId + '-position'), { ...CERT.publicDoc(posCertObj), updatedAt: serverTimestamp() }, { merge: true });
+      }
+    } else if (selectedKind === 'ACHIEVEMENT') {
+      const ach = {
+        kind: 'ACHIEVEMENT',
+        name: certName || a.name || 'Candidate',
+        roleTitle: roleTitle || ((role && role.title) || 'Outstanding Contributor'),
+        startDate: startVal,
+        startMs: startMs,
+        endDate: endVal,
+        endMs: endMs,
+        months: months,
+        durationLabel: durLabel,
+        issueDate: issueVal ? new Date(issueVal + 'T12:00:00').toISOString() : new Date().toISOString(),
+        issuedMs: issueDateMs,
+        note: note || 'In recognition of outstanding performance and valuable contributions.',
+        issuedAt: (a.achievementCert && a.achievementCert.issuedAt) || new Date().toISOString()
+      };
+      updatePayload.achievementCert = ach;
+      updatePayload['certOverride.achievementCert'] = ach;
+      a.achievementCert = ach;
+      if (!a.certOverride) a.certOverride = {};
+      a.certOverride.achievementCert = ach;
+      const achCertObj = CERT.buildAchievementCert ? CERT.buildAchievementCert(a, role) : null;
+      if (achCertObj) {
+        await setDoc(doc(db, 'certificates', appId + '-achieve'), { ...CERT.publicDoc(achCertObj), updatedAt: serverTimestamp() }, { merge: true });
+      }
+    } else {
+      // Experience or Internship
+      const ov = {
+        ...(a.certOverride || {}),
+        forceIssue: true,
+        kind: selectedKind,
+        name: certName || a.name || null,
+        roleTitle: roleTitle,
+        startDate: startVal,
+        startMs: startMs,
+        endDate: endVal,
+        endMs: endMs,
+        months: months,
+        durationLabel: durLabel,
+        issueDate: issueVal ? new Date(issueVal + 'T12:00:00').toISOString() : new Date().toISOString(),
+        issuedMs: issueDateMs,
+        note: note || null
+      };
+      updatePayload.certOverride = ov;
+      a.certOverride = ov;
+      const expCertObj = CERT.buildCert(a, role);
+      if (expCertObj) {
+        await setDoc(doc(db, 'certificates', appId), { ...CERT.publicDoc(expCertObj), updatedAt: serverTimestamp() }, { merge: true });
+      }
     }
-    if (a.positionCert) {
-      a.positionCert = { ...a.positionCert, ...o };
-      await updateDoc(doc(db, 'hiringApplications', appId), { positionCert: a.positionCert });
-    }
-    try { await syncCertDoc(appId); } catch (e) { /* not eligible yet — fine */ }
-    toast('Certificate updated', 'success'); closeModal(); renderCerts();
-  } catch (e) { console.error(e); toast('Could not save', 'error'); }
+
+    await updateDoc(doc(db, 'hiringApplications', appId), updatePayload);
+    if (certName) { a.certName = certName; a.name = certName; }
+    try { await syncCertDoc(appId); } catch (e) { /* sync */ }
+    toast('Certificate & Designation updated successfully', 'success');
+    closeModal();
+    renderCerts();
+    renderPositions();
+  } catch (e) {
+    console.error(e);
+    toast('Could not save certificate details', 'error');
+  }
 };
 
 // ---- Force-issue certificate (bypasses 15-day rule)

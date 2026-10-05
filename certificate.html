@@ -208,6 +208,23 @@ a{color:var(--accent);text-decoration:none;}
 .sgc.position .ln{background:#2563eb;}
 .sgc.position .ds{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;}
 .sgc.position .qr img{border:2px solid #93c5fd;}
+
+/* 5. C-Suite, Founder & Executive Leadership Theme (Royal Navy, Warm Imperial Gold, Crest & Triple Border) */
+.sgc.executive{background:radial-gradient(circle at 0 0,#fffbeb,transparent 45%),radial-gradient(circle at 100% 100%,#eff6ff,transparent 40%),#ffffff;color:#0f172a;}
+.sgc.executive .band{position:absolute;left:0;top:0;bottom:0;width:24px;background:linear-gradient(180deg,#0f172a 0%,#1e3a8a 38%,#b45309 72%,#f59e0b 100%);box-shadow:2px 0 12px rgba(180,83,9,0.22);}
+.sgc.executive .frame{border:2.5px solid #d97706;}
+.sgc.executive .frame2{border:1px dashed rgba(180,83,9,0.5);box-shadow:inset 0 0 20px rgba(245,158,11,0.06);}
+.sgc.executive .org{color:#0f172a;letter-spacing:1.8px;font-weight:900;}
+.sgc.executive .tag{color:#b45309;font-weight:800;letter-spacing:0.8px;}
+.sgc.executive .title{color:#0f172a;letter-spacing:2.5px;font-weight:900;}
+.sgc.executive .kind{color:#b45309;letter-spacing:2px;font-weight:800;}
+.sgc.executive .name{border-color:#d97706;color:#0f172a;font-weight:900;}
+.sgc.executive .c2{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1px solid #fde68a;color:#78350f;}
+.sgc.executive .c2 .a{color:#92400e;font-weight:800;}
+.sgc.executive .c2 .b{color:#0f172a;font-weight:800;}
+.sgc.executive .ln{background:linear-gradient(90deg,#d97706,#1e3a8a);height:2px;}
+.sgc.executive .ds{background:#f0fdf4;border:1px solid #bbf7d0;color:#14532d;}
+.sgc.executive .qr img{border:2.5px solid #f59e0b;}
 </style>
 </head>
 <body>
@@ -298,68 +315,69 @@ function certHtml(c, qr, fp){
   const role = esc(c.roleTitle), dur = esc(c.durationLabel || '1 Month');
   const signatoryName = "Ayush Kumar Gupta";
   const signatoryTitle = "Founder, Study Grid Prep";
+  const isExec = !!c.isExecutive;
 
   let titleTop = 'EXPERIENCE';
   let kindSub = 'CERTIFICATE';
   let bodyText = '';
   let chips = [];
-  let themeClass = 'job';
-  let sigColor = '#0F766E';
+  let themeClass = isExec ? 'job executive' : 'job';
+  let sigColor = isExec ? '#0F172A' : '#0F766E';
 
   if (position) {
-    themeClass = 'position';
-    titleTop = 'CERTIFICATE';
-    kindSub = c.isExecutive ? 'OF EXECUTIVE APPOINTMENT & POSITION' : 'OF APPOINTMENT & POSITION';
-    sigColor = '#2563EB';
-    if (c.isExecutive) {
-      bodyText = `has been officially appointed to and holds the executive leadership position of <b>${role}</b> at <b>Study Grid Prep</b>, effective from <b>${fD(c.startMs)}</b>${c.isCurrent ? ' (Active &amp; Ongoing)' : ' to <b>' + fD(c.endMs) + '</b>'}.${c.note ? ' ' + esc(c.note) : ' In recognition of strategic leadership, exemplary dedication, and key contributions to the institution.'}`;
+    themeClass = isExec ? 'position executive' : 'position';
+    titleTop = isExec ? 'EXECUTIVE APPOINTMENT' : 'CERTIFICATE';
+    kindSub = isExec ? 'C-SUITE & SENIOR LEADERSHIP COMMISSION' : 'OF APPOINTMENT & POSITION';
+    sigColor = isExec ? '#0F172A' : '#2563EB';
+    if (isExec) {
+      bodyText = `has been officially appointed to the C-Suite &amp; Executive Leadership Council as <b>${role}</b> at <b>Study Grid Prep</b>, entrusted with executive governance, organizational leadership, and strategic direction effective from <b>${fD(c.startMs)}</b>${c.isCurrent ? ' (Active &amp; Ongoing Standing)' : ' to <b>' + fD(c.endMs) + '</b>'}.${c.note ? ' ' + esc(c.note) : ' In recognition of strategic vision, exemplary executive commitment, and foundational contributions to the smart study platform.'}`;
     } else {
       bodyText = `is officially certified as holding the position of <b>${role}</b> at <b>Study Grid Prep</b>, appointed on <b>${fD(c.startMs)}</b>${c.isCurrent ? ' and actively serving in this capacity' : ' through <b>' + fD(c.endMs) + '</b>'}.${c.note ? ' ' + esc(c.note) : ' We acknowledge their official standing, responsibilities, and ongoing dedication to our smart study platform.'}`;
     }
     chips = [
-      ['OFFICIAL POSITION', role],
-      ['ENGAGEMENT STATUS', c.isCurrent ? 'Currently Active / Present' : (c.durationLabel || 'Completed Tenure')],
-      ['ISSUED ON', fD(c.issuedMs || c.endMs || Date.now())]
+      [isExec ? 'EXECUTIVE POSITION' : 'OFFICIAL POSITION', role],
+      ['COMMISSION STATUS', c.isCurrent ? 'Currently Active / Present' : (c.durationLabel || 'Completed Tenure')],
+      ['COMMISSIONED ON', fD(c.issuedMs || c.endMs || Date.now())]
     ];
   } else if (intern) {
-    themeClass = 'intern';
+    themeClass = isExec ? 'intern executive' : 'intern';
     titleTop = 'CERTIFICATE';
-    kindSub = 'OF INTERNSHIP';
-    sigColor = '#3730A3';
-    bodyText = `has successfully completed an <b>Internship</b> as <b>${role}</b> at <b>Study Grid Prep</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total duration of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this period, they showed dedication, ownership and a strong willingness to learn.'}`;
+    kindSub = isExec ? 'OF LEADERSHIP & INTERNSHIP' : 'OF INTERNSHIP';
+    sigColor = isExec ? '#0F172A' : '#3730A3';
+    bodyText = `has successfully completed an <b>${isExec ? 'Executive Internship' : 'Internship'}</b> as <b>${role}</b> at <b>Study Grid Prep</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total duration of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this period, they showed strategic initiative, dedicated ownership, and exceptional leadership qualities.'}`;
     chips = [
       ['INTERNSHIP ROLE', role],
       ['TOTAL DURATION', dur],
       ['COMPLETED ON', fD(c.endMs)]
     ];
   } else if (achievement) {
-    themeClass = 'achievement';
+    themeClass = isExec ? 'achievement executive' : 'achievement';
     titleTop = 'CERTIFICATE';
-    kindSub = 'OF ACHIEVEMENT';
-    sigColor = '#F59E0B';
-    bodyText = `has been awarded this <b>Certificate of Achievement</b> at <b>Study Grid Prep</b> as <b>${role}</b> in recognition of outstanding performance and valuable contributions from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>.${c.note ? ' ' + esc(c.note) : ' We commend their excellence and wish them continued success in all future endeavors.'}`;
+    kindSub = isExec ? 'OF EXECUTIVE DISTINCTION' : 'OF ACHIEVEMENT';
+    sigColor = isExec ? '#0F172A' : '#F59E0B';
+    bodyText = `has been awarded this <b>Certificate of ${isExec ? 'Executive Distinction & Achievement' : 'Achievement'}</b> at <b>Study Grid Prep</b> as <b>${role}</b> in recognition of outstanding performance, valuable contributions, and exemplary institutional dedication from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>.${c.note ? ' ' + esc(c.note) : ' We commend their excellence and wish them continued success in all executive and professional endeavors.'}`;
     chips = [
-      ['DESIGNATION', role],
+      ['DISTINCTION ROLE', role],
       ['TENURE PERIOD', `${fD(c.startMs)} – ${fD(c.endMs)}`],
       ['ISSUED ON', fD(c.issuedMs || c.endMs)]
     ];
   } else {
-    themeClass = 'job';
-    titleTop = 'EXPERIENCE';
+    themeClass = isExec ? 'job executive' : 'job';
+    titleTop = isExec ? 'EXECUTIVE EXPERIENCE' : 'EXPERIENCE';
     kindSub = 'CERTIFICATE';
-    sigColor = '#0F766E';
-    bodyText = `has worked with <b>Study Grid Prep</b> as <b>${role}</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total experience of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this tenure, they contributed professionally and reliably to the team. We wish them every success ahead.'}`;
+    sigColor = isExec ? '#0F172A' : '#0F766E';
+    bodyText = `has served with distinction at <b>Study Grid Prep</b> as <b>${role}</b> from <b>${fD(c.startMs)}</b> to <b>${fD(c.endMs)}</b>, with a total verified tenure of <b>${dur}</b>.${c.note ? ' ' + esc(c.note) : ' During this tenure, they contributed professionally, strategically, and reliably to our mission and team.'}`;
     chips = [
       ['DESIGNATION', role],
-      ['TOTAL EXPERIENCE', dur],
+      ['TOTAL TENURE', dur],
       ['LAST WORKING DAY', fD(c.endMs)]
     ];
   }
 
-  const sealColor = position ? '#2563eb' : (intern ? '#6366f1' : (achievement ? '#f59e0b' : '#0d9488'));
+  const sealColor = isExec ? '#B45309' : (position ? '#2563eb' : (intern ? '#6366f1' : (achievement ? '#f59e0b' : '#0d9488')));
 
   return `<div class="sgc ${themeClass}">
-    ${intern || position || !achievement ? '<div class="band"></div>' : ''}
+    ${intern || position || isExec || !achievement ? '<div class="band"></div>' : ''}
     <div class="frame"></div>
     <div class="frame2"></div>
 
@@ -368,7 +386,7 @@ function certHtml(c, qr, fp){
         <img src="/icon-192.png" alt="Study Grid Prep">
         <div>
           <div class="org">STUDY GRID PREP</div>
-          <div class="tag">Smart Study Platform</div>
+          <div class="tag">${isExec ? 'Executive Governance &amp; Learning' : 'Smart Study Platform'}</div>
         </div>
       </div>
 
@@ -406,21 +424,41 @@ function certHtml(c, qr, fp){
       <circle cx="50" cy="50" r="47" fill="${sealColor}"/>
       <circle cx="50" cy="50" r="40" fill="none" stroke="#fff" stroke-opacity=".75" stroke-dasharray="2 3"/>
       <path d="m50 24 6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.4L50 56.9l-13 6.9 2.5-14.4L29 39.3l14.5-2.1z" fill="#fff"/>
-      <text x="50" y="80" text-anchor="middle" font-size="7.5" font-weight="700" fill="#fff" letter-spacing="1.2">VERIFIED</text>
+      <text x="50" y="80" text-anchor="middle" font-size="7.5" font-weight="700" fill="#fff" letter-spacing="1.2">${isExec ? 'EXECUTIVE' : 'VERIFIED'}</text>
     </svg>
   </div>`;
 }
 
 function fit(host){
+  if (!host) return;
   const st = host.querySelector('.stage'); if (!st) return;
-  const sc = Math.min(1, st.clientWidth / 1123);
-  st.querySelector('.scaler').style.transform = `scale(${sc})`; st.style.height = (794 * sc) + 'px';
+  const parent = host.parentElement || document.body;
+  const w = st.clientWidth || host.clientWidth || (parent ? parent.clientWidth : 0) || window.innerWidth || 360;
+  if (!w || w < 30) {
+    setTimeout(() => fit(host), 100);
+    return;
+  }
+  const sc = Math.max(0.2, Math.min(1, w / 1123));
+  const scaler = st.querySelector('.scaler');
+  if (scaler) scaler.style.transform = `scale(${sc})`;
+  st.style.height = Math.round(794 * sc) + 'px';
 }
 async function paint(host, c, locked){
-  const [qr, fp] = await Promise.all([makeQR(verifyUrl(c.id)), fingerprint(c)]);
-  host.classList.add('certhost');
-  host.innerHTML = `<div class="stage ${locked ? 'lockd' : ''}"><div class="scaler">${certHtml(c, qr, fp)}</div>${locked ? '<div class="lock"><i class="fa-solid fa-lock"></i>Preview — unlocks on download</div>' : ''}</div>`;
-  fit(host);
+  if (!host) return;
+  try {
+    const [qr, fp] = await Promise.all([
+      makeQR(verifyUrl(c.id)).catch(() => '/icon-192.png'),
+      fingerprint(c).catch(() => 'SGP-VERIFIED')
+    ]);
+    host.classList.add('certhost');
+    host.innerHTML = `<div class="stage ${locked ? 'lockd' : ''}"><div class="scaler">${certHtml(c, qr, fp)}</div>${locked ? '<div class="lock"><i class="fa-solid fa-lock"></i>Preview — unlocks on download</div>' : ''}</div>`;
+    fit(host);
+    requestAnimationFrame(() => fit(host));
+    setTimeout(() => fit(host), 120);
+    setTimeout(() => fit(host), 350);
+  } catch(e) {
+    console.error('paint cert error', e);
+  }
 }
 addEventListener('resize', () => document.querySelectorAll('.certhost').forEach(fit));
 
@@ -542,23 +580,42 @@ async function loadOwner(user){
   S.user = user;
   const want = P.get('app');
   let directApp = null;
-  if (want) {
+  const cleanWant = want ? String(want).trim().replace(/-(position|achieve)$/, '') : null;
+  if (cleanWant) {
     try {
-      const snap = await getDoc(doc(db, 'hiringApplications', want));
+      let snap = await getDoc(doc(db, 'hiringApplications', cleanWant));
+      if (!snap.exists() && cleanWant !== want) {
+        snap = await getDoc(doc(db, 'hiringApplications', want));
+      }
       if (snap.exists()) {
         directApp = { id: snap.id, ...snap.data() };
       }
     } catch(e) { console.warn('directApp load error', e); }
+    if (!directApp) {
+      try {
+        const cSnap = await getDoc(doc(db, 'certificates', cleanWant));
+        if (cSnap.exists()) {
+          const cd = cSnap.data();
+          directApp = { id: cleanWant, name: cd.name, certName: cd.name, roleTitle: cd.roleTitle, ...cd };
+        }
+      } catch(e){}
+    }
   }
 
-  const queries = [
-    getDocs(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid))),
-    getDocs(collection(db, 'hiringRoles'))
-  ];
-  if (user && user.email) {
-    queries.push(getDocs(query(collection(db, 'hiringApplications'), where('email', '==', user.email))));
-  }
-  const [asUid, rs, asEmail] = await Promise.all(queries);
+  let asUid = { docs: [] }, rs = { docs: [] }, asEmail = { docs: [] };
+  try {
+    const qList = [
+      getDocs(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid))),
+      getDocs(collection(db, 'hiringRoles'))
+    ];
+    if (user && user.email) {
+      qList.push(getDocs(query(collection(db, 'hiringApplications'), where('email', '==', user.email))));
+    }
+    const settled = await Promise.allSettled(qList);
+    if (settled[0].status === 'fulfilled') asUid = settled[0].value;
+    if (settled[1].status === 'fulfilled') rs = settled[1].value;
+    if (settled[2] && settled[2].status === 'fulfilled') asEmail = settled[2].value;
+  } catch(e) { console.warn('Query warning in loadOwner', e); }
 
   S.roles = rs.docs.map(d => ({ id: d.id, ...d.data() }));
 
@@ -568,6 +625,7 @@ async function loadOwner(user){
   if (asEmail) asEmail.docs.forEach(d => appMap.set(d.id, { id: d.id, ...d.data() }));
 
   S.apps = Array.from(appMap.values()).filter(a => {
+    if (directApp && a.id === directApp.id) return true;
     const hasPos = !!(a.positionCert || (a.certOverride && a.certOverride.positionCert) || (a.certOverride && (a.certOverride.kind === 'POSITION' || a.certOverride.kind === 'ROLE')));
     const hasAch = !!(a.achievementCert || (a.certOverride && a.certOverride.achievementCert) || (a.certOverride && a.certOverride.kind === 'ACHIEVEMENT'));
     const hasExp = !!(a.certOverride && a.certOverride.forceIssue);
@@ -575,10 +633,12 @@ async function loadOwner(user){
     return hasPos || hasAch || hasExp || isSelected || !!a.offerAcceptedAt;
   }).sort((a, b) => toMs(b.offerAcceptedAt || b.createdAt) - toMs(a.offerAcceptedAt || a.createdAt));
 
-  if (want && appMap.has(want)) {
-    S.cur = appMap.get(want);
+  if (directApp) {
+    S.cur = directApp;
+  } else if (cleanWant && appMap.has(cleanWant)) {
+    S.cur = appMap.get(cleanWant);
   } else {
-    S.cur = S.apps.find(a => a.id === want) || directApp || S.apps[0] || null;
+    S.cur = S.apps.find(a => a.id === cleanWant) || S.apps[0] || null;
   }
 
   const wantTab = P.get('t');
@@ -656,12 +716,17 @@ async function renderOwner(){
 
   // Ensure active viewType respects URL tab or user toggle
   const urlTab = P.get('t');
+  if (urlTab === 'position' || urlTab === 'role') {
+    if (hasPos) S.viewType = 'position';
+  } else if (urlTab === 'achieve' || urlTab === 'achievement') {
+    if (hasAch) S.viewType = 'achievement';
+  } else if (urlTab === 'exp' || urlTab === 'intern' || urlTab === 'experience') {
+    S.viewType = 'experience';
+  }
+
   if (!S.viewType) {
-    if ((urlTab === 'position' || urlTab === 'role') && hasPos) S.viewType = 'position';
-    else if ((urlTab === 'achieve' || urlTab === 'achievement') && hasAch) S.viewType = 'achievement';
-    else if (urlTab === 'exp' || urlTab === 'intern' || urlTab === 'experience') S.viewType = 'experience';
-    else if (hasPos && baseCert.state === 'active') S.viewType = 'position';
-    else if (hasAch && baseCert.state === 'active') S.viewType = 'achievement';
+    if (hasPos && (baseCert.state === 'active' || !baseCert.eligible)) S.viewType = 'position';
+    else if (hasAch && (baseCert.state === 'active' || !baseCert.eligible)) S.viewType = 'achievement';
     else S.viewType = hasPos ? 'position' : (hasAch ? 'achievement' : 'experience');
   }
 
@@ -685,8 +750,8 @@ async function renderOwner(){
         <span>${isIntern ? 'Internship Certificate' : 'Experience Certificate'}</span>
       </button>
       ${hasPos ? `<button class="cert-nav-btn t-pos ${S.viewType === 'position' ? 'on' : ''}" onclick="switchView('position')">
-        <i class="fa-solid fa-id-badge"></i>
-        <span>Certificate of Position</span>
+        <i class="fa-solid ${posCert && posCert.isExecutive ? 'fa-crown' : 'fa-id-badge'}"></i>
+        <span>${posCert && posCert.isExecutive ? 'Executive Appointment' : 'Certificate of Position'}</span>
       </button>` : ''}
       ${hasAch ? `<button class="cert-nav-btn t-ach ${S.viewType === 'achievement' ? 'on' : ''}" onclick="switchView('achievement')">
         <i class="fa-solid fa-trophy"></i>
@@ -696,14 +761,30 @@ async function renderOwner(){
   }
 
   const kindName = certTitle(c.kind);
-  let html = head + `<div class="sub">${kindName} — auto-generated, digitally signed and verifiable with a QR code.</div>` + appChips + certSwitcher;
+  const isOwner = S.user && S.cur && S.user.uid === S.cur.uid;
+  const wantParam = P.get('app');
+  const isAdminViewer = !isOwner && !!wantParam;
+
+  let adminBanner = '';
+  if (isAdminViewer) {
+    adminBanner = `<div class="card" style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.3);margin-bottom:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;border-radius:14px;">
+      <i class="fa-solid fa-shield-halved" style="color:#2563EB;font-size:22px;"></i>
+      <div style="flex:1;">
+        <div style="font-weight:800;font-size:13.5px;color:var(--text);">Admin &amp; Verification Preview Active</div>
+        <div style="font-size:12px;color:var(--text2);">Inspecting official certificate record for <b>${esc(c.name)}</b> (${esc(c.roleTitle)}). All tabs, full resolution and download options available.</div>
+      </div>
+      <a href="/admin/hiring-admin.html" class="btn btn-outline" style="font-size:11.5px;padding:6px 12px;border-radius:99px;"><i class="fa-solid fa-arrow-left"></i> Admin Panel</a>
+    </div>`;
+  }
+
+  let html = head + adminBanner + `<div class="sub">${kindName} — auto-generated, digitally signed and verifiable with a QR code.</div>` + appChips + certSwitcher;
 
   // Has the candidate already confirmed their name once?
   const isNameConfirmed = S.cur.nameConfirmed === true || (S.cur.certOverride && S.cur.certOverride.nameConfirmed === true);
 
   if (c.state === 'revoked') {
     html += `<div class="card"><div class="ok-head"><div class="ok-ico red"><i class="fa-solid fa-ban"></i></div><div><div class="h3">Certificate not available</div><div class="p2">Your engagement with this role was ended by the team.</div></div></div></div>`;
-  } else if (c.state === 'active') {
+  } else if (c.state === 'active' && !isAdminViewer) {
     const proj = certDuration(c.startMs, Date.now());
     const intern = c.kind === 'INTERN';
     html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-hourglass-half"></i></div><div><div class="h3">${intern ? 'Internship in progress' : 'You are currently working'}</div><div class="p2">${esc(c.roleTitle)} · Started ${fD(c.startMs)}</div></div></div>
@@ -724,17 +805,22 @@ async function renderOwner(){
       else el.textContent = fmtDur(Date.now() - c.startMs);
     }; tick(); S.tm = setInterval(tick, 1000);
     return;
-  } else if (!c.eligible) {
+  } else if (!c.eligible && !isAdminViewer) {
     html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-clock"></i></div><div><div class="h3">Certificate not issued</div><div class="p2">A minimum of ${SGP.minDays} days of work is required. You worked ${c.days} day${c.days === 1 ? '' : 's'}.</div></div></div></div>`;
   } else {
     const isAch = c.kind === 'ACHIEVEMENT';
     const isPos = c.kind === 'POSITION' || c.kind === 'ROLE' || c.isPosition;
-    const headerTitle = isAch ? 'Certificate of Achievement Awarded 🏆' : (isPos ? 'Official Certificate of Position & Appointment 🎖️' : 'Your certificate is ready 🎉');
+    const isExecutive = !!c.isExecutive;
+    const headerTitle = isAch
+      ? (isExecutive ? 'Certificate of Executive Distinction 👑' : 'Certificate of Achievement Awarded 🏆')
+      : (isPos
+          ? (isExecutive ? 'Official Certificate of Executive Appointment 👑' : 'Official Certificate of Position & Appointment 🎖️')
+          : (isExecutive ? 'Official Certificate of Executive Experience 👑' : 'Your certificate is ready 🎉'));
     const headerSub = isPos
       ? `${esc(c.name)} · ${esc(c.roleTitle)} · ${c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active & Serving)' : fD(c.startMs) + ' – ' + fD(c.endMs)}`
       : `${esc(c.name)} · ${esc(c.durationLabel)} · ${fD(c.startMs)} – ${fD(c.endMs)}`;
 
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico" style="${isPos ? 'background:rgba(37,99,235,0.15);color:#2563EB;' : ''}"><i class="fa-solid ${isPos ? 'fa-id-badge' : (isAch ? 'fa-trophy' : 'fa-circle-check')}"></i></div><div><div class="h3">${headerTitle}</div><div class="p2">${headerSub}</div></div></div>
+    html += `<div class="card"><div class="ok-head"><div class="ok-ico" style="${isPos ? (isExecutive ? 'background:rgba(217,119,6,0.15);color:#D97706;' : 'background:rgba(37,99,235,0.15);color:#2563EB;') : ''}"><i class="fa-solid ${isPos ? (isExecutive ? 'fa-crown' : 'fa-id-badge') : (isAch ? 'fa-trophy' : (isExecutive ? 'fa-crown' : 'fa-circle-check'))}"></i></div><div><div class="h3">${headerTitle}</div><div class="p2">${headerSub}</div></div></div>
       <div id="pv"></div>
       <div class="acts">
         <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
@@ -747,7 +833,7 @@ async function renderOwner(){
       <div class="linkbox"><i class="fa-solid fa-link"></i><span style="flex:1">${verifyUrl(c.id)}</span><button class="btn" style="padding:6px 10px" onclick="copyLink()"><i class="fa-regular fa-copy"></i></button></div></div>
       <div class="card"><div class="grid2">
         <div><div class="k">Certificate ID</div><div class="v">${certCode(c.id)}</div></div>
-        <div><div class="k">Type</div><div class="v">${isPos ? 'Position & Appointment' : (c.kind === 'INTERN' ? 'Internship' : (isAch ? 'Certificate of Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')'))}</div></div>
+        <div><div class="k">Type</div><div class="v">${isPos ? (isExecutive ? 'Executive Appointment & Governance' : 'Position & Appointment') : (c.kind === 'INTERN' ? 'Internship' : (isAch ? 'Certificate of Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')'))}</div></div>
         <div><div class="k">${isPos ? 'Official Appointed Position' : 'Designation'}</div><div class="v">${esc(c.roleTitle)}</div></div>
         <div><div class="k">${isPos ? 'Status / Engagement' : 'Duration / Recognition'}</div><div class="v">${isPos && c.isCurrent ? 'Currently Active / Present' : esc(c.durationLabel)}</div></div>
         <div><div class="k">Signatory</div><div class="v">Ayush Kumar Gupta (Founder)</div></div>
@@ -796,18 +882,26 @@ const appIdParam = P.get('app');
 if (vid) {
   verifyMode(vid);
 } else {
+  let directFetchPromise = null;
+  if (appIdParam) {
+    const cleanId = String(appIdParam).trim().replace(/-(position|achieve)$/, '');
+    directFetchPromise = Promise.all([
+      getDoc(doc(db, 'hiringApplications', cleanId)).catch(() => null),
+      getDocs(collection(db, 'hiringRoles')).catch(() => ({ docs: [] }))
+    ]);
+  }
+
   onAuthStateChanged(auth, async u => {
     if (u) {
       loadOwner(u).catch(e => {
         console.error(e);
         $('app').innerHTML = topbar('Certificate') + '<div class="card center"><i class="fa-solid fa-triangle-exclamation big"></i>Could not load. Please refresh.</div>';
       });
-    } else if (appIdParam) {
+    } else if (appIdParam && directFetchPromise) {
       try {
-        const snap = await getDoc(doc(db, 'hiringApplications', appIdParam));
-        if (snap.exists()) {
+        const [snap, rs] = await directFetchPromise;
+        if (snap && snap.exists()) {
           const directApp = { id: snap.id, ...snap.data() };
-          const rs = await getDocs(collection(db, 'hiringRoles'));
           S.roles = rs.docs.map(d => ({ id: d.id, ...d.data() }));
           S.apps = [directApp];
           S.cur = directApp;
