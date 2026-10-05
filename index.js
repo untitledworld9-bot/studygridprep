@@ -368,11 +368,31 @@ function initNotifications() {
       const id = change.doc.id;
       const d  = change.doc.data();
 
-      const notifTs = d.time || (d.sentAt?.toMillis?.() || (d.createdAt?.toMillis?.() || null));
-      if (notifTs && notifTs < (start.toMillis() - 60000)) return;
+      const notifTs = d.time || (d.sentAt?.toMillis?.() || (d.createdAt?.toMillis?.() || Date.now()));
+      const isRecent = (Date.now() - notifTs) < (7 * 24 * 60 * 60 * 1000); // within last 7 days
+      if (!isRecent) return;
       if (seen.notifications.has(id)) return;
       if (d.platform === "pwa" && !isPWA()) return;
       if (d.platform === "web" && isPWA())  return;
+
+      // Sync into local notification history for notification panel
+      try {
+        const notifObj = {
+          id: id,
+          title: d.title || "Notification",
+          body: d.body || d.message || "",
+          icon: d.icon || "🔔",
+          imageUrl: d.image || d.imageUrl || null,
+          image: d.image || d.imageUrl || null,
+          ts: notifTs,
+          source: "admin"
+        };
+        const curList = JSON.parse(localStorage.getItem("pwa_admin_notifs") || "[]");
+        if (!curList.some(n => n.id === id)) {
+          curList.unshift(notifObj);
+          localStorage.setItem("pwa_admin_notifs", JSON.stringify(curList.slice(0, 50)));
+        }
+      } catch(e){}
 
       fireNotification(d.title, d.body || d.message || "", d.url || null, d.image || d.imageUrl || null);
       markSeen("notifications", id);

@@ -1508,6 +1508,25 @@ input::placeholder { color: var(--text3); }
   border-color: rgba(16,185,129,0.4);
   background: rgba(16,185,129,0.1);
 }
+.ai-live-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  background: rgba(91,91,246,0.08);
+  border: 1px solid rgba(91,91,246,0.2);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 3px 0;
+  transition: all 0.2s ease;
+}
+.ai-live-link:hover {
+  background: rgba(91,91,246,0.16);
+  border-color: var(--accent);
+}
 
 /* ── AI CHAT FULL MODAL ── */
 #aiChatModal {
@@ -3681,6 +3700,10 @@ function appendMessage(role, text) {
               </button>
             </div>`;
         })
+        // Markdown links: [Title](https://...)
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="ai-live-link" onclick="event.stopPropagation();"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;margin-right:3px;"></i>$1</a>')
+        // Bare YouTube/Spotify URLs into live links if not already in an anchor
+        .replace(/(^|[^"'>])(https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|spotify\.com)[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" class="ai-live-link" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube" style="color:#EF4444;margin-right:4px;"></i>Watch / Listen Live <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9.5px;margin-left:2px;"></i></a>')
         .replace(/\n/g, "<br>");
 
     // For AI messages, add a sleek professional action footer

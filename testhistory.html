@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 <title>My Tests — Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
@@ -53,6 +53,7 @@ window.matchMedia("(prefers-color-scheme: dark)")
   integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
   crossorigin="anonymous"
   referrerpolicy="no-referrer">
+<link rel="stylesheet" href="pull-to-refresh.css">
 
 <style>
 /* ======================================================
@@ -1524,11 +1525,23 @@ document.addEventListener('keydown', (e) => {
   function syncThemeColor(){
     var isDark=document.documentElement.getAttribute("data-theme")==="dark";
     var metas=document.querySelectorAll("meta[name='theme-color']");
-    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
+    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0D1120":"#F0F2F8"; });
   }
   syncThemeColor();
   new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 })();
+
+window.onPullToRefresh = async function() {
+  try {
+    if (typeof renderHistory === "function") {
+      renderHistory();
+    }
+    await new Promise(r => setTimeout(r, 450));
+  } catch(e) {
+    console.warn('[Test History PTR]', e);
+  }
+};
 </script>
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>
