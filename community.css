@@ -2233,3 +2233,168 @@ header.hub-header {
     right: max(24px, calc((100vw - 820px) / 2));
   }
 }
+
+
+/* ==========================================================================
+   20. APP-LIKE CUSTOM POPUP DIALOGS & TOASTS (NATIVE APP FEEL)
+   ========================================================================== */
+.app-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-modal-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 24px 22px 20px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  transform: scale(0.88) translateY(12px);
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.app-modal-overlay.open .app-modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.app-modal-icon-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 14px;
+}
+
+.app-modal-icon-wrap.warn {
+  background: var(--amber-light);
+  color: var(--amber);
+}
+
+.app-modal-icon-wrap.danger {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.app-modal-icon-wrap.success {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.app-modal-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+}
+
+.app-modal-message {
+  font-size: 13.5px;
+  color: var(--text2);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.app-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.app-modal-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  flex: 1;
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.app-modal-btn:active {
+  transform: scale(0.95);
+}
+
+.app-modal-btn-confirm {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.app-modal-btn-cancel {
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+
+.app-modal-btn-danger {
+  background: var(--red);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+}
+
+/* ─── APP FLOATING TOAST ─── */
+.app-toast {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px) scale(0.9);
+  background: rgba(15, 23, 42, 0.94);
+  color: #FFFFFF;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 99px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  z-index: 100001;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s var(--ease-spring);
+}
+
+[data-theme="dark"] .app-toast {
+  background: rgba(30, 41, 69, 0.95);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.app-toast.show {
+  transform: translateX(-50%) translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-toast i {
+  color: #10B981;
+  font-size: 15px;
+}

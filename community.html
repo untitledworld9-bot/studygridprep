@@ -68,7 +68,6 @@
     </div>
   </div>
 
-  <div class="intro-badge" id="introBadge">AI Community Engine</div>
   <div class="intro-title" id="introTitle">Building Your <span>JEE Community</span></div>
   <div class="intro-sub" id="introSub">Connecting active aspirants, organizing doubt threads &amp; curated discussions…</div>
 
@@ -277,20 +276,51 @@
   <button class="sec-btn" onclick="closeSecurityAlert()">I Understand</button>
 </div>
 
-<!-- ─── 7. EXAM SWITCHER MODAL ─── -->
+<!-- ─── APP-GRADE IN-APP CONFIRM / ALERT MODAL (REPLACES CHROME ALERT) ─── -->
+<div class="app-modal-overlay" id="appModalOverlay" onclick="if(event.target===this)window.closeAppModal()">
+  <div class="app-modal-card">
+    <div class="app-modal-icon-wrap" id="appModalIcon">
+      <i class="fa-solid fa-circle-exclamation"></i>
+    </div>
+    <div class="app-modal-title" id="appModalTitle">Attention</div>
+    <div class="app-modal-message" id="appModalMessage">Please write a question or topic title.</div>
+    <div class="app-modal-actions" id="appModalActions">
+      <button class="app-modal-btn app-modal-btn-confirm" id="appModalConfirmBtn" onclick="window.closeAppModal()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── APP-GRADE FLOATING TOAST ─── -->
+<div class="app-toast" id="appToast">
+  <i class="fa-solid fa-circle-check" id="appToastIcon"></i>
+  <span id="appToastText">Action completed</span>
+</div>
+
+<!-- ─── 7. EXAM SWITCHER MODAL (SMART CANONICAL & KEYWORD MATCHER) ─── -->
 <div class="modal-overlay" id="examSwitcherModal">
-  <div class="modal-sheet" style="max-width:380px;">
+  <div class="modal-sheet" style="max-width:420px;">
     <div class="modal-head">
       <div class="modal-title"><i class="fa-solid fa-graduation-cap" style="color:var(--accent);margin-right:6px;"></i> Switch Exam Track</div>
       <button class="modal-close-btn" onclick="closeExamSwitcher()"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Select an exam community to view targeted questions and peer discussions:</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="cat-choice" onclick="selectExamGoal('JEE Main')">🚀 JEE Main &amp; Advanced</div>
-      <div class="cat-choice" onclick="selectExamGoal('NEET')">🩺 NEET UG (Medical)</div>
-      <div class="cat-choice" onclick="selectExamGoal('CUET')">🎓 CUET UG (All Domains)</div>
-      <div class="cat-choice" onclick="selectExamGoal('Boards')">📖 Class 12 Boards</div>
-      <div class="cat-choice" onclick="selectExamGoal('B.Tech')">💻 B.Tech &amp; Engineering</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Select your exam or type below (e.g. engineering, btech, upsc):</div>
+    
+    <!-- Custom Exam Input with Instant Keyword Normalization -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" id="customExamInput" placeholder="Enter custom exam or branch…" style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')window.applyCustomExam()">
+      <button class="tl-btn-primary" style="width:auto;padding:9px 16px;margin:0;font-size:12.5px;border-radius:12px;" onclick="window.applyCustomExam()">Apply</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto;padding-right:2px;">
+      <div class="cat-choice" onclick="selectExamGoal('JEE Main')">🚀 JEE Main &amp; Advanced (IIT)</div>
+      <div class="cat-choice" onclick="selectExamGoal('NEET')">🩺 NEET UG (Medical / MBBS)</div>
+      <div class="cat-choice" onclick="selectExamGoal('B.Tech')">💻 B.Tech &amp; Engineering (CSE / IT / ECE)</div>
+      <div class="cat-choice" onclick="selectExamGoal('CUET')">🎓 CUET UG (All Universities)</div>
+      <div class="cat-choice" onclick="selectExamGoal('UPSC')">🏛️ UPSC (Civil Services / IAS)</div>
+      <div class="cat-choice" onclick="selectExamGoal('Boards')">📖 Class 12 Boards (CBSE / State)</div>
+      <div class="cat-choice" onclick="selectExamGoal('GATE')">⚙️ GATE &amp; PSU Exams</div>
+      <div class="cat-choice" onclick="selectExamGoal('SSC')">🏛️ SSC CGL &amp; Govt Exams</div>
+      <div class="cat-choice" onclick="selectExamGoal('NDA')">🛡️ NDA &amp; Defence Forces</div>
     </div>
   </div>
 </div>

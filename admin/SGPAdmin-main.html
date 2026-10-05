@@ -508,7 +508,8 @@
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none; transition: opacity .25s;
     }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-overlay:not(.open) { display: none !important; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; display: flex !important; }
     .modal-box {
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: 32px; width: 90%; max-width: 480px;
@@ -1829,7 +1830,7 @@
   </section>
 
   <!-- MODAL: Comments Moderation -->
-  <div class="modal" id="adminCommentsModal">
+  <div class="modal-overlay" id="adminCommentsModal" onclick="if(event.target===this)window.closePostCommentsModal()">
     <div class="modal-box" style="max-width:580px;">
       <div class="modal-header">
         <div>

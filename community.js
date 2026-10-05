@@ -2,7 +2,8 @@
  * Study Grid Prep – Community Hub Logic (community.js)
  * Live Firestore Sync (Zero Dummy Data), Real-time Updates,
  * Native-grade Pull to Refresh, Mobile/Tab/Desktop Optimized,
- * High-Contrast Accessible Icons & Strict Content Moderation.
+ * App-Like Custom Modals & Toasts (Zero Chrome Alerts),
+ * Smart Canonical Exam Mapping & Keyword Fuzzy Matcher.
  */
 
 import {
@@ -18,6 +19,117 @@ import {
   deleteDoc
 } from "./firebase.js";
 
+/* ─── 0. SMART CANONICAL EXAM MAPPING & KEYWORD NORMALIZATION ─── */
+const EXAM_CANONICAL_MAP = [
+  {
+    canonical: "B.Tech / Engineering",
+    shortName: "B.Tech",
+    icon: "fa-laptop-code",
+    keywords: [
+      "btech", "b.tech", "b-tech", "engineering", "engeneering", "engg",
+      "b.e", "be", "cse", "computer science", "btech exam", "engineering exam",
+      "it", "ece", "mechanical", "civil engg", "software"
+    ]
+  },
+  {
+    canonical: "JEE Main & Advanced",
+    shortName: "JEE Main",
+    icon: "fa-atom",
+    keywords: [
+      "jee", "jee main", "jee mains", "jee advanced", "iit", "iit jee",
+      "jee exam", "jeemain", "jeeadv", "joint entrance", "iitjee"
+    ]
+  },
+  {
+    canonical: "NEET (Medical)",
+    shortName: "NEET",
+    icon: "fa-stethoscope",
+    keywords: [
+      "neet", "neet ug", "neet exam", "medical", "aiims", "mbbs",
+      "neetpg", "bds", "biology neet", "doctor"
+    ]
+  },
+  {
+    canonical: "CUET (UG)",
+    shortName: "CUET",
+    icon: "fa-graduation-cap",
+    keywords: [
+      "cuet", "cuet ug", "cuet exam", "common university entrance",
+      "cuet 2025", "cuet 2026", "cuet general test"
+    ]
+  },
+  {
+    canonical: "UPSC Civil Services",
+    shortName: "UPSC",
+    icon: "fa-landmark",
+    keywords: [
+      "upsc", "upsc exam", "ias", "ips", "civil services", "cse upsc",
+      "upsc prelims", "upsc mains", "nda/upsc", "union public service"
+    ]
+  },
+  {
+    canonical: "GATE (Engineering)",
+    shortName: "GATE",
+    icon: "fa-microchip",
+    keywords: ["gate", "gate exam", "psu", "gate cse", "gate ece"]
+  },
+  {
+    canonical: "Class 12 Boards",
+    shortName: "Boards",
+    icon: "fa-book-open",
+    keywords: [
+      "board", "boards", "class 12", "class 12th", "cbse", "12th boards",
+      "board exam", "state board", "hsc", "isc", "12th exam"
+    ]
+  },
+  {
+    canonical: "SSC & Govt Exams",
+    shortName: "SSC",
+    icon: "fa-building-columns",
+    keywords: ["ssc", "ssc cgl", "ssc chsl", "cgl", "chsl", "govt exam", "sarkari"]
+  },
+  {
+    canonical: "NDA & Defence",
+    shortName: "NDA",
+    icon: "fa-shield-halved",
+    keywords: ["nda", "nda exam", "cds", "defence", "afcat", "navy", "airforce"]
+  }
+];
+
+function getCanonicalExam(rawName) {
+  if (!rawName) return { canonical: "General", shortName: "General", icon: "fa-graduation-cap" };
+  const cleanStr = String(rawName).toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  for (const group of EXAM_CANONICAL_MAP) {
+    if (group.shortName.toLowerCase() === cleanStr || group.canonical.toLowerCase() === cleanStr) {
+      return group;
+    }
+    for (const kw of group.keywords) {
+      const cleanKw = kw.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanStr === cleanKw || cleanStr.startsWith(cleanKw) || cleanKw.startsWith(cleanStr) || cleanStr.includes(cleanKw) || cleanKw.includes(cleanStr)) {
+        return group;
+      }
+    }
+  }
+
+  // Fallback to formatted raw string
+  return { canonical: rawName.trim(), shortName: rawName.trim(), icon: "fa-graduation-cap" };
+}
+
+function isSameExamGroup(examA, examB) {
+  if (!examA || !examB) return false;
+  const groupA = getCanonicalExam(examA);
+  const groupB = getCanonicalExam(examB);
+
+  if (groupA.shortName === groupB.shortName || groupA.canonical === groupB.canonical) {
+    return true;
+  }
+
+  const sA = String(examA).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const sB = String(examB).toLowerCase().replace(/[^a-z0-9]/g, '');
+  return sA === sB || sA.includes(sB) || sB.includes(sA);
+}
+
 /* ─── APP STATE & STORAGE INITIALIZATION ─── */
 const SGP_USER_NAME = localStorage.getItem("userName") || "Student";
 const SGP_USER_EMAIL = localStorage.getItem("userEmail") || "";
@@ -25,7 +137,8 @@ const SGP_USER_UID = localStorage.getItem("userUid") || SGP_USER_EMAIL || "usr_"
 const TODAY_STR = new Date().toISOString().slice(0, 10);
 
 let currentExam = localStorage.getItem("goal") || "JEE Main";
-if (currentExam === "JEE") currentExam = "JEE Main";
+const initialCanonical = getCanonicalExam(currentExam);
+currentExam = initialCanonical.shortName;
 
 let activeFilter = "all";
 let currentTab = "community"; // 'community' | 'myPosts'
@@ -46,7 +159,97 @@ try {
 let isRefreshing = false;
 let unsubscribeCommunity = null;
 
-/* ─── 1. REAL-TIME FIRESTORE DATA SYNC (ZERO DUMMY DATA) ─── */
+/* ─── 1. APP-LIKE CUSTOM MODALS & TOASTS (NATIVE APP FEEL) ─── */
+let appModalConfirmCallback = null;
+
+function showAppAlert(message, title = "Notice", iconClass = "fa-solid fa-circle-exclamation", type = "warn") {
+  const overlay = document.getElementById("appModalOverlay");
+  const titleEl = document.getElementById("appModalTitle");
+  const msgEl = document.getElementById("appModalMessage");
+  const iconWrap = document.getElementById("appModalIcon");
+  const actionsEl = document.getElementById("appModalActions");
+
+  if (!overlay) return;
+
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl) msgEl.textContent = message;
+
+  if (iconWrap) {
+    iconWrap.className = `app-modal-icon-wrap ${type}`;
+    iconWrap.innerHTML = `<i class="${iconClass}"></i>`;
+  }
+
+  if (actionsEl) {
+    actionsEl.innerHTML = `<button class="app-modal-btn app-modal-btn-confirm" onclick="window.closeAppModal()">Got It</button>`;
+  }
+
+  appModalConfirmCallback = null;
+  overlay.classList.add("open");
+}
+
+function showAppConfirm(message, title = "Confirm Action", onConfirm = null, confirmText = "Confirm", iconClass = "fa-solid fa-triangle-exclamation") {
+  const overlay = document.getElementById("appModalOverlay");
+  const titleEl = document.getElementById("appModalTitle");
+  const msgEl = document.getElementById("appModalMessage");
+  const iconWrap = document.getElementById("appModalIcon");
+  const actionsEl = document.getElementById("appModalActions");
+
+  if (!overlay) return;
+
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl) msgEl.textContent = message;
+
+  if (iconWrap) {
+    iconWrap.className = `app-modal-icon-wrap danger`;
+    iconWrap.innerHTML = `<i class="${iconClass}"></i>`;
+  }
+
+  appModalConfirmCallback = onConfirm;
+
+  if (actionsEl) {
+    actionsEl.innerHTML = `
+      <button class="app-modal-btn app-modal-btn-cancel" onclick="window.closeAppModal()">Cancel</button>
+      <button class="app-modal-btn app-modal-btn-danger" id="appModalExecuteBtn">${escapeHtml(confirmText)}</button>
+    `;
+    const execBtn = document.getElementById("appModalExecuteBtn");
+    if (execBtn) {
+      execBtn.onclick = () => {
+        closeAppModal();
+        if (typeof appModalConfirmCallback === "function") {
+          appModalConfirmCallback();
+        }
+      };
+    }
+  }
+
+  overlay.classList.add("open");
+}
+
+function closeAppModal() {
+  const overlay = document.getElementById("appModalOverlay");
+  if (overlay) overlay.classList.remove("open");
+  appModalConfirmCallback = null;
+}
+
+let toastTimeout = null;
+function showAppToast(message, iconClass = "fa-solid fa-circle-check") {
+  const toast = document.getElementById("appToast");
+  const iconEl = document.getElementById("appToastIcon");
+  const textEl = document.getElementById("appToastText");
+
+  if (!toast) return;
+
+  if (iconEl) iconEl.className = iconClass;
+  if (textEl) textEl.textContent = message;
+
+  toast.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2600);
+}
+
+/* ─── 2. REAL-TIME FIRESTORE DATA SYNC (ZERO DUMMY DATA) ─── */
 function listenToCommunityFirestore() {
   try {
     const q = query(collection(db, "communityPosts"), orderBy("createdAt", "desc"));
@@ -91,7 +294,7 @@ async function fetchCommunityOnce() {
   }
 }
 
-/* ─── 2. PULL TO REFRESH & MANUAL REFRESH (TOUCH & GESTURE) ─── */
+/* ─── 3. PULL TO REFRESH & MANUAL REFRESH (TOUCH & GESTURE) ─── */
 let touchStartY = 0;
 let isPulling = false;
 
@@ -216,7 +419,7 @@ function stopPullToRefresh(success) {
   }
 }
 
-/* ─── 3. NOTIFICATIONS ─── */
+/* ─── 4. NOTIFICATIONS ─── */
 function loadNotifications() {
   try {
     const raw = localStorage.getItem("sgp_comm_notifs_" + SGP_USER_UID);
@@ -277,6 +480,7 @@ function markAllNotifsRead() {
   const list = loadNotifications().map(n => ({ ...n, read: true }));
   saveNotifications(list);
   updateNotifBadge();
+  showAppToast("All notifications marked as read");
 }
 
 function jumpToPost(postId) {
@@ -293,7 +497,7 @@ function jumpToPost(postId) {
   }, 100);
 }
 
-/* ─── 4. PERSONALIZED 3.5s BUILDING INTRO ─── */
+/* ─── 5. CLEAN INTRO (ZERO FAKE AI TEXT) ─── */
 function runPersonalizedIntro() {
   const ov = document.getElementById("introOverlay");
   const title = document.getElementById("introTitle");
@@ -301,13 +505,14 @@ function runPersonalizedIntro() {
   const fill = document.getElementById("introProgressFill");
 
   if (!ov) return;
-  if (title) title.innerHTML = `Building Your <span>${escapeHtml(currentExam)} Community</span>`;
+  const canonical = getCanonicalExam(currentExam);
+  if (title) title.innerHTML = `Building Your <span>${escapeHtml(canonical.shortName)} Community</span>`;
 
   const steps = [
-    { t: 0, text: `Connecting active ${escapeHtml(currentExam)} aspirants & verified solvers…`, pct: "25%" },
-    { t: 1000, text: `Structuring ${escapeHtml(currentExam)} syllabus doubt streams & test tips…`, pct: "55%" },
-    { t: 2100, text: "Configuring distraction-free student discussion feeds…", pct: "85%" },
-    { t: 3000, text: `Personalized ${escapeHtml(currentExam)} Community Ready! 🚀`, pct: "100%" }
+    { t: 0, text: `Connecting verified ${escapeHtml(canonical.shortName)} peer aspirants & solvers…`, pct: "25%" },
+    { t: 900, text: `Structuring ${escapeHtml(canonical.shortName)} syllabus doubt streams & strategies…`, pct: "55%" },
+    { t: 1900, text: "Configuring distraction-free student discussions…", pct: "85%" },
+    { t: 2800, text: `${escapeHtml(canonical.shortName)} Community Hub Ready! 🚀`, pct: "100%" }
   ];
 
   steps.forEach(step => {
@@ -320,17 +525,17 @@ function runPersonalizedIntro() {
 
   setTimeout(() => {
     skipIntro();
-  }, 3600);
+  }, 3200);
 }
 
 function skipIntro() {
   const ov = document.getElementById("introOverlay");
   if (!ov) return;
   ov.classList.add("fade-out");
-  setTimeout(() => { ov.style.display = "none"; }, 500);
+  setTimeout(() => { ov.style.display = "none"; }, 400);
 }
 
-/* ─── 5. DAILY 60-MINUTE STUDY RESTRICTION TIMER ─── */
+/* ─── 6. DAILY 60-MINUTE STUDY RESTRICTION TIMER ─── */
 function startStudyTimer() {
   clearInterval(timerInterval);
   updateTimerUI();
@@ -368,7 +573,7 @@ function showTimeLimitModal() {
   if (ov) ov.classList.add("open");
 }
 
-/* ─── 6. STRICT CONTENT SECURITY CHECKS (ZERO LINKS / NO CONTACT INFO) ─── */
+/* ─── 7. STRICT CONTENT SECURITY CHECKS (ZERO LINKS / NO CONTACT INFO) ─── */
 function checkContentSecurity(text) {
   const clean = String(text || "");
 
@@ -378,18 +583,18 @@ function checkContentSecurity(text) {
     return {
       allowed: false,
       reason: "link",
-      title: "🚫 Link Sharing Blocked",
-      desc: "External links, websites, Telegram, and WhatsApp links are strictly prohibited to prevent spam and maintain a clean study environment."
+      title: "Link Sharing Blocked",
+      desc: "External links, websites, Telegram, and WhatsApp links are strictly prohibited to maintain a clean study environment."
     };
   }
 
-  // 2. Phone numbers & Consecutive numbers detection (10 continuous digits or +91)
+  // 2. Phone numbers & Consecutive numbers detection
   const phoneRegex = /(\+?91[\s-]?)?[6789]\d{9}|\b\d{5}[\s-]?\d{5}\b|\b\d{6,}\b/;
   if (phoneRegex.test(clean.replace(/\s+/g, ' '))) {
     return {
       allowed: false,
       reason: "contact",
-      title: "⚠️ Phone Number / Contact Blocked",
+      title: "Contact Info Blocked",
       desc: "Sharing phone numbers, contact info, or consecutive digit sequences is strictly prohibited for student safety and privacy."
     };
   }
@@ -401,7 +606,7 @@ function checkContentSecurity(text) {
       return {
         allowed: false,
         reason: "social",
-        title: "⚠️ Social Handles Blocked",
+        title: "Social Handles Blocked",
         desc: "Sharing social media usernames (Instagram, Telegram, Snapchat) is not allowed. Keep discussions focused on exam preparation."
       };
     }
@@ -424,18 +629,17 @@ function closeSecurityAlert() {
   if (box) box.classList.remove("show");
 }
 
-/* ─── 7. RENDERING POSTS WITH UNIQUE VIEWS ─── */
+/* ─── 8. RENDERING POSTS WITH SMART FUZZY EXAM MATCHING ─── */
 function renderCommunity() {
   const allPosts = communityPostsList;
+  const canonicalCurrent = getCanonicalExam(currentExam);
 
-  // Filter by user's current selected exam
+  // Filter posts matching this canonical exam group (e.g. btech matches engineering, engg, etc.)
   let examPosts = allPosts.filter(p => {
-    if (!p.exam) return true;
-    if (currentExam === "B.Tech" && (p.exam === "B.Tech" || p.exam === "JEE Main")) return true;
-    return p.exam.toLowerCase().includes(currentExam.toLowerCase()) || currentExam.toLowerCase().includes(p.exam.toLowerCase());
+    return isSameExamGroup(p.exam, currentExam) || isSameExamGroup(p.exam, canonicalCurrent.shortName);
   });
 
-  // If no posts specifically for current exam yet, show all real posts
+  // If no posts in current exam track yet, show all community posts as general feed
   if (examPosts.length === 0) {
     examPosts = allPosts;
   }
@@ -457,7 +661,7 @@ function renderCommunity() {
   // Count Stat
   const countEl = document.getElementById("postCountStat");
   if (countEl) {
-    countEl.innerHTML = `<i class="fa-solid fa-comments"></i> <span>${examPosts.length} discussions in ${escapeHtml(currentExam)}</span>`;
+    countEl.innerHTML = `<i class="fa-solid fa-comments"></i> <span>${examPosts.length} discussions in ${escapeHtml(canonicalCurrent.shortName)}</span>`;
   }
 
   // Render cards
@@ -466,13 +670,13 @@ function renderCommunity() {
 
   if (examPosts.length === 0) {
     container.innerHTML = `
-      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:42px 24px;text-align:center;margin-top:20px;box-shadow:var(--shadow-xs);">
-        <div style="width:54px;height:54px;border-radius:18px;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;">
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:24px;padding:46px 24px;text-align:center;margin-top:20px;box-shadow:var(--shadow-xs);">
+        <div style="width:58px;height:58px;border-radius:20px;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px;">
           <i class="fa-solid fa-comments"></i>
         </div>
-        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">No discussions in ${escapeHtml(currentExam)} yet</div>
-        <p style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 18px;line-height:1.5;">Be the first student to ask a doubt or share a prep tip in this exam community!</p>
-        <button class="tl-btn-primary" style="display:inline-flex;align-items:center;gap:6px;width:auto;padding:10px 22px;margin:0 auto;" onclick="window.openComposer()">
+        <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;">No discussions in ${escapeHtml(canonicalCurrent.shortName)} yet</div>
+        <p style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 18px;line-height:1.55;">Be the first aspirant to ask a doubt or share a concept query in this exam community!</p>
+        <button class="tl-btn-primary" style="display:inline-flex;align-items:center;gap:8px;width:auto;padding:11px 24px;margin:0 auto;font-weight:700;" onclick="window.openComposer()">
           <i class="fa-solid fa-plus"></i> Ask First Question
         </button>
       </div>`;
@@ -492,6 +696,8 @@ function createPostCardHtml(p) {
   const uniqueViewsCount = p.views ? p.views.length : 1;
   const replyCount = p.replies ? p.replies.length : 0;
   const timeAgo = formatTimeAgo(p.createdAt);
+
+  const postCanonical = getCanonicalExam(p.exam);
 
   let codeHtml = "";
   if (p.code) {
@@ -517,12 +723,12 @@ function createPostCardHtml(p) {
             </div>
             <div class="post-time-exam">
               <span>${timeAgo}</span> · 
-              <span class="cat-tag ${escapeHtml(p.category || 'doubts')}">${escapeHtml(p.category || 'doubts')}</span>
+              <span class="cat-tag ${escapeHtml(p.category || 'doubts')}">${escapeHtml(postCanonical.shortName)} · ${escapeHtml(p.category || 'doubts')}</span>
             </div>
           </div>
         </div>
         ${isMyPost ? `
-          <button style="background:none;border:none;color:var(--text2);cursor:pointer;padding:6px;font-size:14px;" onclick="window.deletePost('${p.id}')" title="Delete post">
+          <button style="background:none;border:none;color:var(--text2);cursor:pointer;padding:6px;font-size:15px;" onclick="window.deletePost('${p.id}')" title="Delete post">
             <i class="fa-regular fa-trash-can"></i>
           </button>` : ''}
       </div>
@@ -597,7 +803,7 @@ function createPostCardHtml(p) {
   `;
 }
 
-/* ─── 8. UNIQUE VIEWS PER USER ─── */
+/* ─── 9. UNIQUE VIEWS PER USER ─── */
 async function recordUniqueViews(posts) {
   const updates = [];
   posts.forEach(p => {
@@ -621,7 +827,7 @@ async function recordUniqueViews(posts) {
   }
 }
 
-/* ─── 9. INTERACTIONS: LIKE / DISLIKE ─── */
+/* ─── 10. INTERACTIONS: LIKE / DISLIKE ─── */
 async function toggleLike(postId) {
   const post = communityPostsList.find(p => p.id === postId);
   if (!post) return;
@@ -690,7 +896,7 @@ async function toggleDislike(postId) {
   }
 }
 
-/* ─── 10. REPLIES & @MENTIONS ─── */
+/* ─── 11. REPLIES & @MENTIONS ─── */
 function toggleReplies(postId) {
   const wrap = document.getElementById("replies_" + postId);
   if (wrap) wrap.classList.toggle("open");
@@ -733,6 +939,8 @@ async function submitReply(postId) {
   const wrap = document.getElementById("replies_" + postId);
   if (wrap) wrap.classList.add("open");
 
+  showAppToast("Reply posted successfully");
+
   if (post.authorUid && post.authorUid !== SGP_USER_UID) {
     addNotification({
       title: `${SGP_USER_NAME} replied to your post`,
@@ -765,7 +973,7 @@ async function submitReply(postId) {
   }
 }
 
-/* ─── 11. COMPOSER & SUBMIT POST ─── */
+/* ─── 12. COMPOSER & SUBMIT POST (WITH IN-APP VALIDATION) ─── */
 let selectedCategory = "doubts";
 
 function openComposer() {
@@ -818,11 +1026,11 @@ async function submitPost() {
   const codeLang = hasCode ? document.getElementById("codeLangSelect")?.value : null;
 
   if (!title) {
-    alert("Please write a question or topic title.");
+    showAppAlert("Please write a question or topic title before publishing.", "Missing Question Title", "fa-solid fa-pen-nib", "warn");
     return;
   }
   if (!body && !code) {
-    alert("Please describe your doubt or query in the body text.");
+    showAppAlert("Please describe your doubt or query in the body text.", "Missing Content", "fa-solid fa-align-left", "warn");
     return;
   }
 
@@ -832,8 +1040,9 @@ async function submitPost() {
     return;
   }
 
+  const canonical = getCanonicalExam(currentExam);
   const postData = {
-    exam: currentExam,
+    exam: canonical.shortName,
     category: selectedCategory,
     authorName: SGP_USER_NAME,
     authorUid: SGP_USER_UID,
@@ -856,6 +1065,7 @@ async function submitPost() {
   closeComposer();
   renderCommunity();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  showAppToast("Post published successfully!");
 
   // Save to Firestore
   try {
@@ -869,24 +1079,32 @@ async function submitPost() {
   }
 }
 
-async function deletePost(postId) {
-  if (!confirm("Are you sure you want to delete this post?")) return;
-  communityPostsList = communityPostsList.filter(p => p.id !== postId);
-  renderCommunity();
-  if (currentTab === "myPosts") renderMyPosts();
+function deletePost(postId) {
+  showAppConfirm(
+    "Are you sure you want to permanently delete this discussion post?",
+    "Delete Post",
+    async () => {
+      communityPostsList = communityPostsList.filter(p => p.id !== postId);
+      renderCommunity();
+      if (currentTab === "myPosts") renderMyPosts();
+      showAppToast("Post deleted");
 
-  try {
-    localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(communityPostsList));
-  } catch (e) {}
+      try {
+        localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(communityPostsList));
+      } catch (e) {}
 
-  try {
-    await deleteDoc(doc(db, "communityPosts", postId));
-  } catch (e) {
-    console.warn("Firestore delete post error:", e);
-  }
+      try {
+        await deleteDoc(doc(db, "communityPosts", postId));
+      } catch (e) {
+        console.warn("Firestore delete post error:", e);
+      }
+    },
+    "Delete Post",
+    "fa-solid fa-trash-can"
+  );
 }
 
-/* ─── 12. REPORT / ISSUE FLAGGING SYSTEM ─── */
+/* ─── 13. REPORT / ISSUE FLAGGING SYSTEM ─── */
 let currentReportingPostId = null;
 
 function openReportModal(postId) {
@@ -943,7 +1161,7 @@ function closeReportSuccess() {
   if (ov) ov.classList.remove("show");
 }
 
-/* ─── 13. MY POSTS TAB ─── */
+/* ─── 14. MY POSTS TAB ─── */
 function switchMainTab(tab) {
   currentTab = tab;
   const commTab = document.getElementById("navCommunityTab");
@@ -987,13 +1205,13 @@ function renderMyPosts() {
 
   if (myPosts.length === 0) {
     cont.innerHTML = `
-      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:42px 24px;text-align:center;margin-top:20px;box-shadow:var(--shadow-xs);">
-        <div style="width:54px;height:54px;border-radius:18px;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;">
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:24px;padding:46px 24px;text-align:center;margin-top:20px;box-shadow:var(--shadow-xs);">
+        <div style="width:58px;height:58px;border-radius:20px;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px;">
           <i class="fa-solid fa-pen-fancy"></i>
         </div>
-        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">You haven't posted any questions yet</div>
+        <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;">You haven't posted any questions yet</div>
         <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">Ask a doubt in the ${escapeHtml(currentExam)} community to get peer answers!</p>
-        <button class="tl-btn-primary" style="display:inline-flex;align-items:center;gap:6px;width:auto;padding:10px 22px;margin:0 auto;" onclick="window.openComposer()">
+        <button class="tl-btn-primary" style="display:inline-flex;align-items:center;gap:8px;width:auto;padding:11px 24px;margin:0 auto;font-weight:700;" onclick="window.openComposer()">
           <i class="fa-solid fa-plus"></i> Ask a Question
         </button>
       </div>`;
@@ -1003,7 +1221,7 @@ function renderMyPosts() {
   cont.innerHTML = myPosts.map(p => createPostCardHtml(p)).join("");
 }
 
-/* ─── 14. FILTERS & SEARCH ─── */
+/* ─── 15. FILTERS & SEARCH ─── */
 function setCategoryFilter(cat, el) {
   activeFilter = cat;
   document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
@@ -1020,10 +1238,15 @@ function filterPostsBySearch(query) {
   });
 }
 
-/* ─── 15. EXAM SWITCHER ─── */
+/* ─── 16. EXAM SWITCHER & CUSTOM KEYWORD NORMALIZER ─── */
 function openExamSwitcher() {
   const modal = document.getElementById("examSwitcherModal");
   if (modal) modal.classList.add("open");
+  const inp = document.getElementById("customExamInput");
+  if (inp) {
+    inp.value = "";
+    setTimeout(() => inp.focus(), 150);
+  }
 }
 
 function closeExamSwitcher() {
@@ -1032,16 +1255,32 @@ function closeExamSwitcher() {
 }
 
 function selectExamGoal(goal) {
-  currentExam = goal;
-  localStorage.setItem("goal", goal);
+  const canonical = getCanonicalExam(goal);
+  currentExam = canonical.shortName;
+  localStorage.setItem("goal", currentExam);
+
   const examNameEl = document.getElementById("headerExamName");
-  if (examNameEl) examNameEl.textContent = goal;
+  if (examNameEl) examNameEl.textContent = currentExam;
+
   closeExamSwitcher();
+  showAppToast(`Switched to ${canonical.shortName} Track`);
   runPersonalizedIntro();
   renderCommunity();
 }
 
-/* ─── 16. UTILITIES ─── */
+function applyCustomExam() {
+  const inp = document.getElementById("customExamInput");
+  const val = (inp?.value || "").trim();
+  if (!val) {
+    showAppAlert("Please enter an exam name, keyword, or degree (e.g. btech, engineering, upsc).", "Enter Exam Name", "fa-solid fa-graduation-cap", "warn");
+    return;
+  }
+
+  const canonical = getCanonicalExam(val);
+  selectExamGoal(canonical.shortName);
+}
+
+/* ─── 17. UTILITIES ─── */
 function sharePost(postId) {
   const url = window.location.origin + window.location.pathname + "#" + postId;
   if (navigator.share) {
@@ -1052,7 +1291,7 @@ function sharePost(postId) {
     }).catch(() => {});
   } else {
     navigator.clipboard.writeText(url).then(() => {
-      alert("Post link copied to clipboard!");
+      showAppToast("Post link copied to clipboard!");
     });
   }
 }
@@ -1062,6 +1301,7 @@ function copyCode(btn, postId) {
   if (!code) return;
   navigator.clipboard.writeText(code.innerText).then(() => {
     btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+    showAppToast("Code snippet copied to clipboard!", "fa-solid fa-code");
     setTimeout(() => {
       btn.innerHTML = `<i class="fa-regular fa-copy"></i> Copy`;
     }, 2000);
@@ -1125,6 +1365,7 @@ window.filterPostsBySearch = filterPostsBySearch;
 window.openExamSwitcher = openExamSwitcher;
 window.closeExamSwitcher = closeExamSwitcher;
 window.selectExamGoal = selectExamGoal;
+window.applyCustomExam = applyCustomExam;
 window.sharePost = sharePost;
 window.copyCode = copyCode;
 window.goBack = goBack;
@@ -1134,9 +1375,16 @@ window.jumpToPost = jumpToPost;
 window.skipIntro = skipIntro;
 window.closeSecurityAlert = closeSecurityAlert;
 window.triggerManualRefresh = triggerRefreshUI;
+window.showAppAlert = showAppAlert;
+window.showAppConfirm = showAppConfirm;
+window.showAppToast = showAppToast;
+window.closeAppModal = closeAppModal;
 
 /* ─── BOOTSTRAP ─── */
 function initCommunity() {
+  const canonical = getCanonicalExam(currentExam);
+  currentExam = canonical.shortName;
+
   const examNameEl = document.getElementById("headerExamName");
   if (examNameEl) examNameEl.textContent = currentExam;
 
