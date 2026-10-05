@@ -27,17 +27,23 @@
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = saved ? saved : (systemDark ? "dark" : "light");
+  var theme = (saved && saved !== "system") ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = (theme === "dark") ? "#0D1120" : "#F0F2F8";
+  });
 })();
 
 window.matchMedia("(prefers-color-scheme: dark)")
 .addEventListener("change", function(e){
   if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
+    var resolved = e.matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = (resolved === "dark") ? "#0D1120" : "#F0F2F8";
+    });
   }
 });
 </script>
