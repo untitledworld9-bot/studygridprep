@@ -51,6 +51,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="pull-to-refresh.css">
 
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2611,9 +2612,20 @@ searchClear.addEventListener('click', () => {
     document.getElementById('blogsGrid').innerHTML =
       `<div class="blogs-empty"><i class="fa-solid fa-triangle-exclamation"></i>Couldn't load posts right now. Please refresh the page.</div>`;
   }
+
+  window.onPullToRefresh = async function() {
+    try {
+      if (typeof applyFilters === 'function') {
+        applyFilters();
+      }
+      await new Promise(r => setTimeout(r, 450));
+    } catch(e) {
+      console.warn('[Blogs PTR]', e);
+    }
+  };
 })();
 </script>
 
-
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>

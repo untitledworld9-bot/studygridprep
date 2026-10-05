@@ -51,6 +51,7 @@ window.matchMedia("(prefers-color-scheme: dark)")
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="pull-to-refresh.css">
 <link rel="preload" href="assets/cuet.png" as="image">
 <link rel="preload" href="assets/jee.png" as="image">
 
@@ -934,6 +935,23 @@ function _updateMockHomeBadge(isSubscribed, trialExpiry) {
   syncThemeColor();
   new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 })();
+
+window.onPullToRefresh = async function() {
+  try {
+    if (currentUser && typeof initWithUser === "function") {
+      initWithUser(currentUser);
+    }
+    const isSubscribed = localStorage.getItem('isSubscribed') === 'true';
+    const trialExpiry  = parseInt(localStorage.getItem('trialExpiry') || '0');
+    if (typeof _updateMockHomeBadge === "function") {
+      _updateMockHomeBadge(isSubscribed, trialExpiry);
+    }
+    await new Promise(r => setTimeout(r, 450));
+  } catch(e) {
+    console.warn('[Mock Home PTR]', e);
+  }
+};
 </script>
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>

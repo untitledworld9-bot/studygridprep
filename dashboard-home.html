@@ -53,6 +53,7 @@
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="pull-to-refresh.css">
 
 <script>
 window._iframeLoaded = window._iframeLoaded || {};
@@ -5329,8 +5330,24 @@ try {
     if (moved) return;
     location.href = "community.html";
   };
+
+  window.onPullToRefresh = async function() {
+    try {
+      if (typeof syncUserData === 'function') syncUserData();
+      if (window.UW && typeof window.UW.loadUserData === 'function') {
+        await window.UW.loadUserData();
+      }
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('uw_streak_changed'));
+      window.dispatchEvent(new CustomEvent('uw_xp_changed'));
+      await new Promise(r => setTimeout(r, 450));
+    } catch(e) {
+      console.warn('[Dashboard PTR]', e);
+    }
+  };
 })();
 </script>
 
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>

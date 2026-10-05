@@ -60,6 +60,7 @@ window.matchMedia("(prefers-color-scheme: dark)")
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="pull-to-refresh.css">
 
 <style>
 /* ─── VIEW TRANSITION ─── */
@@ -1296,6 +1297,25 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
     _utc();
   })();
+
+  window.onPullToRefresh = async function() {
+    try {
+      const name = localStorage.getItem("userName") || "Student";
+      const email = localStorage.getItem("userEmail") || "";
+      const goal = localStorage.getItem("goal") || "";
+      const examDate = localStorage.getItem("examDate") || "";
+      if (typeof renderProfile === "function") {
+        renderProfile(name, email, goal, examDate);
+      }
+      if (typeof renderCountdown === "function") {
+        renderCountdown(goal, examDate);
+      }
+      await new Promise(r => setTimeout(r, 450));
+    } catch(e) {
+      console.warn('[Profile PTR]', e);
+    }
+  };
 </script>
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>

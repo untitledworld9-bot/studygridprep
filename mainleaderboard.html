@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="pull-to-refresh.css">
   <script type="module" src="/uw-core.js"></script>
   <!-- THEME EARLY INIT -->
   <script>
@@ -871,6 +872,21 @@ window.matchMedia("(prefers-color-scheme: dark)")
   syncThemeColor();
   new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 })();
+
+window.onPullToRefresh = async function() {
+  try {
+    if (typeof loadLeaderboard === "function") {
+      await loadLeaderboard();
+    }
+    if (currentUser && typeof renderMyCard === "function") {
+      await renderMyCard(currentUser);
+    }
+    await new Promise(r => setTimeout(r, 450));
+  } catch(e) {
+    console.warn('[Leaderboard PTR]', e);
+  }
+};
 </script>
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>

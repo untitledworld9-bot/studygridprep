@@ -48,6 +48,7 @@
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="pull-to-refresh.css">
 
 <style>
 :root{
@@ -1448,8 +1449,15 @@ boot();
     clearInterval(hb);
     try { await updateDoc(userRef, { status: "offline", lastActive: Date.now(), currentPage: "" }); } catch {}
   });
+
+  window.onPullToRefresh = async function() {
+    if (typeof loadFirebase === "function") {
+      await loadFirebase();
+    }
+  };
 })();
 </script>
 
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>

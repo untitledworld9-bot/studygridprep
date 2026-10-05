@@ -34,6 +34,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="pull-to-refresh.css">
 
 <style>
 :root{
@@ -47,7 +48,9 @@
   --text:#E8F0FE; --text2:#8B9EC8; --text3:#3D5080;
   --header-bg:rgba(13,17,32,0.97); --nav-bg:rgba(13,17,32,0.98);
 }
-*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
+*, *::before, *::after{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body, button, input, select, textarea{ font-family:'Poppins',sans-serif; }
+.fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands { font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important; }
 html{ background:var(--bg); overflow-x:hidden; }
 body{ background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:84px; user-select:none; -webkit-user-select:none; touch-action:pan-y; }
 ::-webkit-scrollbar{ display:none; } * { scrollbar-width:none; }
@@ -120,7 +123,7 @@ async function loadFirebase(){
   for (const src of candidates) { try { return await import(src); } catch (e) {} }
   throw new Error('firebase.js not found');
 }
-const { db, collection, query, where, onSnapshot } = await loadFirebase();
+const { db, collection, query, where, onSnapshot, getDocs } = await loadFirebase();
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 
@@ -159,7 +162,18 @@ onSnapshot(query(collection(db,'collegeInfo'), where('status','==','published'))
   allColleges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   render();
 });
-</script>
 
+window.onPullToRefresh = async function() {
+  try {
+    const snap = await getDocs(query(collection(db,'collegeInfo'), where('status','==','published')));
+    allColleges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    await new Promise(r => setTimeout(r, 450));
+  } catch(e) {
+    console.warn('[Colleges PTR]', e);
+  }
+};
+</script>
+<script src="pull-to-refresh.js"></script>
 </body>
 </html>
