@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Exam Community – Study Grid Prep</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="/icon-192.png">
+<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+
+<!-- ✅ AUTH GUARD -->
+<script>
+(function(){
+  if(!localStorage.getItem("userName")){
+    document.documentElement.style.display='none';
+    window.location.replace("login.html");
+  }
+})();
+</script>
+
+<!-- THEME RESOLVER -->
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.getElementById("metaThemeColor");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+  }
+  applyTheme(resolveTheme());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){
+    if(localStorage.getItem("theme") === "system") applyTheme(resolveTheme());
+  });
+  window.addEventListener("storage", function(e){
+    if(e.key === "theme") applyTheme(resolveTheme());
+  });
+})();
+</script>
+
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="community.css">
+</head>
+
+<body>
+
+<!-- ─── 1. PERSONALIZED BUILDING COMMUNITY INTRO (3-4 SECONDS) ─── -->
+<div id="introOverlay">
+  <button class="intro-skip-btn" onclick="skipIntro()">Skip <i class="fa-solid fa-forward-step"></i></button>
+  
+  <div class="intro-node-network">
+    <div class="intro-pulse-ring"></div>
+    <div class="intro-pulse-ring-2"></div>
+    <div class="intro-floating-dot dot-1"></div>
+    <div class="intro-floating-dot dot-2"></div>
+    <div class="intro-floating-dot dot-3"></div>
+    <div class="intro-core-icon">
+      <i class="fa-solid fa-users-rays"></i>
+    </div>
+  </div>
+
+  <div class="intro-badge" id="introBadge">AI Community Engine</div>
+  <div class="intro-title" id="introTitle">Building Your <span>JEE Community</span></div>
+  <div class="intro-sub" id="introSub">Connecting active aspirants, organizing doubt threads &amp; curated discussions…</div>
+
+  <div class="intro-progress-bar">
+    <div class="intro-progress-fill" id="introProgressFill"></div>
+  </div>
+</div>
+
+<!-- ─── 2. CONTENT-HUB STYLE HEADER ─── -->
+<header class="hub-header">
+  <div class="hub-header-inner">
+    <button class="hub-back-btn" onclick="goBack()" aria-label="Go Back">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    
+    <div class="hub-title-wrap">
+      <div class="hub-title">
+        Exam Community <span class="exam-chip" onclick="openExamSwitcher()" id="headerExamBadge"><i class="fa-solid fa-graduation-cap"></i> <span id="headerExamName">JEE Main</span> <i class="fa-solid fa-chevron-down" style="font-size:9px;"></i></span>
+      </div>
+      <div class="hub-subtitle" id="headerExamSub">
+        <i class="fa-solid fa-circle-dot" style="color:var(--green);font-size:8px;"></i> Live Peer Hub · Zero Spam, Focused Studies
+      </div>
+    </div>
+
+    <div class="hub-header-actions">
+      <!-- 60-Minute Daily Restriction Tracker -->
+      <div class="time-limit-pill" id="timeLimitPill" title="Daily study limit to avoid social distraction">
+        <i class="fa-regular fa-clock"></i> <span id="timeLimitText">0m / 60m</span>
+      </div>
+
+      <!-- Notification Bell -->
+      <button class="hub-icon-btn" onclick="toggleNotifDrawer()" aria-label="Notifications">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notif-badge" id="notifBadgeDot"></span>
+      </button>
+
+      <!-- Theme Toggle -->
+      <button class="hub-icon-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- NOTIFICATION DRAWER -->
+<div class="notif-drawer" id="notifDrawer">
+  <div class="notif-head">
+    <span>Community Notifications</span>
+    <span style="font-size:11px;color:var(--text2);cursor:pointer;" onclick="markAllNotifsRead()">Mark read</span>
+  </div>
+  <div class="notif-list" id="notifList">
+    <!-- Rendered via JS -->
+  </div>
+</div>
+
+<!-- ─── 3. MAIN COMMUNITY VIEW ─── -->
+<div class="main-wrap" id="communityView">
+  
+  <!-- CREATE POST TRIGGER -->
+  <div class="post-trigger-card" onclick="openComposer()">
+    <div class="post-trigger-avatar" id="userAvatarSmall">U</div>
+    <div class="post-trigger-input" id="postPromptText">Ask an exam doubt, concept query or strategy tip…</div>
+    <button class="post-trigger-btn"><i class="fa-solid fa-plus"></i> Post</button>
+  </div>
+
+  <!-- CATEGORY FILTER STRIP -->
+  <div class="filter-strip">
+    <div class="filter-chip active" onclick="setCategoryFilter('all', this)"><i class="fa-solid fa-border-all"></i> All Posts</div>
+    <div class="filter-chip" onclick="setCategoryFilter('doubts', this)"><i class="fa-solid fa-circle-question" style="color:#F59E0B;"></i> Doubts ❓</div>
+    <div class="filter-chip" onclick="setCategoryFilter('news', this)"><i class="fa-solid fa-newspaper" style="color:#2563EB;"></i> Exam News 📰</div>
+    <div class="filter-chip" onclick="setCategoryFilter('strategy', this)"><i class="fa-solid fa-bullseye" style="color:#7C3AED;"></i> Prep Strategy 🎯</div>
+    <div class="filter-chip" onclick="setCategoryFilter('trending', this)"><i class="fa-solid fa-fire" style="color:#EF4444;"></i> Trending 🔥</div>
+  </div>
+
+  <!-- SEARCH & STATS BAR -->
+  <div class="community-subbar">
+    <div class="community-stat" id="postCountStat">
+      <i class="fa-solid fa-comments"></i> <span>Loading posts…</span>
+    </div>
+    <div class="community-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="communitySearchInput" placeholder="Search doubts or topics…" oninput="filterPostsBySearch(this.value)">
+    </div>
+  </div>
+
+  <!-- POSTS FEED CONTAINER -->
+  <div id="postsFeedContainer">
+    <!-- Posts will be rendered here dynamically -->
+  </div>
+
+</div>
+
+<!-- ─── 4. MY POSTS VIEW ─── -->
+<div class="main-wrap" id="myPostsView" style="display:none;">
+  <div style="margin-bottom:16px;">
+    <h2 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;">My Community Activity</h2>
+    <p style="font-size:12.5px;color:var(--text2);">All questions, doubts &amp; discussions posted by you across this exam track.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;text-align:center;">
+      <div style="font-size:20px;font-weight:900;color:var(--accent);" id="myTotalPostsCount">0</div>
+      <div style="font-size:11px;color:var(--text3);font-weight:600;">Posts</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;text-align:center;">
+      <div style="font-size:20px;font-weight:900;color:var(--green);" id="myTotalViewsCount">0</div>
+      <div style="font-size:11px;color:var(--text3);font-weight:600;">Views</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;text-align:center;">
+      <div style="font-size:20px;font-weight:900;color:#EF4444;" id="myTotalLikesCount">0</div>
+      <div style="font-size:11px;color:var(--text3);font-weight:600;">Likes</div>
+    </div>
+  </div>
+
+  <div id="myPostsFeedContainer">
+    <!-- Rendered via JS -->
+  </div>
+</div>
+
+<!-- ─── FLOATING ACTION BUTTON (MOBILE) ─── -->
+<button class="fab-post" onclick="openComposer()">
+  <i class="fa-solid fa-pen-to-square"></i> Ask Question
+</button>
+
+<!-- ─── 5. COMPOSER MODAL (STRICT SAFETY & ZERO LINKS/CONTACTS) ─── -->
+<div class="modal-overlay" id="composerModal">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-title"><i class="fa-solid fa-pen-nib" style="color:var(--accent);margin-right:6px;"></i> Create Community Post</div>
+      <button class="modal-close-btn" onclick="closeComposer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Category selector -->
+    <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Select Post Category</div>
+    <div class="composer-cat-select">
+      <div class="cat-choice selected" data-cat="doubts" onclick="selectCatChoice(this)">❓ Doubts</div>
+      <div class="cat-choice" data-cat="news" onclick="selectCatChoice(this)">📰 Exam News</div>
+      <div class="cat-choice" data-cat="strategy" onclick="selectCatChoice(this)">🎯 Strategy</div>
+      <div class="cat-choice" data-cat="general" onclick="selectCatChoice(this)">💬 Discussion</div>
+    </div>
+
+    <!-- Title input -->
+    <input type="text" class="composer-input" id="postTitleInput" placeholder="Question or subject topic (e.g. Rotational Dynamics PYQ doubt)" maxlength="140">
+
+    <!-- Body textarea -->
+    <textarea class="composer-textarea" id="postBodyInput" placeholder="Type your doubt, query or key formula points in detail. Be precise so peers can assist you!"></textarea>
+
+    <!-- Optional Code Snippet (B.Tech / Engg) -->
+    <div class="code-toggle-wrap" id="codeToggleWrap">
+      <div class="code-toggle-label">
+        <i class="fa-solid fa-code" style="color:var(--accent);"></i> Include Code Snippet <span style="font-size:10px;color:var(--text3);">(Optional for Engg / B.Tech)</span>
+      </div>
+      <input type="checkbox" id="codeSnippetChk" onchange="toggleCodeBox(this.checked)">
+    </div>
+
+    <div class="code-snippet-box" id="codeSnippetBox">
+      <select class="code-lang-select" id="codeLangSelect">
+        <option value="cpp">C++</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="c">C Language</option>
+        <option value="web">HTML / Web</option>
+      </select>
+      <textarea class="code-input" id="postCodeInput" placeholder="// Paste your code logic or algorithm here..."></textarea>
+    </div>
+
+    <!-- Emoji quick bar -->
+    <div class="emoji-strip">
+      <span style="font-size:11px;font-weight:600;color:var(--text3);margin-right:4px;">Express:</span>
+      <button class="emoji-btn" onclick="insertEmoji('❓')">❓</button>
+      <button class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+      <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+      <button class="emoji-btn" onclick="insertEmoji('📚')">📚</button>
+      <button class="emoji-btn" onclick="insertEmoji('⚡')">⚡</button>
+      <button class="emoji-btn" onclick="insertEmoji('🎯')">🎯</button>
+      <button class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
+      <button class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
+    </div>
+
+    <!-- Strict safety notice -->
+    <div class="safety-notice">
+      <i class="fa-solid fa-shield-halved" style="font-size:14px;margin-top:2px;"></i>
+      <div>
+        <b>Study Focus &amp; Privacy Policy:</b> External links, Telegram/WhatsApp groups, and phone numbers are strictly prohibited. Violating posts will be automatically rejected.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="tl-btn-secondary" style="flex:1;" onclick="closeComposer()">Cancel</button>
+      <button class="tl-btn-primary" style="flex:1;margin-bottom:0;" onclick="submitPost()"><i class="fa-solid fa-paper-plane"></i> Publish Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 6. SECURITY WARNING POPUP (FOR LINKS / PHONE NUMBERS) ─── -->
+<div class="security-alert-box" id="securityAlertBox">
+  <div class="sec-ico"><i class="fa-solid fa-triangle-exclamation"></i></div>
+  <div class="sec-title" id="secAlertTitle">Post Blocked</div>
+  <div class="sec-desc" id="secAlertDesc">Links, social media handles, and phone numbers are strictly prohibited to protect student focus and privacy.</div>
+  <button class="sec-btn" onclick="closeSecurityAlert()">I Understand</button>
+</div>
+
+<!-- ─── 7. EXAM SWITCHER MODAL ─── -->
+<div class="modal-overlay" id="examSwitcherModal">
+  <div class="modal-sheet" style="max-width:380px;">
+    <div class="modal-head">
+      <div class="modal-title"><i class="fa-solid fa-graduation-cap" style="color:var(--accent);margin-right:6px;"></i> Switch Exam Track</div>
+      <button class="modal-close-btn" onclick="closeExamSwitcher()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Select an exam community to view targeted questions and peer discussions:</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="cat-choice" onclick="selectExamGoal('JEE Main')">🚀 JEE Main &amp; Advanced</div>
+      <div class="cat-choice" onclick="selectExamGoal('NEET')">🩺 NEET UG (Medical)</div>
+      <div class="cat-choice" onclick="selectExamGoal('CUET')">🎓 CUET UG (All Domains)</div>
+      <div class="cat-choice" onclick="selectExamGoal('Boards')">📖 Class 12 Boards</div>
+      <div class="cat-choice" onclick="selectExamGoal('B.Tech')">💻 B.Tech &amp; Engineering</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── REPORT ISSUE MODAL ─── -->
+<div class="modal-overlay" id="reportIssueModal">
+  <div class="modal-sheet" style="max-width:440px;">
+    <div class="modal-head">
+      <div class="modal-title"><i class="fa-solid fa-flag" style="color:var(--red);margin-right:6px;"></i> Report Post to Admin</div>
+      <button class="modal-close-btn" onclick="closeReportModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div style="font-size:12.5px;color:var(--text2);margin-bottom:12px;">
+      Help keep our study community safe, spam-free, and respectful. Select a reason for reporting:
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <label class="report-option-label">
+        <input type="radio" name="reportReason" value="Spam or promotional ads" checked>
+        <span>Spam or promotional ads</span>
+      </label>
+      <label class="report-option-label">
+        <input type="radio" name="reportReason" value="Sharing links, Telegram or WhatsApp groups">
+        <span>Sharing links, Telegram or WhatsApp groups</span>
+      </label>
+      <label class="report-option-label">
+        <input type="radio" name="reportReason" value="Sharing phone numbers or personal contact info">
+        <span>Sharing phone numbers or personal contact info</span>
+      </label>
+      <label class="report-option-label">
+        <input type="radio" name="reportReason" value="Inappropriate language, abuse or harassment">
+        <span>Inappropriate language, abuse or harassment</span>
+      </label>
+      <label class="report-option-label">
+        <input type="radio" name="reportReason" value="Misleading exam information or off-topic">
+        <span>Misleading exam information or off-topic</span>
+      </label>
+      <label class="report-option-label">
+        <input type="radio" name="reportReason" value="Other study guidelines violation">
+        <span>Other study guidelines violation</span>
+      </label>
+    </div>
+
+    <textarea class="composer-textarea" id="reportDetailsInput" style="min-height:70px;margin-bottom:14px;" placeholder="Optional additional details for moderators..."></textarea>
+
+    <div style="display:flex;gap:10px;">
+      <button class="tl-btn-secondary" style="flex:1;" onclick="closeReportModal()">Cancel</button>
+      <button class="tl-btn-primary" style="flex:1;margin-bottom:0;background:var(--red);box-shadow:0 4px 14px rgba(239,68,68,0.35);" onclick="submitPostReport()"><i class="fa-solid fa-flag"></i> Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── REPORT SUCCESS ANIMATION POPUP ─── -->
+<div class="report-success-overlay" id="reportSuccessOverlay">
+  <div class="report-success-card">
+    <div class="rep-success-icon">
+      <i class="fa-solid fa-shield-check"></i>
+    </div>
+    <div class="rep-success-title">Issue Flagged to Admin!</div>
+    <div class="rep-success-sub">
+      Thank you for being a vigilant student. Our moderation team has flagged this post and will take disciplinary action if guidelines are breached.
+    </div>
+    <button class="tl-btn-primary" onclick="closeReportSuccess()">Continue Studying</button>
+  </div>
+</div>
+
+<!-- ─── 8. 60-MINUTE DAILY RESTRICTION OVERLAY ─── -->
+<div id="timeLimitOverlay">
+  <div class="time-limit-card">
+    <span class="tl-emoji">⏰</span>
+    <div class="tl-title">Daily Study Time Limit Reached</div>
+    <div class="tl-sub">
+      You have spent <b>60 minutes</b> in the Community today! Study Grid Prep enforces this restriction so your preparation stays disciplined and focused on actual solving rather than endless scrolling.
+    </div>
+    <button class="tl-btn-primary" onclick="location.href='mock-home.html'">
+      <i class="fa-solid fa-pen-nib"></i> Practice Mock Tests
+    </button>
+    <button class="tl-btn-secondary" onclick="location.href='dashboard-home.html'">
+      <i class="fa-solid fa-house"></i> Return to Dashboard
+    </button>
+  </div>
+</div>
+
+<!-- ─── 9. BOTTOM NAVIGATION (HOME | COMMUNITY | MY POSTS) ─── -->
+<nav class="comm-bottom-nav">
+  <button class="comm-nav-tab" id="navHomeTab" onclick="location.href='dashboard-home.html'">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </button>
+  <button class="comm-nav-tab active" id="navCommunityTab" onclick="switchMainTab('community')">
+    <i class="fa-solid fa-comments"></i>
+    <span>Community</span>
+  </button>
+  <button class="comm-nav-tab" id="navMyPostsTab" onclick="switchMainTab('myPosts')">
+    <i class="fa-solid fa-user-pen"></i>
+    <span>My Posts</span>
+  </button>
+</nav>
+
+<script>
+/* ─── APP STATE & STORAGE INITIALIZATION ─── */
+const SGP_USER_NAME = localStorage.getItem("userName") || "Student";
+const SGP_USER_EMAIL = localStorage.getItem("userEmail") || "";
+const SGP_USER_UID = localStorage.getItem("userUid") || SGP_USER_EMAIL || "usr_" + Math.random().toString(36).slice(2, 9);
+const TODAY_STR = new Date().toISOString().slice(0, 10);
+
+let currentExam = localStorage.getItem("goal") || "JEE Main";
+if (currentExam === "JEE") currentExam = "JEE Main";
+
+let activeFilter = "all";
+let currentTab = "community"; // 'community' | 'myPosts'
+let dailyCommunitySeconds = parseInt(localStorage.getItem("sgp_comm_sec_" + TODAY_STR) || "0", 10);
+let timerInterval = null;
+
+/* ─── INITIAL SEED COMMUNITY POSTS ─── */
+const SEED_COMMUNITY_POSTS = [
+  {
+    id: "post_seed_1",
+    exam: "JEE Main",
+    category: "doubts",
+    authorName: "Aman Verma",
+    authorUid: "usr_aman_102",
+    createdAt: Date.now() - 3600000 * 2,
+    title: "How to tackle difficult Rotational Motion questions in Physics?",
+    body: "Whenever I get mixed questions of rolling without slipping on an inclined wedge combined with angular impulse, my signs get confused. Does anyone have a systematic 3-step checklist to avoid negative marking in JEE Main?",
+    code: null,
+    likes: ["usr_demo_1", "usr_demo_2", "usr_demo_3"],
+    dislikes: [],
+    views: ["usr_seed_1", "usr_seed_2", "usr_seed_3", "usr_seed_4", "usr_seed_5", "usr_seed_6"],
+    replies: [
+      {
+        id: "rep_1",
+        authorName: "Priya Sharma",
+        authorUid: "usr_priya",
+        createdAt: Date.now() - 3600000,
+        text: "Always take torque about the instantaneous axis of zero velocity (IAOR). It eliminates the normal and friction forces directly! Saves 2 mins."
+      }
+    ]
+  },
+  {
+    id: "post_seed_2",
+    exam: "JEE Main",
+    category: "strategy",
+    authorName: "Rohan Kulkarni",
+    authorUid: "usr_rohan",
+    createdAt: Date.now() - 3600000 * 5,
+    title: "Coordinate Geometry short formula revision sheet ready 🔥",
+    body: "Shared key tangents conditions for Parabola, Ellipse & Hyperbola. Remember that the product of perpendiculars from foci onto any tangent is always b^2 for ellipse! Keep revising daily.",
+    code: null,
+    likes: ["usr_demo_1", "usr_demo_4", "usr_demo_7", "usr_demo_8"],
+    dislikes: [],
+    views: ["usr_seed_1", "usr_seed_3", "usr_seed_8", "usr_seed_9", "usr_seed_10"],
+    replies: []
+  },
+  {
+    id: "post_seed_3",
+    exam: "JEE Main",
+    category: "news",
+    authorName: "Ayush Gupta",
+    authorUid: "usr_ayush",
+    createdAt: Date.now() - 3600000 * 9,
+    title: "Official NTA Session updates & center instructions verified",
+    body: "Make sure your Aadhaar card details match your application form exactly. Do not carry any metal items or electronic calculators. Best of luck everyone!",
+    code: null,
+    likes: ["usr_demo_2", "usr_demo_5", "usr_demo_6"],
+    dislikes: [],
+    views: ["usr_seed_1", "usr_seed_2", "usr_seed_11", "usr_seed_12"],
+    replies: []
+  },
+  {
+    id: "post_seed_4",
+    exam: "NEET",
+    category: "doubts",
+    authorName: "Simran Kaur",
+    authorUid: "usr_simran",
+    createdAt: Date.now() - 3600000 * 4,
+    title: "Genetics pedigree chart doubt from NCERT Exemplar",
+    body: "In autosomal recessive traits with unaffected parents having an affected child, what is the probability that an unaffected sibling is a carrier? It should be 2/3 and not 1/2 right?",
+    code: null,
+    likes: ["usr_demo_3", "usr_demo_4"],
+    dislikes: [],
+    views: ["usr_seed_2", "usr_seed_4"],
+    replies: [
+      {
+        id: "rep_2",
+        authorName: "Dr. Ananya",
+        authorUid: "usr_ananya",
+        createdAt: Date.now() - 3600000 * 2,
+        text: "Yes, exactly 2/3! Because we already know the child is unaffected (aa is ruled out, leaving only AA, Aa, Aa)."
+      }
+    ]
+  },
+  {
+    id: "post_seed_5",
+    exam: "B.Tech",
+    category: "doubts",
+    authorName: "Harsh Vardhan",
+    authorUid: "usr_harsh",
+    createdAt: Date.now() - 3600000 * 3,
+    title: "Time complexity analysis for recursive binary tree traversal",
+    body: "Working on Invert Binary Tree in C++. Is the auxiliary recursion stack space O(h) or O(n) in the worst case skew tree?",
+    code: "TreeNode* invertTree(TreeNode* root) {\n    if (!root) return nullptr;\n    swap(root->left, root->right);\n    invertTree(root->left);\n    invertTree(root->right);\n    return root;\n}",
+    codeLang: "cpp",
+    likes: ["usr_demo_1", "usr_demo_9"],
+    dislikes: [],
+    views: ["usr_seed_1", "usr_seed_5", "usr_seed_7"],
+    replies: [
+      {
+        id: "rep_3",
+        authorName: "Devansh",
+        authorUid: "usr_devansh",
+        createdAt: Date.now() - 3600000,
+        text: "In worst case skewed tree height h = n, so O(n). In balanced tree it is O(log n)."
+      }
+    ]
+  },
+  {
+    id: "post_seed_6",
+    exam: "CUET",
+    category: "strategy",
+    authorName: "Tanvi Saxena",
+    authorUid: "usr_tanvi",
+    createdAt: Date.now() - 3600000 * 6,
+    title: "General Test Numerical Ability formula cheat sheet",
+    body: "Percentages, profit-loss multipliers and speed-time-distance shortcuts are 40% of the section. Focus on speed maths calculations daily for 20 mins.",
+    code: null,
+    likes: ["usr_demo_3", "usr_demo_5"],
+    dislikes: [],
+    views: ["usr_seed_2", "usr_seed_6"],
+    replies: []
+  }
+];
+
+function loadPosts(){
+  try {
+    const raw = localStorage.getItem("sgp_community_posts_v2");
+    if (!raw) {
+      localStorage.setItem("sgp_community_posts_v2", JSON.stringify(SEED_COMMUNITY_POSTS));
+      return SEED_COMMUNITY_POSTS;
+    }
+    return JSON.parse(raw);
+  } catch(e) {
+    return SEED_COMMUNITY_POSTS;
+  }
+}
+
+function savePosts(posts){
+  try {
+    localStorage.setItem("sgp_community_posts_v2", JSON.stringify(posts));
+  } catch(e) {
+    console.warn("Storage error", e);
+  }
+}
+
+function loadNotifications(){
+  try {
+    const raw = localStorage.getItem("sgp_comm_notifs_" + SGP_USER_UID);
+    return raw ? JSON.parse(raw) : [
+      {
+        id: "notif_1",
+        postId: "post_seed_1",
+        title: "Priya Sharma replied to your doubt",
+        body: "Take torque about IAOR to eliminate friction...",
+        time: Date.now() - 3600000,
+        read: false
+      }
+    ];
+  } catch(e) { return []; }
+}
+
+function saveNotifications(list){
+  try {
+    localStorage.setItem("sgp_comm_notifs_" + SGP_USER_UID, JSON.stringify(list));
+    updateNotifBadge();
+  } catch(e){}
+}
+
+/* ─── 1. PERSONALIZED 3.5s BUILDING INTRO ─── */
+function runPersonalizedIntro(){
+  const ov = document.getElementById("introOverlay");
+  const title = document.getElementById("introTitle");
+  const sub = document.getElementById("introSub");
+  const fill = document.getElementById("introProgressFill");
+
+  title.innerHTML = `Building Your <span>${escapeHtml(currentExam)} Community</span>`;
+  
+  const steps = [
+    { t: 0, text: `Connecting active ${escapeHtml(currentExam)} aspirants & verified solvers…`, pct: "25%" },
+    { t: 1000, text: `Structuring ${escapeHtml(currentExam)} syllabus doubt streams & test tips…`, pct: "55%" },
+    { t: 2100, text: "Configuring distraction-free student discussion feeds…", pct: "85%" },
+    { t: 3000, text: `Personalized ${escapeHtml(currentExam)} Community Ready! 🚀`, pct: "100%" }
+  ];
+
+  steps.forEach(step => {
+    setTimeout(() => {
+      if (ov.classList.contains("fade-out")) return;
+      sub.textContent = step.text;
+      fill.style.width = step.pct;
+    }, step.t);
+  });
+
+  setTimeout(() => {
+    skipIntro();
+  }, 3600);
+}
+
+function skipIntro(){
+  const ov = document.getElementById("introOverlay");
+  ov.classList.add("fade-out");
+  setTimeout(() => { ov.style.display = "none"; }, 500);
+}
+
+/* ─── 2. DAILY 60-MINUTE STUDY RESTRICTION TIMER ─── */
+function startStudyTimer(){
+  clearInterval(timerInterval);
+  updateTimerUI();
+
+  timerInterval = setInterval(() => {
+    dailyCommunitySeconds++;
+    localStorage.setItem("sgp_comm_sec_" + TODAY_STR, String(dailyCommunitySeconds));
+    updateTimerUI();
+
+    if (dailyCommunitySeconds >= 3600) { // 60 minutes
+      showTimeLimitModal();
+      clearInterval(timerInterval);
+    }
+  }, 1000);
+}
+
+function updateTimerUI(){
+  const mins = Math.floor(dailyCommunitySeconds / 60);
+  const pill = document.getElementById("timeLimitPill");
+  const txt = document.getElementById("timeLimitText");
+  txt.textContent = `${mins}m / 60m`;
+
+  if (mins >= 50 && mins < 60) {
+    pill.className = "time-limit-pill warn";
+  } else if (mins >= 60) {
+    pill.className = "time-limit-pill danger";
+    showTimeLimitModal();
+  }
+}
+
+function showTimeLimitModal(){
+  document.getElementById("timeLimitOverlay").classList.add("open");
+}
+
+/* ─── 3. STRICT CONTENT SECURITY CHECKS (ZERO LINKS / NO CONTACT INFO) ─── */
+function checkContentSecurity(text){
+  const clean = String(text || "");
+
+  // 1. Link & URL pattern detection
+  const linkRegex = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|in|org|net|io|edu|gov|co|app|xyz|me|link|ai|tech|online)\b|t\.me|wa\.me|discord\.gg|bit\.ly|tinyurl)/i;
+  if (linkRegex.test(clean)) {
+    return {
+      allowed: false,
+      reason: "link",
+      title: "🚫 Link Sharing Blocked",
+      desc: "External links, websites, Telegram, and WhatsApp links are strictly prohibited to prevent spam and maintain a clean study environment."
+    };
+  }
+
+  // 2. Phone numbers & Consecutive numbers detection (10 continuous digits or +91 or 6+ digits)
+  const phoneRegex = /(\+?91[\s-]?)?[6789]\d{9}|\b\d{5}[\s-]?\d{5}\b|\b\d{6,}\b/;
+  if (phoneRegex.test(clean.replace(/\s+/g, ' '))) {
+    return {
+      allowed: false,
+      reason: "contact",
+      title: "⚠️ Phone Number / Contact Blocked",
+      desc: "Sharing phone numbers, contact info, or consecutive digit sequences is strictly prohibited for student safety and privacy."
+    };
+  }
+
+  // 3. Social platform handles (@insta, telegram, snapchat, etc.)
+  const socialRegex = /(@[a-zA-Z0-9_]{3,}|insta|instagram|snapchat|telegram|whatsapp|wa\s*no|dm\s*me)/i;
+  if (socialRegex.test(clean)) {
+    // allow @peer mentions if they match standard student names, but block explicit handles
+    if (/(instagram|insta\s*:|telegram\s*:|snapchat|wa\s*number|dm\s*on\s*insta)/i.test(clean)) {
+      return {
+        allowed: false,
+        reason: "social",
+        title: "⚠️ Social Handles Blocked",
+        desc: "Sharing social media usernames (Instagram, Telegram, Snapchat) is not allowed. Keep discussions focused on exam preparation."
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+function showSecurityAlert(title, desc){
+  document.getElementById("secAlertTitle").textContent = title;
+  document.getElementById("secAlertDesc").textContent = desc;
+  document.getElementById("securityAlertBox").classList.add("show");
+}
+
+function closeSecurityAlert(){
+  document.getElementById("securityAlertBox").classList.remove("show");
+}
+
+/* ─── 4. RENDERING POSTS WITH UNIQUE VIEWS ─── */
+function renderCommunity(){
+  const allPosts = loadPosts();
+  
+  // Filter by user's current selected exam!
+  let examPosts = allPosts.filter(p => {
+    if (currentExam === "B.Tech" && (p.exam === "B.Tech" || p.exam === "JEE Main")) return true;
+    return p.exam.toLowerCase().includes(currentExam.toLowerCase()) || currentExam.toLowerCase().includes(p.exam.toLowerCase());
+  });
+
+  if (examPosts.length === 0) {
+    // If no posts yet for this specific exam, show all posts as fallback
+    examPosts = allPosts;
+  }
+
+  // Filter by category
+  if (activeFilter !== "all") {
+    if (activeFilter === "trending") {
+      examPosts.sort((a,b) => ((b.likes?.length || 0) + (b.replies?.length || 0) + (b.views?.length || 0)) - ((a.likes?.length || 0) + (a.replies?.length || 0) + (a.views?.length || 0)));
+    } else {
+      examPosts = examPosts.filter(p => p.category === activeFilter);
+    }
+  } else {
+    // Default sort by recent
+    examPosts.sort((a,b) => b.createdAt - a.createdAt);
+  }
+
+  // Count
+  const countEl = document.getElementById("postCountStat");
+  countEl.innerHTML = `<i class="fa-solid fa-comments"></i> <span>${examPosts.length} discussions in ${escapeHtml(currentExam)}</span>`;
+
+  // Render cards
+  const container = document.getElementById("postsFeedContainer");
+  if (examPosts.length === 0) {
+    container.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 20px;text-align:center;margin-top:20px;">
+        <i class="fa-solid fa-comments" style="font-size:38px;color:var(--text3);margin-bottom:12px;display:block;"></i>
+        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">No posts in this category yet</div>
+        <p style="font-size:12.5px;color:var(--text2);margin-bottom:16px;">Be the first student to post a doubt or tip in ${escapeHtml(currentExam)}!</p>
+        <button class="tl-btn-primary" style="display:inline-block;width:auto;padding:10px 20px;" onclick="openComposer()">Ask First Question</button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = examPosts.map(p => createPostCardHtml(p)).join("");
+
+  // Record unique view for current user for every visible post
+  recordUniqueViews(examPosts);
+}
+
+function createPostCardHtml(p){
+  const isLiked = p.likes && p.likes.includes(SGP_USER_UID);
+  const isDisliked = p.dislikes && p.dislikes.includes(SGP_USER_UID);
+  const isMyPost = p.authorUid === SGP_USER_UID;
+  const uniqueViewsCount = p.views ? p.views.length : 1;
+  const replyCount = p.replies ? p.replies.length : 0;
+  const timeAgo = formatTimeAgo(p.createdAt);
+
+  let codeHtml = "";
+  if (p.code) {
+    codeHtml = `
+      <div class="post-code-block">
+        <div class="code-header">
+          <span>${escapeHtml(p.codeLang || 'CODE')}</span>
+          <button class="copy-code-btn" onclick="copyCode(this, '${p.id}')"><i class="fa-regular fa-copy"></i> Copy</button>
+        </div>
+        <pre><code id="code_${p.id}">${escapeHtml(p.code)}</code></pre>
+      </div>`;
+  }
+
+  return `
+    <div class="post-card" id="${p.id}">
+      <div class="post-header">
+        <div class="post-author-wrap">
+          <div class="post-avatar">${escapeHtml((p.authorName || 'U').charAt(0).toUpperCase())}</div>
+          <div class="post-meta">
+            <div class="post-author-name">
+              ${escapeHtml(p.authorName || 'Peer Aspirant')}
+              <span class="author-badge">Student</span>
+            </div>
+            <div class="post-time-exam">
+              <span>${timeAgo}</span> · 
+              <span class="cat-tag ${escapeHtml(p.category)}">${escapeHtml(p.category)}</span>
+            </div>
+          </div>
+        </div>
+        ${isMyPost ? `
+          <button style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;" onclick="deletePost('${p.id}')" title="Delete post">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>` : ''}
+      </div>
+
+      ${p.reported ? `
+        <div class="post-reported-badge">
+          <i class="fa-solid fa-flag"></i> Flagged for Admin Review (${escapeHtml(p.reportReason || 'Reported')})
+        </div>
+      ` : ''}
+
+      <div class="post-title">${escapeHtml(p.title)}</div>
+      <div class="post-body">${formatPostBody(p.body)}</div>
+      ${codeHtml}
+
+      <!-- ENGAGEMENT ACTIONS -->
+      <div class="post-actions">
+        <div class="post-actions-left">
+          <button class="action-btn ${isLiked ? 'active-like' : ''}" onclick="toggleLike('${p.id}')">
+            <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart"></i>
+            <span>${p.likes?.length || 0}</span>
+          </button>
+          <button class="action-btn ${isDisliked ? 'active-dislike' : ''}" onclick="toggleDislike('${p.id}')">
+            <i class="fa-${isDisliked ? 'solid' : 'regular'} fa-thumbs-down"></i>
+          </button>
+          <button class="action-btn" onclick="toggleReplies('${p.id}')">
+            <i class="fa-regular fa-comment-dots"></i>
+            <span>${replyCount} ${replyCount === 1 ? 'Reply' : 'Replies'}</span>
+          </button>
+          <button class="action-btn flag-btn" onclick="openReportModal('${p.id}')" title="Report Issue to Admin" style="color:var(--text3);">
+            <i class="fa-regular fa-flag"></i>
+            <span>Report</span>
+          </button>
+          <button class="action-btn" onclick="sharePost('${p.id}')" title="Share Post">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+        </div>
+        <!-- Unique Views Count -->
+        <div class="views-pill">
+          <i class="fa-regular fa-eye"></i> ${uniqueViewsCount} ${uniqueViewsCount === 1 ? 'view' : 'views'}
+        </div>
+      </div>
+
+      <!-- INLINE REPLIES SECTION -->
+      <div class="replies-wrap" id="replies_${p.id}">
+        <div class="reply-list" id="replyList_${p.id}">
+          ${(p.replies || []).map(r => `
+            <div class="reply-item">
+              <div class="reply-avatar">${escapeHtml((r.authorName || 'P').charAt(0).toUpperCase())}</div>
+              <div class="reply-content">
+                <div class="reply-head">
+                  <span class="reply-author">${escapeHtml(r.authorName)}</span>
+                  <span class="reply-time">${formatTimeAgo(r.createdAt)}</span>
+                </div>
+                <div class="reply-text">${formatReplyText(r.text)}</div>
+                <div class="reply-actions">
+                  <button class="reply-sub-btn" onclick="mentionUserInReply('${p.id}', '${escapeHtml(r.authorName)}')">Reply @${escapeHtml(r.authorName)}</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Reply Input Bar -->
+        <div class="reply-input-bar">
+          <input type="text" id="replyInput_${p.id}" placeholder="Reply or answer this doubt..." onkeydown="if(event.key==='Enter') submitReply('${p.id}')">
+          <button class="reply-send-btn" onclick="submitReply('${p.id}')" title="Send Reply">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ─── UNIQUE VIEWS PER USER ─── */
+function recordUniqueViews(posts){
+  let changed = false;
+  posts.forEach(p => {
+    if (!p.views) p.views = [];
+    if (!p.views.includes(SGP_USER_UID)) {
+      p.views.push(SGP_USER_UID);
+      changed = true;
+    }
+  });
+  if (changed) {
+    const all = loadPosts();
+    const map = new Map(posts.map(p => [p.id, p]));
+    const updated = all.map(p => map.has(p.id) ? map.get(p.id) : p);
+    savePosts(updated);
+  }
+}
+
+/* ─── INTERACTIONS: LIKE / DISLIKE ─── */
+function toggleLike(postId){
+  const posts = loadPosts();
+  const post = posts.find(p => p.id === postId);
+  if (!post) return;
+  if (!post.likes) post.likes = [];
+  if (!post.dislikes) post.dislikes = [];
+
+  const idx = post.likes.indexOf(SGP_USER_UID);
+  if (idx > -1) {
+    post.likes.splice(idx, 1);
+  } else {
+    post.likes.push(SGP_USER_UID);
+    // Remove dislike if any
+    const dIdx = post.dislikes.indexOf(SGP_USER_UID);
+    if (dIdx > -1) post.dislikes.splice(dIdx, 1);
+
+    // Notify author if not self
+    if (post.authorUid && post.authorUid !== SGP_USER_UID) {
+      addNotification({
+        title: `${SGP_USER_NAME} liked your post`,
+        body: post.title,
+        postId: post.id
+      });
+    }
+  }
+
+  savePosts(posts);
+  renderCommunity();
+}
+
+function toggleDislike(postId){
+  const posts = loadPosts();
+  const post = posts.find(p => p.id === postId);
+  if (!post) return;
+  if (!post.likes) post.likes = [];
+  if (!post.dislikes) post.dislikes = [];
+
+  const idx = post.dislikes.indexOf(SGP_USER_UID);
+  if (idx > -1) {
+    post.dislikes.splice(idx, 1);
+  } else {
+    post.dislikes.push(SGP_USER_UID);
+    // Remove like
+    const lIdx = post.likes.indexOf(SGP_USER_UID);
+    if (lIdx > -1) post.likes.splice(lIdx, 1);
+  }
+
+  savePosts(posts);
+  renderCommunity();
+}
+
+/* ─── REPLIES & @MENTIONS ─── */
+function toggleReplies(postId){
+  const wrap = document.getElementById("replies_" + postId);
+  if (wrap) wrap.classList.toggle("open");
+}
+
+function mentionUserInReply(postId, authorName){
+  const inp = document.getElementById("replyInput_" + postId);
+  if (inp) {
+    inp.value = `@${authorName} ` + inp.value.replace(/@\w+\s*/g, '');
+    inp.focus();
+  }
+}
+
+function submitReply(postId){
+  const inp = document.getElementById("replyInput_" + postId);
+  const text = (inp ? inp.value : "").trim();
+  if (!text) return;
+
+  // Strict check
+  const check = checkContentSecurity(text);
+  if (!check.allowed) {
+    showSecurityAlert(check.title, check.desc);
+    return;
+  }
+
+  const posts = loadPosts();
+  const post = posts.find(p => p.id === postId);
+  if (!post) return;
+  if (!post.replies) post.replies = [];
+
+  const newReply = {
+    id: "rep_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+    authorName: SGP_USER_NAME,
+    authorUid: SGP_USER_UID,
+    createdAt: Date.now(),
+    text
+  };
+
+  post.replies.push(newReply);
+  savePosts(posts);
+
+  // Notify post author or mentioned user
+  if (post.authorUid && post.authorUid !== SGP_USER_UID) {
+    addNotification({
+      title: `${SGP_USER_NAME} replied to your post`,
+      body: text.length > 60 ? text.slice(0, 60) + '…' : text,
+      postId: post.id
+    });
+  }
+
+  // Check if someone was @mentioned
+  const mentions = text.match(/@([a-zA-Z0-9_]+)/g);
+  if (mentions) {
+    mentions.forEach(m => {
+      addNotification({
+        title: `${SGP_USER_NAME} mentioned you in a comment`,
+        body: text,
+        postId: post.id
+      });
+    });
+  }
+
+  inp.value = "";
+  renderCommunity();
+  // Keep replies open
+  const wrap = document.getElementById("replies_" + postId);
+  if (wrap) wrap.classList.add("open");
+}
+
+/* ─── COMPOSER & SUBMIT POST ─── */
+let selectedCategory = "doubts";
+
+function openComposer(){
+  document.getElementById("postTitleInput").value = "";
+  document.getElementById("postBodyInput").value = "";
+  document.getElementById("postCodeInput").value = "";
+  document.getElementById("codeSnippetChk").checked = false;
+  document.getElementById("codeSnippetBox").classList.remove("show");
+  document.getElementById("composerModal").classList.add("open");
+}
+
+function closeComposer(){
+  document.getElementById("composerModal").classList.remove("open");
+}
+
+function selectCatChoice(el){
+  document.querySelectorAll(".cat-choice").forEach(c => c.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedCategory = el.getAttribute("data-cat") || "doubts";
+}
+
+function toggleCodeBox(show){
+  const b = document.getElementById("codeSnippetBox");
+  if (show) b.classList.add("show"); else b.classList.remove("show");
+}
+
+function insertEmoji(em){
+  const ta = document.getElementById("postBodyInput");
+  ta.value += em;
+  ta.focus();
+}
+
+function submitPost(){
+  const title = document.getElementById("postTitleInput").value.trim();
+  const body = document.getElementById("postBodyInput").value.trim();
+  const hasCode = document.getElementById("codeSnippetChk").checked;
+  const code = hasCode ? document.getElementById("postCodeInput").value.trim() : null;
+  const codeLang = hasCode ? document.getElementById("codeLangSelect").value : null;
+
+  if (!title) {
+    alert("Please write a question or topic title.");
+    return;
+  }
+  if (!body && !code) {
+    alert("Please describe your doubt or query in the body text.");
+    return;
+  }
+
+  // Strict Security & Link / Contact Checker
+  const checkCombined = checkContentSecurity(title + " " + body + " " + (code || ""));
+  if (!checkCombined.allowed) {
+    showSecurityAlert(checkCombined.title, checkCombined.desc);
+    return;
+  }
+
+  const posts = loadPosts();
+  const newPost = {
+    id: "post_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+    exam: currentExam,
+    category: selectedCategory,
+    authorName: SGP_USER_NAME,
+    authorUid: SGP_USER_UID,
+    createdAt: Date.now(),
+    title,
+    body,
+    code: code || null,
+    codeLang: codeLang || null,
+    likes: [],
+    dislikes: [],
+    views: [SGP_USER_UID],
+    replies: []
+  };
+
+  posts.unshift(newPost);
+  savePosts(posts);
+  closeComposer();
+  renderCommunity();
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deletePost(postId){
+  if (!confirm("Are you sure you want to delete this post?")) return;
+  let posts = loadPosts();
+  posts = posts.filter(p => p.id !== postId);
+  savePosts(posts);
+  renderCommunity();
+  if (currentTab === "myPosts") renderMyPosts();
+}
+
+/* ─── REPORT / ISSUE FLAGGING SYSTEM ─── */
+let currentReportingPostId = null;
+
+function openReportModal(postId){
+  currentReportingPostId = postId;
+  const modal = document.getElementById("reportIssueModal");
+  if (modal) modal.classList.add("open");
+}
+
+function closeReportModal(){
+  const modal = document.getElementById("reportIssueModal");
+  if (modal) modal.classList.remove("open");
+  currentReportingPostId = null;
+}
+
+function submitPostReport(){
+  if (!currentReportingPostId) return;
+  const sel = document.querySelector('input[name="reportReason"]:checked');
+  const details = (document.getElementById("reportDetailsInput")?.value || "").trim();
+  const reason = (sel ? sel.value : "Reported Issue") + (details ? ` (${details})` : "");
+
+  const posts = loadPosts();
+  const post = posts.find(p => p.id === currentReportingPostId);
+  if (post) {
+    post.reported = true;
+    post.reportReason = reason;
+    post.reportedBy = SGP_USER_NAME;
+    post.reportedAt = Date.now();
+    savePosts(posts);
+  }
+
+  closeReportModal();
+  renderCommunity();
+
+  // Show Animated Confirmation Popup
+  const ov = document.getElementById("reportSuccessOverlay");
+  if (ov) ov.classList.add("show");
+}
+
+function closeReportSuccess(){
+  const ov = document.getElementById("reportSuccessOverlay");
+  if (ov) ov.classList.remove("show");
+}
+
+/* ─── MY POSTS TAB ─── */
+function switchMainTab(tab){
+  currentTab = tab;
+  document.getElementById("navCommunityTab").classList.toggle("active", tab === "community");
+  document.getElementById("navMyPostsTab").classList.toggle("active", tab === "myPosts");
+
+  if (tab === "community") {
+    document.getElementById("communityView").style.display = "block";
+    document.getElementById("myPostsView").style.display = "none";
+    renderCommunity();
+  } else {
+    document.getElementById("communityView").style.display = "none";
+    document.getElementById("myPostsView").style.display = "block";
+    renderMyPosts();
+  }
+}
+
+function renderMyPosts(){
+  const allPosts = loadPosts();
+  const myPosts = allPosts.filter(p => p.authorUid === SGP_USER_UID);
+
+  let totalViews = 0, totalLikes = 0;
+  myPosts.forEach(p => {
+    totalViews += p.views?.length || 0;
+    totalLikes += p.likes?.length || 0;
+  });
+
+  document.getElementById("myTotalPostsCount").textContent = myPosts.length;
+  document.getElementById("myTotalViewsCount").textContent = totalViews;
+  document.getElementById("myTotalLikesCount").textContent = totalLikes;
+
+  const cont = document.getElementById("myPostsFeedContainer");
+  if (myPosts.length === 0) {
+    cont.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 20px;text-align:center;margin-top:20px;">
+        <i class="fa-solid fa-pen-fancy" style="font-size:38px;color:var(--text3);margin-bottom:12px;display:block;"></i>
+        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">You haven't posted any questions yet</div>
+        <p style="font-size:12.5px;color:var(--text2);margin-bottom:16px;">Ask a doubt in the ${escapeHtml(currentExam)} community to get peer answers!</p>
+        <button class="tl-btn-primary" style="display:inline-block;width:auto;padding:10px 20px;" onclick="openComposer()">Ask a Question</button>
+      </div>`;
+    return;
+  }
+
+  cont.innerHTML = myPosts.map(p => createPostCardHtml(p)).join("");
+}
+
+/* ─── NOTIFICATIONS & DEEP LINK HIGHLIGHT ─── */
+function addNotification(n){
+  const list = loadNotifications();
+  list.unshift({
+    id: "notif_" + Date.now(),
+    time: Date.now(),
+    read: false,
+    ...n
+  });
+  saveNotifications(list);
+}
+
+function updateNotifBadge(){
+  const list = loadNotifications();
+  const unread = list.filter(n => !n.read).length;
+  const badge = document.getElementById("notifBadgeDot");
+  if (badge) badge.classList.toggle("show", unread > 0);
+
+  const container = document.getElementById("notifList");
+  if (!container) return;
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;font-size:12px;color:var(--text3);">No notifications yet</div>`;
+    return;
+  }
+  container.innerHTML = list.map(n => `
+    <div class="notif-item" onclick="jumpToPost('${n.postId}')">
+      <div class="notif-ico"><i class="fa-regular fa-comment"></i></div>
+      <div>
+        <div class="notif-text"><b>${escapeHtml(n.title)}</b>: ${escapeHtml(n.body || '')}</div>
+        <div class="notif-time">${formatTimeAgo(n.time)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function toggleNotifDrawer(){
+  const d = document.getElementById("notifDrawer");
+  d.classList.toggle("open");
+  updateNotifBadge();
+}
+
+function markAllNotifsRead(){
+  const list = loadNotifications().map(n => ({ ...n, read: true }));
+  saveNotifications(list);
+  updateNotifBadge();
+}
+
+function jumpToPost(postId){
+  document.getElementById("notifDrawer").classList.remove("open");
+  switchMainTab("community");
+  setTimeout(() => {
+    const el = document.getElementById(postId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("highlight-pulse");
+      setTimeout(() => el.classList.remove("highlight-pulse"), 2600);
+    }
+  }, 100);
+}
+
+/* ─── FILTERS & SEARCH ─── */
+function setCategoryFilter(cat, el){
+  activeFilter = cat;
+  document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  renderCommunity();
+}
+
+function filterPostsBySearch(query){
+  const term = query.toLowerCase().trim();
+  const cards = document.querySelectorAll(".post-card");
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = (!term || text.includes(term)) ? "block" : "none";
+  });
+}
+
+/* ─── EXAM SWITCHER ─── */
+function openExamSwitcher(){
+  document.getElementById("examSwitcherModal").classList.add("open");
+}
+function closeExamSwitcher(){
+  document.getElementById("examSwitcherModal").classList.remove("open");
+}
+function selectExamGoal(goal){
+  currentExam = goal;
+  localStorage.setItem("goal", goal);
+  document.getElementById("headerExamName").textContent = goal;
+  closeExamSwitcher();
+  runPersonalizedIntro();
+  renderCommunity();
+}
+
+/* ─── SHARE & UTILITIES ─── */
+function sharePost(postId){
+  const url = window.location.origin + window.location.pathname + "#" + postId;
+  if (navigator.share) {
+    navigator.share({
+      title: "Study Grid Prep – Community Post",
+      text: "Check out this discussion on Study Grid Prep Community:",
+      url
+    }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      alert("Post link copied to clipboard!");
+    });
+  }
+}
+
+function copyCode(btn, postId){
+  const code = document.getElementById("code_" + postId);
+  if (!code) return;
+  navigator.clipboard.writeText(code.innerText).then(() => {
+    btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+    setTimeout(() => {
+      btn.innerHTML = `<i class="fa-regular fa-copy"></i> Copy`;
+    }, 2000);
+  });
+}
+
+function goBack(){
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "dashboard-home.html";
+  }
+}
+
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", cur);
+  localStorage.setItem("theme", cur);
+  const meta = document.getElementById("metaThemeColor");
+  if (meta) meta.setAttribute("content", cur === "dark" ? "#0D1120" : "#ffffff");
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+}
+
+function formatPostBody(str){
+  const esc = escapeHtml(str);
+  // Highlight @mentions
+  return esc.replace(/@([a-zA-Z0-9_]+)/g, '<span class="reply-tag">@$1</span>');
+}
+
+function formatReplyText(str){
+  return formatPostBody(str);
+}
+
+function formatTimeAgo(ms){
+  if (!ms) return "just now";
+  const diff = Date.now() - ms;
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
+/* ─── BOOT ─── */
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("headerExamName").textContent = currentExam;
+  document.getElementById("userAvatarSmall").textContent = SGP_USER_NAME.charAt(0).toUpperCase();
+
+  // If user came from a deep-link hash (e.g. #post_xyz)
+  if (window.location.hash) {
+    skipIntro();
+  } else {
+    runPersonalizedIntro();
+  }
+
+  renderCommunity();
+  updateNotifBadge();
+  startStudyTimer();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+
+  function isLoggedIn() {
+    return request.auth != null;
+  }
+
+  function isAdmin() {
+    return request.auth != null &&
+      (
+        request.auth.token.email == "untitledworld9@gmail.com" ||
+        request.auth.token.email == "ayushgupt640@gmail.com"
+      );
+  }
+
+  // subAdmins/{email} docs now carry a `role` field:
+  //   "sub-admin"  → sub-admin.html only (full dashboard, minus payments/user-delete)
+  //   "mock-admin" → admin-mock.html only (mock-test tools)
+  //   "both"       → both panels
+  // Docs written before this field existed have no `role` — treated as
+  // "sub-admin" for backward compatibility.
+  function subAdminDoc() {
+    return get(/databases/$(database)/documents/subAdmins/$(request.auth.token.email)).data;
+  }
+
+  // ✅ SUB-ADMIN appointees — separate panel, broad READ access to the
+  // dashboard, but WRITE stays admin-only for sensitive actions (grant/
+  // revoke subscription, approve/reject payment, delete user). Sub-admins
+  // flag things to the main admin via the reports/ collection instead.
+  function isSubAdmin() {
+    return request.auth != null &&
+      exists(/databases/$(database)/documents/subAdmins/$(request.auth.token.email)) &&
+      (
+        !('role' in subAdminDoc()) ||
+        subAdminDoc().role == 'sub-admin' ||
+        subAdminDoc().role == 'both'
+      );
+  }
+
+  // ✅ MOCK-ADMIN appointees — admin-mock.html only. Scoped to mock-test
+  // collections + their own broadcast tools; no access to the broader
+  // sub-admin surfaces (media, content studio, users, payments, etc.)
+  // unless their role is "both".
+  function isMockAdmin() {
+    return request.auth != null &&
+      exists(/databases/$(database)/documents/subAdmins/$(request.auth.token.email)) &&
+      (
+        subAdminDoc().role == 'mock-admin' ||
+        subAdminDoc().role == 'both'
+      );
+  }
+
+  // ✅ CONTENT-ADMIN appointees — content-hub-admin.html only. Scoped to
+  // the Content Hub's own collections (content, categories, authors,
+  // contentReports); no access to the broader sub-admin surfaces (users,
+  // payments, mock tests, etc.) unless they're also a full sub-admin.
+  function isContentAdmin() {
+    return request.auth != null &&
+      exists(/databases/$(database)/documents/subAdmins/$(request.auth.token.email)) &&
+      subAdminDoc().role == 'content-admin';
+  }
+
+  // ✅ HIRING-ADMIN appointees — hiring-admin.html only. Scoped to the
+  // hiring portal's own collections (hiringRoles, hiringApplications,
+  // hiringCandidates); no access to broader sub-admin surfaces unless
+  // their role is "both".
+  function isHiringAdmin() {
+    return request.auth != null &&
+      exists(/databases/$(database)/documents/subAdmins/$(request.auth.token.email)) &&
+      (subAdminDoc().role == 'hiring-admin' || subAdminDoc().role == 'both');
+  }
+
+  // ✅ HIRING — fields a CANDIDATE may change on their own application.
+  // Admin-only fields (finalStatus, offer, nextStep, hiredEnd*, certOverride …)
+  // stay locked. Includes leave + certificate tracking fields.
+  function candidateAppUpdateOk() {
+    let changed = request.resource.data.diff(resource.data).affectedKeys();
+    return changed.hasOnly([
+        'answers','status','score','testCompletedAt',
+        'resultDeclaredAt','resultDeclaredBy',
+        'offerStatus','offerAcceptedAt','offerLeftAt','policyAccepted',
+        'offerLeftBy','offerLeftVia','leaveAck',
+        'certIssuedAt','certDownloadAt','certPrintAt','certShareAt'
+      ]) &&
+      // offerStatus may only be accepted/left, only when selected, and never after fire/delete
+      (!changed.hasAny(['offerStatus']) ||
+        (resource.data.get('finalStatus', null) == 'selected' &&
+         resource.data.get('hiredEndType', null) == null &&
+         request.resource.data.offerStatus in ['accepted','left'])) &&
+      // candidate can only RAISE the admin alert (false), never acknowledge it (true)
+      (!changed.hasAny(['leaveAck']) || request.resource.data.leaveAck == false) &&
+      (!changed.hasAny(['offerLeftBy']) || request.resource.data.offerLeftBy == 'candidate');
+  }
+
+  match /subAdmins/{email} {
+    allow read: if isAdmin() || (isLoggedIn() && request.auth.token.email == email);
+    allow write: if isAdmin();
+  }
+
+  // Report-to-admin notes from a sub-admin — e.g. "please revoke this
+  // user's subscription" or "check this payment". Sub-admins can create
+  // and read their own reports; only admin can resolve/delete them.
+  match /reports/{id} {
+    allow read: if isAdmin() || isSubAdmin();
+    allow create: if isSubAdmin() &&
+      request.resource.data.reportedBy == request.auth.token.email;
+    allow update: if isAdmin();
+    allow delete: if isAdmin();
+  }
+
+  // Daily XP snapshots — captured once per day when the Leaderboard
+  // section loads, so "Today" / "This Week" ranges can be computed as
+  // deltas against the running cumulative total in leaderboard/.
+  match /leaderboardSnapshots/{date} {
+    allow read: if isAdmin() || isSubAdmin();
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  // Sub-admin / mock-admin activity log — login events + actions
+  // (content saved, media uploaded, test created/published, broadcast
+  // sent, report sent). Auto-pruned to the last 30 days client-side
+  // when the Appoint section loads; admin can also delete by a custom
+  // day-range, or per-appointee, manually.
+  match /activityLogs/{id} {
+    allow read: if isAdmin() ||
+      ((isSubAdmin() || isMockAdmin() || isContentAdmin() || isHiringAdmin()) && resource.data.email == request.auth.token.email);
+    allow create: if (isSubAdmin() || isMockAdmin() || isContentAdmin() || isHiringAdmin()) &&
+      request.resource.data.email == request.auth.token.email;
+    allow delete: if isAdmin();
+  }
+
+  // USERS
+  match /users/{userId} {
+    allow read: if isAdmin() || isSubAdmin();
+    allow read: if isLoggedIn() && request.auth.uid == userId;
+    allow create: if isLoggedIn();
+    allow update: if (
+      (isLoggedIn() && request.auth.uid == userId)
+      || isAdmin()
+    );
+    allow delete: if isAdmin();
+  }
+
+  // CHAT SYSTEM
+  match /messages/{msgId} {
+    allow read, write: if isLoggedIn();
+  }
+
+  match /typing/{id} {
+    allow read, write: if isLoggedIn();
+  }
+
+  match /rooms/{roomId} {
+    allow read: if isLoggedIn();
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  // ── EXAM COMMUNITY SYSTEM ──
+  // Live peer discussions, doubt queries, strategy threads, unique view tracking,
+  // replies/comments and safety report flagging.
+  match /communityPosts/{postId} {
+    // Anyone (including guests) can read posts to browse community questions
+    allow read: if true;
+
+    // Logged in users can create posts under their own UID
+    allow create: if isLoggedIn() &&
+      request.resource.data.authorUid == request.auth.uid &&
+      request.resource.data.title is string &&
+      request.resource.data.body is string;
+
+    // Author can edit; admins can moderate; any user can like/dislike/view/reply/report
+    allow update: if isAdmin() || isSubAdmin() ||
+      (isLoggedIn() && (
+        resource.data.authorUid == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['likes', 'dislikes', 'views', 'replies', 'reported', 'reportReason', 'reportedBy', 'reportedAt'])
+      ));
+
+    // Post author or admin/sub-admin can delete
+    allow delete: if isAdmin() || isSubAdmin() ||
+      (isLoggedIn() && resource.data.authorUid == request.auth.uid);
+  }
+
+  // ADMIN CONTENT
+  match /announcements/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /promotions/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /appUpdates/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  // NOTIFICATIONS
+  match /notifications/{id} {
+    allow read: if isLoggedIn();
+    allow create: if isAdmin() || isSubAdmin() || isMockAdmin() || isContentAdmin() || isHiringAdmin();
+    allow delete: if isAdmin() || isSubAdmin() || isMockAdmin() || isContentAdmin() || isHiringAdmin();
+    allow update: if isLoggedIn() &&
+      request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(['read']);
+  }
+
+  // MEDIA
+  match /musicTracks/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  match /videoPromotions/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /videoPromos/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /config/homeBanners {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /maintenance/{docId} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /maintenanceHistory/{docId} {
+    allow read, write: if isAdmin() || isSubAdmin();
+  }
+
+  match /media/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  // MOCK TEST SYSTEM — mock-admins manage this scoped set
+  match /mockQuestions/{docId} {
+    allow read: if isLoggedIn();
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /testControl/{docId} {
+    allow read: if isLoggedIn();
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /mockTests/{docId} {
+    allow read: if isLoggedIn();
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /activeTests/{docId} {
+    allow read: if isLoggedIn();
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /userTestHistory/{docId} {
+    allow read: if isLoggedIn();
+    allow write: if isLoggedIn() &&
+                 request.resource.data.uid == request.auth.uid;
+    allow read, write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  match /mockDrafts/{testId}/questions/{docId} {
+    allow read, write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  // LIVE USERS
+  match /liveUsers/{docId} {
+    allow read, write: if isLoggedIn();
+  }
+
+  // LEADERBOARD
+  match /leaderboard/{uid} {
+    allow read: if true;
+    allow write: if isLoggedIn() && request.auth.uid == uid;
+  }
+
+  match /offers/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isMockAdmin();
+  }
+
+  // GAME SYSTEM
+  match /gameSessions/{id} {
+    allow read, write: if isLoggedIn();
+  }
+
+  match /gameBroadcasts/{id} {
+    allow read: if isLoggedIn();
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  match /gameRewards/{id} {
+    allow read: if isLoggedIn();
+  }
+
+  // PAYMENTS — manual UPI system
+  match /payments/{id} {
+    allow read: if isAdmin() || isSubAdmin();
+    allow create: if isLoggedIn() &&
+      request.resource.data.userId == request.auth.uid &&
+      request.resource.data.status == "pending" &&
+      request.resource.data.amount is number &&
+      request.resource.data.txnId is string &&
+      request.resource.data.txnId.size() > 0;
+    allow update: if isAdmin();
+    allow delete: if isAdmin();
+  }
+
+  // SUPPORT ISSUES: payment verification / refund reports
+  match /supportIssues/{id} {
+    allow read: if isAdmin() || isSubAdmin();
+    allow read: if isLoggedIn() && resource.data.userId == request.auth.uid;
+
+    allow create: if isLoggedIn() &&
+      request.resource.data.userId == request.auth.uid &&
+      request.resource.data.status == "pending" &&
+      request.resource.data.category is string &&
+      request.resource.data.category.size() > 0 &&
+      request.resource.data.problem is string &&
+      request.resource.data.problem.size() > 0;
+
+    allow update: if isAdmin() || isSubAdmin();
+    allow delete: if isAdmin() || isSubAdmin();
+  }
+
+  // ✅ LIVE "PRO PLAN PURCHASED" COUNTER
+  // stats/proPurchasedCount holds { count, visible } — written only by the
+  // admin panel (on approval + via the on/off toggle), but read publicly
+  // since subscription.html shows it to every visitor (logged in or not).
+  match /stats/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  // proPurchasedUsers/{userId} is just an internal "have we already counted
+  // this user" flag — admin-only, no one else ever needs to touch it.
+  match /proPurchasedUsers/{userId} {
+    allow read, write: if isAdmin() || isSubAdmin();
+  }
+
+  // ✅ ANALYTICS (daily snapshots)
+  // Admin-only. Powers the Focus Timer range stats and the dashboard's
+  // user-growth chart — admin.js reads AND writes one doc per day here
+  // (doc id = YYYY-MM-DD) to build up historical totals over time.
+  match /analytics/{docId} {
+    allow read: if isAdmin() || isSubAdmin();
+    allow write: if isAdmin() || isSubAdmin();
+  }
+
+  // ✅ CONTENT STUDIO (CMS)
+  // Unified content collection (blog/notes/mockTest/pyq/etc, discriminated
+  // by the `type` field — see firestore-schema.md). Published content is
+  // public so the .online/.info sites can render it; drafts stay admin-only.
+  match /content/{id} {
+    allow read: if resource.data.status == "published" || isAdmin() || isSubAdmin() || isContentAdmin();
+    allow write: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  // ✅ NOTES — exam → class → chapter hierarchy (jee/neet/cuet/boards).
+  // Published notes are public (the notes.html browse page + download
+  // viewer need to read them without login); writes are Content Hub
+  // Admin's own surface.
+  match /notes/{id} {
+    allow read: if resource.data.status == "published" || isAdmin() || isSubAdmin() || isContentAdmin();
+    allow write: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  // ✅ COLLEGE INFO — name/tags/SEO + placements/cutoffs/fee-structure.
+  // Published entries are public (the college search panel needs to read
+  // them without login); writes are Content Hub Admin's own surface.
+  match /collegeInfo/{id} {
+    allow read: if resource.data.status == "published" || isAdmin() || isSubAdmin() || isContentAdmin();
+    allow write: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  // ✅ COLLEGE REVIEWS — live, public student reviews shown on college.html.
+  // Anyone signed in can post one; only admins can moderate/remove.
+  match /collegeReviews/{id} {
+    allow read: if true;
+    allow create: if isLoggedIn() && request.resource.data.userName is string;
+    allow update, delete: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  match /categories/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  match /authors/{id} {
+    allow read: if true;
+    allow write: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  match /redirects/{id} {
+    allow read: if true;
+    allow write: if isAdmin();
+  }
+
+  // settings/{domain} — e.g. settings/online, settings/info
+  match /settings/{domain} {
+    allow read: if true;
+    allow write: if isAdmin();
+  }
+
+  // ✅ CONTENT HUB — ENGAGEMENT METRICS
+  // One doc per content item, id == the content doc's own id.
+  // { views, downloads, likes, dislikes, reports, ...denormalized fields }
+  // Reads are public (counts show even to logged-out visitors reading
+  // content-render.html directly); writes require a signed-in user, same
+  // pattern as liveUsers/gameSessions above.
+  match /contentMetrics/{id} {
+    allow read: if true;
+    allow write: if isLoggedIn();
+  }
+
+  // ✅ CONTENT HUB — USER-SUBMITTED CONTENT REPORTS
+  // "Report an issue" from the content panel's info button. Any signed-in
+  // user can file one; only admin/sub-admin can read, act on, or clear
+  // them (same shape as reports/ and supportIssues/ above).
+  match /contentReports/{id} {
+    allow read: if isAdmin() || isSubAdmin() || isContentAdmin();
+    allow create: if isLoggedIn();
+    allow update: if isAdmin() || isSubAdmin() || isContentAdmin();
+    allow delete: if isAdmin() || isSubAdmin() || isContentAdmin();
+  }
+
+  // ✅ HIRING PORTAL — candidate profile (created on registration).
+  // Candidate can read/update their own doc; hiring-admin sees all.
+  match /hiringCandidates/{uid} {
+    allow read: if isAdmin() || isSubAdmin() || isHiringAdmin() ||
+      (isLoggedIn() && request.auth.uid == uid);
+    allow create: if isLoggedIn() && request.auth.uid == uid;
+    allow update: if (isLoggedIn() && request.auth.uid == uid) ||
+      isAdmin() || isSubAdmin() || isHiringAdmin();
+    allow delete: if isAdmin();
+  }
+
+  // ✅ HIRING PORTAL — open roles.
+  // read is public (no login required) — careers.html listing page needs
+  // Googlebot + logged-out visitors to be able to read open roles.
+  // ⚠️ Firestore has no field-level read masking, so `questions` (with
+  // correct answers) of any OPEN role is readable by anyone. Real fix: move
+  // `questions` into hiringRoles/{id}/questions with its own rule.
+  match /hiringRoles/{id} {
+    allow read: if resource.data.status == 'open' ||
+      isLoggedIn() || isAdmin() || isSubAdmin() || isHiringAdmin();
+    allow write: if isAdmin() || isSubAdmin() || isHiringAdmin();
+  }
+
+  // ✅ HIRING PORTAL — applications. Candidate can create their own and
+  // update only whitelisted fields on their own (see candidateAppUpdateOk);
+  // hiring-admin can read/update/delete all.
+  match /hiringApplications/{id} {
+    allow read: if isAdmin() || isSubAdmin() || isHiringAdmin() ||
+      (isLoggedIn() && resource.data.uid == request.auth.uid);
+    allow create: if isLoggedIn() && request.resource.data.uid == request.auth.uid;
+    allow update: if isAdmin() || isSubAdmin() || isHiringAdmin() ||
+      (isLoggedIn() && request.resource.data.uid == request.auth.uid &&
+       request.resource.data.uid == request.auth.uid &&
+       candidateAppUpdateOk());
+    allow delete: if isAdmin() || isSubAdmin() || isHiringAdmin();
+  }
+
+  // ✅ HIRING PORTAL — public certificate record (QR verification).
+  // certificates/{id}: id == hiringApplications doc id.
+  //  - get: public (QR scan, no login). list: admin only (IDs can't be enumerated).
+  //  - candidate may write only their OWN, and only if the linked application
+  //    is theirs, selected, accepted/left, and the name matches.
+  //  - admin / hiring-admin can write any (certificate Edit in hiring-admin).
+  match /certificates/{id} {
+    allow get: if true;
+    allow list: if isAdmin() || isSubAdmin() || isHiringAdmin();
+    allow create, update: if isAdmin() || isSubAdmin() || isHiringAdmin() ||
+      (isLoggedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        exists(/databases/$(database)/documents/hiringApplications/$(id)) &&
+        get(/databases/$(database)/documents/hiringApplications/$(id)).data.uid == request.auth.uid &&
+        get(/databases/$(database)/documents/hiringApplications/$(id)).data.finalStatus == 'selected' &&
+        get(/databases/$(database)/documents/hiringApplications/$(id)).data.offerStatus in ['accepted', 'left'] &&
+        request.resource.data.name == get(/databases/$(database)/documents/hiringApplications/$(id)).data.name);
+    allow delete: if isAdmin() || isHiringAdmin();
+  }
+
+  // ✅ CAREERS PAGE — "Reach Out" inquiries (name, email, doubt/issue).
+  // Anyone (no login needed, since careers.html is a public page) can
+  // submit one; only admin/hiring-admin can read, act on, or clear them.
+  match /careerInquiries/{id} {
+    allow read: if isAdmin() || isSubAdmin() || isHiringAdmin();
+    allow create: if request.resource.data.name is string &&
+      request.resource.data.name.size() > 0 &&
+      request.resource.data.email is string &&
+      request.resource.data.email.size() > 0 &&
+      request.resource.data.message is string &&
+      request.resource.data.message.size() > 0;
+    allow update: if isAdmin() || isSubAdmin() || isHiringAdmin();
+    allow delete: if isAdmin() || isSubAdmin() || isHiringAdmin();
+  }
+
+ }
+}

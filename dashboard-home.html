@@ -1599,6 +1599,104 @@ header{
 .nav-tab.active i{ color:#5B5BF6 !important; transform:scale(1.18); }
 .nav-tab:active{ transform:scale(0.88); }
 
+/* ─── FLOATING COMMUNITY WIDGET ─── */
+.floating-community-widget {
+  position: fixed;
+  bottom: 78px;
+  right: 16px;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  animation: floatBounce 4.5s ease-in-out infinite;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+  outline: none;
+}
+.floating-community-widget:hover {
+  transform: translateY(-4px) scale(1.03);
+}
+.floating-community-widget:hover .floating-community-pill {
+  border-color: var(--accent);
+  box-shadow: 0 12px 32px rgba(91, 91, 246, 0.28);
+}
+.floating-community-widget:active {
+  transform: scale(0.93);
+  transition-duration: 0.1s;
+}
+.floating-community-widget:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.floating-community-pill {
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  border-radius: 99px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: pillPulseText 3s ease-in-out infinite;
+}
+[data-theme="dark"] .floating-community-pill {
+  background: rgba(21, 30, 50, 0.95);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  border-color: rgba(91, 91, 246, 0.3);
+}
+.floating-community-pill .live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+  animation: liveBlink 1.4s ease-in-out infinite;
+}
+.floating-community-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 8px 24px rgba(91, 91, 246, 0.45);
+  position: relative;
+  flex-shrink: 0;
+}
+.floating-community-icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px dashed rgba(91, 91, 246, 0.5);
+  animation: spinSlow 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes floatBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+@keyframes pillPulseText {
+  0%, 100% { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12); }
+  50% { box-shadow: 0 10px 28px rgba(91, 91, 246, 0.25); border-color: rgba(91, 91, 246, 0.5); }
+}
+
 /* ─── NOTIFICATIONS PANEL ─── */
 .notif-panel-overlay{
   position:fixed; inset:0; z-index:99990;
@@ -2196,6 +2294,13 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
         </span>
         My Playlist
       </a>
+      <a href="community.html">
+        <span style="width:28px;height:28px;border-radius:9px;background:rgba(91,91,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-users" style="color:#5B5BF6;font-size:13px;"></i>
+        </span>
+        Community
+        <span class="sidebar-link-badge" style="background:rgba(16,185,129,0.12);color:#10B981;">LIVE</span>
+      </a>
       <a href="subscription.html">
         <span style="width:28px;height:28px;border-radius:9px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <i class="fa-solid fa-crown" style="color:#F59E0B;font-size:13px;"></i>
@@ -2674,6 +2779,18 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
     <div class="streak-milestone-title" id="streakMilestoneTitle">7 Day Streak!</div>
     <div class="streak-milestone-sub" id="streakMilestoneSub">A full week of consistent study. Keep this momentum going!</div>
     <button class="streak-milestone-btn" onclick="closeStreakMilestonePopup()">Keep Going</button>
+  </div>
+</div>
+
+<!-- FLOATING COMMUNITY WIDGET (DRAGGABLE & TAPPABLE WITH ANIMATED BADGE) -->
+<div class="floating-community-widget" id="floatingCommunityWidget" onclick="openCommunityFromFloating(event)" onkeydown="if(event.key==='Enter'||event.key===' ')openCommunityFromFloating(event)" role="button" tabindex="0" aria-label="Open Exam Community &amp; Doubts Hub" title="Open Exam Community &amp; Doubts">
+  <div class="floating-community-pill">
+    <span class="live-dot"></span>
+    <span>Community</span>
+    <span style="font-size:10px;color:var(--text3);font-weight:600;">• Live Hub</span>
+  </div>
+  <div class="floating-community-icon">
+    <i class="fa-solid fa-users"></i>
   </div>
 </div>
 
@@ -5177,6 +5294,46 @@ try {
       }, 420);
     }, minWait);
   }
+})();
+
+// Floating community widget touch/drag support
+(function(){
+  var w = document.getElementById("floatingCommunityWidget");
+  if (!w) return;
+  var startX = 0, startY = 0, initialRight = 16, initialBottom = 78;
+  var moved = false;
+
+  w.addEventListener("touchstart", function(e){
+    if (e.touches.length !== 1) return;
+    var t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    moved = false;
+  }, { passive: true });
+
+  w.addEventListener("touchmove", function(e){
+    if (e.touches.length !== 1) return;
+    var t = e.touches[0];
+    var dx = t.clientX - startX;
+    var dy = t.clientY - startY;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+      moved = true;
+      var newR = Math.max(8, Math.min(window.innerWidth - 60, initialRight - dx));
+      var newB = Math.max(70, Math.min(window.innerHeight - 80, initialBottom - dy));
+      w.style.right = newR + "px";
+      w.style.bottom = newB + "px";
+    }
+  }, { passive: true });
+
+  w.addEventListener("touchend", function(){
+    initialRight = parseInt(w.style.right || "16", 10);
+    initialBottom = parseInt(w.style.bottom || "78", 10);
+  });
+
+  window.openCommunityFromFloating = function(e){
+    if (moved) return;
+    location.href = "community.html";
+  };
 })();
 </script>
 

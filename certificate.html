@@ -593,12 +593,37 @@ async function loadOwner(user){
     } catch(e) { console.warn('directApp load error', e); }
     if (!directApp) {
       try {
-        const cSnap = await getDoc(doc(db, 'certificates', cleanWant));
-        if (cSnap.exists()) {
-          const cd = cSnap.data();
-          directApp = { id: cleanWant, name: cd.name, certName: cd.name, roleTitle: cd.roleTitle, ...cd };
+        const certIds = [want, cleanWant + '-position', cleanWant + '-achieve', cleanWant];
+        for (const cid of certIds) {
+          if (!cid) continue;
+          const cSnap = await getDoc(doc(db, 'certificates', cid));
+          if (cSnap.exists()) {
+            const cd = cSnap.data();
+            directApp = {
+              id: cleanWant,
+              name: cd.name,
+              certName: cd.name,
+              roleTitle: cd.roleTitle,
+              uid: cd.uid || '',
+              finalStatus: 'selected',
+              offerStatus: 'completed',
+              offerAcceptedAt: cd.startMs,
+              ...cd
+            };
+            if (cd.isPosition || cid.endsWith('-position') || cd.kind === 'POSITION') {
+              directApp.positionCert = { ...cd };
+              if (!directApp.certOverride) directApp.certOverride = {};
+              directApp.certOverride.positionCert = { ...cd };
+            }
+            if (cd.isAchievement || cid.endsWith('-achieve') || cd.kind === 'ACHIEVEMENT') {
+              directApp.achievementCert = { ...cd };
+              if (!directApp.certOverride) directApp.certOverride = {};
+              directApp.certOverride.achievementCert = { ...cd };
+            }
+            break;
+          }
         }
-      } catch(e){}
+      } catch(e){ console.warn('fallback cert fetch error', e); }
     }
   }
 
@@ -737,6 +762,22 @@ async function renderOwner(){
   let c = baseCert;
   if (S.viewType === 'position' && hasPos) c = posCert;
   else if (S.viewType === 'achievement' && hasAch) c = achCert;
+  else if (!c && posCert) { c = posCert; S.viewType = 'position'; }
+  else if (!c && achCert) { c = achCert; S.viewType = 'achievement'; }
+  else if (!c) {
+    c = {
+      id: S.cur.id,
+      name: S.cur.certName || S.cur.name || 'Candidate',
+      roleTitle: S.cur.roleTitle || (role && role.title) || 'Team Member',
+      kind: 'JOB',
+      startMs: toMs(S.cur.offerAcceptedAt || S.cur.createdAt) || Date.now() - 30 * 86400000,
+      endMs: toMs(S.cur.offerLeftAt) || Date.now(),
+      durationLabel: 'Active Standing',
+      state: 'completed',
+      eligible: true,
+      issuedMs: Date.now()
+    };
+  }
   S.c = c;
 
   const appChips = S.apps.length > 1 ? `<div class="chips">${S.apps.map(a => `<div class="chip ${a.id === S.cur.id ? 'on' : ''}" onclick="pick('${a.id}')">${esc((S.roles.find(r => r.id === a.roleId) || {}).title || 'Role')}</div>`).join('')}</div>` : '';

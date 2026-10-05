@@ -179,6 +179,10 @@ window.showSection = id => {
   document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.section === id);
   });
+
+  if (id === "community" && typeof window.loadAdminCommunity === "function") {
+    window.loadAdminCommunity();
+  }
 };
 
 // ============================================================

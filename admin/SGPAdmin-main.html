@@ -961,6 +961,98 @@
     .hb-edit-panel.open { display:flex; }
     .hb-edit-panel-title { font-size:12px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:.06em; }
     .hb-edit-preview { width:100%; height:90px; border-radius:10px; object-fit:cover; display:block; background:var(--bg-input); border:1px solid var(--border); }
+
+    /* ─── ADMIN COMMUNITY SECTION STYLES ─── */
+    .admin-comm-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px; margin-bottom: 18px;
+    }
+    .admin-comm-stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 14px 16px;
+      display: flex; flex-direction: column;
+    }
+    .admin-comm-stat-num {
+      font-family: var(--font-display); font-size: 22px; font-weight: 800;
+      color: var(--text-primary); margin-top: 2px;
+    }
+    .admin-comm-filter-strip {
+      display: flex; align-items: center; gap: 8px;
+      overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px;
+    }
+    .adm-exam-chip, .adm-cat-chip {
+      padding: 6px 13px; border-radius: 99px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      font-size: 11.5px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; white-space: nowrap; transition: all .15s ease;
+    }
+    .adm-exam-chip.active, .adm-cat-chip.active {
+      background: var(--accent-cyan); color: #fff; border-color: var(--accent-cyan);
+      box-shadow: 0 2px 10px rgba(0, 212, 255, 0.25);
+    }
+    .adm-cat-chip.reported-chip.active {
+      background: var(--accent-red) !important; border-color: var(--accent-red) !important;
+      color: #fff !important;
+    }
+    .admin-comm-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;
+      transition: border-color .15s;
+    }
+    .admin-comm-card.is-reported {
+      border-color: rgba(255, 79, 106, 0.5);
+      box-shadow: 0 0 16px rgba(255, 79, 106, 0.12);
+    }
+    .admin-reported-banner {
+      background: rgba(255, 79, 106, 0.12); border: 1px solid rgba(255, 79, 106, 0.3);
+      border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font-size: 12px; color: var(--accent-red);
+    }
+    .admin-comm-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .admin-comm-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+      color: #fff; font-weight: 800; display: flex; align-items: center;
+      justify-content: center; font-size: 13px; flex-shrink: 0;
+    }
+    .admin-comm-title {
+      font-size: 14.5px; font-weight: 700; color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .admin-comm-body {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.55;
+      white-space: pre-wrap; margin-bottom: 10px;
+    }
+    .admin-comm-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border); padding-top: 10px;
+      font-size: 11.5px; color: var(--text-muted);
+    }
+    .admin-comm-metrics { display: flex; gap: 12px; }
+    .admin-view-live-link { color: var(--accent-cyan); font-weight: 600; text-decoration: none; }
+    .exam-pill {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+      background: rgba(0, 212, 255, 0.12); color: var(--accent-cyan);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+    }
+    .cat-pill {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; text-transform: uppercase;
+    }
+    .cat-pill.doubts { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+    .cat-pill.news { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
+    .cat-pill.strategy { background: rgba(139, 92, 246, 0.15); color: #8B5CF6; }
+    .cat-pill.general { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+    .adm-comment-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
+    }
+    .adm-comment-item.deleted-comment {
+      border-color: rgba(255, 79, 106, 0.3); background: rgba(255, 79, 106, 0.04);
+    }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -1039,8 +1131,12 @@
 
     <div class="nav-section-label">Content</div>
     <button class="nav-btn" onclick="showSection('messages')" data-section="messages">
-      <span class="nav-icon"><i class="fa-solid fa-comments"></i></span><span>Chat Logs</span>
+      <span class="nav-icon"><i class="fa-solid fa-comments"></i></span><span>Focus Chats</span>
       <span class="nav-badge" id="msgBadge">0</span>
+    </button>
+    <button class="nav-btn" onclick="showSection('community')" data-section="community">
+      <span class="nav-icon"><i class="fa-solid fa-users"></i></span><span>Community</span>
+      <span class="nav-badge" id="commReportBadge" style="background:rgba(255,79,106,0.18);color:var(--accent-red);border:1px solid rgba(255,79,106,0.3);display:none;">0</span>
     </button>
 
     <div class="nav-section-label">Broadcast</div>
@@ -1633,12 +1729,12 @@
     </div>
   </div>
 
-  <!-- ─────────── CHAT LOGS ─────────── -->
+  <!-- ─────────── FOCUS CHATS ─────────── -->
   <section id="messages" class="section">
     <div class="section-header">
       <div>
-        <div class="section-title">Chat Logs</div>
-        <div class="section-subtitle">All room messages in real time</div>
+        <div class="section-title">Focus Chats</div>
+        <div class="section-subtitle">Study room focus messages &amp; real-time logs</div>
       </div>
       <div class="live-dot">Live</div>
     </div>
@@ -1664,6 +1760,99 @@
       </div>
     </div>
   </section>
+
+  <!-- ─────────── COMMUNITY MODERATION HUB ─────────── -->
+  <section id="community" class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Community Moderation &amp; Hub</div>
+        <div class="section-subtitle">Live student discussions, exam doubt feeds, comments moderation &amp; reported content</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="window.loadAdminCommunity()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+        <a href="/community.html" target="_blank" class="btn btn-primary"><i class="fa-solid fa-up-right-from-square"></i> Open Student Feed</a>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="admin-comm-stats">
+      <div class="admin-comm-stat-card">
+        <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Total Posts</span>
+        <div class="admin-comm-stat-num" id="adminCommTotalPosts">0</div>
+      </div>
+      <div class="admin-comm-stat-card">
+        <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Active Doubts</span>
+        <div class="admin-comm-stat-num" style="color:var(--accent-amber);" id="adminCommDoubtsCount">0</div>
+      </div>
+      <div class="admin-comm-stat-card">
+        <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Reported Issues</span>
+        <div class="admin-comm-stat-num" style="color:var(--accent-red);" id="adminCommReportedCount">0</div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <div class="search-box" style="flex:1;min-width:260px;">
+        <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="adminCommSearch" placeholder="Search by doubt topic, student name, question or keywords…" oninput="window.filterAdminCommunity()" />
+      </div>
+    </div>
+
+    <!-- Exam Filter Strip -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Filter by Exam Track:</div>
+    <div class="admin-comm-filter-strip">
+      <div class="adm-exam-chip active" onclick="window.setAdminExamFilter('all', this)"><i class="fa-solid fa-layer-group"></i> All Exams</div>
+      <div class="adm-exam-chip" onclick="window.setAdminExamFilter('JEE', this)">🚀 JEE Main &amp; Adv</div>
+      <div class="adm-exam-chip" onclick="window.setAdminExamFilter('NEET', this)">🩺 NEET UG</div>
+      <div class="adm-exam-chip" onclick="window.setAdminExamFilter('CUET', this)">🎓 CUET UG</div>
+      <div class="adm-exam-chip" onclick="window.setAdminExamFilter('Boards', this)">📖 Class 12 Boards</div>
+      <div class="adm-exam-chip" onclick="window.setAdminExamFilter('B.Tech', this)">💻 B.Tech &amp; Engg</div>
+    </div>
+
+    <!-- Category & Reported Status Filter Strip -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Filter by Category / Moderation Status:</div>
+    <div class="admin-comm-filter-strip">
+      <div class="adm-cat-chip active" onclick="window.setAdminCatFilter('all', this)"><i class="fa-solid fa-border-all"></i> All Posts</div>
+      <div class="adm-cat-chip" onclick="window.setAdminCatFilter('doubts', this)">❓ Doubts</div>
+      <div class="adm-cat-chip" onclick="window.setAdminCatFilter('news', this)">📰 Exam News</div>
+      <div class="adm-cat-chip" onclick="window.setAdminCatFilter('strategy', this)">🎯 Strategy</div>
+      <div class="adm-cat-chip" onclick="window.setAdminCatFilter('trending', this)">🔥 Trending</div>
+      <div class="adm-cat-chip reported-chip" style="border-color:rgba(255,79,106,0.35);color:var(--accent-red);" onclick="window.setAdminCatFilter('reported', this)">
+        <i class="fa-solid fa-flag"></i> 🚩 Reported Posts (<span id="reportedCountBadge">0</span>)
+      </div>
+    </div>
+
+    <!-- Posts Container -->
+    <div id="adminCommPostsContainer" style="margin-top:14px;">
+      <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading community posts…</div>
+    </div>
+  </section>
+
+  <!-- MODAL: Comments Moderation -->
+  <div class="modal" id="adminCommentsModal">
+    <div class="modal-box" style="max-width:580px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title"><i class="fa-solid fa-comments" style="color:var(--accent-cyan);margin-right:6px;"></i> Comments &amp; Replies Moderation</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;" id="admModalPostAuthor">Post author</div>
+        </div>
+        <button class="modal-close" onclick="window.closePostCommentsModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:13.5px;font-weight:700;color:var(--text-primary);" id="admModalPostTitle">Post Title</div>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">All Student Comments:</div>
+      <div id="admModalRepliesList" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px;">
+        <!-- Filled via JS -->
+      </div>
+
+      <div class="modal-footer" style="margin-top:16px;">
+        <button class="btn btn-outline" onclick="window.closePostCommentsModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ─────────── ANNOUNCEMENTS ─────────── -->
   <section id="announcement" class="section">
@@ -3507,6 +3696,7 @@ function toggleSgpTheme() {
 ================================================================ -->
 <script>window.IS_SUB_ADMIN = false;</script>
 <script type="module" src="/admin/admin.js?v=20261004_v3"></script>
+<script type="module" src="/admin/admin-community.js"></script>
 <script type="module" src="/admin/content-studio.js"></script>
 <script type="module" src="/admin/media-library.js"></script>
 <script type="module" src="/admin/taxonomy.js"></script>

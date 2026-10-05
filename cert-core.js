@@ -59,10 +59,10 @@ export function certCode(id){
 }
 
 export function verifyUrl(id){
-  const base = (typeof window !== 'undefined' && window.location && window.location.origin)
-    ? (window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/'))
-    : SGP.publicBase;
-  return base + 'certificate.html?v=' + encodeURIComponent(id);
+  const origin = (typeof window !== 'undefined' && window.location && window.location.origin)
+    ? window.location.origin
+    : SGP.publicBase.replace(/\/$/, '');
+  return origin + '/certificate.html?v=' + encodeURIComponent(id);
 }
 
 export function certTitle(kind){
