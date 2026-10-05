@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 <title>AI Analysis — Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
@@ -26,16 +26,23 @@
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.setAttribute("data-theme", saved || (systemDark ? "dark" : "light"));
+  var theme = (saved && saved !== "system") ? saved : (systemDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = (theme === "dark") ? "#0D1120" : "#F0F2F8";
+  });
 })();
 
 window.matchMedia("(prefers-color-scheme: dark)")
 .addEventListener("change", function(e){
   if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
+    var resolved = e.matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = (resolved === "dark") ? "#0D1120" : "#F0F2F8";
+    });
   }
 });
 </script>
@@ -141,7 +148,7 @@ header {
   position:sticky; top:0; z-index:900;
   display:flex; align-items:center;
   justify-content:space-between;
-  padding:13px 18px;
+  padding:max(13px, env(safe-area-inset-top)) 18px 13px;
   background:var(--header-bg);
   backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--card-border);

@@ -154,7 +154,7 @@ body {
 /* ── HEADER ── */
 header {
   display:flex; align-items:center;
-  padding:10px 14px;
+  padding:max(10px, env(safe-area-inset-top)) 14px 10px;
   background: var(--header-bg);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--card-border);
@@ -164,11 +164,7 @@ header {
   top: 0;
 }
 @media (orientation: landscape) and (max-height: 500px) {
-  header { min-height: 44px; padding: 6px 12px; }
-}
-[data-theme="light"] header {
-  background: rgba(255,255,255,0.97) !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  header { min-height: 44px; padding: max(6px, env(safe-area-inset-top)) 12px 6px; }
 }
 
 .hdr-back {
