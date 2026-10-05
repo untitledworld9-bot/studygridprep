@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Todo List — Study Grid Prep</title>
@@ -14,28 +14,24 @@
   (function(){
     const saved = localStorage.getItem("theme");
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = saved ? saved : (systemDark ? "dark" : "light");
+    const theme = (saved && saved !== "system") ? saved : (systemDark ? "dark" : "light");
     document.documentElement.setAttribute("data-theme", theme);
 
-window.matchMedia("(prefers-color-scheme: dark)")
-.addEventListener("change", function(e){
-  if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
-  }
-});
-    // ✅ FIX: previously only the FIRST theme-color meta was updated and its
-    // media="(prefers-color-scheme: ...)" attribute was left in place, so the
-    // status bar shown depended on the PHONE's system light/dark setting
-    // instead of the app's actual theme — causing a mismatched/washed-out
-    // status bar. Now BOTH meta tags are synced and media is removed, exactly
-    // like dashboard-home.html, so the status bar always matches the real
-    // in-app theme immediately on load (no flash on slow connections either).
+    window.matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", function(e){
+      if(localStorage.getItem("theme") === "system"){
+        const resolved = e.matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", resolved);
+        document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+          m.removeAttribute("media");
+          m.content = (resolved === "dark") ? "#0D1120" : "#F0F2F8";
+        });
+      }
+    });
+
     document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
       m.removeAttribute("media");
-      m.content = (theme === "dark") ? "#0a1628" : "#ffffff";
+      m.content = (theme === "dark") ? "#0D1120" : "#F0F2F8";
     });
   })();
   </script>
@@ -325,27 +321,48 @@ window.matchMedia("(prefers-color-scheme: dark)")
     }
 
     /* ============================================================
-       NOTIFICATION PERMISSION BANNER
+       NOTIFICATION PERMISSION BANNER (Native App Card)
     ============================================================ */
     .notif-banner {
-      display: flex; align-items: center; gap: 12px;
-      padding: 13px 15px; margin-bottom: 14px;
-      background: var(--teal-dim);
-      border: 1px solid var(--border); border-radius: var(--radius-card);
+      display: flex; align-items: center; gap: 13px;
+      padding: 14px 16px; margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(91,91,246,0.08), rgba(124,58,237,0.05));
+      border: 1.5px solid rgba(91,91,246,0.22); border-radius: var(--radius-card);
       box-shadow: var(--shadow-sm);
+      position: relative;
     }
-    .notif-banner svg { color: var(--teal); flex-shrink: 0; }
-    .notif-banner-body { flex: 1; }
-    .notif-banner-title { font-weight: 600; font-size: 13px; color: var(--text); margin-bottom: 2px; }
-    .notif-banner-sub   { font-size: 11px; color: var(--text2); }
+    .notif-banner.denied-state {
+      background: rgba(239,68,68,0.06);
+      border-color: rgba(239,68,68,0.25);
+    }
+    .notif-banner-icon-wrap {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(91,91,246,0.3);
+    }
+    .notif-banner.denied-state .notif-banner-icon-wrap {
+      background: linear-gradient(135deg, #EF4444, #F97316);
+      box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+    }
+    .notif-banner-body { flex: 1; min-width: 0; }
+    .notif-banner-title { font-weight: 700; font-size: 13.5px; color: var(--text); margin-bottom: 2px; }
+    .notif-banner-sub   { font-size: 11.5px; color: var(--text2); line-height: 1.4; }
     .notif-allow-btn {
-      flex-shrink: 0; padding: 7px 14px;
-      background: var(--teal); border: none;
+      flex-shrink: 0; padding: 8px 16px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED); border: none;
       border-radius: var(--radius-pill);
-      color: #fff; font-size: 12px; font-weight: 600;
+      color: #fff; font-size: 12.5px; font-weight: 700;
       cursor: pointer; transition: all 0.2s ease;
+      box-shadow: 0 3px 10px rgba(91,91,246,0.3);
+      -webkit-tap-highlight-color: transparent;
     }
-    .notif-allow-btn:active { opacity: 0.85; }
+    .notif-allow-btn:active { transform: scale(0.95); opacity: 0.9; }
+    .notif-banner.denied-state .notif-allow-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); box-shadow: none;
+    }
 
     /* ============================================================
        REMINDER CARD
@@ -863,15 +880,17 @@ pointer-events:none;">
 
       <!-- Notification permission banner -->
       <div class="notif-banner hidden" id="notifBanner">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 01-3.46 0"/>
-        </svg>
-        <div class="notif-banner-body">
-          <div class="notif-banner-title">Enable Notifications</div>
-          <div class="notif-banner-sub">Stay on top of your tasks with smart reminders</div>
+        <div class="notif-banner-icon-wrap" id="notifBannerIcon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
         </div>
-        <button class="notif-allow-btn" onclick="requestNotifPermission()">Allow</button>
+        <div class="notif-banner-body">
+          <div class="notif-banner-title" id="notifBannerTitle">Enable Notifications</div>
+          <div class="notif-banner-sub" id="notifBannerSub">Stay on top of your tasks with smart daily reminders</div>
+        </div>
+        <button class="notif-allow-btn" id="notifAllowBtn" onclick="requestNotifPermission()">Allow</button>
       </div>
 
       <!-- Reminder settings card -->
@@ -1192,19 +1211,48 @@ pointer-events:none;">
     ============================================================ */
     function requestNotifPermission() {
       if (!('Notification' in window)) return;
+      if (Notification.permission === 'denied') {
+        if (typeof showUWAlert === 'function') {
+          showUWAlert('Notifications Blocked', 'To enable reminders, tap the site settings / lock icon in your browser address bar and switch Notifications to Allow.');
+        } else {
+          alert('To enable reminders, tap the lock/settings icon in your browser address bar and allow Notifications.');
+        }
+        return;
+      }
       Notification.requestPermission().then(p => {
         if (p === 'granted') {
           document.getElementById('notifBanner').classList.add('hidden');
           scheduleTaskNotifs();
           scheduleReminders();
+        } else {
+          checkNotifBanner();
         }
       });
     }
 
     function checkNotifBanner() {
       if (!('Notification' in window)) return;
-      if (Notification.permission !== 'granted')
-        document.getElementById('notifBanner').classList.remove('hidden');
+      const banner = document.getElementById('notifBanner');
+      const title = document.getElementById('notifBannerTitle');
+      const sub = document.getElementById('notifBannerSub');
+      const btn = document.getElementById('notifAllowBtn');
+      if (!banner) return;
+
+      if (Notification.permission === 'granted') {
+        banner.classList.add('hidden');
+      } else if (Notification.permission === 'denied') {
+        banner.classList.remove('hidden');
+        banner.classList.add('denied-state');
+        if (title) title.innerText = 'Notifications Disabled';
+        if (sub) sub.innerText = 'Tap to see how to enable reminders in device settings';
+        if (btn) btn.innerText = 'Settings';
+      } else {
+        banner.classList.remove('hidden');
+        banner.classList.remove('denied-state');
+        if (title) title.innerText = 'Enable Notifications';
+        if (sub) sub.innerText = 'Stay on top of your tasks with smart daily reminders';
+        if (btn) btn.innerText = 'Allow';
+      }
     }
 
         // Use the existing app notification system if available, otherwise fall back
@@ -1792,10 +1840,9 @@ syncTodoToFirebase();
       document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
       const m = document.createElement('meta');
       m.name = 'theme-color';
-      m.content = isDark ? '#0a1628' : '#ffffff';
+      m.content = isDark ? '#0D1120' : '#F0F2F8';
       document.head.appendChild(m);
     }
-    // Observe theme attribute changes
     new MutationObserver(_updateThemeColor).observe(
       document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }
     );

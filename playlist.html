@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Study Playlist | Study Grid Prep</title>
     <link rel="icon" href="/icon-192.png">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
     <!-- UW Core: shared XP, Streak, Firebase sync -->
     <script type="module" src="/uw-core.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -17,18 +17,11 @@
 (function(){
   const saved = localStorage.getItem("theme");
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved ? saved : (systemDark ? "dark" : "light");
+  const theme = (saved && saved !== "system") ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
-  // ✅ FIX: previously only the FIRST theme-color meta tag was updated, and its
-  // media="(prefers-color-scheme: ...)" attribute was left in place — so the
-  // status bar color actually shown depended on the PHONE's system light/dark
-  // setting, not the app's actual chosen theme, causing a mismatched/washed-out
-  // status bar. Now (matching dashboard-home.html) BOTH meta tags are updated
-  // and their media attribute is removed so the status bar always tracks the
-  // real in-app theme.
   document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
     m.removeAttribute("media");
-    m.content = (theme === 'dark') ? '#0a1628' : '#ffffff';
+    m.content = (theme === 'dark') ? '#0D1120' : '#F0F2F8';
   });
 })();
 
@@ -1395,21 +1388,126 @@ input::placeholder { color: var(--text3); }
   50%      { opacity: 0.5; transform: scale(0.7); }
 }
 
-/* ── AI COPY BUTTON ── */
+/* ── AI ACTION BAR & COPY BUTTON ── */
+.ai-msg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+}
 .ai-copy-btn {
-  display: inline-block;
-  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 3px 8px;
-  font-size: 12px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
-  color: var(--text3);
-  transition: var(--t);
-  float: right;
+  color: var(--text2);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'Poppins', sans-serif;
 }
-.ai-copy-btn:active { transform: scale(0.9); }
+.ai-copy-btn i { font-size: 12px; }
+.ai-copy-btn:hover {
+  color: var(--accent);
+  border-color: rgba(91,91,246,0.35);
+  background: rgba(91,91,246,0.08);
+}
+.ai-copy-btn:active { transform: scale(0.94); }
+.ai-copy-btn.copied {
+  color: #10B981;
+  border-color: rgba(16,185,129,0.35);
+  background: rgba(16,185,129,0.1);
+}
+
+/* ── AI MUSIC / SONG SUGGESTION CARD ── */
+.ai-song-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface2);
+  border: 1.5px solid rgba(245,158,11,0.28);
+  border-radius: 14px;
+  padding: 10px 13px;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.06);
+}
+.ai-song-card:hover {
+  border-color: rgba(245,158,11,0.5);
+  background: rgba(245,158,11,0.06);
+  transform: translateY(-1px);
+}
+.ai-song-card:active { transform: scale(0.98); }
+.ai-song-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(245,158,11,0.3);
+}
+.ai-song-info {
+  flex: 1;
+  min-width: 0;
+}
+.ai-song-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.ai-song-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #EF4444;
+  margin-top: 3px;
+  text-decoration: none;
+}
+.ai-song-link:hover { text-decoration: underline; }
+.ai-song-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.ai-song-copy-btn:hover {
+  color: #F59E0B;
+  border-color: rgba(245,158,11,0.4);
+}
+.ai-song-copy-btn:active { transform: scale(0.9); }
+.ai-song-copy-btn.copied {
+  color: #10B981;
+  border-color: rgba(16,185,129,0.4);
+  background: rgba(16,185,129,0.1);
+}
 
 /* ── AI CHAT FULL MODAL ── */
 #aiChatModal {
@@ -3561,38 +3659,64 @@ function appendMessage(role, text) {
         .replace(/\[YOUTUBE\]/g, '<a href="https://youtube.com/@studygridprep?si=XJmjMO4gYOIqnhF9" target="_blank" class="ai-page-chip yt-chip">▶ Study Grid Prep YouTube</a>')
         .replace(/\[HOME\]/g, '<a href="dashboard-home.html" class="ai-page-chip home-chip">🏠 Dashboard Home</a>')
         .replace(/\[TIMER\]/g, '<a href="timer.html" class="ai-page-chip timer-chip">⏱️ Focus Timer Rooms</a>')
-        // Song link: [SONG:Song Name|https://...] → tappable music chip
-        .replace(/\[SONG:([^|\]]+)\|([^\]]+)\]/g, (_, title, url) => {
-            const safeUrl = url.trim().replace(/"/g, "&quot;");
-            const safeTitle = title.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            return `<a href="${safeUrl}" target="_blank" class="ai-page-chip song-chip">🎵 ${safeTitle}</a>`;
+        // Song link: [SONG:Song Name|https://...] or [SONG:Song Name] → dedicated live music card with working link and tap-to-copy
+        .replace(/\[SONG:([^|\]]+)(?:\|([^\]]+))?\]/g, (_, title, url) => {
+            const cleanTitle = (title || "").trim();
+            let liveUrl = (url || "").trim();
+            if (!liveUrl || !liveUrl.startsWith("http")) {
+              liveUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanTitle + ' song audio')}`;
+            }
+            const safeUrl = liveUrl.replace(/"/g, "&quot;");
+            const safeTitle = cleanTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return `<div class="ai-song-card" onclick="window.copySongLink(event, '${safeUrl}', this.querySelector('.ai-song-copy-btn'))" title="Tap to copy song link">
+              <div class="ai-song-icon"><i class="fa-solid fa-music"></i></div>
+              <div class="ai-song-info">
+                <div class="ai-song-title">${safeTitle}</div>
+                <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="ai-song-link" onclick="event.stopPropagation();">
+                  <i class="fa-brands fa-youtube"></i> Play on YouTube <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9.5px;margin-left:2px;"></i>
+                </a>
+              </div>
+              <button class="ai-song-copy-btn" title="Copy song link" onclick="window.copySongLink(event, '${safeUrl}', this); event.stopPropagation();">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>`;
         })
         .replace(/\n/g, "<br>");
 
-    // For AI messages, add a copy button
+    // For AI messages, add a sleek professional action footer
     if (role === "ai") {
         div.innerHTML = html;
+        const footer = document.createElement("div");
+        footer.className = "ai-msg-footer";
         const copyBtn = document.createElement("button");
         copyBtn.className = "ai-copy-btn";
-        copyBtn.title = "Copy";
-        copyBtn.innerHTML = "📋";
-        copyBtn.onclick = function() {
-            navigator.clipboard.writeText(text).then(() => {
-                copyBtn.innerHTML = "✅";
-                setTimeout(() => { copyBtn.innerHTML = "📋"; }, 1500);
-            }).catch(() => {
-                // Fallback for older browsers
+        copyBtn.title = "Copy response";
+        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i><span>Copy</span>';
+        copyBtn.onclick = function(e) {
+            e.stopPropagation();
+            const rawText = text.replace(/\[SONG:([^|\]]+)(?:\|([^\]]+))?\]/g, '$1: $2').replace(/\[(MOCK|TODO|FOCUS|PROGRESS|PROFILE|YOUTUBE|HOME|TIMER)\]/g, '');
+            const doFeedback = () => {
+                copyBtn.classList.add("copied");
+                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i><span>Copied</span>';
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i><span>Copy</span>';
+                }, 1800);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(rawText).then(doFeedback).catch(() => {
+                    const ta = document.createElement("textarea");
+                    ta.value = rawText; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+                    doFeedback();
+                });
+            } else {
                 const ta = document.createElement("textarea");
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand("copy");
-                document.body.removeChild(ta);
-                copyBtn.innerHTML = "✅";
-                setTimeout(() => { copyBtn.innerHTML = "📋"; }, 1500);
-            });
+                ta.value = rawText; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+                doFeedback();
+            }
         };
-        div.appendChild(copyBtn);
+        footer.appendChild(copyBtn);
+        div.appendChild(footer);
     } else {
         div.innerHTML = html;
     }
@@ -3600,6 +3724,33 @@ function appendMessage(role, text) {
     msgs.appendChild(div);
     setTimeout(() => msgs.scrollTo({ top: msgs.scrollHeight, behavior: "smooth" }), 60);
 }
+
+// Global helper for song link copying with instant feedback
+window.copySongLink = function(e, url, btn) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const targetBtn = btn || (e && e.currentTarget && e.currentTarget.querySelector ? e.currentTarget.querySelector('.ai-song-copy-btn') : null);
+    const doCopyFeedback = () => {
+        if (targetBtn) {
+            targetBtn.classList.add("copied");
+            targetBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+            setTimeout(() => {
+                targetBtn.classList.remove("copied");
+                targetBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+            }, 1800);
+        }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(doCopyFeedback).catch(() => {
+            const ta = document.createElement("textarea");
+            ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+            doCopyFeedback();
+        });
+    } else {
+        const ta = document.createElement("textarea");
+        ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+        doCopyFeedback();
+    }
+};
 
 function setAIThinkingState(isThinking) {
     const robot = document.getElementById("aiChatHeaderRobot") || document.querySelector(".ai-header-robot");
@@ -4009,7 +4160,7 @@ window.updateVideoTitle = function(id, newTitle) {
       var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.remove();});
       var m = document.createElement('meta'); m.name='theme-color';
-      m.content = isDark ? '#0a1628' : '#ffffff';
+      m.content = isDark ? '#0D1120' : '#F0F2F8';
       document.head.appendChild(m);
     }
     new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});

@@ -368,14 +368,15 @@ function initNotifications() {
       const id = change.doc.id;
       const d  = change.doc.data();
 
-      if (d.createdAt && d.createdAt.toMillis() < start.toMillis()) return;
+      const notifTs = d.time || (d.sentAt?.toMillis?.() || (d.createdAt?.toMillis?.() || null));
+      if (notifTs && notifTs < (start.toMillis() - 60000)) return;
       if (seen.notifications.has(id)) return;
       if (d.platform === "pwa" && !isPWA()) return;
       if (d.platform === "web" && isPWA())  return;
 
-      fireNotification(d.title, d.body, d.url || null, d.image || null);
+      fireNotification(d.title, d.body || d.message || "", d.url || null, d.image || d.imageUrl || null);
       markSeen("notifications", id);
-      updateDoc(doc(db, "notifications", id), { read: true });
+      updateDoc(doc(db, "notifications", id), { read: true }).catch(()=>{});
     });
   };
 

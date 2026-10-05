@@ -6,8 +6,8 @@
 <title>Dashboard - Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 
 <!-- ✅ AUTH GUARD -->
 <script>
@@ -30,14 +30,20 @@
       : saved;
 
   document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+  });
 
   window.matchMedia("(prefers-color-scheme: dark)")
   .addEventListener("change", function(e){
     if(localStorage.getItem("theme") === "system"){
-      document.documentElement.setAttribute(
-        "data-theme",
-        e.matches ? "dark" : "light"
-      );
+      const resolved = e.matches ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", resolved);
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+        m.removeAttribute("media");
+        m.content = resolved === "dark" ? "#0D1120" : "#F0F2F8";
+      });
     }
   });
 })();
@@ -3030,7 +3036,7 @@ function _applyTheme(theme){
   const metas = document.querySelectorAll('meta[name="theme-color"]');
   metas.forEach(function(m){ 
     m.removeAttribute("media"); 
-    m.content = theme === "dark" ? "#0B1220" : "#ffffff"; 
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8"; 
   });
 }
 
@@ -3583,13 +3589,48 @@ window.closeNotifPanel=function(){
   document.getElementById("notifOverlay")?.classList.remove("show");
 };
 
+// Universal accurate notification timestamp parser
+function parseNotificationTime(raw){
+  if(!raw) return Date.now();
+  if(typeof raw === 'number'){
+    // If in seconds (10 digits e.g. < 10000000000) vs milliseconds (13 digits)
+    return (raw > 0 && raw < 10000000000) ? raw * 1000 : raw;
+  }
+  if(typeof raw.toMillis === 'function') return raw.toMillis();
+  if(typeof raw.toDate === 'function') return raw.toDate().getTime();
+  if(typeof raw === 'object' && typeof raw.seconds === 'number'){
+    return raw.seconds * 1000 + Math.round((raw.nanoseconds || 0) / 1000000);
+  }
+  if(typeof raw === 'string'){
+    const trimmed = raw.trim();
+    if(/^\d+$/.test(trimmed)){
+      const num = Number(trimmed);
+      return (num > 0 && num < 10000000000) ? num * 1000 : num;
+    }
+    const parsed = Date.parse(trimmed);
+    if(!isNaN(parsed)) return parsed;
+  }
+  return Date.now();
+}
+
 // Shared formatTimeAgo (used by both Firebase notifs and push notifs)
 function formatTimeAgo(ts){
   if(!ts) return '';
-  const diff=Date.now()-ts,m=Math.floor(diff/60000);
-  if(m<1) return 'Just now';if(m<60) return m+'m ago';
-  const h=Math.floor(m/60);if(h<24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
+  const time = parseNotificationTime(ts);
+  const diff = Date.now() - time;
+  if(diff < 0) return 'Just now';
+  const m = Math.floor(diff / 60000);
+  if(m < 1) return 'Just now';
+  if(m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if(h < 24) return h + 'h ago';
+  const d = Math.floor(h / 24);
+  if(d < 7) return d + 'd ago';
+  if(d < 30) return Math.floor(d / 7) + 'w ago';
+  const mo = Math.floor(d / 30);
+  if(mo < 12) return mo + (mo === 1 ? ' month ago' : ' months ago');
+  const yr = Math.floor(d / 365);
+  return yr + (yr === 1 ? ' year ago' : ' years ago');
 }
 
 // ─── PWA PUSH NOTIFICATIONS → render in panel ───
@@ -3973,7 +4014,7 @@ if('serviceWorker' in navigator){
   function syncThemeColor(){
     var isDark=document.documentElement.getAttribute("data-theme")==="dark";
     var metas=document.querySelectorAll("meta[name='theme-color']");
-    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
+    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0D1120":"#F0F2F8"; });
   }
   syncThemeColor();
   new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
@@ -4167,57 +4208,55 @@ window._saveRatingToFirebase=function(stars,msg){
   }).catch(()=>{});
 };
 
-function formatTimeAgo(ts){
-  if(!ts) return '';
-  const diff=Date.now()-ts,m=Math.floor(diff/60000);
-  if(m<1) return 'Just now';if(m<60) return m+'m ago';
-  const h=Math.floor(m/60);if(h<24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
-}
-
 window._renderNotifications=function(notifs){
   const list=document.getElementById("notifList");
   if(!list) return;
-  const dot=document.getElementById("notifUnreadDot");
-  // Delegate to push-aware merge renderer if available
+  window._lastFirebaseNotifs = notifs;
   if(window._mergePushAndRender){
-    window._lastFirebaseNotifs = notifs;
     window._mergePushAndRender(notifs);
     return;
   }
   if(!notifs||notifs.length===0){
     list.innerHTML=`<div class="notif-empty"><span class="notif-empty-icon">🔔</span>No notifications yet.<br>Complete your daily goal to see updates!</div>`;
-    if(dot) dot.style.display='none';return;
+    const dot=document.getElementById("notifUnreadDot");
+    if(dot) dot.style.display='none';
+    return;
   }
   const lastSeen=parseInt(localStorage.getItem("notifLastSeen")||"0");
   const hasNew=notifs.some(n=>(n.ts||0)>lastSeen);
+  const dot=document.getElementById("notifUnreadDot");
   if(dot) dot.style.display=hasNew?'block':'none';
-  list.innerHTML=notifs.slice(0,5).map(n=>`
-    <div class="notif-item">
-      <div class="notif-item-icon">${n.icon||'📢'}</div>
-      <div class="notif-item-text">
-        <div class="notif-item-title">${n.title||''}</div>
-        <div class="notif-item-time">${formatTimeAgo(n.ts)}</div>
+  list.innerHTML=notifs.slice(0,30).map(n=>{
+    const imgUrl = n.image || n.imageUrl || n.img || n.mediaUrl || '';
+    const imgHtml = imgUrl ? `<div class="notif-img-wrap" style="margin-top:8px;border-radius:12px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);max-height:180px;"><img src="${imgUrl}" style="width:100%;height:auto;max-height:180px;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'" loading="lazy"></div>` : '';
+    return `<div class="notif-item">
+      <div class="notif-item-icon" style="background:rgba(91,91,246,0.1);border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${n.icon||'📢'}</div>
+      <div class="notif-item-text" style="flex:1;min-width:0;">
+        <div class="notif-item-title" style="font-weight:700;font-size:13.5px;color:var(--text);">${n.title||'Notification'}</div>
+        ${(n.body||n.message) ? `<div class="notif-item-body" style="color:var(--text2);font-size:12px;margin-top:4px;line-height:1.45;word-break:break-word;">${n.body||n.message}</div>` : ''}
+        ${imgHtml}
+        <div class="notif-item-time" style="margin-top:6px;font-size:10.5px;color:var(--text3);font-weight:500;">${formatTimeAgo(n.ts)}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 };
 
-onAuthStateChanged(auth, async user => {
-  if(!user) return;
-  const userId=user.uid;
-  const userRef=doc(db,"users",userId);
-  const userVal=user.email||user.uid;
-
-  // ── ADMIN NOTIFICATIONS: show in in-app panel ──
+// ── ADMIN NOTIFICATIONS REALTIME LISTENER (Self-initializing) ──
+function setupAdminNotificationsListener(activeUser) {
   try {
     const targetSet = new Set(["all"]);
-    if (user.email) targetSet.add(user.email.toLowerCase());
-    if (user.uid) targetSet.add(user.uid);
-    if (user.displayName) targetSet.add(user.displayName.toLowerCase());
+    if (activeUser?.email) targetSet.add(activeUser.email.toLowerCase());
+    if (activeUser?.uid) targetSet.add(activeUser.uid);
+    if (activeUser?.displayName) targetSet.add(activeUser.displayName.toLowerCase());
+    
     const lsUser = localStorage.getItem("userName");
     if (lsUser) targetSet.add(lsUser.toLowerCase());
+    const lsCustom = localStorage.getItem("customUserName");
+    if (lsCustom) targetSet.add(lsCustom.toLowerCase());
     const lsEmail = localStorage.getItem("userEmail");
     if (lsEmail) targetSet.add(lsEmail.toLowerCase());
+    const lsUid = localStorage.getItem("userUID") || localStorage.getItem("uwUid");
+    if (lsUid) targetSet.add(lsUid);
 
     const validTargets = Array.from(targetSet).filter(Boolean);
 
@@ -4226,20 +4265,21 @@ onAuthStateChanged(auth, async user => {
       snap.forEach(docSnap => {
         const d = docSnap.data();
         const dTarget = (d.target || "").toString().toLowerCase().trim();
-        const dUser   = (d.user || d.userId || d.email || "").toString().toLowerCase().trim();
+        const dUser   = (d.user || d.userId || d.email || d.recipientName || "").toString().toLowerCase().trim();
         
         const isBroadcast = dTarget === "all" || (!dTarget && !dUser);
-        const isUserMatch = validTargets.some(t => t === dTarget || t === dUser);
+        const isUserMatch = validTargets.some(t => t === dTarget || t === dUser || (dTarget && dTarget.includes(t)) || (dUser && dUser.includes(t)));
 
         if (isBroadcast || isUserMatch) {
+          const img = d.image || d.imageUrl || d.mediaUrl || d.poster || "";
           firestoreMap[docSnap.id] = {
             id:       docSnap.id,
             title:    d.title || "Notification",
             body:     d.body  || d.message || d.text || "",
-            icon:     d.icon  || "📢",
-            imageUrl: d.image || d.imageUrl || d.mediaUrl || "",
-            image:    d.image || d.imageUrl || d.mediaUrl || "",
-            ts:       typeof d.time === "number" ? d.time : (d.sentAt?.toMillis?.() || Date.now()),
+            icon:     d.icon  || "🔔",
+            imageUrl: img,
+            image:    img,
+            ts:       parseNotificationTime(d.time || d.sentAt || d.createdAt || d.timestamp || d.date),
             source:   "admin"
           };
         }
@@ -4257,7 +4297,11 @@ onAuthStateChanged(auth, async user => {
       localStorage.setItem("pwa_admin_notifs", JSON.stringify(merged));
 
       // Re-render notification panel
-      if(window._mergePushAndRender) window._mergePushAndRender(window._lastFirebaseNotifs||[]);
+      if(window._mergePushAndRender) {
+        window._mergePushAndRender(window._lastFirebaseNotifs||[]);
+      } else if(window._renderNotifications) {
+        window._renderNotifications(merged);
+      }
 
       // Show unread dot if there are notifications newer than last seen
       const lastSeen = parseInt(localStorage.getItem("notifLastSeen")||"0");
@@ -4278,6 +4322,17 @@ onAuthStateChanged(auth, async user => {
       onSnapshot(qSimple, handleNotifSnapshot, ex => console.log("[AdminNotif fallback]", ex));
     }
   } catch(ex){ console.log("[AdminNotif setup]", ex); }
+}
+
+// Start immediately on load
+setupAdminNotificationsListener(auth.currentUser);
+
+onAuthStateChanged(auth, async user => {
+  if(!user) return;
+  setupAdminNotificationsListener(user);
+  const userId=user.uid;
+  const userRef=doc(db,"users",userId);
+  const userVal=user.email||user.uid;
 
   // Expose a global helper so midnight reset can clear Firestore too
   window._resetDailyXPFirestore = function(){

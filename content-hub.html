@@ -6,7 +6,7 @@
 <title>Content Hub - Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
-<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+<meta id="metaThemeColor" name="theme-color" content="#F0F2F8">
 
 <!-- ✅ AUTH GUARD -->
 <script>
@@ -28,7 +28,7 @@
   function applyTheme(theme){
     document.documentElement.setAttribute("data-theme", theme);
     const meta = document.getElementById("metaThemeColor");
-    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#F0F2F8");
   }
   applyTheme(resolveTheme());
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){

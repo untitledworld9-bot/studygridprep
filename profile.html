@@ -6,8 +6,8 @@
 <title>Profile - Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 <!-- ✅ AUTH GUARD -->
 <script>
 (function(){
@@ -23,17 +23,11 @@
 (function(){
   var saved = localStorage.getItem("theme");
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  // ✅ FIX: "system" is a MODE, not an actual theme — must be resolved to the
-  // real dark/light value, otherwise data-theme="system" gets set literally
-  // (matches no CSS rule) causing an unstable look on refresh/navigation.
   var theme = (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
   document.documentElement.setAttribute("data-theme", theme);
-  // ✅ FIX: sync BOTH theme-color metas (not just the first) and remove their
-  // media attribute so the status bar always matches the resolved app theme
-  // instead of depending on the phone's own system light/dark setting.
   document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
     m.removeAttribute("media");
-    m.content = theme === "dark" ? "#0D1120" : "#ffffff";
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
   });
 })();
 
@@ -1020,11 +1014,20 @@ function renderCountdown(goal, examDate){
 
 function checkNotifRow(){
   const row = document.getElementById("notifAllowRow");
-  const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if(!isPWA || Notification.permission === "granted"){
+  if(!row) return;
+  if(Notification.permission === "granted"){
     row.style.display = "none";
   } else {
     row.style.display = "flex";
+    const txt = row.querySelector(".notif-row-text span");
+    const btn = row.querySelector(".notif-toggle-btn");
+    if(Notification.permission === "denied"){
+      if(txt) txt.innerText = "Daily exam reminder (Disabled in Settings)";
+      if(btn) { btn.innerText = "Settings"; btn.style.background = "var(--surface2)"; btn.style.color = "var(--text)"; btn.style.border = "1px solid var(--border)"; }
+    } else {
+      if(txt) txt.innerText = "Daily exam reminder";
+      if(btn) { btn.innerText = "Enable"; btn.style.background = ""; btn.style.color = ""; btn.style.border = ""; }
+    }
   }
 }
 
@@ -1218,6 +1221,10 @@ window.saveProfile = async function(){
 // ── NOTIFICATION ──
 window.enableNotif = async function(){
   try {
+    if(Notification.permission === "denied"){
+      alert("Notifications are disabled in browser/system settings. Tap the lock or settings icon in your browser address bar to allow Notifications.");
+      return;
+    }
     const perm = await Notification.requestPermission();
     if(perm === "granted"){
       localStorage.setItem("examNotifEnabled", "true");
@@ -1230,6 +1237,8 @@ window.enableNotif = async function(){
         icon: "/icon-192.png",
         badge:"/icon-192.png"
       });
+    } else {
+      checkNotifRow();
     }
   } catch(e){ console.log(e); }
 };
@@ -1291,7 +1300,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
       const m = document.createElement('meta'); m.name='theme-color';
-      m.content = isDark ? '#0D1120' : '#ffffff';
+      m.content = isDark ? '#0D1120' : '#F0F2F8';
       document.head.appendChild(m);
     }
     new MutationObserver(_utc).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});

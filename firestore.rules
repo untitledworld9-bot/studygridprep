@@ -194,12 +194,10 @@ service cloud.firestore {
 
   // NOTIFICATIONS
   match /notifications/{id} {
-    allow read: if isLoggedIn();
+    allow read: if true;
     allow create: if isAdmin() || isSubAdmin() || isMockAdmin() || isContentAdmin() || isHiringAdmin();
     allow delete: if isAdmin() || isSubAdmin() || isMockAdmin() || isContentAdmin() || isHiringAdmin();
-    allow update: if isLoggedIn() &&
-      request.resource.data.diff(resource.data)
-        .affectedKeys().hasOnly(['read']);
+    allow update: if true;
   }
 
   // MEDIA
