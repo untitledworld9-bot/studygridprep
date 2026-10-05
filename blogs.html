@@ -12,7 +12,7 @@
 <meta name="author" content="Study Grid Prep">
 <meta name="robots" content="index, follow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#F0F2F8">
+<meta id="metaThemeColor" name="theme-color" content="#F0F2F8">
 <meta property="og:title" content="Blog – Study Grid Prep">
 <meta property="og:site_name" content="Study Grid Prep">
 <meta property="og:description" content="Insights, guides, updates, and useful resources to help students learn smarter, stay informed, and move forward.">
@@ -20,6 +20,30 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://studygridprep.online/icon-512.png">
 <meta name="twitter:card" content="summary_large_image">
+
+<!-- ✅ THEME RESOLVER & STATUS BAR SYNC -->
+<script>
+(function(){
+  function resolveTheme(){
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.getElementById("metaThemeColor") || document.querySelector('meta[name="theme-color"]');
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#F0F2F8");
+  }
+  applyTheme(resolveTheme());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){
+    if(localStorage.getItem("theme") === "system") applyTheme(resolveTheme());
+  });
+  window.addEventListener("storage", function(e){
+    if(e.key === "theme") applyTheme(resolveTheme());
+  });
+})();
+</script>
+<style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
 
 <!-- SEO: Structured Data -->
 <script type="application/ld+json">
@@ -49,7 +73,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="pull-to-refresh.css">
 
@@ -57,10 +81,11 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --primary: #4F46E5;
+  --primary: #5B5BF6;
   --primary-light: #EEF2FF;
   --primary-hover: #4338CA;
-  --accent: #06B6D4;
+  --accent: #5B5BF6;
+  --accent2: #7C3AED;
   --accent-light: #ECFEFF;
   --teal: #0D9488;
   --teal-light: #F0FDFA;
@@ -74,23 +99,41 @@
   --amber-light: #FFFBEB;
   --success: #10B981;
   --text-primary: #0F172A;
-  --text-secondary: #475569;
+  --text-secondary: #5A6785;
   --text-muted: #94A3B8;
-  --bg: #FFFFFF;
-  --bg-soft: #F8FAFC;
-  --bg-muted: #F1F5F9;
-  --border: #E2E8F0;
-  --border-soft: #F1F5F9;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
-  --shadow-md: 0 10px 24px -4px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04);
+  --bg: #F0F2F8;
+  --bg-soft: #FFFFFF;
+  --bg-muted: #F4F6FB;
+  --border: #E2E8F2;
+  --border-soft: #E2E8F2;
+  --header-bg: rgba(240, 242, 248, 0.97);
+  --navbar-bg: rgba(240, 242, 248, 0.97);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.05);
+  --shadow: 0 4px 16px rgba(15,23,42,0.06);
+  --shadow-md: 0 8px 32px rgba(15,23,42,0.10);
   --shadow-lg: 0 24px 40px -8px rgba(0,0,0,0.1);
   --radius: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
   --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
-  --font: 'Outfit', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font: 'Poppins', 'Outfit', sans-serif;
+  --font-body: 'Poppins', 'DM Sans', sans-serif;
+}
+
+[data-theme="dark"] {
+  --text-primary: #E8F0FE;
+  --text-secondary: #8B9EC8;
+  --text-muted: #3D5080;
+  --bg: #0D1120;
+  --bg-soft: #151E32;
+  --bg-muted: #1A2440;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --header-bg: rgba(13, 17, 32, 0.97);
+  --navbar-bg: rgba(13, 17, 32, 0.97);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.35);
+  --shadow: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.55);
 }
 
 html { background: var(--bg); scroll-behavior: smooth; }
@@ -109,15 +152,16 @@ body {
   position: sticky;
   top: 0;
   z-index: 200;
-  background: rgba(255,255,255,0.88);
+  background: var(--header-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border);
   padding: 0 5%;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: var(--shadow-sm);
 }
 
 .nav-brand {

@@ -27,8 +27,8 @@
   --green-light: rgba(16, 185, 129, 0.1);
   --amber: #F59E0B;
   --amber-light: rgba(245, 158, 11, 0.1);
-  --header-bg: rgba(255, 255, 255, 0.92);
-  --nav-bg: rgba(255, 255, 255, 0.94);
+  --header-bg: rgba(240, 242, 248, 0.97);
+  --nav-bg: rgba(248, 249, 253, 0.98);
   --card-radius: 20px;
   --btn-radius: 12px;
   --shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.04);
@@ -61,8 +61,8 @@
   --green-light: rgba(16, 185, 129, 0.16);
   --amber: #FBBF24;
   --amber-light: rgba(245, 158, 11, 0.16);
-  --header-bg: rgba(13, 17, 32, 0.90);
-  --nav-bg: rgba(13, 17, 32, 0.92);
+  --header-bg: rgba(13, 17, 32, 0.97);
+  --nav-bg: rgba(13, 17, 32, 0.98);
   --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);

@@ -16,7 +16,7 @@
 <meta name="twitter:description" content="Read educational articles, exam updates, notes, and study material on Study Grid Prep.">
 <meta name="twitter:image" content="https://studygridprep.online/icon-192.png">
 
-<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+<meta id="metaThemeColor" name="theme-color" content="#F0F2F8">
 
 <script>
 (function(){
@@ -36,9 +36,15 @@
   function applyTheme(theme){
     document.documentElement.setAttribute("data-theme", theme);
     const meta = document.getElementById("metaThemeColor");
-    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#F0F2F8");
   }
   applyTheme(resolveTheme());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){
+    if(localStorage.getItem("theme") === "system") applyTheme(resolveTheme());
+  });
+  window.addEventListener("storage", function(e){
+    if(e.key === "theme") applyTheme(resolveTheme());
+  });
 })();
 </script>
 <style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
@@ -50,7 +56,7 @@
 :root{
   --bg:#F0F2F8; --surface:#FFFFFF; --surface2:#F4F6FB; --border:#E2E8F2;
   --text:#0F172A; --text2:#5A6785; --text3:#94A3B8; --accent:#5B5BF6; --accent2:#7C3AED;
-  --header-bg:rgba(255,255,255,0.97); --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
+  --header-bg:rgba(240,242,248,0.97); --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
   --t:0.2s cubic-bezier(0.4,0,0.2,1);
 }
 [data-theme="dark"]{
