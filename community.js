@@ -8,6 +8,7 @@
 
 import {
   db,
+  auth,
   collection,
   addDoc,
   getDocs,
@@ -16,7 +17,8 @@ import {
   orderBy,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  onAuthStateChanged
 } from "./firebase.js";
 
 /* ─── 0. SMART CANONICAL EXAM MAPPING & KEYWORD NORMALIZATION ─── */
@@ -131,14 +133,35 @@ function isSameExamGroup(examA, examB) {
 }
 
 /* ─── APP STATE & STORAGE INITIALIZATION ─── */
-const SGP_USER_NAME = localStorage.getItem("userName") || "Student";
-const SGP_USER_EMAIL = localStorage.getItem("userEmail") || "";
-const SGP_USER_UID = localStorage.getItem("userUid") || SGP_USER_EMAIL || "usr_" + Math.random().toString(36).slice(2, 9);
+let SGP_USER_NAME = localStorage.getItem("userName") || "Student";
+let SGP_USER_EMAIL = localStorage.getItem("userEmail") || "";
+let SGP_USER_UID = localStorage.getItem("userUID") || localStorage.getItem("uwUid") || localStorage.getItem("userUid") || SGP_USER_EMAIL || "usr_" + Math.random().toString(36).slice(2, 9);
 const TODAY_STR = new Date().toISOString().slice(0, 10);
 
 let currentExam = localStorage.getItem("goal") || "JEE Main";
+if (currentExam === "Custom" && localStorage.getItem("customExamName")) {
+  currentExam = localStorage.getItem("customExamName");
+}
 const initialCanonical = getCanonicalExam(currentExam);
 currentExam = initialCanonical.shortName;
+
+// Automatically sync auth user credentials once initialized
+if (auth) {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      SGP_USER_UID = user.uid;
+      localStorage.setItem("userUID", user.uid);
+      if (user.displayName) {
+        SGP_USER_NAME = user.displayName;
+        localStorage.setItem("userName", user.displayName);
+      }
+      if (user.email) {
+        SGP_USER_EMAIL = user.email;
+        localStorage.setItem("userEmail", user.email);
+      }
+    }
+  });
+}
 
 let activeFilter = "all";
 let currentTab = "community"; // 'community' | 'myPosts'
@@ -184,6 +207,7 @@ function showAppAlert(message, title = "Notice", iconClass = "fa-solid fa-circle
   }
 
   appModalConfirmCallback = null;
+  overlay.style.display = "flex";
   overlay.classList.add("open");
 }
 
@@ -222,12 +246,16 @@ function showAppConfirm(message, title = "Confirm Action", onConfirm = null, con
     }
   }
 
+  overlay.style.display = "flex";
   overlay.classList.add("open");
 }
 
 function closeAppModal() {
   const overlay = document.getElementById("appModalOverlay");
-  if (overlay) overlay.classList.remove("open");
+  if (overlay) {
+    overlay.classList.remove("open");
+    overlay.style.display = "none";
+  }
   appModalConfirmCallback = null;
 }
 
@@ -242,10 +270,14 @@ function showAppToast(message, iconClass = "fa-solid fa-circle-check") {
   if (iconEl) iconEl.className = iconClass;
   if (textEl) textEl.textContent = message;
 
+  toast.style.display = "inline-flex";
   toast.classList.add("show");
   clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => {
     toast.classList.remove("show");
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 250);
   }, 2600);
 }
 
@@ -258,9 +290,27 @@ function listenToCommunityFirestore() {
       snapshot.forEach(docSnap => {
         list.push({ id: docSnap.id, ...docSnap.data() });
       });
-      communityPostsList = list;
+
+      // Preserve any local pending posts that haven't synced yet
+      const serverIds = new Set(list.map(d => d.id));
+      const pendingPosts = communityPostsList.filter(p =>
+        p.id && (p.id.startsWith("post_") || !serverIds.has(p.id)) && (Date.now() - (p.createdAt || 0) < 60000)
+      );
+
+      const merged = [...pendingPosts];
+      list.forEach(item => {
+        const alreadyInPending = pendingPosts.some(p =>
+          p.id === item.id ||
+          (p.title === item.title && p.authorUid === item.authorUid && Math.abs((p.createdAt || 0) - (item.createdAt || 0)) < 15000)
+        );
+        if (!alreadyInPending) {
+          merged.push(item);
+        }
+      });
+
+      communityPostsList = merged;
       try {
-        localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(list));
+        localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(merged));
       } catch (e) {}
       renderCommunity();
       if (currentTab === "myPosts") renderMyPosts();
@@ -281,9 +331,26 @@ async function fetchCommunityOnce() {
     const list = [];
     snap.forEach(d => list.push({ id: d.id, ...d.data() }));
     list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    communityPostsList = list;
+
+    const serverIds = new Set(list.map(d => d.id));
+    const pendingPosts = communityPostsList.filter(p =>
+      p.id && (p.id.startsWith("post_") || !serverIds.has(p.id)) && (Date.now() - (p.createdAt || 0) < 60000)
+    );
+
+    const merged = [...pendingPosts];
+    list.forEach(item => {
+      const alreadyInPending = pendingPosts.some(p =>
+        p.id === item.id ||
+        (p.title === item.title && p.authorUid === item.authorUid && Math.abs((p.createdAt || 0) - (item.createdAt || 0)) < 15000)
+      );
+      if (!alreadyInPending) {
+        merged.push(item);
+      }
+    });
+
+    communityPostsList = merged;
     try {
-      localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(list));
+      localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(merged));
     } catch (e) {}
     renderCommunity();
     if (currentTab === "myPosts") renderMyPosts();
@@ -636,13 +703,10 @@ function renderCommunity() {
 
   // Filter posts matching this canonical exam group (e.g. btech matches engineering, engg, etc.)
   let examPosts = allPosts.filter(p => {
-    return isSameExamGroup(p.exam, currentExam) || isSameExamGroup(p.exam, canonicalCurrent.shortName);
+    return isSameExamGroup(p.exam, currentExam) ||
+           isSameExamGroup(p.examCanonical, canonicalCurrent.shortName) ||
+           isSameExamGroup(p.exam, canonicalCurrent.shortName);
   });
-
-  // If no posts in current exam track yet, show all community posts as general feed
-  if (examPosts.length === 0) {
-    examPosts = allPosts;
-  }
 
   // Filter by category
   if (activeFilter !== "all") {
@@ -1041,11 +1105,16 @@ async function submitPost() {
   }
 
   const canonical = getCanonicalExam(currentExam);
+  const activeUid = (auth && auth.currentUser && auth.currentUser.uid)
+    ? auth.currentUser.uid
+    : (localStorage.getItem("userUID") || localStorage.getItem("uwUid") || SGP_USER_UID);
+
   const postData = {
-    exam: canonical.shortName,
+    exam: currentExam,
+    examCanonical: canonical.shortName,
     category: selectedCategory,
-    authorName: SGP_USER_NAME,
-    authorUid: SGP_USER_UID,
+    authorName: localStorage.getItem("userName") || SGP_USER_NAME || "Student",
+    authorUid: activeUid,
     createdAt: Date.now(),
     title,
     body,
@@ -1053,7 +1122,7 @@ async function submitPost() {
     codeLang: codeLang || null,
     likes: [],
     dislikes: [],
-    views: [SGP_USER_UID],
+    views: [activeUid],
     reported: false,
     replies: []
   };
@@ -1067,15 +1136,24 @@ async function submitPost() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   showAppToast("Post published successfully!");
 
+  try {
+    localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(communityPostsList));
+  } catch (e) {}
+
   // Save to Firestore
   try {
     const docRef = await addDoc(collection(db, "communityPosts"), postData);
     optimisticPost.id = docRef.id;
+    const idx = communityPostsList.findIndex(p => p.id === tempId);
+    if (idx !== -1) {
+      communityPostsList[idx].id = docRef.id;
+    }
     try {
       localStorage.setItem("sgp_comm_posts_cache", JSON.stringify(communityPostsList));
     } catch (e) {}
+    console.log("[Community] Post saved with Firestore ID:", docRef.id);
   } catch (e) {
-    console.error("Firestore post creation error:", e);
+    console.warn("Firestore post creation notice:", e);
   }
 }
 
@@ -1185,7 +1263,11 @@ function switchMainTab(tab) {
 
 function renderMyPosts() {
   const allPosts = communityPostsList;
-  const myPosts = allPosts.filter(p => p.authorUid === SGP_USER_UID);
+  const myPosts = allPosts.filter(p =>
+    p.authorUid === SGP_USER_UID ||
+    (auth && auth.currentUser && p.authorUid === auth.currentUser.uid) ||
+    p.authorName === SGP_USER_NAME
+  );
 
   let totalViews = 0, totalLikes = 0;
   myPosts.forEach(p => {

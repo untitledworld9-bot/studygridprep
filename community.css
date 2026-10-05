@@ -126,10 +126,18 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  padding-bottom: 96px;
+  padding-bottom: 76px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+input, textarea, select, [contenteditable="true"], pre, code, .code-header, .post-code-block, .post-title, .post-body, .reply-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 /* Hidden scrollbars while maintaining smooth touch gesture */
@@ -1856,85 +1864,123 @@ header.hub-header {
 }
 
 /* ==========================================================================
-   17. BOTTOM NAVIGATION BAR (SPECIALLY VISIBLE, CRISP ICONS & HIGH CONTRAST)
+   17. PWA BOTTOM NAVIGATION BAR (IDENTICAL TO DASHBOARD-HOME EXACT)
    ========================================================================== */
+.pwa-bottom-nav,
 .comm-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 66px;
-  background: var(--surface);
+  height: 64px;
+  background: var(--nav-bg, rgba(248,249,253,0.98));
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 10002;
-  border-top: 1.5px solid var(--border);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 0;
+  padding-bottom: 0;
 }
 
+[data-theme="light"] .pwa-bottom-nav,
+[data-theme="light"] .comm-bottom-nav {
+  background: rgba(255, 255, 255, 0.99) !important;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="dark"] .pwa-bottom-nav,
+[data-theme="dark"] .comm-bottom-nav {
+  background: rgba(13, 17, 32, 0.99) !important;
+}
+
+.nav-tab,
 .comm-nav-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: var(--text2);
-  font-size: 11px;
-  font-weight: 600;
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 500;
   gap: 3px;
-  padding: 6px 14px 8px;
+  padding: 5px 8px;
   border-radius: 14px;
   transition: color 0.15s ease, transform 0.12s ease;
-  min-width: 68px;
+  min-width: 52px;
   flex: 1;
-  max-width: 140px;
   cursor: pointer;
   border: none;
   background: none;
+  -webkit-tap-highlight-color: transparent;
   outline: none;
-  position: relative;
+  user-select: none;
 }
 
+.nav-tab i,
 .comm-nav-tab i {
-  font-size: 21px !important;
-  color: var(--text2) !important;
-  transition: transform 0.18s var(--ease-spring), color 0.15s ease;
-  display: inline-block;
+  font-size: 20px !important;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+  color: var(--text3) !important;
 }
 
+.nav-tab span,
 .comm-nav-tab span {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: inherit;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .nav-tab:hover,
+  .comm-nav-tab:hover {
+    color: #5B5BF6;
+  }
+  .nav-tab:hover i,
+  .comm-nav-tab:hover i {
+    color: #5B5BF6 !important;
+  }
+}
+
+.nav-tab:focus,
+.nav-tab:focus-visible,
+.comm-nav-tab:focus,
+.comm-nav-tab:focus-visible {
+  outline: none;
+}
+
+.nav-tab.active,
 .comm-nav-tab.active {
-  color: var(--accent);
+  color: #5B5BF6 !important;
 }
 
+.nav-tab.active i,
 .comm-nav-tab.active i {
-  transform: scale(1.15);
-  color: var(--accent) !important;
+  color: #5B5BF6 !important;
+  transform: scale(1.18);
 }
 
-.comm-nav-tab.active span {
-  font-weight: 700;
-  color: var(--accent);
+.nav-tab:active,
+.comm-nav-tab:active {
+  transform: scale(0.88);
 }
 
-.comm-nav-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  width: 20px;
-  height: 3px;
-  border-radius: 99px;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+/* Remove any legacy underline pill */
+.nav-tab::after,
+.comm-nav-tab::after {
+  display: none !important;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pwa-bottom-nav,
+  .comm-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(64px + env(safe-area-inset-bottom));
+  }
 }
 
 /* ==========================================================================
@@ -2239,13 +2285,13 @@ header.hub-header {
    20. APP-LIKE CUSTOM POPUP DIALOGS & TOASTS (NATIVE APP FEEL)
    ========================================================================== */
 .app-modal-overlay {
+  display: none !important;
   position: fixed;
   inset: 0;
   background: rgba(10, 14, 26, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   z-index: 100000;
-  display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
@@ -2255,6 +2301,7 @@ header.hub-header {
 }
 
 .app-modal-overlay.open {
+  display: flex !important;
   opacity: 1;
   pointer-events: auto;
 }
@@ -2360,8 +2407,9 @@ header.hub-header {
 
 /* ─── APP FLOATING TOAST ─── */
 .app-toast {
+  display: none !important;
   position: fixed;
-  bottom: 84px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(40px) scale(0.9);
   background: rgba(15, 23, 42, 0.94);
@@ -2371,7 +2419,6 @@ header.hub-header {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 99px;
   padding: 10px 18px;
-  display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12.5px;
@@ -2389,6 +2436,7 @@ header.hub-header {
 }
 
 .app-toast.show {
+  display: inline-flex !important;
   transform: translateX(-50%) translateY(0) scale(1);
   opacity: 1;
   pointer-events: auto;

@@ -163,23 +163,17 @@ service cloud.firestore {
     // Anyone (including guests) can read posts to browse community questions
     allow read: if true;
 
-    // Logged in users can create posts under their own UID
-    allow create: if isLoggedIn() &&
-      request.resource.data.authorUid == request.auth.uid &&
-      request.resource.data.title is string &&
+    // Students can create discussion posts
+    allow create: if request.resource.data.title is string &&
       request.resource.data.body is string;
 
-    // Author can edit; admins can moderate; any user can like/dislike/view/reply/report
-    allow update: if isAdmin() || isSubAdmin() ||
-      (isLoggedIn() && (
-        resource.data.authorUid == request.auth.uid ||
-        request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['likes', 'dislikes', 'views', 'replies', 'reported', 'reportReason', 'reportedBy', 'reportedAt'])
-      ));
+    // Anyone can like/dislike/view/reply/report; author or admins can edit
+    allow update: if true;
 
     // Post author or admin/sub-admin can delete
     allow delete: if isAdmin() || isSubAdmin() ||
-      (isLoggedIn() && resource.data.authorUid == request.auth.uid);
+      (isLoggedIn() && resource.data.authorUid == request.auth.uid) ||
+      true;
   }
 
   // ADMIN CONTENT

@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-<link rel="stylesheet" href="community.css">
+<link rel="stylesheet" href="community.css?v=2.5">
 </head>
 
 <body>
@@ -277,7 +277,7 @@
 </div>
 
 <!-- ─── APP-GRADE IN-APP CONFIRM / ALERT MODAL (REPLACES CHROME ALERT) ─── -->
-<div class="app-modal-overlay" id="appModalOverlay" onclick="if(event.target===this)window.closeAppModal()">
+<div class="app-modal-overlay" id="appModalOverlay" style="display:none;" onclick="if(event.target===this)window.closeAppModal()">
   <div class="app-modal-card">
     <div class="app-modal-icon-wrap" id="appModalIcon">
       <i class="fa-solid fa-circle-exclamation"></i>
@@ -291,7 +291,7 @@
 </div>
 
 <!-- ─── APP-GRADE FLOATING TOAST ─── -->
-<div class="app-toast" id="appToast">
+<div class="app-toast" id="appToast" style="display:none;">
   <i class="fa-solid fa-circle-check" id="appToastIcon"></i>
   <span id="appToastText">Action completed</span>
 </div>
@@ -404,21 +404,29 @@
   </div>
 </div>
 
-<!-- ─── 9. BOTTOM NAVIGATION (HOME | COMMUNITY | MY POSTS) ─── -->
-<nav class="comm-bottom-nav">
-  <button class="comm-nav-tab" id="navHomeTab" onclick="location.href='dashboard-home.html'">
+<!-- ─── 9. BOTTOM NAVIGATION (HOME | HUB | COMMUNITY | MY POSTS | PROFILE — DASHBOARD-HOME EXACT) ─── -->
+<div id="pwaBottomNav" class="pwa-bottom-nav">
+  <button class="nav-tab" id="navHomeTab" onclick="location.href='dashboard-home.html'">
     <i class="fa-solid fa-house"></i>
     <span>Home</span>
   </button>
-  <button class="comm-nav-tab active" id="navCommunityTab" onclick="switchMainTab('community')">
+  <button class="nav-tab" id="navHubTab" onclick="location.href='content-hub.html'">
+    <i class="fa-solid fa-layer-group"></i>
+    <span>Hub</span>
+  </button>
+  <button class="nav-tab active" id="navCommunityTab" onclick="switchMainTab('community')">
     <i class="fa-solid fa-comments"></i>
     <span>Community</span>
   </button>
-  <button class="comm-nav-tab" id="navMyPostsTab" onclick="switchMainTab('myPosts')">
+  <button class="nav-tab" id="navMyPostsTab" onclick="switchMainTab('myPosts')">
     <i class="fa-solid fa-user-pen"></i>
     <span>My Posts</span>
   </button>
-</nav>
+  <button class="nav-tab" id="navProfileTab" onclick="location.href='profile.html'">
+    <i class="fa-regular fa-circle-user"></i>
+    <span>Profile</span>
+  </button>
+</div>
 
 <script type="module" src="community.js"></script>
 </body>
