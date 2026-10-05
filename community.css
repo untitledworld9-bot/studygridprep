@@ -71,14 +71,49 @@
 }
 
 /* ==========================================================================
-   2. RESET & BASE ACCESSIBILITY
+   2. RESET, BASE TYPOGRAPHY & ICON PRESERVATION
    ========================================================================== */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
+}
+
+body, button, input, select, textarea {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Explicit Font Awesome icon font protection - never let Poppins override icons */
+.fa, .fas, .far, .fal, .fad, .fab,
+.fa-solid, .fa-regular, .fa-light, .fa-thin, .fa-duotone, .fa-brands,
+[class*="fa-"], [class^="fa-"] {
+  font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+  font-weight: 900;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  line-height: 1 !important;
+  display: inline-block;
+  vertical-align: -0.125em;
+  speak: none;
+}
+
+.fa-regular, .far {
+  font-weight: 400 !important;
+}
+
+.fa-brands, .fab {
+  font-family: "Font Awesome 6 Brands", "FontAwesome" !important;
+  font-weight: 400 !important;
+}
+
+.fa::before, .fas::before, .far::before, .fal::before, .fad::before,
+.fa-solid::before, .fa-regular::before, .fa-light::before, .fa-thin::before, .fa-duotone::before,
+[class*="fa-"]::before, [class^="fa-"]::before {
+  font-family: inherit !important;
+  font-style: inherit !important;
+  font-weight: inherit !important;
 }
 
 html {
@@ -108,7 +143,6 @@ body {
 }
 
 button {
-  font-family: inherit;
   cursor: pointer;
   border: none;
   background: none;
@@ -329,21 +363,33 @@ header.hub-header {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text);
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
   transition: transform 0.15s ease, background var(--t), border-color var(--t);
 }
 
+.hub-back-btn i {
+  color: var(--text) !important;
+  font-size: 16px !important;
+  display: inline-block;
+}
+
 .hub-back-btn:hover {
-  background: var(--surface3);
+  background: var(--surface2);
   border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hub-back-btn:hover i {
+  color: var(--accent) !important;
 }
 
 .hub-back-btn:active {
@@ -383,22 +429,31 @@ header.hub-header {
 .exam-chip {
   background: var(--accent-light);
   color: var(--accent);
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 8px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  border: 1px solid rgba(91, 91, 246, 0.25);
+  gap: 5px;
+  border: 1.5px solid rgba(91, 91, 246, 0.3);
   transition: all var(--t);
+  flex-shrink: 0;
+}
+
+.exam-chip i {
+  color: var(--accent);
 }
 
 .exam-chip:hover {
   background: var(--accent);
   color: #FFFFFF;
   border-color: var(--accent);
+}
+
+.exam-chip:hover i {
+  color: #FFFFFF !important;
 }
 
 .hub-header-actions {
@@ -412,27 +467,122 @@ header.hub-header {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text2);
-  font-size: 15px;
+  color: var(--text);
+  font-size: 16px;
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
-  transition: transform 0.15s ease, color var(--t), background var(--t);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.15s ease, color var(--t), background var(--t), border-color var(--t);
+}
+
+.hub-icon-btn i {
+  color: var(--text) !important;
+  font-size: 16px !important;
+  display: inline-block;
 }
 
 .hub-icon-btn:hover {
-  background: var(--surface3);
-  color: var(--text);
+  background: var(--surface2);
+  color: var(--accent);
   border-color: var(--accent);
+}
+
+.hub-icon-btn:hover i {
+  color: var(--accent) !important;
 }
 
 .hub-icon-btn:active {
   transform: scale(0.92);
+}
+
+/* ==========================================================================
+   PULL TO REFRESH COMPONENT
+   ========================================================================== */
+.pull-refresh-container {
+  overflow: hidden;
+  height: 0px;
+  max-height: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: height 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.2s ease, margin 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  margin-bottom: 0px;
+  will-change: height, opacity;
+}
+
+.pull-refresh-container.pulling {
+  transition: none;
+  opacity: 1;
+}
+
+.pull-refresh-container.refreshing {
+  height: 48px;
+  max-height: 48px;
+  opacity: 1;
+  margin-bottom: 12px;
+}
+
+.pull-refresh-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  color: var(--accent);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.pull-refresh-spinner i {
+  color: var(--accent) !important;
+  font-size: 14px !important;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.pull-refresh-spinner.flipped i {
+  transform: rotate(180deg);
+}
+
+.feed-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t);
+}
+
+.feed-refresh-btn:hover {
+  background: var(--surface2);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.feed-refresh-btn i {
+  font-size: 12px;
 }
 
 .notif-badge {
@@ -1706,23 +1856,23 @@ header.hub-header {
 }
 
 /* ==========================================================================
-   17. BOTTOM NAVIGATION BAR (MOBILE & TABLET GROUNDED BAR)
+   17. BOTTOM NAVIGATION BAR (SPECIALLY VISIBLE, CRISP ICONS & HIGH CONTRAST)
    ========================================================================== */
 .comm-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 64px;
-  background: var(--nav-bg);
+  height: 66px;
+  background: var(--surface);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 10002;
-  border-top: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  border-top: 1.5px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -1732,24 +1882,34 @@ header.hub-header {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: var(--text3);
-  font-size: 10.5px;
+  color: var(--text2);
+  font-size: 11px;
   font-weight: 600;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 3px;
+  padding: 6px 14px 8px;
   border-radius: 14px;
   transition: color 0.15s ease, transform 0.12s ease;
-  min-width: 60px;
+  min-width: 68px;
   flex: 1;
+  max-width: 140px;
   cursor: pointer;
   border: none;
   background: none;
   outline: none;
+  position: relative;
 }
 
 .comm-nav-tab i {
-  font-size: 20px;
-  transition: transform 0.18s var(--ease-spring);
+  font-size: 21px !important;
+  color: var(--text2) !important;
+  transition: transform 0.18s var(--ease-spring), color 0.15s ease;
+  display: inline-block;
+}
+
+.comm-nav-tab span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
 }
 
 .comm-nav-tab.active {
@@ -1758,7 +1918,23 @@ header.hub-header {
 
 .comm-nav-tab.active i {
   transform: scale(1.15);
+  color: var(--accent) !important;
+}
+
+.comm-nav-tab.active span {
+  font-weight: 700;
   color: var(--accent);
+}
+
+.comm-nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  width: 20px;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
 }
 
 /* ==========================================================================
