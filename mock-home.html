@@ -770,6 +770,11 @@ window.setTheme = function(t) {
   const resolved = t === 'system' ? (systemDark ? 'dark' : 'light') : t;
   document.documentElement.setAttribute('data-theme', resolved);
   localStorage.setItem('theme', t);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = resolved === 'dark' ? '#0D1120' : '#F0F2F8';
+  });
+  if(typeof syncThemeColorMeta === 'function') syncThemeColorMeta(resolved);
   syncThemePills();
 };
 syncThemePills();
@@ -921,26 +926,24 @@ function _updateMockHomeBadge(isSubscribed, trialExpiry) {
 
 /* ── Theme color meta sync ── */
 (function(){
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if(!meta) return;
-  function sync() { meta.content = document.documentElement.getAttribute('data-theme')==='dark' ? '#0D1120' : '#F0F2F8'; }
-  sync();
-  new MutationObserver(sync).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+  function syncThemeColor(){
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.querySelectorAll("meta[name='theme-color']").forEach(function(m){
+      m.removeAttribute("media");
+      m.content = isDark ? "#0D1120" : "#F0F2F8";
+    });
+  }
+  syncThemeColor();
+  new MutationObserver(syncThemeColor).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  window.addEventListener("storage", function(e){
+    if (e.key === "theme") syncThemeColor();
+  });
 })();
 </script>
 
 <script type="module" src="index.js"></script>
 
 <script>
-(function(){
-  function syncThemeColor(){
-    var isDark=document.documentElement.getAttribute("data-theme")==="dark";
-    var metas=document.querySelectorAll("meta[name='theme-color']");
-    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0D1120":"#F0F2F8"; });
-  }
-  syncThemeColor();
-  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
-})();
 
 window.onPullToRefresh = async function() {
   try {

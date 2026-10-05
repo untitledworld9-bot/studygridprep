@@ -6,7 +6,8 @@
 <title>Exam Community – Study Grid Prep</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
-<meta id="metaThemeColor" name="theme-color" content="#F0F2F8">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 
 <!-- ✅ AUTH GUARD -->
 <script>
@@ -21,22 +22,38 @@
 <!-- THEME RESOLVER -->
 <script>
 (function(){
-  function resolveTheme(){
-    const saved = localStorage.getItem("theme");
-    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    return (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
-  }
-  function applyTheme(theme){
-    document.documentElement.setAttribute("data-theme", theme);
-    const meta = document.getElementById("metaThemeColor");
-    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#F0F2F8");
-  }
-  applyTheme(resolveTheme());
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){
-    if(localStorage.getItem("theme") === "system") applyTheme(resolveTheme());
+  const saved = localStorage.getItem("theme");
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = (!saved || saved === "system") ? (systemDark ? "dark" : "light") : saved;
+
+  document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
   });
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system"){
+      const resolved = e.matches ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", resolved);
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+        m.removeAttribute("media");
+        m.content = resolved === "dark" ? "#0D1120" : "#F0F2F8";
+      });
+    }
+  });
+
   window.addEventListener("storage", function(e){
-    if(e.key === "theme") applyTheme(resolveTheme());
+    if(e.key === "theme"){
+      const savedT = localStorage.getItem("theme");
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const t = (!savedT || savedT === "system") ? (isDark ? "dark" : "light") : savedT;
+      document.documentElement.setAttribute("data-theme", t);
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+        m.removeAttribute("media");
+        m.content = t === "dark" ? "#0D1120" : "#F0F2F8";
+      });
+    }
   });
 })();
 </script>
@@ -428,6 +445,7 @@
   </button>
 </div>
 
+<script src="theme.js"></script>
 <script type="module" src="community.js"></script>
 </body>
 </html>

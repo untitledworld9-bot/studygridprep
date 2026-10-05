@@ -119,7 +119,6 @@ body, button, input, select, textarea {
 html {
   background: var(--bg);
   overflow-x: hidden;
-  color-scheme: light dark;
 }
 
 body {
