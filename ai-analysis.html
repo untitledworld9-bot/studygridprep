@@ -1,4 +1,4 @@
-	<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -124,11 +124,11 @@ body {
   min-height:100%; min-height:100dvh;
   display:flex; flex-direction:column;
   overscroll-behavior-y: none;
-  animation: pageIn 0.36s ease forwards;
+  animation: pageIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes pageIn {
-  from { opacity:0; transform:translateY(10px); }
-  to   { opacity:1; transform:translateY(0); }
+  from { opacity:0; }
+  to   { opacity:1; }
 }
 
 /* ============================================================
@@ -137,7 +137,7 @@ body {
 #pageTransition {
   position:fixed; inset:0; background:var(--bg);
   z-index:99999; opacity:0; pointer-events:none;
-  transition:opacity 0.22s ease;
+  transition:opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #pageTransition.leaving { opacity:1; pointer-events:all; }
 
@@ -148,7 +148,7 @@ header {
   position:sticky; top:0; z-index:900;
   display:flex; align-items:center;
   justify-content:space-between;
-  padding:max(13px, env(safe-area-inset-top)) 18px 13px;
+  padding:max(14px, env(safe-area-inset-top)) 18px 14px;
   background:var(--header-bg);
   backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--card-border);
@@ -2049,29 +2049,22 @@ async function init() {
    THEME SYNC
 ================================================================ */
 (function() {
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (!meta) return;
   function sync() {
-    meta.content = document.documentElement.getAttribute('data-theme') === 'dark' ? '#0B1220' : '#ffffff';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const color = isDark ? '#0D1120' : '#F0F2F8';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = color;
+    });
   }
   sync();
   new MutationObserver(sync).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+  window.addEventListener("storage", function(e){ if(e.key === "theme") sync(); });
 })();
 
 // Kick off
 init();
 </script>
-
-<script>
-(function(){
-  function syncThemeColor(){
-    var isDark=document.documentElement.getAttribute("data-theme")==="dark";
-    var metas=document.querySelectorAll("meta[name='theme-color']");
-    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
-  }
-  syncThemeColor();
-  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
-})();
-</script>
+<script src="theme.js"></script>
 </body>
 </html>

@@ -323,7 +323,7 @@ body{
   color:var(--text);
   min-height:100vh;
   padding-bottom:80px;
-  animation:pageIn 0.25s ease;
+  animation:pageIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
   user-select:none; -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
   overscroll-behavior-y:none;
@@ -335,7 +335,7 @@ header{
   display:flex;
   align-items:center;
   gap:10px;
-  padding:14px 18px;
+  padding:max(14px, env(safe-area-inset-top)) 18px 14px;
   background:var(--header-bg);
   border-bottom:1px solid var(--border);
   position:sticky; top:0; z-index:9999;

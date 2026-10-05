@@ -9,19 +9,36 @@ function syncThemeColorMeta(theme) {
   document.head.appendChild(meta);
 }
 
+function resolveCurrentTheme() {
+  const saved = localStorage.getItem("theme");
+  if (saved && saved !== "system") return saved;
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return systemDark ? "dark" : "light";
+}
+
 // Load theme
 (function(){
-  const saved = localStorage.getItem("theme");
-  let theme = "light";
-
-  if(saved && saved !== "system"){
-    theme = saved;
-  } else {
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    theme = systemDark ? "dark" : "light";
-  }
+  const theme = resolveCurrentTheme();
   document.documentElement.setAttribute("data-theme", theme);
   syncThemeColorMeta(theme);
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e){
+    if (localStorage.getItem("theme") === "system") {
+      const newT = e.matches ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", newT);
+      syncThemeColorMeta(newT);
+      updateThemeIcon();
+    }
+  });
+
+  window.addEventListener("storage", function(e){
+    if (e.key === "theme") {
+      const newT = resolveCurrentTheme();
+      document.documentElement.setAttribute("data-theme", newT);
+      syncThemeColorMeta(newT);
+      updateThemeIcon();
+    }
+  });
 })();
 
 // Toggle

@@ -1391,12 +1391,21 @@ function copyCode(btn, postId) {
 }
 
 function goBack() {
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = "dashboard-home.html";
-  }
+  const veil = document.getElementById('pageTransition');
+  if (veil) veil.classList.add('leaving');
+  setTimeout(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = "dashboard-home.html";
+    }
+  }, 160);
 }
+
+window.addEventListener('pageshow', function() {
+  const veil = document.getElementById('pageTransition');
+  if (veil) veil.classList.remove('leaving');
+});
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
