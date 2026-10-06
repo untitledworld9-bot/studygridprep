@@ -52,8 +52,11 @@ const SGP_SITE_FAQ = [
   { q: "Which exams does this platform cover?", a: "Study Grid Prep is built for JEE Main, NEET, CUET UG and Board Exams. Mock tests, PYQs and subject tracking are all tailored for these specific exams — nothing generic." },
   { q: "How does the AI analysis in Mock Tests work?", a: "After every mock test, our AI reviews your attempt and gives you a detailed breakdown — topic-wise weak areas, time management insights and actionable tips to improve. It's available right inside the Mock Analysis and Solutions page." },
   { q: "What is the Study Playlist and how does Ask AI work there?", a: "Study Playlist lets you organise YouTube videos subject-wise and watch them distraction-free. Right beside the video, you can tap Ask AI to ask doubts about what you're watching, chat with AI for deeper explanations, or instantly generate a timed quiz from the video content." },
-  { q: "Can I study with friends on this platform?", a: "Yes! The Smart Focus Timer lets you join live study rooms with other students. You can see who's studying, wave 👋, chat and compete on the leaderboard — making solo study feel like a group session." }
+  { q: "Can I study with friends on this platform?", a: "Yes! The Smart Focus Timer lets you join live study rooms with other students. You can see who's studying, wave 👋, chat and compete on the leaderboard — making solo study feel like a group session." },
+  { q: "What is the Student Community and how does it help?", a: "The Student Community connects you with peers preparing for the same target exam (JEE, NEET, CUET, or Boards). You can share handwritten notes, PYQ solutions, discuss tricky questions, ask academic doubts, and keep each other motivated in a focused, collaborative study space." },
+  { q: "What can I access in the Content Hub?", a: "The Content Hub is your central library for curated chapter notes, past year papers (PYQs), college admission cutoff guides, syllabus alerts, and educational articles — keeping all essential learning resources organized in one tap." }
 ];
+window.SGP_SITE_FAQ = SGP_SITE_FAQ;
 
 function renderSiteFaq(containerId) {
   const el = document.getElementById(containerId);
@@ -121,6 +124,8 @@ function initChatbot(notifText) {
     { k: ['hello','hi','hey','namaste'], r: 'Hello! 👋 I\'m your <strong>Study Assistant</strong> for Study Grid Prep. Ask me anything about mock tests, AI tools, features or pricing!' },
     { k: ['features','tools','what'], r: '🌟 Study Grid Prep has: 📝 Mock Tests with AI Analysis · ⏱️ Focus Timer + Study Rooms · ▶️ Study Playlist with AI · ✅ Todo Planner · 🏆 Leaderboard · 📊 Performance Tracking. Most features are free!' },
     { k: ['playlist','video','youtube'], r: '▶️ Study Playlist lets you watch YouTube videos distraction-free with Ask AI for doubts, Chat with AI, and Create Quiz from any video!' },
+    { k: ['community','student group','peers','peer','friends','same exam','share notes'], r: '🤝 <strong>Student Community:</strong> Connect with peers preparing for the same exams (JEE, NEET, CUET, Boards). Share handwritten notes, discuss questions, and solve doubts together! <a href="/community.html" style="color:#4F46E5;font-weight:600;">Join Community →</a>' },
+    { k: ['content hub','notes','pyq','pyqs','materials','college cutoffs','updates'], r: '📚 <strong>Content Hub:</strong> Curated chapter notes, past year papers (PYQs), college cutoff guides, and latest syllabus notifications in one place! <a href="/content-hub.html" style="color:#4F46E5;font-weight:600;">Explore Content Hub →</a>' },
   ];
 
   function getBotReply(text) {

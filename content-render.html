@@ -148,7 +148,64 @@ html.sgp-dark{ background:#0D1120; }
     <h2 class="section-title">Got questions?</h2>
     <p class="section-sub">Everything you need to know before you start.</p>
   </div>
-  <div class="faq-list" id="siteFaqList"></div>
+  <div class="faq-list" id="siteFaqList">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>What is Study Grid Prep?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>Study Grid Prep is an all-in-one study platform designed for students preparing for JEE, NEET, CUET and Board Exams. It brings together Mock Tests with PYQs, a Smart Focus Timer with live study rooms, Study Playlist for distraction-free video learning, Todo Planner, Performance Tracking, and Leaderboard — all in a single clean platform built to keep you focused and consistent.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>Is Study Grid Prep free to use?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>Most features — Focus Timer, Study Playlist, Todo Planner, Leaderboard and Progress Tracking — are completely free. Mock Tests are available at an affordable price. Sign up and explore for free before deciding.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>Which exams does this platform cover?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>Study Grid Prep is built for JEE Main, NEET, CUET UG and Board Exams. Mock tests, PYQs and subject tracking are all tailored for these specific exams — nothing generic.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>How does the AI analysis in Mock Tests work?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>After every mock test, our AI reviews your attempt and gives you a detailed breakdown — topic-wise weak areas, time management insights and actionable tips to improve. It's available right inside the Mock Analysis and Solutions page.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>What is the Study Playlist and how does Ask AI work there?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>Study Playlist lets you organise YouTube videos subject-wise and watch them distraction-free. Right beside the video, you can tap Ask AI to ask doubts about what you're watching, chat with AI for deeper explanations, or instantly generate a timed quiz from the video content.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>Can I study with friends on this platform?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>Yes! The Smart Focus Timer lets you join live study rooms with other students. You can see who's studying, wave 👋, chat and compete on the leaderboard — making solo study feel like a group session.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>What is the Student Community and how does it help?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>The Student Community connects you with peers preparing for the same target exam (JEE, NEET, CUET, or Boards). You can share handwritten notes, PYQ solutions, discuss tricky questions, ask academic doubts, and keep each other motivated in a focused, collaborative study space.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>What can I access in the Content Hub?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a"><p>The Content Hub is your central library for curated chapter notes, past year papers (PYQs), college admission cutoff guides, syllabus alerts, and educational articles — keeping all essential learning resources organized in one tap.</p></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ CHATBOT WIDGET — identical on every page ═══ -->
@@ -454,6 +511,16 @@ function setMeta(content) {
         "name": it.q,
         "acceptedAnswer": { "@type": "Answer", "text": it.a }
       })))
+    });
+  } else if (typeof window.SGP_SITE_FAQ !== "undefined" && Array.isArray(window.SGP_SITE_FAQ)) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": window.SGP_SITE_FAQ.map(it => ({
+        "@type": "Question",
+        "name": it.q,
+        "acceptedAnswer": { "@type": "Answer", "text": it.a }
+      }))
     });
   }
   document.getElementById("csSchema").textContent = JSON.stringify(schemas.length === 1 ? schemas[0] : schemas);
