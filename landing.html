@@ -10,7 +10,8 @@
 <link rel="shortcut icon" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
 <!-- FAVICON FIX END -->
-<meta name="description" content="Study Grid Prep is a smart study platform for JEE, NEET, CUET and board preparation with mock tests, AI analysis, focus tools and study planner.">
+<meta name="description" content="Study Grid Prep is a smart study platform for JEE, NEET, CUET and board preparation with mock tests, AI analysis, student community, Content Hub notes & PYQs, focus tools and study planner.">
+<meta name="keywords" content="Study Grid Prep, JEE mock tests, NEET preparation, CUET UG, board exams, student community, peer study groups, same exam peers, doubt discussion, Content Hub, handwritten notes, PYQs, focus timer, study playlist, AI study assistant">
 <link rel="canonical" href="https://studygridprep.online/">
 <meta name="author" content="Study Grid Prep">
 <meta name="robots" content="index, follow">
@@ -18,7 +19,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta property="og:title" content="Study Grid Prep – Smart Study Platform">
 <meta property="og:site_name" content="Study Grid Prep">
-<meta property="og:description" content="Study Grid Prep is a smart study platform for JEE, NEET, CUET and board preparation with mock tests, AI analysis, focus tools and study planner.">
+<meta property="og:description" content="Study Grid Prep is a smart study platform for JEE, NEET, CUET and board preparation with mock tests, AI analysis, student community, Content Hub, focus tools and study planner.">
 <meta property="og:url" content="https://studygridprep.online">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://studygridprep.online/icon-512.png">
@@ -53,7 +54,7 @@
   "url": "https://studygridprep.online",
   "applicationCategory": "Education",
   "operatingSystem": "Web",
-  "description": "Study Grid Prep is a smart study platform for JEE, NEET, CUET and board exam preparation with mock tests, AI analysis, focus tools and study planner.",
+  "description": "Study Grid Prep is a smart study platform for JEE, NEET, CUET and board exam preparation with mock tests, AI analysis, peer student community, Content Hub notes, focus tools and study planner.",
   "image": "https://studygridprep.online/icon-512.png",
   "creator": {
   "@type": "Organization",
@@ -76,7 +77,23 @@
       "name": "What is Study Grid Prep?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Study Grid Prep is an all-in-one study platform designed for students preparing for JEE, NEET, CUET and Board Exams. It brings together Mock Tests with PYQs, a Smart Focus Timer with live study rooms, Study Playlist for distraction-free video learning, Todo Planner, Performance Tracking, and Leaderboard — all in a single clean platform built to keep you focused and consistent."
+        "text": "Study Grid Prep is an all-in-one study platform designed for students preparing for JEE, NEET, CUET and Board Exams. It brings together Mock Tests with PYQs, a Smart Focus Timer with live study rooms, a Student Community for peer discussion, Content Hub for curated notes and updates, Study Playlist for distraction-free video learning, Todo Planner, Performance Tracking, and Leaderboard — all in a single clean platform built to keep you focused and consistent."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the Student Community feature in Study Grid Prep?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The Student Community allows you to connect with other aspirants preparing for the same target exam (JEE, NEET, CUET, or Boards). You can share handwritten notes, PYQ solutions, discuss tricky questions, ask academic doubts, and keep each other motivated in dedicated exam channels."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the Content Hub?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Content Hub brings study resources such as chapter notes, PYQs, exam updates, college information, admission cutoffs, and educational blogs into one organized place. It is designed to make high-quality student resources easy to discover."
       }
     },
     {
@@ -84,7 +101,7 @@
       "name": "Is Study Grid Prep free to use?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Most features — Focus Timer, Study Playlist, Todo Planner, Leaderboard and Progress Tracking — are completely free. Mock Tests are available at an affordable price. Sign up and explore for free before deciding."
+        "text": "Most features — Focus Timer, Student Community, Content Hub, Study Playlist, Todo Planner, Leaderboard and Progress Tracking — are completely free. Mock Tests are available at an affordable price. Sign up and explore for free before deciding."
       }
     },
     {
@@ -92,7 +109,7 @@
       "name": "Which exams does this platform cover?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Study Grid Prep is built for JEE Main, NEET, CUET UG and Board Exams. Mock tests, PYQs and subject tracking are all tailored for these specific exams."
+        "text": "Study Grid Prep is built for JEE Main, NEET, CUET UG and Board Exams. Mock tests, PYQs, student groups and subject tracking are all tailored for these specific exams."
       }
     },
     {
@@ -649,6 +666,8 @@ body {
 .fsi-playlist { background: linear-gradient(135deg,rgba(239,68,68,.14),rgba(249,115,22,.14)); }
 .fsi-todo     { background: linear-gradient(135deg,rgba(6,182,212,.14),rgba(16,185,129,.14)); }
 .fsi-board    { background: linear-gradient(135deg,rgba(245,158,11,.14),rgba(239,68,68,.14)); }
+.fsi-community{ background: linear-gradient(135deg,rgba(236,72,153,.14),rgba(168,85,247,.14)); }
+.fsi-hub      { background: linear-gradient(135deg,rgba(6,182,212,.14),rgba(59,130,246,.14)); }
 .fs-card-title {
   font-family: var(--font);
   font-size: 14px;
@@ -816,6 +835,8 @@ body {
 .fc-analysis::before { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
 .fc-todo::before   { background: linear-gradient(90deg, #8B5CF6, #A78BFA); }
 .fc-solver::before { background: linear-gradient(90deg, #06B6D4, #22D3EE); }
+.fc-hub::before    { background: linear-gradient(90deg, #06B6D4, #3B82F6); }
+.fc-community::before { background: linear-gradient(90deg, #EC4899, #8B5CF6); }
 
 .feature-icon-wrap {
   width: 46px; height: 46px;
@@ -830,6 +851,8 @@ body {
 .fi-analysis { background: #FFFBEB; }
 .fi-todo { background: #F5F3FF; }
 .fi-solver { background: #ECFEFF; }
+.fi-hub { background: #ECFEFF; }
+.fi-community { background: #FDF2F8; }
 
 .feature-title {
   font-family: var(--font);
@@ -2169,6 +2192,22 @@ footer {
         <div class="fs-card-desc">Full-length PYQs for JEE, NEET &amp; CUET with rank tracking.</div>
         <span class="fs-card-cta">Try Now →</span>
       </a>
+      <a href="community.html" class="fs-card">
+        <div class="fs-card-icon-wrap fsi-community" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" fill="rgba(236,72,153,0.15)" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="fs-card-title">Community</div>
+        <div class="fs-card-desc">Connect with same-exam peers, share notes &amp; discuss doubts.</div>
+        <span class="fs-card-cta">Join Now →</span>
+      </a>
+      <a href="content-hub.html" class="fs-card">
+        <div class="fs-card-icon-wrap fsi-hub" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/></svg>
+        </div>
+        <div class="fs-card-title">Content Hub</div>
+        <div class="fs-card-desc">Curated chapter notes, PYQs, college cutoffs &amp; exam alerts.</div>
+        <span class="fs-card-cta">Explore →</span>
+      </a>
       <a href="login.html" class="fs-card">
         <div class="fs-card-icon-wrap fsi-ai" style="display:flex;align-items:center;justify-content:center;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8B5CF6" stroke-width="1.6" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="5" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="#8B5CF6"/><line x1="12" y1="3" x2="12" y2="7" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="12" x2="7" y2="12" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/><line x1="17" y1="12" x2="21" y2="12" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -2217,6 +2256,22 @@ footer {
         <div class="fs-card-title">Mock Tests</div>
         <div class="fs-card-desc">Full-length PYQs for JEE, NEET &amp; CUET with rank tracking.</div>
         <span class="fs-card-cta">Try Now →</span>
+      </a>
+      <a href="community.html" class="fs-card">
+        <div class="fs-card-icon-wrap fsi-community" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" fill="rgba(236,72,153,0.15)" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="fs-card-title">Community</div>
+        <div class="fs-card-desc">Connect with same-exam peers, share notes &amp; discuss doubts.</div>
+        <span class="fs-card-cta">Join Now →</span>
+      </a>
+      <a href="content-hub.html" class="fs-card">
+        <div class="fs-card-icon-wrap fsi-hub" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/></svg>
+        </div>
+        <div class="fs-card-title">Content Hub</div>
+        <div class="fs-card-desc">Curated chapter notes, PYQs, college cutoffs &amp; exam alerts.</div>
+        <span class="fs-card-cta">Explore →</span>
       </a>
       <a href="login.html" class="fs-card">
         <div class="fs-card-icon-wrap fsi-ai" style="display:flex;align-items:center;justify-content:center;">
@@ -2686,9 +2741,20 @@ footer {
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.8" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.6"/></svg>
       </div>
       <div class="feature-title">Content Hub</div>
-      <div class="feature-desc">One place for notes, PYQs, exam updates, college info and blogs. A rotating spotlight surfaces fresh featured and trending picks each time you visit, so there's always something new — never the same thing twice in a row.</div>
+      <div class="feature-desc">One place for curated chapter notes, PYQs, exam notifications, college cutoffs and study blogs. A dynamic spotlight surfaces trending picks so there's always something fresh to learn.</div>
       <div class="feature-tags">
-        <span class="tag">Notes & PYQs</span><span class="tag">Exam Updates</span><span class="tag">Blogs</span>
+        <span class="tag">Curated Notes</span><span class="tag">PYQ Papers</span><span class="tag">College Info</span><span class="tag">Exam Updates</span>
+      </div>
+    </div>
+
+    <div class="feature-card fc-community reveal" style="transition-delay:0.42s">
+      <div class="feature-icon-wrap fi-community" style="display:flex;align-items:center;justify-content:center;background:rgba(236,72,153,0.12);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" fill="rgba(236,72,153,0.15)" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="feature-title">Student Community</div>
+      <div class="feature-desc">Connect and study with peers preparing for the same competitive exams. Share handwritten notes, discuss difficult questions, solve doubts, and stay motivated together in a focused peer ecosystem.</div>
+      <div class="feature-tags">
+        <span class="tag">Same-Exam Peers</span><span class="tag">Doubt Discussion</span><span class="tag">Notes Sharing</span><span class="tag">Group Motivation</span>
       </div>
     </div>
 
@@ -2904,6 +2970,26 @@ jee preparation 2027, best jee preparation platform, neet preparation online fre
       </button>
       <div class="faq-a">
         <p>Yes! The Smart Focus Timer lets you join live study rooms with other students. You can see who's studying, wave 👋, chat and compete on the leaderboard — making solo study feel like a group session.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>What is the Student Community and how does it help?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">
+        <p>The Student Community connects you with peers preparing for the same target exam (JEE, NEET, CUET, or Boards). You can share handwritten notes, PYQ solutions, discuss tricky questions, ask academic doubts, and keep each other motivated in a focused, collaborative study space.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span>What can I access in the Content Hub?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">
+        <p>The Content Hub is your central library for curated chapter notes, past year papers (PYQs), college admission cutoff guides, syllabus alerts, and educational articles — keeping all essential learning resources organized in one tap.</p>
       </div>
     </div>
 
@@ -3159,6 +3245,10 @@ jee preparation 2027, best jee preparation platform, neet preparation online fre
     { k: ['contact','email','reach','support','team'], r: '📧 You can reach the Study Grid Prep team at <strong>support@studygridprep.online</strong> or share your query here and I\'ll forward it to the team directly!' },
     { k: ['instagram','youtube channel','telegram','social','twitter','x'], r: '📱 Follow Study Grid Prep on:\n• YouTube — study tips, platform updates\n• Instagram — daily motivation\n• Telegram — announcements & discussions\n• X (Twitter) — latest news\n\nLinks are in the footer of the website!' },
     { k: ['pwa','app','install app','download app'], r: '📲 Study Grid Prep works as a <strong>Progressive Web App (PWA)</strong> — you can install it on your phone directly from the browser! Tap "Install App" if it appears at the top, or use your browser\'s "Add to Home Screen" option.' },
+    // Community
+    { k: ['community','student group','peers','peer','friends','study partner','group study','same exam','share notes'], r: '🤝 <strong>Student Community:</strong> Connect with peers preparing for the same exams (JEE, NEET, CUET, Boards). Share handwritten notes, discuss difficult questions, solve doubts together, and stay motivated in a distraction-free student network! <a href="community.html" style="color:#4F46E5;font-weight:600;">Join Community →</a>' },
+    // Content Hub
+    { k: ['content hub','notes','pyq','pyqs','study material','materials','college cutoffs','exam update','updates'], r: '📚 <strong>Content Hub:</strong> Your one-stop academic library for curated chapter-wise notes, previous year question papers (PYQs), college cutoffs, admissions guides, and syllabus notifications. <a href="content-hub.html" style="color:#4F46E5;font-weight:600;">Explore Content Hub →</a>' },
     { k: ['distraction','focus','no distraction','clean'], r: '🎯 Study Grid Prep is built to be <strong>completely distraction-free</strong> — no social feed, no ads, no noise. Just you, your study tools, and your goals. Even the YouTube playlist removes ads and suggestions!' },
     // Hindi casual / motivational
     { k: ['padhai','study kaise','kaise padhun','study tips','topper','toppers'], r: '📚 Padhai ke liye kuch tips:\n• Roz ek fixed time set karo study ke liye\n• Mock tests dete raho — real exam jaisa practice hoga\n• Focus Timer use karo — Pomodoro se concentration badhti hai\n• Playlist me videos organise karo subject-wise\n\nConsistency hi key hai! 💪' },
