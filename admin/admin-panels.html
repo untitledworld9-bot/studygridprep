@@ -28,8 +28,9 @@
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 
   <style>
     /* ============================================================
@@ -42,7 +43,7 @@
       --card: #FFFFFF;
       --card-hover: #F8FAFC;
       --border: #E2E8F2;
-      --border-hover: rgba(91, 91, 246, 0.35);
+      --border-hover: rgba(91, 91, 246, 0.4);
       --text: #0F172A;
       --text2: #5A6785;
       --text3: #94A3B8;
@@ -59,10 +60,10 @@
       --cyan-glow: rgba(6, 182, 212, 0.16);
       --header-bg: rgba(240, 242, 248, 0.94);
       --nav-bg: rgba(248, 249, 253, 0.98);
-      --shadow-sm: 0 1px 6px rgba(0, 0, 0, 0.06);
-      --shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 12px 32px rgba(91, 91, 246, 0.12);
-      --r: 18px;
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+      --shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
+      --shadow-lg: 0 16px 36px rgba(91, 91, 246, 0.14);
+      --r: 20px;
       --t: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -71,9 +72,9 @@
       --surface: #151E32;
       --surface2: #1A2440;
       --card: #141B30;
-      --card-hover: #19233E;
+      --card-hover: #1A2442;
       --border: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(124, 92, 252, 0.45);
+      --border-hover: rgba(124, 92, 252, 0.5);
       --text: #E8F0FE;
       --text2: #8B9EC8;
       --text3: #3D5080;
@@ -90,15 +91,42 @@
       --cyan-glow: rgba(34, 211, 238, 0.22);
       --header-bg: rgba(13, 17, 32, 0.94);
       --nav-bg: rgba(13, 17, 32, 0.98);
-      --shadow-sm: 0 1px 8px rgba(0, 0, 0, 0.3);
-      --shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.55);
+      --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+      --shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
     }
 
+    /* ── BASE & TYPOGRAPHY RESET ── */
     *, *::before, *::after {
-      margin: 0; padding: 0; box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    body, button, input, select, textarea {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* ── FONT AWESOME OVERRIDE PROTECTION (CRITICAL FOR ICON VISIBILITY) ── */
+    .fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
+      font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+      font-style: normal !important;
+      font-variant: normal !important;
+      text-rendering: auto !important;
+      line-height: 1 !important;
+      -webkit-font-smoothing: antialiased !important;
+      display: inline-block !important;
+    }
+    .fa-solid, .fas {
+      font-weight: 900 !important;
+    }
+    .fa-regular, .far {
+      font-weight: 400 !important;
+    }
+    .fa-brands, .fab {
+      font-family: "Font Awesome 6 Brands" !important;
+      font-weight: 400 !important;
     }
 
     html {
@@ -115,15 +143,11 @@
       flex-direction: column;
       position: relative;
       overflow-x: hidden;
-      animation: pageIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    @keyframes pageIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Ambient Background Glow */
+    /* ── AMBIENT BACKGROUND GLOW ── */
     .ambient-bg {
       position: fixed;
       inset: 0;
@@ -133,10 +157,10 @@
         radial-gradient(circle at 15% 15%, var(--accent-glow) 0%, transparent 45%),
         radial-gradient(circle at 85% 85%, var(--green-glow) 0%, transparent 40%),
         radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.04) 0%, transparent 60%);
-      opacity: 0.85;
+      opacity: 0.9;
     }
 
-    /* ── PAGE TRANSITION OVERLAY (APP STYLE) ── */
+    /* ── PAGE TRANSITION VEIL ── */
     #pageTransition {
       position: fixed;
       inset: 0;
@@ -144,25 +168,31 @@
       z-index: 99999;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
     #pageTransition.leaving {
       opacity: 1;
       pointer-events: all;
     }
 
-    /* ── HEADER (NATIVE APP FEEL WITH SAFE AREA) ── */
+    /* ── STICKY APP HEADER (NATIVE PWA APP FEEL) ── */
     .app-header {
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
       background: var(--header-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
-      padding: max(14px, env(safe-area-inset-top)) 20px 14px;
+      padding: max(14px, env(safe-area-inset-top, 14px)) 20px 14px;
       transition: background 0.3s ease, border-color 0.3s ease;
       box-shadow: var(--shadow-sm);
+      animation: headerSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes headerSlideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .header-inner {
@@ -183,21 +213,24 @@
     }
 
     .brand-logo-badge {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-size: 19px;
-      box-shadow: 0 4px 14px var(--accent-glow);
+      color: #FFFFFF;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(91, 91, 246, 0.35);
       flex-shrink: 0;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .brand-section:hover .brand-logo-badge {
-      transform: scale(1.05) rotate(-3deg);
+      transform: scale(1.06) rotate(-3deg);
+    }
+    .brand-section:active .brand-logo-badge {
+      transform: scale(0.94);
     }
 
     .brand-text h1 {
@@ -210,27 +243,27 @@
     .brand-text .badge-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-size: 10.5px;
+      gap: 6px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--accent);
-      background: var(--accent-glow);
-      padding: 2px 8px;
+      background: rgba(91, 91, 246, 0.10);
+      padding: 3px 9px;
       border-radius: 99px;
       margin-top: 2px;
-      border: 1px solid var(--border-hover);
+      border: 1px solid rgba(91, 91, 246, 0.22);
     }
     .brand-text .badge-pill .pulse-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 8px var(--green);
+      background: #10B981;
+      box-shadow: 0 0 8px #10B981;
       animation: pulseGreen 1.8s infinite;
     }
     @keyframes pulseGreen {
       0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
+      50% { transform: scale(1.35); opacity: 0.55; }
     }
 
     .header-actions {
@@ -243,35 +276,43 @@
     .back-app-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border-radius: 11px;
-      background: var(--surface2);
+      gap: 7px;
+      padding: 9px 15px;
+      border-radius: 12px;
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
-      font-size: 12.5px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
       text-decoration: none;
       transition: all var(--t);
       box-shadow: var(--shadow-sm);
       white-space: nowrap;
     }
+    .back-app-btn i {
+      font-size: 13px;
+      color: var(--accent);
+      transition: transform 0.2s ease;
+    }
     .back-app-btn:hover {
-      background: var(--surface);
+      background: var(--surface2);
       border-color: var(--border-hover);
       transform: translateY(-1px);
     }
+    .back-app-btn:hover i {
+      transform: translateX(-3px);
+    }
     .back-app-btn:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
 
     /* Theme Toggle Button */
     .theme-toggle-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 11px;
-      background: var(--surface2);
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--accent);
       display: flex;
@@ -285,7 +326,7 @@
       flex-shrink: 0;
     }
     .theme-toggle-btn:hover {
-      background: var(--surface);
+      background: var(--surface2);
       transform: scale(1.06);
       border-color: var(--border-hover);
     }
@@ -293,7 +334,7 @@
       transform: scale(0.92);
     }
 
-    /* ── MAIN CONTAINER ── */
+    /* ── MAIN CONTAINER & OPENING STAGGER ANIMATIONS ── */
     .main-container {
       position: relative;
       z-index: 1;
@@ -310,7 +351,7 @@
       border: 1px solid var(--border);
       border-radius: var(--r);
       padding: 24px 28px;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
       box-shadow: var(--shadow);
       display: flex;
       flex-wrap: wrap;
@@ -319,12 +360,18 @@
       gap: 20px;
       position: relative;
       overflow: hidden;
+      animation: heroEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
+    @keyframes heroEntrance {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     .hero-strip::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--green), var(--amber));
+      top: 0; left: 0; right: 0; height: 3.5px;
+      background: linear-gradient(90deg, #5B5BF6, #7C3AED, #10B981, #F59E0B);
     }
 
     .hero-left h2 {
@@ -334,11 +381,11 @@
       color: var(--text);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
     }
     .hero-left p {
       color: var(--text2);
-      font-size: 13px;
+      font-size: 13.5px;
       margin-top: 4px;
       font-weight: 500;
     }
@@ -357,15 +404,16 @@
       transform: translateY(-50%);
       color: var(--text3);
       font-size: 14px;
+      pointer-events: none;
     }
     .search-input {
       width: 100%;
-      padding: 11px 14px 11px 38px;
-      border-radius: 12px;
+      padding: 12px 14px 12px 40px;
+      border-radius: 14px;
       background: var(--surface2);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       color: var(--text);
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 500;
       outline: none;
       transition: all var(--t);
@@ -387,31 +435,35 @@
     }
     .filter-chips::-webkit-scrollbar { display: none; }
     .filter-btn {
-      padding: 7px 14px;
+      padding: 8px 16px;
       border-radius: 99px;
-      background: var(--surface2);
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text2);
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
       transition: all var(--t);
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-btn i {
+      font-size: 12px;
     }
     .filter-btn.active, .filter-btn:hover {
       background: var(--accent);
-      color: #fff;
+      color: #FFFFFF;
       border-color: var(--accent);
-      box-shadow: 0 2px 10px var(--accent-glow);
+      box-shadow: 0 4px 14px var(--accent-glow);
     }
     .filter-btn:active {
       transform: scale(0.95);
     }
 
-    /* ── MODULE CARDS GRID ── */
+    /* ── MODULE CARDS GRID WITH STAGGERED OPENING ANIMATION ── */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -421,7 +473,7 @@
     /* Base Module Card */
     .module-card {
       background: var(--card);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--r);
       padding: 24px;
       display: flex;
@@ -434,11 +486,21 @@
       cursor: pointer;
       box-shadow: var(--shadow);
       transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
-      animation: cardEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
+
+    /* Staggered Animation Delays */
+    .module-card:nth-child(1) { animation-delay: 0.05s; }
+    .module-card:nth-child(2) { animation-delay: 0.10s; }
+    .module-card:nth-child(3) { animation-delay: 0.15s; }
+    .module-card:nth-child(4) { animation-delay: 0.20s; }
+    .module-card:nth-child(5) { animation-delay: 0.25s; }
+    .module-card:nth-child(6) { animation-delay: 0.30s; }
+    .module-card:nth-child(7) { animation-delay: 0.35s; }
+
     @keyframes cardEntrance {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .module-card:hover {
@@ -448,7 +510,7 @@
       background: var(--card-hover);
     }
     .module-card:active {
-      transform: scale(0.98);
+      transform: scale(0.975);
     }
 
     /* Card Top Row */
@@ -460,42 +522,43 @@
     }
 
     .module-icon-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 24px;
       flex-shrink: 0;
-      transition: transform 0.25s ease;
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .module-card:hover .module-icon-wrap {
-      transform: scale(1.1) rotate(-4deg);
+      transform: scale(1.12) rotate(-4deg);
     }
 
     .module-badge {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 4px 10px;
+      letter-spacing: 0.6px;
+      padding: 4px 11px;
       border-radius: 99px;
     }
 
     /* Card Details */
     .module-info h3 {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 18.5px;
+      font-weight: 800;
       color: var(--text);
       letter-spacing: -0.3px;
       line-height: 1.3;
     }
     .module-info p {
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--text2);
-      margin-top: 4px;
-      line-height: 1.5;
+      margin-top: 5px;
+      line-height: 1.55;
+      font-weight: 400;
     }
 
     /* Feature Tags */
@@ -508,8 +571,8 @@
     .feature-tags span {
       font-size: 11px;
       font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 7px;
+      padding: 4px 10px;
+      border-radius: 8px;
       background: var(--surface2);
       border: 1px solid var(--border);
       color: var(--text2);
@@ -518,52 +581,55 @@
     /* Action CTA Button on Card */
     .card-cta-btn {
       margin-top: auto;
-      padding: 11px 16px;
-      border-radius: 12px;
-      font-size: 13px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border: none;
       cursor: pointer;
-      color: #fff;
+      color: #FFFFFF;
       transition: all var(--t);
       box-shadow: var(--shadow-sm);
     }
     .card-cta-btn i {
-      transition: transform 0.2s ease;
+      font-size: 14px;
+      transition: transform 0.22s ease;
     }
     .module-card:hover .card-cta-btn i {
-      transform: translateX(4px);
+      transform: translateX(5px);
     }
 
-    /* ── COLOR THEMES PER MODULE ── */
+    /* ── COLOR THEMES PER MODULE (VIBRANT & VISIBLE ICONS) ── */
     /* 1. Sub Admin (Indigo/Purple) */
     .card-theme-subadmin .module-icon-wrap {
-      background: rgba(91, 91, 246, 0.12);
-      color: var(--accent);
-      border: 1.5px solid rgba(91, 91, 246, 0.25);
+      background: linear-gradient(135deg, rgba(91, 91, 246, 0.16), rgba(124, 58, 237, 0.16));
+      color: #5B5BF6;
+      border: 1.5px solid rgba(91, 91, 246, 0.35);
+      box-shadow: 0 4px 14px rgba(91, 91, 246, 0.15);
     }
     .card-theme-subadmin .module-badge {
-      background: rgba(91, 91, 246, 0.1);
-      color: var(--accent);
-      border: 1px solid rgba(91, 91, 246, 0.25);
+      background: rgba(91, 91, 246, 0.12);
+      color: #5B5BF6;
+      border: 1px solid rgba(91, 91, 246, 0.3);
     }
     .card-theme-subadmin .card-cta-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
     }
 
     /* 2. Content Hub (Emerald Green) */
     .card-theme-content .module-icon-wrap {
-      background: rgba(16, 185, 129, 0.12);
-      color: var(--green);
-      border: 1.5px solid rgba(16, 185, 129, 0.25);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.16));
+      color: #10B981;
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
     }
     .card-theme-content .module-badge {
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--green);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(16, 185, 129, 0.12);
+      color: #10B981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
     .card-theme-content .card-cta-btn {
       background: linear-gradient(135deg, #10B981, #059669);
@@ -571,14 +637,15 @@
 
     /* 3. Media Studio (Cyan/Sky) */
     .card-theme-media .module-icon-wrap {
-      background: rgba(6, 182, 212, 0.12);
-      color: var(--cyan);
-      border: 1.5px solid rgba(6, 182, 212, 0.25);
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.16), rgba(2, 132, 199, 0.16));
+      color: #06B6D4;
+      border: 1.5px solid rgba(6, 182, 212, 0.35);
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.15);
     }
     .card-theme-media .module-badge {
-      background: rgba(6, 182, 212, 0.1);
-      color: var(--cyan);
-      border: 1px solid rgba(6, 182, 212, 0.25);
+      background: rgba(6, 182, 212, 0.12);
+      color: #06B6D4;
+      border: 1px solid rgba(6, 182, 212, 0.3);
     }
     .card-theme-media .card-cta-btn {
       background: linear-gradient(135deg, #06B6D4, #0284C7);
@@ -586,14 +653,15 @@
 
     /* 4. Mock Admin (Amber/Gold) */
     .card-theme-mock .module-icon-wrap {
-      background: rgba(245, 158, 11, 0.12);
-      color: var(--amber);
-      border: 1.5px solid rgba(245, 158, 11, 0.25);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(217, 119, 6, 0.16));
+      color: #F59E0B;
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);
     }
     .card-theme-mock .module-badge {
-      background: rgba(245, 158, 11, 0.1);
-      color: var(--amber);
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.12);
+      color: #F59E0B;
+      border: 1px solid rgba(245, 158, 11, 0.3);
     }
     .card-theme-mock .card-cta-btn {
       background: linear-gradient(135deg, #F59E0B, #D97706);
@@ -601,14 +669,15 @@
 
     /* 5. SGP Main / Master Control (Rose/Red) */
     .card-theme-sgpmain .module-icon-wrap {
-      background: rgba(239, 68, 68, 0.12);
-      color: var(--red);
-      border: 1.5px solid rgba(239, 68, 68, 0.25);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(185, 28, 28, 0.16));
+      color: #EF4444;
+      border: 1.5px solid rgba(239, 68, 68, 0.35);
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
     }
     .card-theme-sgpmain .module-badge {
-      background: rgba(239, 68, 68, 0.1);
-      color: var(--red);
-      border: 1px solid rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.12);
+      color: #EF4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
     .card-theme-sgpmain .card-cta-btn {
       background: linear-gradient(135deg, #EF4444, #B91C1C);
@@ -616,14 +685,15 @@
 
     /* 6. Hiring Admin (Purple/Violet) */
     .card-theme-hiring .module-icon-wrap {
-      background: rgba(124, 58, 237, 0.12);
-      color: var(--accent2);
-      border: 1.5px solid rgba(124, 58, 237, 0.25);
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(109, 40, 217, 0.16));
+      color: #7C3AED;
+      border: 1.5px solid rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15);
     }
     .card-theme-hiring .module-badge {
-      background: rgba(124, 58, 237, 0.1);
-      color: var(--accent2);
-      border: 1px solid rgba(124, 58, 237, 0.25);
+      background: rgba(124, 58, 237, 0.12);
+      color: #7C3AED;
+      border: 1px solid rgba(124, 58, 237, 0.3);
     }
     .card-theme-hiring .card-cta-btn {
       background: linear-gradient(135deg, #7C3AED, #6D28D9);
@@ -631,61 +701,63 @@
 
     /* 7. Game Admin (Orange/Fire) */
     .card-theme-game .module-icon-wrap {
-      background: rgba(249, 115, 22, 0.12);
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.16), rgba(194, 65, 12, 0.16));
       color: #F97316;
-      border: 1.5px solid rgba(249, 115, 22, 0.25);
+      border: 1.5px solid rgba(249, 115, 22, 0.35);
+      box-shadow: 0 4px 14px rgba(249, 115, 22, 0.15);
     }
     .card-theme-game .module-badge {
-      background: rgba(249, 115, 22, 0.1);
+      background: rgba(249, 115, 22, 0.12);
       color: #F97316;
-      border: 1px solid rgba(249, 115, 22, 0.25);
+      border: 1px solid rgba(249, 115, 22, 0.3);
     }
     .card-theme-game .card-cta-btn {
       background: linear-gradient(135deg, #F97316, #C2410C);
     }
 
-    /* ── QUICK METRICS STRIP ── */
+    /* ── QUICK METRICS & STATUS FOOTER ── */
     .metrics-bar {
       margin-top: 32px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 16px 24px;
+      padding: 18px 24px;
       display: flex;
       align-items: center;
       justify-content: space-around;
       flex-wrap: wrap;
       gap: 16px;
       box-shadow: var(--shadow-sm);
+      animation: heroEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
     .metric-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     .metric-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       background: var(--surface2);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--accent);
-      font-size: 14px;
+      font-size: 16px;
     }
     .metric-info {
       display: flex;
       flex-direction: column;
     }
     .metric-val {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 14.5px;
+      font-weight: 800;
       color: var(--text);
     }
     .metric-lbl {
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text3);
       font-weight: 500;
     }
@@ -693,17 +765,17 @@
     /* ── RESPONSIVE TWEAKS ── */
     @media (max-width: 768px) {
       .app-header {
-        padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+        padding: max(12px, env(safe-area-inset-top, 12px)) 16px 12px;
       }
       .brand-text h1 { font-size: 15px; }
-      .brand-logo-badge { width: 36px; height: 36px; font-size: 16px; }
-      .back-app-btn { padding: 6px 10px; font-size: 11.5px; }
-      .theme-toggle-btn { width: 36px; height: 36px; font-size: 14px; }
-      .hero-strip { padding: 18px 16px; gap: 14px; }
-      .hero-left h2 { font-size: 18px; }
-      .search-box-wrap { max-width: 100%; }
-      .cards-grid { grid-template-columns: 1fr; gap: 14px; }
-      .main-container { padding: 16px 14px 48px; }
+      .brand-logo-badge { width: 38px; height: 38px; font-size: 17px; }
+      .back-app-btn { padding: 7px 12px; font-size: 12px; }
+      .theme-toggle-btn { width: 38px; height: 38px; font-size: 14px; }
+      .hero-strip { padding: 20px 18px; gap: 14px; }
+      .hero-left h2 { font-size: 19px; }
+      .search-box-wrap { max-width: 100%; min-width: 100%; }
+      .cards-grid { grid-template-columns: 1fr; gap: 16px; }
+      .main-container { padding: 18px 16px 54px; }
     }
   </style>
 </head>
@@ -715,7 +787,7 @@
   <!-- Page Transition Veil (App Style Navigation) -->
   <div id="pageTransition"></div>
 
-  <!-- Native Header -->
+  <!-- Native Sticky Header -->
   <header class="app-header">
     <div class="header-inner">
       <div class="brand-section">
@@ -731,7 +803,7 @@
       </div>
 
       <div class="header-actions">
-        <a href="/dashboard-home.html" class="back-app-btn" onclick="navigateWithVeil(event, '/dashboard-home.html')" title="Back to Study App">
+        <a href="/dashboard-home.html" class="back-app-btn" onclick="navigateWithVeil(event, '/dashboard-home.html')" title="Back to Student App">
           <i class="fa-solid fa-arrow-left"></i>
           <span>App</span>
         </a>
@@ -751,7 +823,7 @@
       <div class="hero-left">
         <h2>
           <span>Admin Control Suite</span>
-          <i class="fa-solid fa-sparkles" style="color:var(--amber); font-size:16px;"></i>
+          <i class="fa-solid fa-wand-magic-sparkles" style="color:#F59E0B; font-size:16px;"></i>
         </h2>
         <p>Unified management console for questions, media, users & exams</p>
       </div>
@@ -764,7 +836,7 @@
 
     <!-- Quick Filter Chips -->
     <div class="filter-chips">
-      <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-grid-2"></i> All Panels</button>
+      <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-table-cells-large"></i> All Panels</button>
       <button class="filter-btn" data-filter="exam"><i class="fa-solid fa-graduation-cap"></i> Exams & Mocks</button>
       <button class="filter-btn" data-filter="content"><i class="fa-solid fa-layer-group"></i> Content & Media</button>
       <button class="filter-btn" data-filter="system"><i class="fa-solid fa-gear"></i> System & Access</button>
@@ -860,7 +932,7 @@
           <span>JEE Tests</span>
           <span>CUET Tests</span>
           <span>Question Bank</span>
-          <span>Latex</span>
+          <span>LaTeX</span>
         </div>
         <div class="card-cta-btn">
           <span>Open Test Editor</span>
@@ -950,7 +1022,7 @@
         </div>
       </div>
       <div class="metric-item">
-        <div class="metric-icon"><i class="fa-solid fa-shield-check"></i></div>
+        <div class="metric-icon"><i class="fa-solid fa-shield-halved"></i></div>
         <div class="metric-info">
           <span class="metric-val">RBAC Security</span>
           <span class="metric-lbl">Auth Role: Authenticated</span>
@@ -976,7 +1048,7 @@
       if (veil) veil.classList.add('leaving');
       setTimeout(() => {
         window.location.href = url;
-      }, 200);
+      }, 180);
     }
 
     // Clear veil on browser Back/Forward (bfcache restore)

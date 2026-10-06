@@ -16,7 +16,8 @@
 <meta name="twitter:description" content="Explore college fees, cutoffs, placements, courses, and student reviews on Study Grid Prep.">
 <meta name="twitter:image" content="https://studygridprep.online/icon-192.png">
 
-<meta id="metaThemeColor" name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 
 <script>
 (function(){
@@ -35,10 +36,18 @@
   }
   function applyTheme(theme){
     document.documentElement.setAttribute("data-theme", theme);
-    const meta = document.getElementById("metaThemeColor");
-    if(meta) meta.setAttribute("content", theme === "dark" ? "#0D1120" : "#ffffff");
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+    });
   }
   applyTheme(resolveTheme());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e){
+    if(localStorage.getItem("theme") === "system") applyTheme(e.matches ? "dark" : "light");
+  });
+  window.addEventListener("storage", function(e){
+    if(e.key === "theme") applyTheme(resolveTheme());
+  });
 })();
 </script>
 <style>html{visibility:hidden;}html[data-theme]{visibility:visible;}</style>
@@ -50,12 +59,12 @@
 :root{
   --bg:#F0F2F8; --surface:#FFFFFF; --surface2:#F4F6FB; --border:#E2E8F2;
   --text:#0F172A; --text2:#5A6785; --text3:#94A3B8; --accent:#5B5BF6; --accent2:#7C3AED;
-  --header-bg:rgba(255,255,255,0.97); --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
+  --header-bg:rgba(240,242,248,0.94); --shadow-sm:0 1px 6px rgba(0,0,0,0.05);
 }
 [data-theme="dark"]{
   --bg:#0D1120; --surface:#151E32; --surface2:#1A2440; --border:rgba(255,255,255,0.08);
   --text:#E8F0FE; --text2:#8B9EC8; --text3:#3D5080;
-  --header-bg:rgba(13,17,32,0.97); --shadow-sm:0 1px 6px rgba(0,0,0,0.35);
+  --header-bg:rgba(13,17,32,0.94); --shadow-sm:0 1px 6px rgba(0,0,0,0.35);
 }
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; -webkit-tap-highlight-color:transparent; }
 html,body{ height:100%; background:var(--bg); }
@@ -63,10 +72,10 @@ body{ color:var(--text); display:flex; flex-direction:column; overflow:hidden; t
 ::-webkit-scrollbar{ display:none; } * { scrollbar-width:none; }
 a{ color:inherit; } button{ font-family:inherit; }
 
-header{ display:flex; align-items:center; gap:10px; padding:14px 16px; background:var(--header-bg); border-bottom:1px solid var(--border); flex-shrink:0; box-shadow:var(--shadow-sm); backdrop-filter:blur(20px); }
-.icon-btn{ width:36px; height:36px; border-radius:11px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); font-size:14px; cursor:pointer; flex-shrink:0; }
-.icon-btn:active{ transform:scale(0.9); }
-.hdr-title{ flex:1; min-width:0; font-size:13.5px; font-weight:700; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+header{ display:flex; align-items:center; gap:12px; padding:max(14px, env(safe-area-inset-top, 14px)) 16px 14px; background:var(--header-bg); border-bottom:1px solid var(--border); flex-shrink:0; box-shadow:var(--shadow-sm); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:500; }
+.icon-btn{ width:38px; height:38px; border-radius:12px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); font-size:15px; cursor:pointer; flex-shrink:0; }
+.icon-btn:active{ transform:scale(0.92); }
+.hdr-title{ flex:1; min-width:0; font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
 
 .scroll-body{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:20px; touch-action:pan-y; }
 
@@ -106,7 +115,13 @@ header{ display:flex; align-items:center; gap:10px; padding:14px 16px; backgroun
 .review-input{ width:100%; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:10px 12px; font-size:12.5px; color:var(--text); font-family:inherit; outline:none; resize:vertical; min-height:60px; }
 .review-submit{ margin-top:10px; padding:10px 16px; border-radius:12px; border:none; background:linear-gradient(135deg,#5B5BF6,#7C3AED); color:#fff; font-weight:700; font-size:12.5px; cursor:pointer; }
 
-.bottom-bar{ display:flex; align-items:center; justify-content:space-around; gap:4px; height:64px; padding:0 8px; background:var(--header-bg); border-top:1px solid var(--border); flex-shrink:0; backdrop-filter:blur(20px); }
+.bottom-bar{ display:flex; align-items:center; justify-content:space-around; gap:4px; height:64px; padding:0 8px; background:var(--header-bg); border-top:1px solid var(--border); flex-shrink:0; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:500; }
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(64px + env(safe-area-inset-bottom));
+  }
+}
 .bar-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; flex:1; min-width:0; padding:6px 4px; border-radius:14px; border:none; background:none; cursor:pointer; color:var(--text3); }
 .bar-btn:active{ transform:scale(0.88); }
 .bar-btn i{ font-size:18px; } .bar-btn span{ font-size:9.5px; font-weight:600; }
@@ -121,7 +136,7 @@ header{ display:flex; align-items:center; gap:10px; padding:14px 16px; backgroun
 <header>
   <button class="icon-btn" id="backBtn"><i class="fa-solid fa-arrow-left"></i></button>
   <div class="hdr-title" id="hdrTitle">Loading…</div>
-  <span style="width:36px;"></span>
+  <span style="width:38px;"></span>
 </header>
 
 <div class="scroll-body" id="scrollBody">
