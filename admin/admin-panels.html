@@ -132,7 +132,8 @@
     html {
       background: var(--bg);
       min-height: 100%;
-      overflow-x: hidden;
+      overflow-x: clip;
+      scroll-behavior: smooth;
     }
 
     body {
@@ -142,7 +143,7 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      overflow-x: hidden;
+      overflow-x: clip;
       user-select: none;
       -webkit-user-select: none;
     }
@@ -160,6 +161,57 @@
       opacity: 0.9;
     }
 
+    /* ── CORE ENTRY ANIMATIONS (MATCHING MAIN LANDING PAGE) ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes heroReveal {
+      from {
+        opacity: 0;
+        transform: translateY(26px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes headerSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Scroll reveal utility matching landing page */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     /* ── PAGE TRANSITION VEIL ── */
     #pageTransition {
       position: fixed;
@@ -175,24 +227,21 @@
       pointer-events: all;
     }
 
-    /* ── STICKY APP HEADER (NATIVE PWA APP FEEL) ── */
+    /* ── 100% RELIABLE STICKY APP HEADER ── */
     .app-header {
+      position: -webkit-sticky;
       position: sticky;
       top: 0;
       z-index: 1000;
+      width: 100%;
       background: var(--header-bg);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
       padding: max(14px, env(safe-area-inset-top, 14px)) 20px 14px;
-      transition: background 0.3s ease, border-color 0.3s ease;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
       box-shadow: var(--shadow-sm);
-      animation: headerSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-
-    @keyframes headerSlideDown {
-      from { opacity: 0; transform: translateY(-12px); }
-      to   { opacity: 1; transform: translateY(0); }
+      animation: headerSlideDown 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .header-inner {
@@ -360,11 +409,7 @@
       gap: 20px;
       position: relative;
       overflow: hidden;
-      animation: heroEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-    @keyframes heroEntrance {
-      from { opacity: 0; transform: translateY(14px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+      animation: heroReveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
     }
 
     .hero-strip::before {
@@ -432,6 +477,7 @@
       padding-bottom: 4px;
       margin-bottom: 22px;
       scrollbar-width: none;
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
     }
     .filter-chips::-webkit-scrollbar { display: none; }
     .filter-btn {
@@ -486,22 +532,17 @@
       cursor: pointer;
       box-shadow: var(--shadow);
       transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
-      animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
-    /* Staggered Animation Delays */
-    .module-card:nth-child(1) { animation-delay: 0.05s; }
-    .module-card:nth-child(2) { animation-delay: 0.10s; }
-    .module-card:nth-child(3) { animation-delay: 0.15s; }
-    .module-card:nth-child(4) { animation-delay: 0.20s; }
-    .module-card:nth-child(5) { animation-delay: 0.25s; }
-    .module-card:nth-child(6) { animation-delay: 0.30s; }
-    .module-card:nth-child(7) { animation-delay: 0.35s; }
-
-    @keyframes cardEntrance {
-      from { opacity: 0; transform: translateY(20px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
+    /* Staggered Animation Delays matching landing page feel */
+    .module-card:nth-child(1) { animation-delay: 0.20s; }
+    .module-card:nth-child(2) { animation-delay: 0.26s; }
+    .module-card:nth-child(3) { animation-delay: 0.32s; }
+    .module-card:nth-child(4) { animation-delay: 0.38s; }
+    .module-card:nth-child(5) { animation-delay: 0.44s; }
+    .module-card:nth-child(6) { animation-delay: 0.50s; }
+    .module-card:nth-child(7) { animation-delay: 0.56s; }
 
     .module-card:hover {
       transform: translateY(-5px);
@@ -1107,6 +1148,7 @@
 
     function filterModules() {
       const q = (searchInput.value || '').trim().toLowerCase();
+      let visibleIdx = 0;
       cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         const category = card.getAttribute('data-category');
@@ -1115,6 +1157,10 @@
         
         if (matchesQuery && matchesFilter) {
           card.style.display = 'flex';
+          card.style.animation = 'none';
+          void card.offsetHeight; // trigger reflow
+          card.style.animation = `fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${visibleIdx * 0.05}s both`;
+          visibleIdx++;
         } else {
           card.style.display = 'none';
         }
