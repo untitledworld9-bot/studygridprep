@@ -28,15 +28,21 @@
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+  });
 })();
 
 window.matchMedia("(prefers-color-scheme: dark)")
 .addEventListener("change", function(e){
   if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
+    var resolved = e.matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = resolved === "dark" ? "#0D1120" : "#F0F2F8";
+    });
   }
 });
 </script>
@@ -160,6 +166,12 @@ body {
   user-select: none;
   -webkit-user-select: none;
   overscroll-behavior-y: none;
+  animation: pageIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* =====================================================
@@ -313,7 +325,7 @@ mjx-assistive-mml {
 #examHeader {
   display:flex; align-items:center;
   justify-content:space-between;
-  padding:10px 14px;
+  padding:max(12px, env(safe-area-inset-top)) 14px 12px;
   background: var(--header-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -321,10 +333,6 @@ mjx-assistive-mml {
   flex-shrink:0; z-index:900;
   gap:10px;
   min-height:56px;
-}
-[data-theme="light"] #examHeader {
-  background: rgba(255,255,255,0.97) !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
 
 .hdr-exam-name {

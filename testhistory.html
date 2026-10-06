@@ -27,15 +27,21 @@
   var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme = saved ? saved : (systemDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+    m.removeAttribute("media");
+    m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+  });
 })();
 
 window.matchMedia("(prefers-color-scheme: dark)")
 .addEventListener("change", function(e){
   if(localStorage.getItem("theme") === "system"){
-    document.documentElement.setAttribute(
-      "data-theme",
-      e.matches ? "dark" : "light"
-    );
+    var resolved = e.matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+      m.removeAttribute("media");
+      m.content = resolved === "dark" ? "#0D1120" : "#F0F2F8";
+    });
   }
 });
 </script>
@@ -1156,11 +1162,13 @@ window.handleLogout = async function() {
 
 /* ── Theme-color meta sync ───────────────────────── */
 (function() {
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (!meta) return;
   function sync() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    meta.content = dark ? '#0B1220' : '#ffffff';
+    const color = dark ? '#0D1120' : '#F0F2F8';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      m.removeAttribute('media');
+      m.content = color;
+    });
   }
   sync();
   new MutationObserver(sync).observe(document.documentElement, {

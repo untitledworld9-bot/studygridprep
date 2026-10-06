@@ -2,412 +2,1063 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Admin Hub — Study Grid Prep</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Admin Control Hub — Study Grid Prep</title>
 
   <link rel="manifest" href="/admin/manifestadmin.json">
   <link rel="apple-touch-icon" href="/icon-192.png">
-  <meta name="theme-color" content="#07080d">
+  <link rel="icon" href="/icon-192.png">
+  <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- THEME INITIALIZATION SCRIPT (Prevents Flash of Unstyled Content) -->
+  <!-- Instant Theme Resolution (Zero FOUC) -->
   <script>
-    const savedTheme = localStorage.getItem('sgp-theme');
-    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    if (savedTheme === 'light' || (!savedTheme && systemPrefersLight)) {
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
+    (function(){
+      var saved = localStorage.getItem("theme") || localStorage.getItem("sgp-theme");
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved ? saved : (systemDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
+        m.removeAttribute("media");
+        m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+      });
+    })();
   </script>
+
+  <!-- Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
     /* ============================================================
-       DESIGN TOKENS — Ultra Clean, Linear/Vercel Style
+       STUDY GRID PREP — SIGNATURE DESIGN SYSTEM & TOKENS
     ============================================================ */
     :root {
-      /* Dark Theme (Default) */
-      --bg: #07080d;
-      --panel: #0d0f18;
-      --card: #111420;
-      --card-hover: #161b2e;
-      --accent: #7c5cfc;
-      --danger: #ef4444;
-      --text: #eef0ff;
-      --muted: #8b93b5;
+      --bg: #F0F2F8;
+      --surface: #FFFFFF;
+      --surface2: #F4F6FB;
+      --card: #FFFFFF;
+      --card-hover: #F8FAFC;
+      --border: #E2E8F2;
+      --border-hover: rgba(91, 91, 246, 0.35);
+      --text: #0F172A;
+      --text2: #5A6785;
+      --text3: #94A3B8;
+      --accent: #5B5BF6;
+      --accent2: #7C3AED;
+      --accent-glow: rgba(91, 91, 246, 0.16);
+      --green: #10B981;
+      --green-glow: rgba(16, 185, 129, 0.16);
+      --amber: #F59E0B;
+      --amber-glow: rgba(245, 158, 11, 0.16);
+      --red: #EF4444;
+      --red-glow: rgba(239, 68, 68, 0.16);
+      --cyan: #06B6D4;
+      --cyan-glow: rgba(6, 182, 212, 0.16);
+      --header-bg: rgba(240, 242, 248, 0.94);
+      --nav-bg: rgba(248, 249, 253, 0.98);
+      --shadow-sm: 0 1px 6px rgba(0, 0, 0, 0.06);
+      --shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 32px rgba(91, 91, 246, 0.12);
+      --r: 18px;
+      --t: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0D1120;
+      --surface: #151E32;
+      --surface2: #1A2440;
+      --card: #141B30;
+      --card-hover: #19233E;
       --border: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(255, 255, 255, 0.15);
-      
-      --font-display: 'Syne', sans-serif;
-      --font-body: 'Manrope', sans-serif;
+      --border-hover: rgba(124, 92, 252, 0.45);
+      --text: #E8F0FE;
+      --text2: #8B9EC8;
+      --text3: #3D5080;
+      --accent: #7C5CFC;
+      --accent2: #9333EA;
+      --accent-glow: rgba(124, 92, 252, 0.25);
+      --green: #10B981;
+      --green-glow: rgba(16, 185, 129, 0.22);
+      --amber: #F59E0B;
+      --amber-glow: rgba(245, 158, 11, 0.22);
+      --red: #F43F5E;
+      --red-glow: rgba(244, 63, 94, 0.25);
+      --cyan: #22D3EE;
+      --cyan-glow: rgba(34, 211, 238, 0.22);
+      --header-bg: rgba(13, 17, 32, 0.94);
+      --nav-bg: rgba(13, 17, 32, 0.98);
+      --shadow-sm: 0 1px 8px rgba(0, 0, 0, 0.3);
+      --shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.55);
     }
 
-    [data-theme="light"] {
-      /* Light Theme */
-      --bg: #f8fafc;
-      --panel: #ffffff;
-      --card: #ffffff;
-      --card-hover: #f1f5f9;
-      --accent: #6366f1; /* Softer indigo for light mode */
-      --danger: #dc2626;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: rgba(0, 0, 0, 0.08);
-      --border-hover: rgba(0, 0, 0, 0.15);
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    a { text-decoration: none; color: inherit; }
-
-    /* Smooth transition for theme switching */
-    body, .sidebar, .card, .header, .theme-btn, .chips span {
-      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-    }
-
-    body {
-      font-family: var(--font-body);
-      background: radial-gradient(circle at top right, rgba(124, 92, 252, 0.08), transparent 40%),
-                  radial-gradient(circle at bottom left, rgba(47, 107, 255, 0.05), transparent 40%),
-                  var(--bg);
-      color: var(--text);
-      display: flex;
-      min-height: 100vh;
+    html {
+      background: var(--bg);
+      min-height: 100%;
       overflow-x: hidden;
     }
 
-    /* ── WELCOME INTRO OVERLAY ── */
-    #intro {
-      position: fixed; inset: 0; background: var(--bg);
-      display: flex; align-items: center; justify-content: center; flex-direction: column;
-      z-index: 9999;
-      animation: hideIntro 2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
-    }
-    #intro h1 { 
-      font-family: var(--font-display); font-size: 42px; font-weight: 800; 
-      background: linear-gradient(135deg, var(--text), var(--muted)); 
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-    }
-    #intro p { margin-top: 12px; color: var(--muted); font-size: 14px; letter-spacing: 1px; }
-
-    /* ── SIDEBAR ── */
-    .sidebar {
-      position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
-      background: var(--panel); border-right: 1px solid var(--border);
-      padding: 32px 24px; z-index: 30;
-      display: flex; flex-direction: column;
-    }
-    .logo { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-    .role { font-size: 11px; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
-
-    /* ── MAIN CONTENT ── */
-    .main {
-      margin-left: 260px; flex: 1; padding: 0 48px 48px;
+    body {
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-    }
-
-    /* ── STICKY GLASS HEADER ── */
-    .header {
-      position: sticky; top: 0; z-index: 20;
-      background: rgba(7, 8, 13, 0.75); 
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      padding: 32px 0 24px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 32px;
-      animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-      animation-delay: 1.6s;
-      
-      /* Flexbox applied for Top Right Button */
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      animation: pageIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Ambient Background Glow */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 15% 15%, var(--accent-glow) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, var(--green-glow) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.04) 0%, transparent 60%);
+      opacity: 0.85;
+    }
+
+    /* ── PAGE TRANSITION OVERLAY (APP STYLE) ── */
+    #pageTransition {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 99999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #pageTransition.leaving {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── HEADER (NATIVE APP FEEL WITH SAFE AREA) ── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: max(14px, env(safe-area-inset-top)) 20px 14px;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
       align-items: center;
-    }
-    
-    [data-theme="light"] .header {
-      background: rgba(248, 250, 252, 0.75); /* Light glass effect */
+      justify-content: space-between;
+      gap: 14px;
     }
 
-    .header-text h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; letter-spacing: -1px; }
-    .header-text p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
 
-    /* Theme Button */
-    .theme-btn {
-      background: rgba(124, 92, 252, 0.1);
+    .brand-logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 19px;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .brand-section:hover .brand-logo-badge {
+      transform: scale(1.05) rotate(-3deg);
+    }
+
+    .brand-text h1 {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .brand-text .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-glow);
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-top: 2px;
+      border: 1px solid var(--border-hover);
+    }
+    .brand-text .badge-pill .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulseGreen 1.8s infinite;
+    }
+    @keyframes pulseGreen {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Back to Student App Button */
+    .back-app-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--t);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .back-app-btn:hover {
+      background: var(--surface);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+    .back-app-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: var(--surface2);
       border: 1px solid var(--border);
       color: var(--accent);
-      width: 44px; height: 44px;
-      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
       outline: none;
+      transition: all var(--t);
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
     }
-    .theme-btn:hover {
-      background: rgba(124, 92, 252, 0.18);
-      transform: scale(1.05);
+    .theme-toggle-btn:hover {
+      background: var(--surface);
+      transform: scale(1.06);
       border-color: var(--border-hover);
     }
-
-    /* ── GRID & CARDS ── */
-    .grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
-    }
-    .card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 24px; display: flex; flex-direction: column; gap: 20px;
-      animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-      opacity: 0;
-    }
-    
-    /* Staggered load animation after intro */
-    .card:nth-child(1) { animation-delay: 1.7s; }
-    .card:nth-child(2) { animation-delay: 1.8s; }
-    .card:nth-child(3) { animation-delay: 1.9s; }
-    .card:nth-child(4) { animation-delay: 2.0s; }
-
-    .card:hover { 
-      transform: translateY(-6px); 
-      border-color: rgba(124, 92, 252, 0.4); 
-      box-shadow: 0 12px 32px rgba(0,0,0,0.4); 
-      background: var(--card-hover); 
-    }
-    
-    [data-theme="light"] .card:hover {
-      box-shadow: 0 12px 32px rgba(15,23,42,0.08); 
-    }
-    
-    .icon {
-      width: 52px; height: 52px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(124, 92, 252, 0.1); color: var(--accent); font-size: 22px;
-    }
-    .card:hover .icon { transform: scale(1.08); }
-
-    .title { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
-    
-    /* Chips */
-    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .chips span {
-      padding: 6px 12px; border-radius: 99px; background: rgba(124, 92, 252, 0.05);
-      border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.5px;
+    .theme-toggle-btn:active {
+      transform: scale(0.92);
     }
 
-    .btn {
-      margin-top: auto; padding: 14px; border-radius: 10px;
-      background: var(--accent); text-align: center; font-weight: 700; color: white;
-      font-size: 14px; border: none; cursor: pointer;
-    }
-    .card:hover .btn { opacity: 0.9; }
-
-    /* ── DANGER CARD (SGP Main) ── */
-    .card.danger { background: rgba(239, 68, 68, 0.02); border-color: rgba(239, 68, 68, 0.15); }
-    .card.danger:hover { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.06); }
-    .card.danger .icon { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-    .card.danger .btn { background: var(--danger); }
-
-    /* ── KEYFRAME ANIMATIONS ── */
-    @keyframes hideIntro {
-      0% { opacity: 1; visibility: visible; }
-      80% { opacity: 1; visibility: visible; }
-      100% { opacity: 0; visibility: hidden; }
-    }
-    @keyframes slideUp { 
-      from { opacity: 0; transform: translateY(30px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
-    @keyframes slideDown { 
-      from { opacity: 0; transform: translateY(-30px); } 
-      to { opacity: 1; transform: translateY(0); } 
+    /* ── MAIN CONTAINER ── */
+    .main-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+      flex: 1;
     }
 
-    /* ── PERFECT MOBILE RESPONSIVE ── */
+    /* ── HERO BANNER & SEARCH STRIP ── */
+    .hero-strip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-strip::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--green), var(--amber));
+    }
+
+    .hero-left h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hero-left p {
+      color: var(--text2);
+      font-size: 13px;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Quick Search Bar */
+    .search-box-wrap {
+      position: relative;
+      min-width: 260px;
+      max-width: 360px;
+      width: 100%;
+    }
+    .search-box-wrap i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 14px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 11px 14px 11px 38px;
+      border-radius: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      outline: none;
+      transition: all var(--t);
+    }
+    .search-input:focus {
+      background: var(--surface);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* Quick Filter Chips */
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 22px;
+      scrollbar-width: none;
+    }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      padding: 7px 14px;
+      border-radius: 99px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--t);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+    .filter-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ── MODULE CARDS GRID ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* Base Module Card */
+    .module-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
+      animation: cardEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-hover);
+      background: var(--card-hover);
+    }
+    .module-card:active {
+      transform: scale(0.98);
+    }
+
+    /* Card Top Row */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .module-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+    .module-card:hover .module-icon-wrap {
+      transform: scale(1.1) rotate(-4deg);
+    }
+
+    .module-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    /* Card Details */
+    .module-info h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+    }
+    .module-info p {
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* Feature Tags */
+    .feature-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .feature-tags span {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 7px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    /* Action CTA Button on Card */
+    .card-cta-btn {
+      margin-top: auto;
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      transition: all var(--t);
+      box-shadow: var(--shadow-sm);
+    }
+    .card-cta-btn i {
+      transition: transform 0.2s ease;
+    }
+    .module-card:hover .card-cta-btn i {
+      transform: translateX(4px);
+    }
+
+    /* ── COLOR THEMES PER MODULE ── */
+    /* 1. Sub Admin (Indigo/Purple) */
+    .card-theme-subadmin .module-icon-wrap {
+      background: rgba(91, 91, 246, 0.12);
+      color: var(--accent);
+      border: 1.5px solid rgba(91, 91, 246, 0.25);
+    }
+    .card-theme-subadmin .module-badge {
+      background: rgba(91, 91, 246, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(91, 91, 246, 0.25);
+    }
+    .card-theme-subadmin .card-cta-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+
+    /* 2. Content Hub (Emerald Green) */
+    .card-theme-content .module-icon-wrap {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--green);
+      border: 1.5px solid rgba(16, 185, 129, 0.25);
+    }
+    .card-theme-content .module-badge {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--green);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .card-theme-content .card-cta-btn {
+      background: linear-gradient(135deg, #10B981, #059669);
+    }
+
+    /* 3. Media Studio (Cyan/Sky) */
+    .card-theme-media .module-icon-wrap {
+      background: rgba(6, 182, 212, 0.12);
+      color: var(--cyan);
+      border: 1.5px solid rgba(6, 182, 212, 0.25);
+    }
+    .card-theme-media .module-badge {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+    }
+    .card-theme-media .card-cta-btn {
+      background: linear-gradient(135deg, #06B6D4, #0284C7);
+    }
+
+    /* 4. Mock Admin (Amber/Gold) */
+    .card-theme-mock .module-icon-wrap {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--amber);
+      border: 1.5px solid rgba(245, 158, 11, 0.25);
+    }
+    .card-theme-mock .module-badge {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .card-theme-mock .card-cta-btn {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+    }
+
+    /* 5. SGP Main / Master Control (Rose/Red) */
+    .card-theme-sgpmain .module-icon-wrap {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--red);
+      border: 1.5px solid rgba(239, 68, 68, 0.25);
+    }
+    .card-theme-sgpmain .module-badge {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .card-theme-sgpmain .card-cta-btn {
+      background: linear-gradient(135deg, #EF4444, #B91C1C);
+    }
+
+    /* 6. Hiring Admin (Purple/Violet) */
+    .card-theme-hiring .module-icon-wrap {
+      background: rgba(124, 58, 237, 0.12);
+      color: var(--accent2);
+      border: 1.5px solid rgba(124, 58, 237, 0.25);
+    }
+    .card-theme-hiring .module-badge {
+      background: rgba(124, 58, 237, 0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+    }
+    .card-theme-hiring .card-cta-btn {
+      background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    }
+
+    /* 7. Game Admin (Orange/Fire) */
+    .card-theme-game .module-icon-wrap {
+      background: rgba(249, 115, 22, 0.12);
+      color: #F97316;
+      border: 1.5px solid rgba(249, 115, 22, 0.25);
+    }
+    .card-theme-game .module-badge {
+      background: rgba(249, 115, 22, 0.1);
+      color: #F97316;
+      border: 1px solid rgba(249, 115, 22, 0.25);
+    }
+    .card-theme-game .card-cta-btn {
+      background: linear-gradient(135deg, #F97316, #C2410C);
+    }
+
+    /* ── QUICK METRICS STRIP ── */
+    .metrics-bar {
+      margin-top: 32px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .metric-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 14px;
+    }
+    .metric-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .metric-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .metric-lbl {
+      font-size: 11px;
+      color: var(--text3);
+      font-weight: 500;
+    }
+
+    /* ── RESPONSIVE TWEAKS ── */
     @media (max-width: 768px) {
-      body { flex-direction: column; }
-      #intro h1 { font-size: 32px; }
-      
-      /* Turn Sidebar into a Top Bar on Mobile */
-      .sidebar {
-        position: relative; width: 100%; height: auto;
-        border-right: none; border-bottom: 1px solid var(--border);
-        padding: 16px 20px; flex-direction: row; align-items: center; justify-content: space-between;
+      .app-header {
+        padding: max(12px, env(safe-area-inset-top)) 16px 12px;
       }
-      .role { margin-top: 0; }
-      
-      .main { margin-left: 0; padding: 0 20px 32px; }
-      
-      .header { 
-        padding: 20px 0; margin-bottom: 24px;
-      }
-      .header-text h1 { font-size: 26px; }
-      .header-text p { font-size: 13px; }
-      
-      .theme-btn { width: 40px; height: 40px; font-size: 16px; flex-shrink: 0; margin-left: 12px; }
-
-      .grid { gap: 16px; }
+      .brand-text h1 { font-size: 15px; }
+      .brand-logo-badge { width: 36px; height: 36px; font-size: 16px; }
+      .back-app-btn { padding: 6px 10px; font-size: 11.5px; }
+      .theme-toggle-btn { width: 36px; height: 36px; font-size: 14px; }
+      .hero-strip { padding: 18px 16px; gap: 14px; }
+      .hero-left h2 { font-size: 18px; }
+      .search-box-wrap { max-width: 100%; }
+      .cards-grid { grid-template-columns: 1fr; gap: 14px; }
+      .main-container { padding: 16px 14px 48px; }
     }
-      /* ── SUCCESS CARD (Content Hub) ── */
-.card.success {
-  background: rgba(34, 197, 94, 0.03);
-  border-color: rgba(34, 197, 94, 0.18);
-}
-
-.card.success:hover {
-  border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.08);
-}
-
-.card.success .icon {
-  background: rgba(34, 197, 94, 0.12);
-  color: #22c55e;
-}
-
-.card.success .btn {
-  background: #22c55e;
-}
-
-.card:nth-child(5) { animation-delay: 2.1s; }
   </style>
 </head>
 <body>
 
-  <!-- Welcome Intro Overlay -->
-  <div id="intro">
-    <h1>👋 Welcome, Admin</h1>
-    <p>Initializing Secure Workspace...</p>
-  </div>
+  <!-- Ambient Glow -->
+  <div class="ambient-bg"></div>
 
-  <!-- Sidebar / Mobile Topbar -->
-  <aside class="sidebar">
-    <div>
-      <div class="logo">Study Grid Prep</div>
-      <div class="role">Admin Hub</div>
+  <!-- Page Transition Veil (App Style Navigation) -->
+  <div id="pageTransition"></div>
+
+  <!-- Native Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-section">
+        <div class="brand-logo-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Study Grid Prep</h1>
+          <div class="badge-pill">
+            <span class="pulse-dot"></span> Admin Hub
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="/dashboard-home.html" class="back-app-btn" onclick="navigateWithVeil(event, '/dashboard-home.html')" title="Back to Study App">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>App</span>
+        </a>
+
+        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Light / Dark Mode">
+          <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+      </div>
     </div>
-  </aside>
+  </header>
 
   <!-- Main Content -->
-  <main class="main">
-    
-    <!-- STICKY HEADER WITH THEME BUTTON -->
-    <div class="header">
-      <div class="header-text">
-        <h1>Welcome Back</h1>
-        <p>Select a module to manage the platform</p>
+  <main class="main-container">
+
+    <!-- Hero Search & Action Strip -->
+    <section class="hero-strip">
+      <div class="hero-left">
+        <h2>
+          <span>Admin Control Suite</span>
+          <i class="fa-solid fa-sparkles" style="color:var(--amber); font-size:16px;"></i>
+        </h2>
+        <p>Unified management console for questions, media, users & exams</p>
       </div>
-      
-      <!-- Theme Toggle Button -->
-      <button id="themeToggle" class="theme-btn" aria-label="Toggle Theme">
-        <i class="fa-solid fa-moon"></i>
-      </button>
+
+      <div class="search-box-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="moduleSearch" class="search-input" placeholder="Search admin panels...">
+      </div>
+    </section>
+
+    <!-- Quick Filter Chips -->
+    <div class="filter-chips">
+      <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-grid-2"></i> All Panels</button>
+      <button class="filter-btn" data-filter="exam"><i class="fa-solid fa-graduation-cap"></i> Exams & Mocks</button>
+      <button class="filter-btn" data-filter="content"><i class="fa-solid fa-layer-group"></i> Content & Media</button>
+      <button class="filter-btn" data-filter="system"><i class="fa-solid fa-gear"></i> System & Access</button>
     </div>
 
-    <!-- CARDS GRID -->
-    <div class="grid">
-      
-      <!-- Sub Admin -->
-      <a class="card" href="/admin/sub-admin">
-        <div class="icon"><i class="fa-solid fa-users-gear"></i></div>
-        <div class="title">Sub Admin</div>
-        <div class="chips"><span>Users</span><span>Reports</span><span>Push</span><span>Content</span><span>Manage</span></div>
-        <div class="btn">Open Panel</div>
+    <!-- Admin Modules Cards Grid -->
+    <div class="cards-grid" id="cardsGrid">
+
+      <!-- 1. Sub Admin -->
+      <a class="module-card card-theme-subadmin" data-category="system" href="/admin/sub-admin.html" onclick="navigateWithVeil(event, '/admin/sub-admin.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-users-gear"></i>
+          </div>
+          <span class="module-badge">User Hub</span>
+        </div>
+        <div class="module-info">
+          <h3>Sub Admin Panel</h3>
+          <p>Manage registered students, live announcements, reports & activity analytics.</p>
+        </div>
+        <div class="feature-tags">
+          <span>Users</span>
+          <span>Push Alerts</span>
+          <span>Reports</span>
+          <span>Live Logs</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Launch Sub-Admin</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
       </a>
 
-      <!-- Content Hub Admin -->
-<a class="card success" href="/admin/content-hub-admin">
-  <div class="icon"><i class="fa-solid fa-layer-group"></i></div>
-  <div class="title">Content Hub</div>
-  <div class="chips">
-    <span>Content</span>
-    <span>Notes</span>
-    <span>PYQ</span>
-    <span>Library</span>
-  </div>
-  <div class="btn">Open Panel</div>
-</a>
-
-      <!-- Media Studio -->
-      <a class="card" href="/admin/admin-media">
-        <div class="icon"><i class="fa-solid fa-photo-film"></i></div>
-        <div class="title">Media Studio</div>
-        <div class="chips"><span>Assets</span><span>Upload</span><span>Library</span></div>
-        <div class="btn">Open Panel</div>
+      <!-- 2. Content Hub Admin -->
+      <a class="module-card card-theme-content" data-category="content" href="/admin/content-hub-admin.html" onclick="navigateWithVeil(event, '/admin/content-hub-admin.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <span class="module-badge">Content</span>
+        </div>
+        <div class="module-info">
+          <h3>Content Hub Studio</h3>
+          <p>Curate study notes, formula sheets, chapter resources & previous year papers.</p>
+        </div>
+        <div class="feature-tags">
+          <span>Notes</span>
+          <span>PYQs</span>
+          <span>PDF Library</span>
+          <span>Taxonomy</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Open Studio</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
       </a>
 
-      <!-- Mock Admin -->
-      <a class="card" href="/admin/admin-mock">
-        <div class="icon"><i class="fa-solid fa-graduation-cap"></i></div>
-        <div class="title">Mock Admin</div>
-        <div class="chips"><span>Tests</span><span>Results</span><span>Exam</span></div>
-        <div class="btn">Open Panel</div>
+      <!-- 3. Media Studio -->
+      <a class="module-card card-theme-media" data-category="content" href="/admin/admin-media.html" onclick="navigateWithVeil(event, '/admin/admin-media.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-photo-film"></i>
+          </div>
+          <span class="module-badge">Assets</span>
+        </div>
+        <div class="module-info">
+          <h3>Media & Banner Studio</h3>
+          <p>Upload dynamic banners, exam promo posters, icons and video asset links.</p>
+        </div>
+        <div class="feature-tags">
+          <span>Hero Banners</span>
+          <span>Cloud Media</span>
+          <span>Posters</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Manage Media</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
       </a>
 
-      <!-- SGP Main -->
-      <a class="card danger" href="/admin/SGPAdmin-main">
-        <div class="icon"><i class="fa-solid fa-crown"></i></div>
-        <div class="title">SGP Main</div>
-        <div class="chips"><span>Manage</span><span>Track</span><span>Control</span><span>Root</span></div>
-        <div class="btn">Authorize</div>
+      <!-- 4. Mock Admin -->
+      <a class="module-card card-theme-mock" data-category="exam" href="/admin/admin-mock.html" onclick="navigateWithVeil(event, '/admin/admin-mock.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <span class="module-badge">Exams</span>
+        </div>
+        <div class="module-info">
+          <h3>Mock Test Engine Admin</h3>
+          <p>Create & edit JEE Main and CUET mock tests, LaTeX questions & scoring schemes.</p>
+        </div>
+        <div class="feature-tags">
+          <span>JEE Tests</span>
+          <span>CUET Tests</span>
+          <span>Question Bank</span>
+          <span>Latex</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Open Test Editor</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
       </a>
 
-      <!-- Hiring Portal -->
-      <a class="card" href="/admin/hiring-admin">
-        <div class="icon"><i class="fa-solid fa-graduation-cap"></i></div>
-        <div class="title">Hiring Admin</div>
-        <div class="chips"><span>Hiring</span><span>Tests</span><span>Roles</span></div>
-        <div class="btn">Open Panel</div>
+      <!-- 5. SGP Main (Superadmin) -->
+      <a class="module-card card-theme-sgpmain" data-category="system" href="/admin/SGPAdmin-main.html" onclick="navigateWithVeil(event, '/admin/SGPAdmin-main.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+          <span class="module-badge">Root Master</span>
+        </div>
+        <div class="module-info">
+          <h3>SGP Main Master Control</h3>
+          <p>Super-Admin root credentials, database permissions, subscriptions & system overrides.</p>
+        </div>
+        <div class="feature-tags">
+          <span>Root Auth</span>
+          <span>Billing</span>
+          <span>Master Security</span>
+          <span>Overrides</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Authorize Access</span>
+          <i class="fa-solid fa-lock"></i>
+        </div>
+      </a>
+
+      <!-- 6. Hiring Portal Admin -->
+      <a class="module-card card-theme-hiring" data-category="exam" href="/admin/hiring-admin.html" onclick="navigateWithVeil(event, '/admin/hiring-admin.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-briefcase"></i>
+          </div>
+          <span class="module-badge">Careers</span>
+        </div>
+        <div class="module-info">
+          <h3>Hiring & Educator Portal</h3>
+          <p>Review candidate applications, manage subject hiring tests & recruiter pipeline.</p>
+        </div>
+        <div class="feature-tags">
+          <span>Applicants</span>
+          <span>Skills Test</span>
+          <span>Educator Review</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Review Applicants</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </a>
+
+      <!-- 7. Game Arena Admin -->
+      <a class="module-card card-theme-game" data-category="content" href="/admin/game-admin.html" onclick="navigateWithVeil(event, '/admin/game-admin.html')">
+        <div class="card-top">
+          <div class="module-icon-wrap">
+            <i class="fa-solid fa-gamepad"></i>
+          </div>
+          <span class="module-badge">Arena</span>
+        </div>
+        <div class="module-info">
+          <h3>Game & Quiz Arena Admin</h3>
+          <p>Configure study streak gamification, interactive quizzes, coins & leaderboard events.</p>
+        </div>
+        <div class="feature-tags">
+          <span>Gamification</span>
+          <span>XP Streaks</span>
+          <span>Leaderboard</span>
+        </div>
+        <div class="card-cta-btn">
+          <span>Configure Arena</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
       </a>
 
     </div>
+
+    <!-- Quick Status Bar -->
+    <div class="metrics-bar">
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fa-solid fa-server"></i></div>
+        <div class="metric-info">
+          <span class="metric-val">Firebase Firestore</span>
+          <span class="metric-lbl">Database Status: Online</span>
+        </div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fa-solid fa-shield-check"></i></div>
+        <div class="metric-info">
+          <span class="metric-val">RBAC Security</span>
+          <span class="metric-lbl">Auth Role: Authenticated</span>
+        </div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="metric-info">
+          <span class="metric-val">7 Modules Ready</span>
+          <span class="metric-lbl">Version 2.4.0 (PWA)</span>
+        </div>
+      </div>
+    </div>
+
   </main>
 
-  <!-- THEME LOGIC JAVASCRIPT -->
+  <!-- APP-STYLE SCRIPTS: THEME, VEIL TRANSITION & SEARCH -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const themeToggle = document.getElementById('themeToggle');
-      const themeIcon = themeToggle.querySelector('i');
-      const root = document.documentElement;
+    // ── 1. App-Style Page Navigation Veil ──
+    function navigateWithVeil(e, url) {
+      if (e) e.preventDefault();
+      const veil = document.getElementById('pageTransition');
+      if (veil) veil.classList.add('leaving');
+      setTimeout(() => {
+        window.location.href = url;
+      }, 200);
+    }
 
-      // Function to apply UI changes based on theme
-      const applyThemeUI = (theme) => {
-        if (theme === 'light') {
-          themeIcon.classList.remove('fa-moon');
-          themeIcon.classList.add('fa-sun');
-        } else {
-          themeIcon.classList.remove('fa-sun');
-          themeIcon.classList.add('fa-moon');
-        }
-      };
+    // Clear veil on browser Back/Forward (bfcache restore)
+    window.addEventListener('pageshow', () => {
+      const veil = document.getElementById('pageTransition');
+      if (veil) veil.classList.remove('leaving');
+    });
 
-      // Set initial icon based on the pre-loaded theme
-      applyThemeUI(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+    // ── 2. Theme Management & Meta Sync ──
+    function syncThemeColorMeta(theme) {
+      const isDark = theme === "dark";
+      const color = isDark ? "#0D1120" : "#F0F2F8";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
+      const meta = document.createElement("meta");
+      meta.name = "theme-color";
+      meta.content = color;
+      document.head.appendChild(meta);
+    }
 
-      // Manual click event
-      themeToggle.addEventListener('click', () => {
-        let currentTheme = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-        let newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    function updateThemeIcon() {
+      const icon = document.getElementById('themeIcon');
+      if (!icon) return;
+      const current = document.documentElement.getAttribute('data-theme');
+      if (current === 'light') {
+        icon.className = 'fa-solid fa-sun';
+        icon.style.color = '#F59E0B';
+      } else {
+        icon.className = 'fa-solid fa-moon';
+        icon.style.color = 'var(--accent)';
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const nextTheme = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('theme', nextTheme);
+      localStorage.setItem('sgp-theme', nextTheme);
+      syncThemeColorMeta(nextTheme);
+      updateThemeIcon();
+    }
+
+    document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+
+    // Initial theme sync
+    const initialTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    syncThemeColorMeta(initialTheme);
+    updateThemeIcon();
+
+    // ── 3. Search & Filter Cards ──
+    const searchInput = document.getElementById('moduleSearch');
+    const cards = document.querySelectorAll('.module-card');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    let activeFilter = 'all';
+
+    function filterModules() {
+      const q = (searchInput.value || '').trim().toLowerCase();
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const category = card.getAttribute('data-category');
+        const matchesQuery = !q || text.includes(q);
+        const matchesFilter = activeFilter === 'all' || category === activeFilter;
         
-        if (newTheme === 'light') {
-          root.setAttribute('data-theme', 'light');
+        if (matchesQuery && matchesFilter) {
+          card.style.display = 'flex';
         } else {
-          root.removeAttribute('data-theme');
+          card.style.display = 'none';
         }
-        
-        localStorage.setItem('sgp-theme', newTheme);
-        applyThemeUI(newTheme);
       });
+    }
 
-      // Listen for system theme changes in real-time
-      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-        // Only change automatically if user hasn't explicitly set a preference
-        if (!localStorage.getItem('sgp-theme')) {
-          const newTheme = e.matches ? 'light' : 'dark';
-          if (newTheme === 'light') {
-            root.setAttribute('data-theme', 'light');
-          } else {
-            root.removeAttribute('data-theme');
-          }
-          applyThemeUI(newTheme);
-        }
+    if (searchInput) {
+      searchInput.addEventListener('input', filterModules);
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.getAttribute('data-filter');
+        filterModules();
       });
     });
   </script>

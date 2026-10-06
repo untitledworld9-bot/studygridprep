@@ -7,7 +7,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<meta name="theme-color" content="#0f2027">
+  <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
 
 <!-- ======================================================
   AUTH GATE
@@ -773,12 +774,15 @@ window.addEventListener('pageshow', function() {
   if (veil) veil.classList.remove('leaving');
 });
 
+/* ─── theme-color meta sync ───────────────────────────── */
 (function() {
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (!meta) return;
   function sync() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    meta.content = dark ? '#0B1220' : '#ffffff';
+    const color = dark ? '#0D1120' : '#F0F2F8';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      m.removeAttribute('media');
+      m.content = color;
+    });
   }
   sync();
   new MutationObserver(sync).observe(document.documentElement, {

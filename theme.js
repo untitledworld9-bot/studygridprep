@@ -2,11 +2,18 @@
 function syncThemeColorMeta(theme) {
   const isDark = theme === "dark";
   const color = isDark ? "#0D1120" : "#F0F2F8";
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
-  const meta = document.createElement("meta");
-  meta.name = "theme-color";
-  meta.content = color;
-  document.head.appendChild(meta);
+  let metas = document.querySelectorAll('meta[name="theme-color"]');
+  if (metas.length > 0) {
+    metas.forEach(m => {
+      m.removeAttribute("media");
+      m.setAttribute("content", color);
+    });
+  } else {
+    const meta = document.createElement("meta");
+    meta.name = "theme-color";
+    meta.content = color;
+    document.head.appendChild(meta);
+  }
 }
 
 function resolveCurrentTheme() {

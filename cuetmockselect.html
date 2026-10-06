@@ -1329,11 +1329,13 @@ window.addEventListener('pageshow', function() {
 
 /* ─── Theme-color meta sync ───────────────────────────── */
 (function() {
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (!meta) return;
   function sync() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    meta.content = dark ? '#0B1220' : '#ffffff';
+    const color = dark ? '#0D1120' : '#F0F2F8';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      m.removeAttribute('media');
+      m.content = color;
+    });
   }
   sync();
   new MutationObserver(sync).observe(document.documentElement, {
