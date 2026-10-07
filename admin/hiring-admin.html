@@ -3331,6 +3331,8 @@ function renderCandidates(){
     const el = document.getElementById(id);
     if (el) el.addEventListener(evt, fn);
   });
+})();
+
 window.refreshHiringData = async function() {
   const icon = document.getElementById("adminRefreshIcon");
   if (icon) icon.classList.add("fa-spin");

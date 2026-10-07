@@ -1885,6 +1885,8 @@ window.resolveIssue = async function (id) {
     toast("Marked resolved", "success");
     closeModal();
   } catch (e) { console.error(e); toast("Couldn't resolve — check permissions", "error"); }
+};
+
 window.refreshContentHubAdmin = async function() {
   const icon = document.getElementById("adminRefreshIcon");
   if (icon) icon.classList.add("fa-spin");
