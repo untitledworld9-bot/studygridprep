@@ -2664,12 +2664,12 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
 </div><!-- /#page-home -->
 
 <!-- Todo Reminder Popup -->
-<div id="todoReminderPopup" class="todo-reminder-popup">
+<div id="todoReminderPopup" class="todo-reminder-popup" onclick="window.location.href='/todo.html'">
   <div class="todo-reminder-content">
     <i class="fa-solid fa-bell bell-icon"></i>
     <div class="todo-text">
-      <h4>Reminder 🔔</h4>
-      <p>You have <span id="incTaskCount" style="color:var(--green);font-weight:bold;">0</span> incomplete tasks today!</p>
+      <h4 id="todoReminderTitle">Reminder 🔔</h4>
+      <p id="todoReminderMsg">You have <span id="incTaskCount" style="color:var(--green);font-weight:bold;">0</span> incomplete tasks today!</p>
     </div>
   </div>
 </div>
@@ -4000,27 +4000,86 @@ window.closeExamPopup=function(){
 })();
 </script>
 
-<!-- TODO REMINDER POPUP LOGIC -->
+<!-- TODO & STUDY ALARM 1-MIN REMINDER POPUP LOGIC -->
 <script>
 (function(){
-  if(sessionStorage.getItem("todoReminderShown")==="true") return;
   function pad(n){return String(n).padStart(2,'0');}
-  const d=new Date();
-  const todayKey=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-  let tasks=[];
-  try{tasks=JSON.parse(localStorage.getItem('uw_tasks_v2')||'[]');}catch(e){}
-  const incompleteToday=tasks.filter(t=>t.date===todayKey&&!t.done);
-  if(incompleteToday.length>0){
-    document.getElementById('incTaskCount').innerText=incompleteToday.length;
-    setTimeout(()=>{
-      const popup=document.getElementById('todoReminderPopup');
-      if(popup){
-        popup.classList.add('show');
-        sessionStorage.setItem("todoReminderShown","true");
-        setTimeout(()=>popup.classList.remove('show'),4000);
-      }
-    },4000);
+  function getLocalDateKey(){
+    const d=new Date();
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   }
+
+  // 1. Initial incomplete tasks reminder (once per session)
+  if(sessionStorage.getItem("todoReminderShown")!=="true"){
+    const todayKey = getLocalDateKey();
+    let tasks=[];
+    try{tasks=JSON.parse(localStorage.getItem('uw_tasks_v2')||'[]');}catch(e){}
+    const incompleteToday=tasks.filter(t=>t.date===todayKey&&!t.done);
+    if(incompleteToday.length>0){
+      const incEl=document.getElementById('incTaskCount');
+      if(incEl) incEl.innerText=incompleteToday.length;
+      setTimeout(()=>{
+        const popup=document.getElementById('todoReminderPopup');
+        if(popup){
+          popup.classList.add('show');
+          sessionStorage.setItem("todoReminderShown","true");
+          setTimeout(()=>popup.classList.remove('show'),4500);
+        }
+      },3500);
+    }
+  }
+
+  // 2. 1-Minute Prior Alert for Scheduled Tasks & Study Alarms (One Time in a Day)
+  function checkHomeOneMinAlerts(){
+    const now = new Date();
+    const currentDay = now.getDay();
+    const currentTotalMins = now.getHours()*60 + now.getMinutes();
+    const dateStr = getLocalDateKey();
+
+    // Check Study Alarms
+    let studyAlarms=[];
+    try{studyAlarms=JSON.parse(localStorage.getItem('uw_study_alarms_v1')||'[]');}catch(e){}
+    studyAlarms.forEach(alarm=>{
+      if(!alarm.enabled || !alarm.days || !alarm.days.includes(currentDay) || !alarm.time) return;
+      const [ah,am]=alarm.time.split(':').map(Number);
+      const alarmTotalMins = ah*60+am;
+      const oneMinStorageKey = `uw_popup_1min_${dateStr}_alarm_${alarm.id}`;
+
+      if(currentTotalMins === alarmTotalMins - 1 && !localStorage.getItem(oneMinStorageKey)){
+        localStorage.setItem(oneMinStorageKey, 'true'); // One time in a day
+        showHomePopupAlert(`⏰ 1 Min to Go: ${alarm.label || 'Study Session'}`, `Starts at ${alarm.time} • Tap to view todo`);
+      }
+    });
+
+    // Check Scheduled Todo Tasks
+    let tasks=[];
+    try{tasks=JSON.parse(localStorage.getItem('uw_tasks_v2')||'[]');}catch(e){}
+    tasks.forEach(task=>{
+      if(task.done || task.date !== dateStr || !task.time) return;
+      const [th,tm]=task.time.split(':').map(Number);
+      const taskTotalMins = th*60+tm;
+      const taskStorageKey = `uw_popup_1min_${dateStr}_task_${task.id}`;
+
+      if(currentTotalMins === taskTotalMins - 1 && !localStorage.getItem(taskStorageKey)){
+        localStorage.setItem(taskStorageKey, 'true'); // One time in a day
+        showHomePopupAlert(`⏰ 1 Min to Go: ${task.name}`, `Starts at ${task.time} • Tap to view todo`);
+      }
+    });
+  }
+
+  function showHomePopupAlert(title, msg){
+    const popup=document.getElementById('todoReminderPopup');
+    const titleEl=document.getElementById('todoReminderTitle');
+    const msgEl=document.getElementById('todoReminderMsg');
+    if(!popup) return;
+    if(titleEl) titleEl.innerText = title;
+    if(msgEl) msgEl.innerText = msg;
+    popup.classList.add('show');
+    setTimeout(()=>popup.classList.remove('show'),6500);
+  }
+
+  setInterval(checkHomeOneMinAlerts, 10000);
+  checkHomeOneMinAlerts();
 })();
 </script>
 

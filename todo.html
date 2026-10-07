@@ -1046,6 +1046,139 @@
       color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer;
     }
 
+    /* ─── 1-MINUTE PRIOR REMINDER POPUP (Professional Top Slide-down) ─── */
+    .todo-reminder-popup {
+      position: fixed;
+      top: -160px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 13px 16px;
+      box-shadow: 0 16px 42px rgba(0,0,0,0.32), 0 0 0 1px rgba(91,91,246,0.25);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: top 0.52s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.22s ease;
+      width: 92%;
+      max-width: 410px;
+      border: 1.5px solid var(--border);
+      border-left: 5px solid var(--teal);
+      overflow: hidden;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .todo-reminder-popup:active {
+      transform: translateX(-50%) scale(0.98);
+    }
+    .todo-reminder-popup::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(91,91,246,0.08), transparent);
+      pointer-events: none;
+    }
+    .todo-reminder-popup.show {
+      top: 22px;
+    }
+    .todo-reminder-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    .reminder-bell-wrap {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(91,91,246,0.35);
+    }
+    .reminder-bell-wrap svg {
+      animation: ringBell 1.4s ease infinite;
+    }
+    @keyframes ringBell {
+      0%, 100% { transform: rotate(0); }
+      25% { transform: rotate(14deg); }
+      50% { transform: rotate(-14deg); }
+      75% { transform: rotate(8deg); }
+    }
+    .todo-reminder-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .reminder-tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 2px;
+    }
+    .todo-reminder-text h4 {
+      margin: 0;
+      color: var(--text);
+      font-size: 14.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .todo-reminder-text p {
+      margin: 2px 0 0 0;
+      color: var(--text2);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .todo-reminder-text p b {
+      color: var(--teal);
+      font-weight: 700;
+    }
+    .reminder-close-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.18s ease;
+    }
+    .reminder-close-btn:hover {
+      background: rgba(239,68,68,0.1);
+      color: var(--red);
+      border-color: var(--red);
+    }
+    .reminder-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), #7C3AED);
+      width: 100%;
+      transform-origin: left;
+      transition: width 7s linear;
+    }
+
     /* ============================================================
        UTILITY
     ============================================================ */
@@ -1078,6 +1211,29 @@ width:90%;
 max-width:500px;
 pointer-events:none;">
 </div>
+
+  <!-- ⏰ 1-Minute Prior Reminder Popup (Slides down from top with spring animation) -->
+  <div id="oneMinReminderPopup" class="todo-reminder-popup" onclick="handleOneMinPopupClick()">
+    <div class="todo-reminder-content">
+      <div class="reminder-bell-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div class="todo-reminder-text">
+        <div class="reminder-tag-badge" id="oneMinPopupTag">⏰ Starting in 1 Minute</div>
+        <h4 id="oneMinPopupTitle">Study Session</h4>
+        <p id="oneMinPopupSub">Starts at <b>07:00 AM</b> • Get ready!</p>
+      </div>
+      <button type="button" class="reminder-close-btn" onclick="event.stopPropagation(); hideOneMinPopup();" aria-label="Dismiss">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="reminder-progress-bar" id="oneMinPopupBar"></div>
+  </div>
 
   <!-- ====================== HEADER ====================== -->
   <header class="app-header">
@@ -1826,9 +1982,29 @@ pointer-events:none;">
           }, msToTask);
         }
 
+        // ── In-page timer: fires 1 minute BEFORE task time (One time in a day popup) ──
+        const oneMinBefore = taskTime - 60000;
+        const msToOneMin = oneMinBefore - now;
+        if (msToOneMin > 0 && msToOneMin < 7*86400000) {
+          notifTimers['1min_' + task.id] = setTimeout(() => {
+            const taskStorageKey = `uw_popup_1min_${task.date}_task_${task.id}`;
+            if (!task.done && !localStorage.getItem(taskStorageKey)) {
+              localStorage.setItem(taskStorageKey, 'true');
+              playAlarmChime();
+              showOneMinPopup({
+                type: 'task',
+                title: task.name,
+                time: fmt12(task.time),
+                tag: task.priority === 'red' ? '🚨 Very Important (1 Min)' : (task.priority === 'green' ? '⭐ Important (1 Min)' : '⏰ Task in 1 Min'),
+                tab: 'today'
+              });
+              fireNotif('⏰ Task in 1 Minute!', `${task.name} starts at ${fmt12(task.time)}.`);
+            }
+          }, msToOneMin);
+        }
+
         // ── SW background notification: fires 1 minute BEFORE task time ──
         // This works even if tab is closed/in background (like focus.html)
-        const oneMinBefore = taskTime - 60000; // 1 minute before
         if (oneMinBefore > now && msToTask < 7*86400000) {
           scheduleSwTodoNotif(task, oneMinBefore);
         }
@@ -2033,6 +2209,59 @@ pointer-events:none;">
       });
     }
 
+    /* ─── 1-Minute Prior Popup Controller (One Time in a Day) ─── */
+    let oneMinPopupTimer = null;
+    let oneMinPopupTargetTab = null;
+
+    function showOneMinPopup(opts) {
+      const popup = document.getElementById('oneMinReminderPopup');
+      if (!popup) return;
+
+      const titleEl = document.getElementById('oneMinPopupTitle');
+      const subEl   = document.getElementById('oneMinPopupSub');
+      const tagEl   = document.getElementById('oneMinPopupTag');
+      const barEl   = document.getElementById('oneMinPopupBar');
+
+      if (titleEl) titleEl.textContent = opts.title || 'Study Session';
+      if (subEl)   subEl.innerHTML = `Starts at <b>${opts.time || ''}</b> • Get ready!`;
+      if (tagEl)   tagEl.textContent = opts.tag || '⏰ Starting in 1 Minute';
+
+      oneMinPopupTargetTab = opts.tab || (opts.type === 'alarm' ? 'alarms' : 'today');
+
+      // Animate countdown progress bar over 7 seconds
+      if (barEl) {
+        barEl.style.transition = 'none';
+        barEl.style.width = '100%';
+        setTimeout(() => {
+          barEl.style.transition = 'width 7s linear';
+          barEl.style.width = '0%';
+        }, 50);
+      }
+
+      popup.classList.add('show');
+
+      if (oneMinPopupTimer) clearTimeout(oneMinPopupTimer);
+      oneMinPopupTimer = setTimeout(() => {
+        hideOneMinPopup();
+      }, 7000);
+    }
+
+    function hideOneMinPopup() {
+      const popup = document.getElementById('oneMinReminderPopup');
+      if (popup) popup.classList.remove('show');
+      if (oneMinPopupTimer) {
+        clearTimeout(oneMinPopupTimer);
+        oneMinPopupTimer = null;
+      }
+    }
+
+    function handleOneMinPopupClick() {
+      hideOneMinPopup();
+      if (oneMinPopupTargetTab) {
+        switchTab(oneMinPopupTargetTab);
+      }
+    }
+
     // ── In-page interval check (every 10s) ──
     function checkAlarmTriggers() {
       const now = new Date();
@@ -2040,6 +2269,7 @@ pointer-events:none;">
       const currentTotalMins = now.getHours() * 60 + now.getMinutes();
       const dateStr = dateKey(now);
 
+      // 1. Check Study Alarms (1 Min Prior + Exact Ring)
       studyAlarms.forEach(alarm => {
         if (!alarm.enabled) return;
         if (!alarm.days || !alarm.days.includes(currentDay)) return;
@@ -2047,11 +2277,20 @@ pointer-events:none;">
         const [ah, am] = alarm.time.split(':').map(Number);
         const alarmTotalMins = ah * 60 + am;
 
-        // ── 1 MINUTE PRIOR ALERT ──
-        const oneMinKey = `${dateStr}_${alarm.id}_${alarmTotalMins - 1}`;
-        if (currentTotalMins === alarmTotalMins - 1 && !lastFired1Min[oneMinKey]) {
+        // ── 1 MINUTE PRIOR ALERT (One time in a day) ──
+        const oneMinKey = `${dateStr}_alarm_${alarm.id}_${alarmTotalMins - 1}`;
+        const oneMinStorageKey = `uw_popup_1min_${dateStr}_alarm_${alarm.id}`;
+        if (currentTotalMins === alarmTotalMins - 1 && !lastFired1Min[oneMinKey] && !localStorage.getItem(oneMinStorageKey)) {
           lastFired1Min[oneMinKey] = true;
+          localStorage.setItem(oneMinStorageKey, 'true'); // One time in a day
           playAlarmChime();
+          showOneMinPopup({
+            type: 'alarm',
+            title: alarm.label || 'Study Session',
+            time: fmt12(alarm.time),
+            tag: '⏰ Study Alarm in 1 Min',
+            tab: 'alarms'
+          });
           fireNotif(
             '⏰ Study Alarm in 1 Minute!',
             `Get ready: "${alarm.label || 'Study Session'}" starts at ${fmt12(alarm.time)}.`
@@ -2063,6 +2302,32 @@ pointer-events:none;">
         if (currentTotalMins === alarmTotalMins && !lastFiredRing[ringKey]) {
           lastFiredRing[ringKey] = true;
           triggerAlarmRinging(alarm);
+        }
+      });
+
+      // 2. Check Today's Scheduled Tasks (1 Min Prior — One time in a day)
+      tasks.forEach(task => {
+        if (task.done || task.date !== dateStr || !task.time) return;
+        const [th, tm] = task.time.split(':').map(Number);
+        const taskTotalMins = th * 60 + tm;
+        const taskKey = `${dateStr}_task_${task.id}_${taskTotalMins - 1}`;
+        const taskStorageKey = `uw_popup_1min_${dateStr}_task_${task.id}`;
+
+        if (currentTotalMins === taskTotalMins - 1 && !lastFired1Min[taskKey] && !localStorage.getItem(taskStorageKey)) {
+          lastFired1Min[taskKey] = true;
+          localStorage.setItem(taskStorageKey, 'true'); // One time in a day
+          playAlarmChime();
+          showOneMinPopup({
+            type: 'task',
+            title: task.name || 'Task Reminder',
+            time: fmt12(task.time),
+            tag: task.priority === 'red' ? '🚨 Very Important (1 Min)' : (task.priority === 'green' ? '⭐ Important (1 Min)' : '⏰ Task in 1 Min'),
+            tab: 'today'
+          });
+          fireNotif(
+            '⏰ Task in 1 Minute!',
+            `Starting soon: "${task.name}" at ${fmt12(task.time)}.`
+          );
         }
       });
 
