@@ -1460,9 +1460,9 @@ window._uwTrackVideoComplete = async function() {
     while (graph.length < 7) graph.unshift(0);
     if (graph.length > 7) graph.splice(0, graph.length - 7);
 
-    // Shift if last write was on a previous day
     const lastDate  = data._graphDate || null;
-    const todayStr  = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const todayStr  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     if (lastDate && lastDate !== todayStr) {
       const daysDiff = Math.round((new Date(todayStr) - new Date(lastDate)) / 86400000);
       const shifts   = Math.min(daysDiff, 7);

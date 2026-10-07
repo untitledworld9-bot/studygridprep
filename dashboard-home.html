@@ -3016,6 +3016,16 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
 <!-- ===== SCRIPTS ===== -->
 
 <script>
+// ─── LOCAL DATE HELPER (Timezone-safe YYYY-MM-DD for IST and all timezones) ───
+function getLocalDateISO(d) {
+  const dt = d ? (d instanceof Date ? d : new Date(d)) : new Date();
+  const year = dt.getFullYear();
+  const month = String(dt.getMonth() + 1).padStart(2, "0");
+  const day = String(dt.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+window.getLocalDateISO = getLocalDateISO;
+
 // ─── SIDEBAR ───
 function openPwaMenu(){
   document.getElementById("pwaSidebar").classList.add("active");
@@ -3222,14 +3232,24 @@ window.openStreakWeekPopup = function(){
   const overlay = document.getElementById("streakWeekOverlay");
   if(!overlay) return;
   const streak = window._currentStreak || parseInt(localStorage.getItem("uw_streak")||"0")||0;
-  const history = window._streakHistory || [];
+  let history = window._streakHistory || [];
 
-  const todayStr = new Date().toDateString();
+  const today = new Date();
+  const todayStr = today.toDateString();
+  const todayLocalISO = getLocalDateISO(today);
+
   const savedDate = localStorage.getItem("dailyXPDate");
   const rawDailyXP = (savedDate === todayStr) ? parseInt(localStorage.getItem("dailyXP")||"0", 10) : 0;
   const hitFlag = localStorage.getItem("dailyGoalHit_" + todayStr);
   const dailyXP = (hitFlag === "1") ? Math.max(rawDailyXP, 10) : rawDailyXP;
-  const isGoalDone = dailyXP >= 10 || isTodayDone(history);
+  const lastStreakDate = window._lastStreakDate || localStorage.getItem("uw_streak_date") || "";
+  const isGoalDone = dailyXP >= 10 || (lastStreakDate === todayStr) || isTodayDone(history);
+
+  // Auto-heal history in memory if today's goal is done but today's local ISO is missing
+  if(isGoalDone && !history.includes(todayLocalISO)){
+    history = [...history, todayLocalISO];
+    window._streakHistory = history;
+  }
 
   // Update popup badge & count
   const countEl = document.getElementById("swPopupCount");
@@ -3293,8 +3313,8 @@ window.closeStreakWeekPopup = function(){
 };
 
 function isTodayDone(history){
-  const todayISO = new Date().toISOString().slice(0,10);
-  return (history||[]).includes(todayISO);
+  const todayLocalISO = getLocalDateISO(new Date());
+  return (history||[]).includes(todayLocalISO);
 }
 
 function buildStreakWeekRow(history, streak){
@@ -3302,34 +3322,57 @@ function buildStreakWeekRow(history, streak){
   if(!row) return;
   const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const today = new Date();
+  const todayStr = today.toDateString();
+  const todayLocalISO = getLocalDateISO(today);
 
-  const todayStr = new Date().toDateString();
   const savedDate = localStorage.getItem("dailyXPDate");
   const rawDailyXP = (savedDate === todayStr) ? parseInt(localStorage.getItem("dailyXP")||"0", 10) : 0;
   const hitFlag = localStorage.getItem("dailyGoalHit_" + todayStr);
   const dailyXP = (hitFlag === "1") ? Math.max(rawDailyXP, 10) : rawDailyXP;
-  const todayGoalDone = dailyXP >= 10 || isTodayDone(history);
+  const lastStreakDate = window._lastStreakDate || localStorage.getItem("uw_streak_date") || "";
+  const isStreakDoneToday = (lastStreakDate === todayStr);
+  const todayGoalDone = dailyXP >= 10 || isStreakDoneToday || isTodayDone(history);
+
+  // Self-heal: ensure today's local ISO is in history if goal is completed
+  let effectiveHistory = Array.isArray(history) ? [...history] : [];
+  if (todayGoalDone && !effectiveHistory.includes(todayLocalISO)) {
+    effectiveHistory.push(todayLocalISO);
+  }
+
+  // ✅ Timezone Fix: Agar user ne 12 AM ke baad goal complete kiya aur UTC mismatch ki wajah se
+  // kal ka date (e.g. Tuesday) history mein chala gaya tha, aur current streak sirf 1 day hai
+  // (matlab streak aaj ka hi hai, kal koi streak nahi tha), toh kal ke date ko prune karo taaki
+  // Tuesday par false flame na dikhe aur Wednesday par hi flame dikhe.
+  const yesterdayDate = new Date(today);
+  yesterdayDate.setDate(today.getDate() - 1);
+  const yesterdayLocalISO = getLocalDateISO(yesterdayDate);
+  if (todayGoalDone && streak === 1) {
+    effectiveHistory = effectiveHistory.filter(d => d !== yesterdayLocalISO);
+  }
 
   row.innerHTML="";
   for(let i=6;i>=0;i--){
     const d = new Date(today);
     d.setDate(today.getDate()-i);
-    const iso = d.toISOString().slice(0,10);
+    const iso = getLocalDateISO(d);
     const isToday = (i===0);
-    const done = isToday ? todayGoalDone : (history||[]).includes(iso);
+    const done = isToday ? todayGoalDone : effectiveHistory.includes(iso);
+    const missed = !done && !isToday && effectiveHistory.length > 0;
 
     const col = document.createElement("div");
-    col.className = "streak-week-day" + (done ? " done" : "") + (isToday ? " today" : "");
+    col.className = "streak-week-day" + (done ? " done" : "") + (missed ? " missed" : "") + (isToday ? " today" : "");
 
     const icon = document.createElement("div");
     icon.className = "streak-week-day-icon";
     if(done) {
       icon.textContent = "🔥";
     } else if(isToday) {
-      icon.innerHTML = `<span class="streak-fire-anim" style="display:inline-block;animation:firePulse 1.4s infinite;font-size:15px;opacity:0.85;">🔥</span>`;
+      icon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#5B5BF6"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`;
+    } else if(missed) {
+      icon.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.7)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
     } else {
       // Clean, elegant dot for past inactive days
-      icon.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="var(--text3)" opacity="0.3"><circle cx="12" cy="12" r="8"/></svg>`;
+      icon.innerHTML = `<svg width="8" height="8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="var(--border)"/></svg>`;
     }
 
     const label = document.createElement("div");
@@ -3387,17 +3430,37 @@ function buildStreakHistory(currentStreak){
   const dayNames = ["Su","Mo","Tu","We","Th","Fr","Sa"];
   const history = window._streakHistory || [];
   const today = new Date();
-  const todayISO = today.toISOString().slice(0,10);
+  const todayStr = today.toDateString();
+  const todayLocalISO = getLocalDateISO(today);
+
+  const savedDate = localStorage.getItem("dailyXPDate");
+  const rawDailyXP = (savedDate === todayStr) ? parseInt(localStorage.getItem("dailyXP")||"0", 10) : 0;
+  const hitFlag = localStorage.getItem("dailyGoalHit_" + todayStr);
+  const dailyXP = (hitFlag === "1") ? Math.max(rawDailyXP, 10) : rawDailyXP;
+  const lastStreakDate = window._lastStreakDate || localStorage.getItem("uw_streak_date") || "";
+  const isStreakDoneToday = (lastStreakDate === todayStr);
+  const todayGoalDone = dailyXP >= 10 || isStreakDoneToday || isTodayDone(history);
+
+  let effectiveHistory = Array.isArray(history) ? [...history] : [];
+  if (todayGoalDone && !effectiveHistory.includes(todayLocalISO)) {
+    effectiveHistory.push(todayLocalISO);
+  }
+  const yesterdayDate = new Date(today);
+  yesterdayDate.setDate(today.getDate() - 1);
+  const yesterdayLocalISO = getLocalDateISO(yesterdayDate);
+  if (todayGoalDone && currentStreak === 1) {
+    effectiveHistory = effectiveHistory.filter(d => d !== yesterdayLocalISO);
+  }
+
   row.innerHTML = "";
 
   for(let i = 6; i >= 0; i--){
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    const iso = d.toISOString().slice(0,10);
+    const iso = getLocalDateISO(d);
     const isToday = (i === 0);
-    const isDone = history.includes(iso);
-    // Only show missed X if user actually has some history (not brand new)
-    const isMissed = !isDone && !isToday && history.length > 0;
+    const isDone = isToday ? todayGoalDone : effectiveHistory.includes(iso);
+    const isMissed = !isDone && !isToday && effectiveHistory.length > 0;
 
     const wrap = document.createElement("div");
     wrap.className = "streak-day-dot";
@@ -3430,41 +3493,6 @@ function buildStreakHistory(currentStreak){
     wrap.appendChild(circle);
     wrap.appendChild(label);
     row.appendChild(wrap);
-  }
-}
-
-// buildStreakWeekRow — same logic, used in header fire badge popup
-function buildStreakWeekRow(history, streak){
-  const row = document.getElementById("streakWeekDaysRow");
-  if(!row) return;
-  const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  const today = new Date();
-  row.innerHTML="";
-  for(let i=6;i>=0;i--){
-    const d = new Date(today);
-    d.setDate(today.getDate()-i);
-    const iso = d.toISOString().slice(0,10);
-    const isToday = (i===0);
-    const done = (history||[]).includes(iso);
-    const missed = !done && !isToday && (history||[]).length > 0;
-
-    const col = document.createElement("div");
-    col.className = "streak-week-day"+(done?" done":"")+(missed?" missed":"")+(isToday?" today":"");
-
-    const icon = document.createElement("div");
-    icon.className = "streak-week-day-icon";
-    if(done) icon.textContent="🔥";
-    else if(isToday) icon.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="#5B5BF6"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`;
-    else if(missed) icon.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.7)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-    else icon.innerHTML=`<svg width="8" height="8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="var(--border)"/></svg>`;
-
-    const label = document.createElement("div");
-    label.className = "streak-week-day-name";
-    label.textContent = dayNames[d.getDay()];
-
-    col.appendChild(icon);
-    col.appendChild(label);
-    row.appendChild(col);
   }
 }
 
@@ -4449,7 +4477,7 @@ onAuthStateChanged(auth, async user => {
     // Init daily bar
     const todayInit=new Date().toDateString();
     const firestoreDateInit=data.dailyXPDate||"";
-    const isTodayInit=firestoreDateInit===todayInit||firestoreDateInit===new Date().toISOString().slice(0,10);
+    const isTodayInit=firestoreDateInit===todayInit||firestoreDateInit===getLocalDateISO(new Date())||firestoreDateInit===new Date().toISOString().slice(0,10);
     const dailyXPInit=isTodayInit?(data.dailyXP||0):0;
     const hitFlagInit=localStorage.getItem("dailyGoalHit_"+todayInit);
     const xpInitRender=(hitFlagInit==="1")?Math.max(dailyXPInit,10):dailyXPInit;
@@ -4546,6 +4574,35 @@ onAuthStateChanged(auth, async user => {
 
   // Store streakHistory and streak globally for week popup
   window._currentStreak = streak;
+  window._lastStreakDate = lastStreakDate;
+
+  // ✅ Auto-heal streakHistory in Firestore: if today's goal was completed (e.g. after midnight)
+  // ensure today's local date is present. And if streak is 1, prune the UTC-shifted yesterday date
+  // so Tuesday doesn't get a false flame and Wednesday shows the flame properly.
+  if (streakDoneToday) {
+    const todayLocalISO = getLocalDateISO(new Date());
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayLocalISO = getLocalDateISO(yesterdayDate);
+
+    let historyChanged = false;
+    let healedHistory = [...streakHistory];
+
+    if (!healedHistory.includes(todayLocalISO)) {
+      healedHistory.push(todayLocalISO);
+      historyChanged = true;
+    }
+    if (streak === 1 && healedHistory.includes(yesterdayLocalISO)) {
+      healedHistory = healedHistory.filter(d => d !== yesterdayLocalISO);
+      historyChanged = true;
+    }
+
+    if (historyChanged) {
+      streakHistory = healedHistory;
+      updateDoc(userRef, { streakHistory: healedHistory }).catch(() => {});
+    }
+  }
+
   window._streakHistory = streakHistory;
 
   // ── Show streak popup on first open of new day (if active streak from yesterday) ──
@@ -4583,6 +4640,7 @@ onAuthStateChanged(auth, async user => {
     // ── Next-day reset: only reset if date is from a PREVIOUS day, never today ──
     const firestoreDate = d.dailyXPDate || "";
     const isToday = firestoreDate === todayStr ||
+      firestoreDate === getLocalDateISO(new Date()) ||
       firestoreDate === new Date().toISOString().slice(0,10);
     const dailyXP = isToday ? (d.dailyXP||0) : 0;
 
@@ -4591,6 +4649,7 @@ onAuthStateChanged(auth, async user => {
     }
 
     // Update streakHistory from live data + sync streak UI from Firestore
+    window._lastStreakDate = d.lastStreakDate || "";
     window._streakHistory = d.streakHistory||[];
     window._currentStreak = d.streak||0;
     // Always keep header + stat bar in sync with live Firestore
@@ -4647,9 +4706,9 @@ onAuthStateChanged(auth, async user => {
       localStorage.setItem("dailyGoalHit_"+todayStr, "1");
     }
     // Also check Firestore notifications for today's date to prevent duplicates after data reset
-    const todayISO2=new Date().toISOString().slice(0,10);
+    const todayISO2=getLocalDateISO(new Date());
     const existingNotifs=d.notifications||[];
-    const alreadyHasStreakToday=existingNotifs.some(n=>n.icon==='🔥'&&n.ts&&new Date(n.ts).toISOString().slice(0,10)===todayISO2);
+    const alreadyHasStreakToday=existingNotifs.some(n=>n.icon==='🔥'&&n.ts&&getLocalDateISO(new Date(n.ts))===todayISO2);
     // FIX: lastStreakDate===todayStr means streak already counted today (could be from todo.html)
     const streakAlreadyCountedToday = (d.lastStreakDate===todayStr);
     // FIX: goalKey localStorage stale hone ki problem — Firestore ka lastStreakDate use karo
@@ -4658,27 +4717,17 @@ onAuthStateChanged(auth, async user => {
       // Set goalKey to prevent duplicate within same session
       localStorage.setItem(goalKey,"1");
 
-      // Add today to streakHistory (ISO date string)
-      const todayISO=new Date().toISOString().slice(0,10);
+      // Add today to streakHistory (local ISO date string)
+      const todayISO=getLocalDateISO(new Date());
       const hist=(d.streakHistory||[]);
       const updatedHist=hist.includes(todayISO)?hist:[...hist,todayISO].slice(-90);
 
-      // ✅ ROOT-CAUSE FIX: previously newStreak was computed as (d.streak||0)+1
-      // whenever lastStreakDate===yesterday. But d.streak is a separately
-      // stored counter that can drift out of sync with the REAL history
-      // (e.g. todo.html's uw-core.js already wrote today's entry first, or
-      // an old bug/manual reset left a stale value) — so it could jump
-      // straight to 2 even though streakHistory only actually has ONE real
-      // day in it. Deriving the number directly from streakHistory (the
-      // same array the popups render as fire/cross dots) makes the count
-      // self-healing: it always matches exactly what's visually shown, no
-      // matter what the old `streak` field said or how many code paths
-      // (todo.html, playlist.html, dashboard) touched it today.
+      // ✅ ROOT-CAUSE FIX: compute streak directly from local calendar dates
       const histSet = new Set(updatedHist);
       let newStreak = 0;
       let cursor = new Date();
       while (true) {
-        const iso = cursor.toISOString().slice(0,10);
+        const iso = getLocalDateISO(cursor);
         if (histSet.has(iso)) {
           newStreak++;
           cursor.setDate(cursor.getDate() - 1);
@@ -4767,8 +4816,9 @@ window.addEventListener("load", showOffline);
 window.addEventListener("pageshow", function(){
   const today = new Date().toDateString();
   const savedDate = localStorage.getItem("dailyXPDate") || "";
-  // Accept both toDateString() and ISO formats
-  const isToday = savedDate === today || savedDate === new Date().toISOString().slice(0,10);
+  // Accept toDateString(), local ISO, and fallback UTC ISO
+  const todayLocal = window.getLocalDateISO ? window.getLocalDateISO(new Date()) : "";
+  const isToday = savedDate === today || (todayLocal && savedDate === todayLocal) || savedDate === new Date().toISOString().slice(0,10);
   if(isToday){
     const xp = parseInt(localStorage.getItem("dailyXP")||"0",10);
     if(window.updateDailyGoalBar){

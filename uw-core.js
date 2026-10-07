@@ -103,9 +103,17 @@ function getStreak() {
   return Math.max(0, parseInt(localStorage.getItem(STREAK_KEY) || "0", 10));
 }
 
+function getLocalDateISO(d) {
+  const dt = d ? (d instanceof Date ? d : new Date(d)) : new Date();
+  const year = dt.getFullYear();
+  const month = String(dt.getMonth() + 1).padStart(2, "0");
+  const day = String(dt.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 async function updateStreak() {
   const today    = new Date().toDateString();
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayISO = getLocalDateISO(new Date());
 
   // ✅ FIX: Always read from Firestore first — localStorage may be stale on new device
   // This prevents streak reset when user logs in on a new device
@@ -139,12 +147,9 @@ async function updateStreak() {
     return count;
   }
 
-  // ✅ ROOT-CAUSE FIX: compute streakHistory first, then derive the streak
-  // NUMBER from it (same logic as dashboard-home.html), instead of doing
-  // independent +1/reset math here. Two separate code paths incrementing
-  // a shared counter (this one, and dashboard-home.html's) is exactly what
-  // caused the streak to jump straight from 0 to 2 in one day — deriving
-  // from the history array everywhere makes both paths always agree.
+  // ✅ ROOT-CAUSE FIX: compute streakHistory first using local calendar date (not UTC toISOString),
+  // then derive the streak NUMBER from it. This prevents post-midnight (12 AM - 5:30 AM IST)
+  // entries from saving as yesterday's date in UTC and jumping days.
   const updatedHistory = firestoreHistory.includes(todayISO)
     ? firestoreHistory
     : [...firestoreHistory, todayISO].slice(-90);
@@ -153,7 +158,7 @@ async function updateStreak() {
   count = 0;
   let cursor = new Date();
   while (true) {
-    const iso = cursor.toISOString().slice(0, 10);
+    const iso = getLocalDateISO(cursor);
     if (histSet.has(iso)) {
       count++;
       cursor.setDate(cursor.getDate() - 1);
@@ -450,6 +455,7 @@ window.UW = {
   syncData,
   updateLeaderboard,
   consumePendingStreakBreak,
+  getLocalDateISO,
   LEVEL_THRESHOLDS
 };
 
