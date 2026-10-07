@@ -650,60 +650,93 @@ const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
 window.signInHiringAdmin = async function(){
   $('authError').textContent = '';
   const btn = document.querySelector('.auth-google-btn');
-  btn.disabled = true;
+  if (btn) btn.disabled = true;
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    await checkHiringAdminAccess(result.user);
+    await signInWithPopup(auth, googleProvider);
+    // onAuthStateChanged below will pick up the user session and launch
   } catch (e) {
-    $('authError').textContent = 'Sign-in failed. Try again.';
-    btn.disabled = false;
+    console.error("Hiring admin sign-in error:", e);
+    $('authError').textContent = 'Sign-in failed: ' + (e.message || "Try again.");
+  } finally {
+    if (btn) btn.disabled = false;
   }
 };
 
-async function checkHiringAdminAccess(user){
-  $('authGate').style.display = 'none';
-  $('authLoading').style.display = 'flex';
+onAuthStateChanged(auth, async (user) => {
+  const gate = $('authGate');
+  const loading = $('authLoading');
+
+  if (!user) {
+    if (loading) loading.style.display = 'none';
+    if (gate) {
+      gate.classList.remove('auth-exit');
+      gate.style.display = 'flex';
+    }
+    return;
+  }
+
+  if (gate && gate.style.display !== 'none') {
+    gate.classList.add('auth-exit');
+    setTimeout(() => {
+      gate.style.display = 'none';
+      gate.classList.remove('auth-exit');
+    }, 320);
+  }
+  if (loading) loading.style.display = 'flex';
+
   try {
-    const email = user.email;
-    let hasAccess = ADMIN_EMAILS.includes(email);
+    const rawEmail = user.email || '';
+    const email = rawEmail.toLowerCase().trim();
+    let hasAccess = ADMIN_EMAILS.some(a => a.toLowerCase() === email);
+
     if (!hasAccess) {
-      const snap = await getDoc(doc(db, 'subAdmins', email));
-      if (snap.exists()) {
-        const r = snap.data().role;
-        hasAccess = (r === 'hiring-admin' || r === 'both' || r === 'sub-admin' || !r);
+      try {
+        const snap = await getDoc(doc(db, 'subAdmins', rawEmail));
+        if (snap.exists()) {
+          const r = snap.data().role;
+          hasAccess = (r === 'hiring-admin' || r === 'both' || r === 'sub-admin' || !r);
+        }
+      } catch (docErr) {
+        console.warn("subAdmin doc check:", docErr);
       }
     }
+
     if (!hasAccess) {
+      if (loading) loading.style.display = 'none';
+      if (gate) {
+        gate.classList.remove('auth-exit');
+        gate.style.display = 'flex';
+      }
+      $('authError').textContent = "This Google account (" + rawEmail + ") doesn't have Hiring Admin access.";
+      const googleBtn = document.querySelector('.auth-google-btn');
+      if (googleBtn) googleBtn.disabled = false;
       await signOut(auth);
-      $('authLoading').style.display = 'none';
-      $('authGate').style.display = 'flex';
-      $('authError').textContent = "This Google account doesn't have Hiring Admin access.";
-      document.querySelector('.auth-google-btn').disabled = false;
       return;
     }
+
     CURRENT_USER = user;
-    $('adminName').textContent = user.displayName || email.split('@')[0];
-    $('adminEmail').textContent = email;
-    $('adminAvatar').textContent = (user.displayName || email)[0].toUpperCase();
-    $('authLoading').style.display = 'none';
+    const displayName = user.displayName || rawEmail.split('@')[0] || "Admin";
+    if ($('adminName')) $('adminName').textContent = displayName;
+    if ($('adminEmail')) $('adminEmail').textContent = rawEmail;
+    if ($('adminAvatar')) $('adminAvatar').textContent = (displayName[0] || "A").toUpperCase();
+
+    if (loading) loading.style.display = 'none';
+    if (gate) {
+      gate.style.display = 'none';
+      gate.classList.remove('auth-exit');
+    }
+
     window.IS_SUB_ADMIN = true;
     sgpLogActivity('login', 'Signed in to Hiring Admin');
     bootData();
   } catch (e) {
-    console.error(e);
-    $('authLoading').style.display = 'none';
-    $('authGate').style.display = 'flex';
+    console.error("Hiring Admin session check error:", e);
+    if (loading) loading.style.display = 'none';
+    if (gate) {
+      gate.classList.remove('auth-exit');
+      gate.style.display = 'flex';
+    }
     $('authError').textContent = 'Something went wrong checking access.';
-  }
-}
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    checkHiringAdminAccess(user);
-  } else {
-    // No session — stop showing the loading spinner and reveal the
-    // sign-in card instead of leaving it stuck on "Checking access…".
-    $('authLoading').style.display = 'none';
-    $('authGate').style.display = 'flex';
   }
 });
 window.hiringAdminLogout = async function(){
