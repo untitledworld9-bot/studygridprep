@@ -7,7 +7,7 @@
  * ============================================================
  */
 
-import { db, auth, collection, addDoc, serverTimestamp } from "../firebase.js";
+import { db, auth, collection, addDoc, serverTimestamp } from "./firebase.js";
 
 export async function sgpLogActivity(action, details = "") {
   // Only log for sub-admins — the main admin's own actions aren't tracked

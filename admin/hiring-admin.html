@@ -371,7 +371,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 </head>
 <body>
 
-<div id="authGate" style="display:none;">
+<div id="authGate">
   <div class="auth-backdrop-glow"></div>
   <div class="auth-box">
     <div class="auth-mark"><img src="/icon-192.png" alt="Study Grid Prep"></div>
@@ -381,7 +381,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
     <div class="auth-error" id="authError"></div>
   </div>
 </div>
-<div id="authLoading" style="display:flex;">
+<div id="authLoading">
   <div class="auth-loader-card">
     <div class="auth-spin-ring"></div>
     <div class="auth-loader-text">Checking access…</div>
@@ -616,40 +616,19 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 <div class="modal-overlay" id="modalOverlay"></div>
 
 <script type="module">
-/* ================================================================
-   FIREBASE + ACTIVITY LOG LOAD (fallback paths, same pattern as
-   hiring-portal.html, so this file can sit at root or /admin/)
-================================================================ */
-async function loadFirebase(){
-  const candidates = ['./firebase.js','/firebase.js','../firebase.js','firebase.js'];
-  for (const src of candidates) { try { return await import(src); } catch(e){} }
-  throw new Error('firebase.js not found');
-}
-async function loadActivityLog(){
-  const candidates = ['./activity-log.js','../activity-log.js','/activity-log.js'];
-  for (const src of candidates) { try { return await import(src); } catch(e){} }
-  return { sgpLogActivity: () => {} };
-}
-
-let fb, alog;
-try {
-  fb = await loadFirebase();
-  alog = await loadActivityLog();
-} catch (e) {
-  console.error('Hiring admin init error:', e);
-  document.getElementById('authGate').innerHTML =
-    `<div class="auth-box"><div style="color:var(--red);"><i class="fa-solid fa-triangle-exclamation" style="font-size:22px;display:block;margin-bottom:10px;"></i>Couldn't connect. Please refresh the page.</div></div>`;
-  throw e;
-}
-const {
-  db, auth, provider: googleProvider, signInWithPopup, onAuthStateChanged, signOut,
+import {
+  db, auth, provider as googleProvider, signInWithPopup, onAuthStateChanged, signOut,
   collection, query, where, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc,
   onSnapshot, serverTimestamp, orderBy
-} = fb;
-const sgpLogActivity = alog.sgpLogActivity || (() => {});
+} from "../firebase.js";
+import { sgpLogActivity } from "../activity-log.js";
+
 let CERT = null;
-for (const src of ['./cert-core.js','../cert-core.js','/cert-core.js']) { try { CERT = await import(src); break; } catch(e){} }
-if (!CERT) console.error('cert-core.js not found — Certification disabled');
+try {
+  CERT = await import("../cert-core.js");
+} catch(e) {
+  console.warn("cert-core import warning:", e);
+}
 
 const $ = (id) => document.getElementById(id);
 let CURRENT_USER = null;
@@ -671,19 +650,26 @@ const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
 window.signInHiringAdmin = async function(){
   $('authError').textContent = '';
   const btn = document.querySelector('.auth-google-btn');
-  btn.disabled = true;
+  if (btn) btn.disabled = true;
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    await checkHiringAdminAccess(result.user);
+    await signInWithPopup(auth, googleProvider);
+    // onAuthStateChanged below will pick up the user and initialize
   } catch (e) {
-    $('authError').textContent = 'Sign-in failed. Try again.';
-    btn.disabled = false;
+    console.error("Hiring Admin sign-in error:", e);
+    $('authError').textContent = 'Sign-in failed: ' + (e.message || "Please try again.");
+    if (btn) btn.disabled = false;
   }
 };
 
+let _hiringChecking = false;
+
 async function checkHiringAdminAccess(user){
+  if (_hiringChecking) return;
+  _hiringChecking = true;
+
   const gate = $('authGate');
   const loading = $('authLoading');
+
   if (gate && gate.style.display !== 'none') {
     gate.classList.add('auth-exit');
     setTimeout(() => {
@@ -692,57 +678,82 @@ async function checkHiringAdminAccess(user){
     }, 320);
   }
   if (loading) loading.style.display = 'flex';
+
   try {
-    const email = user.email;
-    let hasAccess = ADMIN_EMAILS.includes(email);
+    const rawEmail = user?.email || '';
+    const email = rawEmail.toLowerCase().trim();
+    let hasAccess = ADMIN_EMAILS.some(a => a.toLowerCase() === email);
+
     if (!hasAccess) {
-      const snap = await getDoc(doc(db, 'subAdmins', email));
-      if (snap.exists()) {
-        const r = snap.data().role;
-        hasAccess = (r === 'hiring-admin' || r === 'both' || r === 'sub-admin' || !r);
+      try {
+        const snap = await getDoc(doc(db, 'subAdmins', rawEmail));
+        if (snap.exists()) {
+          const r = snap.data().role;
+          hasAccess = (r === 'hiring-admin' || r === 'both' || r === 'sub-admin' || !r);
+        }
+      } catch (docErr) {
+        console.warn("subAdmin doc check:", docErr);
       }
     }
+
     if (!hasAccess) {
-      await signOut(auth);
       if (loading) loading.style.display = 'none';
       if (gate) {
         gate.classList.remove('auth-exit');
         gate.style.display = 'flex';
       }
-      $('authError').textContent = "This Google account doesn't have Hiring Admin access.";
+      $('authError').textContent = "This Google account (" + (email || "unknown") + ") doesn't have Hiring Admin access.";
       const googleBtn = document.querySelector('.auth-google-btn');
       if (googleBtn) googleBtn.disabled = false;
+      await signOut(auth);
+      _hiringChecking = false;
       return;
     }
+
     CURRENT_USER = user;
-    $('adminName').textContent = user.displayName || email.split('@')[0];
-    $('adminEmail').textContent = email;
-    $('adminAvatar').textContent = (user.displayName || email)[0].toUpperCase();
+    const displayName = user.displayName || rawEmail.split('@')[0] || "Admin";
+    if ($('adminName')) $('adminName').textContent = displayName;
+    if ($('adminEmail')) $('adminEmail').textContent = rawEmail;
+    if ($('adminAvatar')) $('adminAvatar').textContent = (displayName[0] || "A").toUpperCase();
+
     if (loading) loading.style.display = 'none';
+    if (gate) {
+      gate.style.display = 'none';
+      gate.classList.remove('auth-exit');
+    }
+
     window.IS_SUB_ADMIN = true;
     sgpLogActivity('login', 'Signed in to Hiring Admin');
     bootData();
   } catch (e) {
-    console.error(e);
+    console.error("Hiring Admin access check error:", e);
     if (loading) loading.style.display = 'none';
     if (gate) {
       gate.classList.remove('auth-exit');
       gate.style.display = 'flex';
     }
-    $('authError').textContent = 'Something went wrong checking access.';
+    $('authError').textContent = 'Something went wrong checking access. Please refresh.';
+    const googleBtn = document.querySelector('.auth-google-btn');
+    if (googleBtn) googleBtn.disabled = false;
+  } finally {
+    _hiringChecking = false;
   }
 }
+
 onAuthStateChanged(auth, (user) => {
   const gate = $('authGate');
   const loading = $('authLoading');
   if (user) {
     checkHiringAdminAccess(user);
   } else {
+    _hiringChecking = false;
     if (loading) loading.style.display = 'none';
     if (gate) {
       gate.classList.remove('auth-exit');
       gate.style.display = 'flex';
     }
+    const googleBtn = document.querySelector('.auth-google-btn');
+    if (googleBtn) googleBtn.disabled = false;
   }
 });
 window.hiringAdminLogout = async function(){
