@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- ✅ ZOOM BLOCK -->
+<!-- ZOOM BLOCK & VIEWPORT -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
 <title>Welcome - Study Grid Prep</title>
 <link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,7 @@
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<!-- ✅ THEME DETECTION — matches dashboard - home logic exactly -->
+<!-- THEME DETECTION — matches dashboard-home logic exactly -->
 <script>
 (function(){
   const saved = localStorage.getItem('theme');
@@ -55,7 +55,7 @@
 })();
 </script>
 
-<!-- ✅ FLASH PREVENTION -->
+<!-- FLASH PREVENTION -->
 <style>
 html{ visibility: hidden; }
 html[data-theme]{ visibility: visible; }
@@ -195,7 +195,7 @@ canvas{
   z-index:1;
   width:100%;
   max-width:420px;
-  padding:20px 14px 36px 14px;
+  padding:16px 14px 32px 14px;
   display:flex;
   flex-direction:column;
   gap:0;
@@ -206,17 +206,17 @@ canvas{
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:28px 0 22px 0;
+  padding:20px 0 16px 0;
   text-align:center;
 }
 .wlc-avatar{
-  width:80px; height:80px;
+  width:76px; height:76px;
   border-radius:22px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
   display:flex; align-items:center; justify-content:center;
-  font-size:34px; font-weight:800; color:#fff;
+  font-size:32px; font-weight:800; color:#fff;
   box-shadow:0 8px 28px rgba(91,91,246,0.35);
-  margin-bottom:16px;
+  margin-bottom:12px;
   animation:avatarPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
   letter-spacing:-1px;
 }
@@ -225,121 +225,115 @@ canvas{
   to{ transform:scale(1) rotate(0deg); opacity:1; }
 }
 .wlc-hero-title{
-  font-size:22px; font-weight:800; color:var(--text);
-  line-height:1.25; margin-bottom:6px;
+  font-size:21px; font-weight:800; color:var(--text);
+  line-height:1.25; margin-bottom:4px;
   letter-spacing:-0.3px;
 }
 .wlc-hero-sub{
-  font-size:13px; color:var(--text2); font-weight:400;
-  line-height:1.55; max-width:280px;
+  font-size:12.5px; color:var(--text2); font-weight:400;
+  line-height:1.5; max-width:300px;
 }
 
-/* ─── FEATURE CARDS ─── */
+/* ─── 6 COMPACT FEATURE CARDS ─── */
 .wlc-features-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin:4px 0 10px 0;
+  gap:8px;
+  margin:4px 0 12px 0;
 }
 
 .wlc-feat-card{
   background:var(--surface);
-  border-radius:18px;
-  padding:14px 12px 14px 12px;
+  border-radius:16px;
+  padding:12px 11px;
   box-shadow:var(--shadow-sm);
-  display:flex; flex-direction:column; gap:10px;
+  display:flex; flex-direction:column; gap:7px;
   transition:all 0.2s ease;
   cursor:default;
   position:relative; overflow:hidden;
-  min-height:110px;
+  min-height:98px;
 }
-.wlc-feat-card:active{ transform:scale(0.97); }
+.wlc-feat-card:active{ transform:scale(0.98); }
 
-/* Mock Tests */
-.wlc-feat-mock{
-  border:1.5px solid rgba(124,58,237,0.22);
-}
-[data-theme="light"] .wlc-feat-mock{ background:#fff; border-color:rgba(124,58,237,0.2); }
-[data-theme="dark"]  .wlc-feat-mock{ background:var(--surface); }
+/* Card styles & themes */
+.wlc-feat-mock { border:1.5px solid rgba(124,58,237,0.22); }
+[data-theme="light"] .wlc-feat-mock { background:#fff; border-color:rgba(124,58,237,0.2); }
+[data-theme="dark"]  .wlc-feat-mock { background:var(--surface); }
 
-/* Focus Timer */
-.wlc-feat-focus{
-  border:1.5px solid rgba(16,185,129,0.22);
-}
-[data-theme="light"] .wlc-feat-focus{ background:#fff; border-color:rgba(16,185,129,0.2); }
-[data-theme="dark"]  .wlc-feat-focus{ background:var(--surface); }
+.wlc-feat-focus { border:1.5px solid rgba(16,185,129,0.22); }
+[data-theme="light"] .wlc-feat-focus { background:#fff; border-color:rgba(16,185,129,0.2); }
+[data-theme="dark"]  .wlc-feat-focus { background:var(--surface); }
 
-/* Progress */
-.wlc-feat-progress{
-  border:1.5px solid rgba(249,115,22,0.22);
-}
-[data-theme="light"] .wlc-feat-progress{ background:#fff; border-color:rgba(249,115,22,0.2); }
-[data-theme="dark"]  .wlc-feat-progress{ background:var(--surface); }
+.wlc-feat-ai { border:1.5px solid rgba(91,91,246,0.22); }
+[data-theme="light"] .wlc-feat-ai { background:#fff; border-color:rgba(91,91,246,0.2); }
+[data-theme="dark"]  .wlc-feat-ai { background:var(--surface); }
 
-/* Playlist */
-.wlc-feat-playlist{
-  border:1.5px solid rgba(239,68,68,0.22);
-}
-[data-theme="light"] .wlc-feat-playlist{ background:#fff; border-color:rgba(239,68,68,0.2); }
-[data-theme="dark"]  .wlc-feat-playlist{ background:var(--surface); }
+.wlc-feat-playlist { border:1.5px solid rgba(239,68,68,0.22); }
+[data-theme="light"] .wlc-feat-playlist { background:#fff; border-color:rgba(239,68,68,0.2); }
+[data-theme="dark"]  .wlc-feat-playlist { background:var(--surface); }
+
+.wlc-feat-todo { border:1.5px solid rgba(14,165,233,0.22); }
+[data-theme="light"] .wlc-feat-todo { background:#fff; border-color:rgba(14,165,233,0.2); }
+[data-theme="dark"]  .wlc-feat-todo { background:var(--surface); }
+
+.wlc-feat-progress { border:1.5px solid rgba(249,115,22,0.22); }
+[data-theme="light"] .wlc-feat-progress { background:#fff; border-color:rgba(249,115,22,0.2); }
+[data-theme="dark"]  .wlc-feat-progress { background:var(--surface); }
 
 .wlc-feat-icon-wrap{
-  width:40px; height:40px; border-radius:12px;
+  width:34px; height:34px; border-radius:10px;
   display:flex; align-items:center; justify-content:center;
-  font-size:17px; flex-shrink:0;
+  font-size:15px; flex-shrink:0;
 }
-.wlc-feat-mock    .wlc-feat-icon-wrap{ background:rgba(124,58,237,0.12); color:#7C3AED; }
-.wlc-feat-focus   .wlc-feat-icon-wrap{ background:rgba(16,185,129,0.12);  color:#10B981; }
-.wlc-feat-progress .wlc-feat-icon-wrap{ background:rgba(249,115,22,0.12); color:#F97316; }
+.wlc-feat-mock     .wlc-feat-icon-wrap{ background:rgba(124,58,237,0.12); color:#7C3AED; }
+.wlc-feat-focus    .wlc-feat-icon-wrap{ background:rgba(16,185,129,0.12);  color:#10B981; }
+.wlc-feat-ai       .wlc-feat-icon-wrap{ background:rgba(91,91,246,0.12);  color:#5B5BF6; }
 .wlc-feat-playlist .wlc-feat-icon-wrap{ background:rgba(239,68,68,0.12);  color:#EF4444; }
+.wlc-feat-todo     .wlc-feat-icon-wrap{ background:rgba(14,165,233,0.12); color:#0EA5E9; }
+.wlc-feat-progress .wlc-feat-icon-wrap{ background:rgba(249,115,22,0.12); color:#F97316; }
 
 .wlc-feat-label{
-  font-size:12.5px; font-weight:700; color:var(--text); line-height:1.3;
+  font-size:12px; font-weight:700; color:var(--text); line-height:1.25;
 }
 .wlc-feat-sub{
-  font-size:10.5px; color:var(--text2); font-weight:500; line-height:1.4;
+  font-size:10px; color:var(--text2); font-weight:500; line-height:1.35;
   margin-top:2px;
 }
 
-/* AI badge on mock card */
-.wlc-ai-tag{
-  position:absolute; top:9px; right:9px;
-  font-size:8.5px; font-weight:800; letter-spacing:0.8px;
+/* Feature Badge Tags */
+.wlc-tag{
+  position:absolute; top:8px; right:8px;
+  font-size:8px; font-weight:800; letter-spacing:0.6px;
   text-transform:uppercase;
-  background:rgba(124,58,237,0.12);
-  border:1px solid rgba(124,58,237,0.3);
-  color:#7C3AED; padding:2px 7px; border-radius:50px;
+  padding:2px 6px; border-radius:50px;
+  line-height:1;
 }
-
-/* AI Quiz badge on playlist card */
-.wlc-quiz-tag{
-  position:absolute; top:9px; right:9px;
-  font-size:8.5px; font-weight:800; letter-spacing:0.8px;
-  text-transform:uppercase;
-  background:rgba(239,68,68,0.10);
-  border:1px solid rgba(239,68,68,0.25);
-  color:#EF4444; padding:2px 7px; border-radius:50px;
-}
+.wlc-feat-mock     .wlc-tag{ background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.28); color:#7C3AED; }
+.wlc-feat-focus    .wlc-tag{ background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.28); color:#10B981; }
+.wlc-feat-ai       .wlc-tag{ background:rgba(91,91,246,0.12); border:1px solid rgba(91,91,246,0.28); color:#5B5BF6; }
+.wlc-feat-playlist .wlc-tag{ background:rgba(239,68,68,0.10);  border:1px solid rgba(239,68,68,0.25);  color:#EF4444; }
+.wlc-feat-todo     .wlc-tag{ background:rgba(14,165,233,0.12); border:1px solid rgba(14,165,233,0.28); color:#0EA5E9; }
+.wlc-feat-progress .wlc-tag{ background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.28); color:#F97316; }
 
 /* ─── AGREE CARD ─── */
 .wlc-agree-card{
   background:var(--surface);
   border:1px solid var(--border);
-  border-radius:16px;
-  padding:14px 16px;
-  margin:4px 0 10px 0;
+  border-radius:15px;
+  padding:12px 14px;
+  margin:2px 0 10px 0;
   box-shadow:var(--shadow-sm);
 }
 .wlc-agree-row{
   display:flex;
   align-items:flex-start;
-  gap:10px;
-  font-size:12.5px;
+  gap:9px;
+  font-size:12px;
   color:var(--text2);
-  line-height:1.55;
+  line-height:1.5;
 }
 .wlc-agree-row input[type="checkbox"]{
-  margin-top:3px;
+  margin-top:2px;
   width:16px; height:16px;
   accent-color:var(--accent);
   cursor:pointer; flex-shrink:0;
@@ -353,11 +347,11 @@ canvas{
 /* ─── CTA BUTTON ─── */
 .wlc-btn{
   width:100%;
-  padding:15px 24px;
+  padding:14px 22px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
   color:#fff;
   font-weight:700;
-  font-size:15px;
+  font-size:14.5px;
   border:none;
   border-radius:14px;
   cursor:pointer;
@@ -389,8 +383,8 @@ canvas{
 .popup-box{
   background:var(--surface);
   border:1px solid var(--border);
-  padding:28px 24px 24px 24px;
-  border-radius:26px;
+  padding:26px 22px 22px 22px;
+  border-radius:24px;
   text-align:center;
   width:92%;
   max-width:340px;
@@ -408,26 +402,26 @@ canvas{
   to{ transform:translateY(0) scale(1); opacity:1; }
 }
 .popup-icon-wrap{
-  width:52px; height:52px; border-radius:16px;
+  width:48px; height:48px; border-radius:14px;
   background:rgba(91,91,246,0.12); border:1.5px solid rgba(91,91,246,0.2);
   display:flex; align-items:center; justify-content:center;
-  font-size:22px; color:var(--accent);
-  margin:0 auto 14px auto;
+  font-size:20px; color:var(--accent);
+  margin:0 auto 12px auto;
 }
 .popup-box h3{
   font-size:16px; font-weight:800; color:var(--text);
-  margin-bottom:8px; letter-spacing:-0.2px;
+  margin-bottom:6px; letter-spacing:-0.2px;
 }
 .popup-box p{
-  font-size:13px;
+  font-size:12.5px;
   color:var(--text2);
-  line-height:1.55;
+  line-height:1.5;
   margin-bottom:0;
 }
 .popup-box button{
-  margin-top:20px;
+  margin-top:18px;
   width:100%;
-  padding:12px 28px;
+  padding:12px 24px;
   border:none;
   border-radius:12px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
@@ -439,23 +433,6 @@ canvas{
   box-shadow:0 4px 14px rgba(91,91,246,0.3);
 }
 .popup-box button:active{ transform:scale(0.97); }
-
-/* ── THEME TOGGLE IN HEADER ── */
-.wlc-theme-toggle {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-.wlc-theme-toggle:active { transform: scale(0.92); }
 
 /* ── APP LAUNCH SPLASH SCREEN (Native PWA Open Feel) ── */
 .app-splash-overlay {
@@ -594,14 +571,9 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
       <span class="wlc-logo-sub">Your exam partner</span>
     </div>
   </div>
-  <div style="display:flex; align-items:center; gap:8px;">
-    <button class="wlc-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">
-      <i class="fa-solid fa-moon" id="themeIcon"></i>
-    </button>
-    <div class="wlc-header-badge new-member" id="headerBadge">
-      <i class="fa-solid fa-sparkles" style="font-size:10px;"></i>
-      <span id="badgeText">New Member</span>
-    </div>
+  <div class="wlc-header-badge new-member" id="headerBadge">
+    <i class="fa-solid fa-sparkles" style="font-size:10px;"></i>
+    <span id="badgeText">New Member</span>
   </div>
 </header>
 
@@ -612,55 +584,81 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
   <div class="wlc-hero">
     <div class="wlc-avatar" id="avatar">U</div>
     <h1 class="wlc-hero-title" id="welcomeText">Welcome!</h1>
-    <p class="wlc-hero-sub">A distraction-free study platform built to help you stay focused, track progress and study smarter.</p>
+    <p class="wlc-hero-sub">A distraction-free study platform built to help you stay focused, track progress and score higher.</p>
   </div>
 
-  <!-- Feature Cards Grid -->
+  <!-- Feature Cards Grid (6 Compact Justified Features) -->
   <div class="wlc-features-grid">
 
-    <!-- Mock Tests -->
+    <!-- 1. Mock Tests -->
     <div class="wlc-feat-card wlc-feat-mock">
-      <div class="wlc-ai-tag">AI Analysis</div>
+      <div class="wlc-tag">AI Analysis</div>
       <div class="wlc-feat-icon-wrap">
         <i class="fa-solid fa-file-pen"></i>
       </div>
       <div>
-        <div class="wlc-feat-label">Mock Tests</div>
-        <div class="wlc-feat-sub">JEE, NEET &amp; Boards with detailed AI analysis</div>
+        <div class="wlc-feat-label">Mock Tests &amp; PYQs</div>
+        <div class="wlc-feat-sub">JEE, NEET &amp; Boards with live AI analytics</div>
       </div>
     </div>
 
-    <!-- Focus Timer -->
+    <!-- 2. Focus Timer -->
     <div class="wlc-feat-card wlc-feat-focus">
+      <div class="wlc-tag">Live Study</div>
       <div class="wlc-feat-icon-wrap">
         <i class="fa-solid fa-stopwatch"></i>
       </div>
       <div>
         <div class="wlc-feat-label">Focus Timer</div>
-        <div class="wlc-feat-sub">Smart sessions with global study rooms</div>
+        <div class="wlc-feat-sub">Smart sessions, sounds &amp; study rooms</div>
       </div>
     </div>
 
-    <!-- Progress -->
-    <div class="wlc-feat-card wlc-feat-progress">
+    <!-- 3. AI Study Buddy -->
+    <div class="wlc-feat-card wlc-feat-ai">
+      <div class="wlc-tag">24/7 AI</div>
       <div class="wlc-feat-icon-wrap">
-        <i class="fa-solid fa-chart-simple"></i>
+        <i class="fa-solid fa-robot"></i>
       </div>
       <div>
-        <div class="wlc-feat-label">Progress</div>
-        <div class="wlc-feat-sub">Weekly XP, streaks &amp; leaderboard</div>
+        <div class="wlc-feat-label">AI Study Buddy</div>
+        <div class="wlc-feat-sub">Instant doubt solving &amp; revision notes</div>
       </div>
     </div>
 
-    <!-- Playlist -->
+    <!-- 4. Video Lectures & Playlists -->
     <div class="wlc-feat-card wlc-feat-playlist">
-      <div class="wlc-quiz-tag">AI Quiz</div>
+      <div class="wlc-tag">AI Quiz</div>
       <div class="wlc-feat-icon-wrap">
         <i class="fa-solid fa-play-circle"></i>
       </div>
       <div>
-        <div class="wlc-feat-label">Playlists</div>
-        <div class="wlc-feat-sub">Subject-wise videos + AI quiz</div>
+        <div class="wlc-feat-label">Video Lectures</div>
+        <div class="wlc-feat-sub">Chapter playlists with post-video quizzes</div>
+      </div>
+    </div>
+
+    <!-- 5. Todo & Daily Planner -->
+    <div class="wlc-feat-card wlc-feat-todo">
+      <div class="wlc-tag">Daily Tasks</div>
+      <div class="wlc-feat-icon-wrap">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+      <div>
+        <div class="wlc-feat-label">Todo &amp; Planner</div>
+        <div class="wlc-feat-sub">Daily schedule tracker &amp; streak keeper</div>
+      </div>
+    </div>
+
+    <!-- 6. Progress & Leaderboard -->
+    <div class="wlc-feat-card wlc-feat-progress">
+      <div class="wlc-tag">Top Ranks</div>
+      <div class="wlc-feat-icon-wrap">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div>
+        <div class="wlc-feat-label">XP &amp; Leaderboard</div>
+        <div class="wlc-feat-sub">Weekly rankings, milestones &amp; badges</div>
       </div>
     </div>
 
@@ -699,58 +697,141 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
   </div>
 </div>
 
-<script>
-// ===== NEW MEMBER vs WELCOME BACK LOGIC =====
-const isReturning = localStorage.getItem("returningUser") === "yes";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_13GJOiLQwxsirfJ7T_4WinaxVmSp7fs",
+  authDomain: "untitled-world-2e645.firebaseapp.com",
+  projectId: "untitled-world-2e645",
+  storageBucket: "untitled-world-2e645.firebasestorage.app",
+  messagingSenderId: "990115586087",
+  appId: "1:990115586087:web:963f68bd59dec5ef0c6e02"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// Initial state from localStorage
+let isReturning = localStorage.getItem("returningUser") === "yes";
 const name = localStorage.getItem("userName") || "Learner";
 
 // Set avatar letter
-document.getElementById("avatar").innerText = name.charAt(0).toUpperCase();
+const avatarEl = document.getElementById("avatar");
+if (avatarEl) avatarEl.innerText = name.charAt(0).toUpperCase();
 
-if(isReturning){
-  // ── RETURNING USER ──
+function applyReturningUI() {
   document.getElementById("welcomeText").innerText = "Welcome back, " + name + "!";
   document.getElementById("badgeText").innerText = "Welcome Back";
   const badge = document.getElementById("headerBadge");
-  badge.classList.remove("new-member");
-  badge.classList.add("returning");
-  badge.querySelector("i").className = "fa-solid fa-hand-wave";
-  document.getElementById("agree").checked = true;
-  document.getElementById("exploreBtn").innerHTML =
-    '<i class="fa-solid fa-door-open"></i><span>Continue to App</span>';
-} else {
-  // ── FIRST TIME USER ──
-  document.getElementById("welcomeText").innerText = "Welcome, " + name + "!";
+  if (badge) {
+    badge.classList.remove("new-member");
+    badge.classList.add("returning");
+    const icon = badge.querySelector("i");
+    if (icon) icon.className = "fa-solid fa-hand-wave";
+  }
+  const agree = document.getElementById("agree");
+  if (agree) agree.checked = true;
+  const btn = document.getElementById("exploreBtn");
+  if (btn) btn.innerHTML = '<i class="fa-solid fa-door-open"></i><span>Continue to Dashboard</span>';
+  
+  // Hide confetti for returning user
+  const confetti = document.getElementById("confetti");
+  if (confetti) confetti.style.display = "none";
 }
 
-// ===== GO HOME =====
-function goHome(){
+function applyNewUserUI() {
+  document.getElementById("welcomeText").innerText = "Welcome, " + name + "!";
+  document.getElementById("badgeText").innerText = "New Member";
+  const badge = document.getElementById("headerBadge");
+  if (badge) {
+    badge.classList.add("new-member");
+    badge.classList.remove("returning");
+    const icon = badge.querySelector("i");
+    if (icon) icon.className = "fa-solid fa-sparkles";
+  }
+}
+
+if (isReturning) {
+  applyReturningUI();
+} else {
+  applyNewUserUI();
+}
+
+// Background Firestore check: verify database record if user cleared local cache
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        // If user already existed or completed onboarding in database
+        if (data.hasCompletedOnboarding === true || data.createdAt) {
+          isReturning = true;
+          localStorage.setItem("returningUser", "yes");
+          localStorage.setItem("seenWelcome", "yes");
+          applyReturningUI();
+        }
+      }
+    } catch(err) {
+      console.warn("User status sync notice:", err);
+    }
+  }
+});
+
+// ===== GO HOME ACTION =====
+window.goHome = async function() {
   const agree = document.getElementById("agree");
-  if(!agree.checked){
+  if (!agree.checked) {
     document.getElementById("agreePopup").style.display = "flex";
     return;
   }
+  
   localStorage.setItem("returningUser", "yes");
   localStorage.setItem("seenWelcome", "yes");
+
+  // Sync completed onboarding to Firestore in background
+  if (auth.currentUser) {
+    try {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(userRef, {
+        hasCompletedOnboarding: true,
+        lastActive: Date.now()
+      });
+    } catch(err) {
+      console.warn("Onboarding sync notice:", err);
+    }
+  }
+
   document.body.style.opacity = "0";
   document.body.style.transition = "opacity 0.2s ease";
-  setTimeout(() => { window.location.href = "dashboard-home.html"; }, 200);
-}
+  setTimeout(() => {
+    window.location.href = "dashboard-home.html";
+  }, 200);
+};
 
-function closeAgree(){
+window.closeAgree = function() {
   document.getElementById("agreePopup").style.display = "none";
-}
+};
 </script>
 
 <script>
 // ===== CONFETTI — only on first visit =====
-const canvas = document.getElementById("confetti");
-const ctx = canvas.getContext("2d");
-const isReturningUser = localStorage.getItem("returningUser") === "yes";
+(function() {
+  const canvas = document.getElementById("confetti");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const isReturningUser = localStorage.getItem("returningUser") === "yes";
 
-if(isReturningUser){
-  canvas.style.display = "none";
-} else {
+  if(isReturningUser){
+    canvas.style.display = "none";
+    return;
+  }
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
@@ -760,7 +841,6 @@ if(isReturningUser){
   });
 
   const pieces = [];
-  // Colours that match dashboard palette, no neon
   const colors = ["#5B5BF6","#7C3AED","#10B981","#F97316","#EF4444","#0EA5E9","#FBBF24"];
 
   for(let i = 0; i < 110; i++){
@@ -776,6 +856,10 @@ if(isReturningUser){
   }
 
   function updateConfetti(){
+    if (localStorage.getItem("returningUser") === "yes") {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     pieces.forEach(p => {
       p.y += p.speed;
@@ -792,37 +876,7 @@ if(isReturningUser){
     requestAnimationFrame(updateConfetti);
   }
   updateConfetti();
-}
-</script>
-
-<script>
-(function(){
-  function syncThemeColor(){
-    var isDark=document.documentElement.getAttribute("data-theme")==="dark";
-    var metas=document.querySelectorAll("meta[name='theme-color']");
-    metas.forEach(function(m){ m.removeAttribute("media"); m.content=isDark?"#0B1220":"#ffffff"; });
-  }
-  syncThemeColor();
-  new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 })();
-
-// Theme toggle handler
-function updateThemeIcon() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const icon = document.getElementById('themeIcon');
-  if (icon) {
-    icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-  }
-}
-updateThemeIcon();
-
-window.toggleTheme = function() {
-  const current = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('theme', next);
-  document.documentElement.setAttribute('data-theme', next);
-  updateThemeIcon();
-};
 
 // Opening Splash Screen Dismissal (Native PWA Feel — once per session)
 (function() {
@@ -845,5 +899,6 @@ window.toggleTheme = function() {
   }
 })();
 </script>
+
 </body>
 </html>
