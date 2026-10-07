@@ -1835,124 +1835,91 @@ input::placeholder { color: var(--text3); }
   cursor: grabbing;
 }
 
-/* YouTube style auto-hiding Zoom In / Zoom Out controls */
-.video-zoom-bar {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  z-index: 25;
-  display: flex;
+/* ── PERMANENT VIDEO ZOOM CONTROLS (IN NOTES TOOLBAR — NEVER COVERS VIDEO) ── */
+.video-zoom-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 3px;
-  background: rgba(15, 23, 42, 0.84);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 99px;
+  gap: 2px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
   padding: 3px 6px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-  transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease;
-  opacity: 1;
-  pointer-events: auto;
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: 'Poppins', sans-serif;
+  transition: var(--t);
+  flex-shrink: 0;
 }
-.video-zoom-bar.autohide {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-5px);
-  visibility: hidden;
+.video-zoom-pill:hover {
+  border-color: var(--accent);
 }
-
-.zoom-bar-btn {
+.vzp-btn {
   background: transparent;
   border: none;
-  color: #fff;
-  width: 26px;
-  height: 26px;
-  display: flex;
+  color: var(--text);
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
   padding: 0;
   margin: 0;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
-.zoom-bar-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
+.vzp-btn:hover {
+  background: var(--surface);
+  color: var(--accent);
 }
-.zoom-bar-btn:active {
+.vzp-btn:active {
   transform: scale(0.88);
 }
-
-.zoom-level-label {
-  color: #fff;
-  font-size: 11px;
+.vzp-label {
+  color: var(--text);
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 2px 6px;
-  min-width: 38px;
+  letter-spacing: 0.2px;
+  padding: 2px 4px;
+  min-width: 36px;
   text-align: center;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.15s ease;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.zoom-level-label:hover {
-  background: rgba(255, 255, 255, 0.16);
+.vzp-label:hover {
+  background: var(--surface);
+  color: var(--accent);
 }
-
-.zoom-bar-reset-btn {
-  background: rgba(239, 68, 68, 0.25);
-  border: none;
-  color: #fca5a5;
+.vzp-reset {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--red, #EF4444);
   width: 22px;
   height: 22px;
   display: none;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
   padding: 0;
   margin-left: 2px;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: transform 0.1s ease, background 0.15s ease;
 }
-.zoom-bar-reset-btn.visible {
-  display: flex;
+.vzp-reset.visible {
+  display: inline-flex;
 }
-.zoom-bar-reset-btn:hover {
-  background: rgba(239, 68, 68, 0.45);
+.vzp-reset:hover {
+  background: rgba(239, 68, 68, 0.22);
 }
-.zoom-bar-reset-btn:active {
-  transform: scale(0.88);
-}
-
-/* YouTube style zoom pill indicator */
-.video-zoom-badge {
-  position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-10px) scale(0.9);
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #fff;
-  padding: 5px 14px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 22;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.video-zoom-badge.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
+.vzp-reset:active {
+  transform: scale(0.9);
 }
 
 /* Fullscreen / Landscape modes */
@@ -2872,11 +2839,10 @@ if (_flBtn) {
 }
 flShowBtn();
 
-// Initialize YouTube-style auto-hiding zoom controls & reset zoom to 100%
+// Reset video zoom to 100% and initialize pan listeners
 try {
   resetVideoZoom();
   initZoomPanControls();
-  showZoomBar(true);
 } catch(e) {}
 
 }
@@ -3011,34 +2977,16 @@ function closePlayer() {
 }
 
 /* ════════════════════════════════════════════════════════════
-   🔍 YOUTUBE-STYLE PINCH TO ZOOM & PAN ENGINE
-    - YouTube-style Auto-Hiding Zoom In / Zoom Out Controls
-    - Unblocked YouTube iframe (100% native clicks, taps, settings, play/pause)
-    - Auto-hides after 2.8s of inactivity, smoothly reappears on interaction
-    - Drag-to-pan when zoomed in (> 100%), instant reset to 100%
+   🔍 YOUTUBE VIDEO ZOOM & PAN ENGINE
+   - Clean, permanent controls in Notes header (never covers video)
+   - Unblocked YouTube iframe (100% native clicks, taps, settings, play/pause)
+   - Drag-to-pan when zoomed in (> 100%), instant reset to 100%
+   - Accessible anytime throughout the lecture!
 ════════════════════════════════════════════════════════════ */
 let videoZoomScale = 1.0;
 let videoPanX = 0;
 let videoPanY = 0;
-let zoomBadgeTimer = null;
-let zoomAutoHideTimer = null;
 let zoomPanInitialized = false;
-
-function showZoomBar(autoHide = true) {
-  const bar = document.getElementById("videoZoomBar");
-  if (!bar) return;
-  bar.classList.remove("autohide");
-  if (zoomAutoHideTimer) clearTimeout(zoomAutoHideTimer);
-  if (autoHide) {
-    zoomAutoHideTimer = setTimeout(() => {
-      // Don't auto-hide if user is actively hovering on the zoom bar
-      try {
-        if (bar.matches(":hover")) return;
-      } catch (err) {}
-      bar.classList.add("autohide");
-    }, 2800);
-  }
-}
 
 function applyVideoTransform(animate = false) {
   const container = document.getElementById("playerVideoContainer");
@@ -3081,33 +3029,17 @@ function applyVideoTransform(animate = false) {
   }
 }
 
-function showZoomBadge(text) {
-  const badge = document.getElementById("videoZoomBadge");
-  const textEl = document.getElementById("videoZoomBadgeText");
-  if (!badge) return;
-  if (textEl) textEl.textContent = text;
-  badge.classList.add("visible");
-  
-  if (zoomBadgeTimer) clearTimeout(zoomBadgeTimer);
-  zoomBadgeTimer = setTimeout(() => {
-    if (badge) badge.classList.remove("visible");
-  }, 1300);
-}
-
 window.zoomVideoIn = function(e) {
   if (e) e.stopPropagation();
-  showZoomBar(true);
   const steps = [1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
   let nextScale = steps.find(s => s > videoZoomScale + 0.05);
   if (!nextScale) nextScale = Math.min(3.0, videoZoomScale + 0.25);
   videoZoomScale = Math.round(nextScale * 100) / 100;
   applyVideoTransform(true);
-  showZoomBadge(Math.round(videoZoomScale * 100) + "%");
 };
 
 window.zoomVideoOut = function(e) {
   if (e) e.stopPropagation();
-  showZoomBar(true);
   const steps = [3.0, 2.5, 2.0, 1.75, 1.5, 1.25, 1.0];
   let prevScale = steps.find(s => s < videoZoomScale - 0.05);
   if (!prevScale) prevScale = Math.max(1.0, videoZoomScale - 0.25);
@@ -3128,7 +3060,6 @@ window.zoomVideoOut = function(e) {
     }
   }
   applyVideoTransform(true);
-  showZoomBadge(Math.round(videoZoomScale * 100) + "%");
 };
 
 window.resetVideoZoom = function(e) {
@@ -3137,29 +3068,14 @@ window.resetVideoZoom = function(e) {
   videoPanX = 0;
   videoPanY = 0;
   applyVideoTransform(true);
-  showZoomBadge("100%");
-  showZoomBar(true);
 };
 
 function initZoomPanControls() {
   if (zoomPanInitialized) return;
   const wrapper = document.getElementById("videoWrapper");
   const panLayer = document.getElementById("videoPanLayer");
-  const zoomBar = document.getElementById("videoZoomBar");
   if (!wrapper || !panLayer) return;
   zoomPanInitialized = true;
-
-  // Auto-hide controller interactions: shows on movement or touch, hides after 2.8s
-  wrapper.addEventListener("mousemove", () => showZoomBar(true));
-  wrapper.addEventListener("mouseenter", () => showZoomBar(true));
-  wrapper.addEventListener("touchstart", () => showZoomBar(true), { passive: true });
-
-  if (zoomBar) {
-    zoomBar.addEventListener("mouseenter", () => {
-      if (zoomAutoHideTimer) clearTimeout(zoomAutoHideTimer);
-    });
-    zoomBar.addEventListener("mouseleave", () => showZoomBar(true));
-  }
 
   // Panning when zoomed in (> 100%)
   let isDragging = false;
@@ -3203,7 +3119,7 @@ function initZoomPanControls() {
     applyVideoTransform(true);
   };
 
-  // Mouse pan (only triggered on panLayer when active, i.e., zoomed in)
+  // Mouse pan (only on panLayer when active, i.e., zoomed in)
   panLayer.addEventListener("mousedown", (e) => {
     e.preventDefault();
     onStart(e.clientX, e.clientY);
@@ -3238,7 +3154,6 @@ function initZoomPanControls() {
       lastTap = 0;
     } else {
       lastTap = now;
-      showZoomBar(true);
     }
   });
 }
@@ -4474,36 +4389,22 @@ window.updateVideoTitle = function(id, newTitle) {
     </div>
     <div class="video-wrapper" id="videoWrapper">
         <div class="player-video-container" id="playerVideoContainer"></div>
-        
         <!-- Pan layer: strictly pointer-events:none at 100% scale so all YouTube iframe taps/clicks work natively!
              Only active when scale > 1.0 to let users drag/pan the enlarged video frame -->
         <div class="video-pan-layer" id="videoPanLayer"></div>
-
-        <!-- Sleek Auto-Hiding Zoom In / Zoom Out Controls: Fades out after 2.8s of inactivity, never obstructs YouTube taps -->
-        <div class="video-zoom-bar autohide" id="videoZoomBar">
-          <button type="button" class="zoom-bar-btn" id="zoomOutBtn" onclick="zoomVideoOut(event)" title="Zoom Out" aria-label="Zoom Out">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-          <span class="zoom-level-label" id="zoomLevelText" onclick="resetVideoZoom(event)" title="Click to Reset (100%)">100%</span>
-          <button type="button" class="zoom-bar-btn" id="zoomInBtn" onclick="zoomVideoIn(event)" title="Zoom In" aria-label="Zoom In">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-          <button type="button" class="zoom-bar-reset-btn" id="zoomQuickResetBtn" onclick="resetVideoZoom(event)" title="Reset Zoom to 100%" aria-label="Reset Zoom">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          </button>
-        </div>
-
-        <!-- Zoom Floating Badge indicator -->
-        <div class="video-zoom-badge" id="videoZoomBadge">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-          <span id="videoZoomBadgeText">100%</span>
-        </div>
     </div>
     <div class="notes-section">
         <div class="notes-header-row">
             <h3 id="notesToggleBtn" onclick="toggleNotesSection()" style="cursor:pointer; user-select:none;">📝 My Notes</h3>
             <div class="notes-header-actions">
-            <button class="report-issue-btn" id="reportIssueBtn" onclick="openReportIssueModal()" title="Report an issue">
+                <!-- 🔍 Video Zoom Controls (Always accessible, outside video screen, never blocks video) -->
+                <div class="video-zoom-pill" id="videoZoomPill" title="Zoom Video">
+                    <button type="button" class="vzp-btn" onclick="zoomVideoOut(event)" title="Zoom Out" aria-label="Zoom Out">−</button>
+                    <span class="vzp-label" id="zoomLevelText" onclick="resetVideoZoom(event)" title="Click to Reset (100%)">100%</span>
+                    <button type="button" class="vzp-btn" onclick="zoomVideoIn(event)" title="Zoom In" aria-label="Zoom In">+</button>
+                    <button type="button" class="vzp-reset" id="zoomQuickResetBtn" onclick="resetVideoZoom(event)" title="Reset to 100%" aria-label="Reset Zoom">↺</button>
+                </div>
+                <button class="report-issue-btn" id="reportIssueBtn" onclick="openReportIssueModal()" title="Report an issue">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="16" x2="12" y2="11"/>
