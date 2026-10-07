@@ -1793,7 +1793,7 @@ input::placeholder { color: var(--text3); }
 
 /* fixed-playlist-header — already defined above */
 
-/* ── VIDEO WRAPPER & YOUTUBE ZOOM CONTROLS ── */
+/* ── VIDEO WRAPPER & FULLSCREEN LANDSCAPE ── */
 .video-wrapper {
   position: relative;
   width: 100%;
@@ -1801,8 +1801,6 @@ input::placeholder { color: var(--text3); }
   background: #000;
   flex-shrink: 0;
   overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
 }
 .video-wrapper .player-video-container {
   position: absolute;
@@ -1811,115 +1809,6 @@ input::placeholder { color: var(--text3); }
   width: 100%;
   height: 100%;
   aspect-ratio: unset;
-  transform-origin: center center;
-  will-change: transform;
-}
-.video-wrapper .player-video-container.animating {
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-}
-
-/* Pan layer: STRICTLY pointer-events: none at 100% zoom so ALL YouTube taps pass through!
-   Only activated (pointer-events: auto) when user explicitly zooms in > 100% */
-.video-pan-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 8;
-  pointer-events: none;
-  touch-action: none;
-  cursor: grab;
-}
-.video-pan-layer.active {
-  pointer-events: auto;
-}
-.video-pan-layer.dragging {
-  cursor: grabbing;
-}
-
-/* ── PERMANENT VIDEO ZOOM CONTROLS (IN NOTES TOOLBAR — NEVER COVERS VIDEO) ── */
-.video-zoom-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 3px 6px;
-  box-shadow: var(--shadow-sm);
-  user-select: none;
-  -webkit-user-select: none;
-  font-family: 'Poppins', sans-serif;
-  transition: var(--t);
-  flex-shrink: 0;
-}
-.video-zoom-pill:hover {
-  border-color: var(--accent);
-}
-.vzp-btn {
-  background: transparent;
-  border: none;
-  color: var(--text);
-  width: 25px;
-  height: 25px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0;
-  margin: 0;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
-}
-.vzp-btn:hover {
-  background: var(--surface);
-  color: var(--accent);
-}
-.vzp-btn:active {
-  transform: scale(0.88);
-}
-.vzp-label {
-  color: var(--text);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  padding: 2px 4px;
-  min-width: 36px;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.vzp-label:hover {
-  background: var(--surface);
-  color: var(--accent);
-}
-.vzp-reset {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: var(--red, #EF4444);
-  width: 22px;
-  height: 22px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 0;
-  margin-left: 2px;
-  transition: transform 0.1s ease, background 0.15s ease;
-}
-.vzp-reset.visible {
-  display: inline-flex;
-}
-.vzp-reset:hover {
-  background: rgba(239, 68, 68, 0.22);
-}
-.vzp-reset:active {
-  transform: scale(0.9);
 }
 
 /* Fullscreen / Landscape modes */
@@ -2976,187 +2865,9 @@ function closePlayer() {
     } catch(e) {}
 }
 
-/* ════════════════════════════════════════════════════════════
-   🔍 YOUTUBE VIDEO ZOOM & PAN ENGINE
-   - Clean, permanent controls in Notes header (never covers video)
-   - Unblocked YouTube iframe (100% native clicks, taps, settings, play/pause)
-   - Drag-to-pan when zoomed in (> 100%), instant reset to 100%
-   - Accessible anytime throughout the lecture!
-════════════════════════════════════════════════════════════ */
-let videoZoomScale = 1.0;
-let videoPanX = 0;
-let videoPanY = 0;
-let zoomPanInitialized = false;
-
-function applyVideoTransform(animate = false) {
-  const container = document.getElementById("playerVideoContainer");
-  if (!container) return;
-  
-  if (animate) {
-    container.classList.add("animating");
-    setTimeout(() => {
-      if (container) container.classList.remove("animating");
-    }, 300);
-  } else {
-    container.classList.remove("animating");
-  }
-
-  container.style.transform = `translate(${videoPanX}px, ${videoPanY}px) scale(${videoZoomScale})`;
-
-  // Update Zoom Text & Quick Reset Button
-  const zoomText = document.getElementById("zoomLevelText");
-  if (zoomText) {
-    zoomText.textContent = Math.round(videoZoomScale * 100) + "%";
-  }
-  const quickResetBtn = document.getElementById("zoomQuickResetBtn");
-  if (quickResetBtn) {
-    if (videoZoomScale > 1.02) {
-      quickResetBtn.classList.add("visible");
-    } else {
-      quickResetBtn.classList.remove("visible");
-    }
-  }
-
-  // Pan layer is STRICTLY active ONLY when zoomed in (> 100%)
-  // At 100%, it remains pointer-events: none so native YouTube taps & clicks are NEVER blocked!
-  const panLayer = document.getElementById("videoPanLayer");
-  if (panLayer) {
-    if (videoZoomScale > 1.05) {
-      panLayer.classList.add("active");
-    } else {
-      panLayer.classList.remove("active");
-    }
-  }
-}
-
-window.zoomVideoIn = function(e) {
-  if (e) e.stopPropagation();
-  const steps = [1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
-  let nextScale = steps.find(s => s > videoZoomScale + 0.05);
-  if (!nextScale) nextScale = Math.min(3.0, videoZoomScale + 0.25);
-  videoZoomScale = Math.round(nextScale * 100) / 100;
-  applyVideoTransform(true);
-};
-
-window.zoomVideoOut = function(e) {
-  if (e) e.stopPropagation();
-  const steps = [3.0, 2.5, 2.0, 1.75, 1.5, 1.25, 1.0];
-  let prevScale = steps.find(s => s < videoZoomScale - 0.05);
-  if (!prevScale) prevScale = Math.max(1.0, videoZoomScale - 0.25);
-  videoZoomScale = Math.round(prevScale * 100) / 100;
-  if (videoZoomScale <= 1.02) {
-    videoZoomScale = 1.0;
-    videoPanX = 0;
-    videoPanY = 0;
-  } else {
-    // Reclamp pan within bounds
-    const wrapper = document.getElementById("videoWrapper");
-    if (wrapper) {
-      const rect = wrapper.getBoundingClientRect();
-      const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
-      const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
-      videoPanX = Math.max(-maxPanX, Math.min(maxPanX, videoPanX));
-      videoPanY = Math.max(-maxPanY, Math.min(maxPanY, videoPanY));
-    }
-  }
-  applyVideoTransform(true);
-};
-
-window.resetVideoZoom = function(e) {
-  if (e) e.stopPropagation();
-  videoZoomScale = 1.0;
-  videoPanX = 0;
-  videoPanY = 0;
-  applyVideoTransform(true);
-};
-
-function initZoomPanControls() {
-  if (zoomPanInitialized) return;
-  const wrapper = document.getElementById("videoWrapper");
-  const panLayer = document.getElementById("videoPanLayer");
-  if (!wrapper || !panLayer) return;
-  zoomPanInitialized = true;
-
-  // Panning when zoomed in (> 100%)
-  let isDragging = false;
-  let startX = 0, startY = 0;
-  let lastX = 0, lastY = 0;
-
-  const onStart = (clientX, clientY) => {
-    if (videoZoomScale <= 1.05) return;
-    isDragging = true;
-    startX = clientX;
-    startY = clientY;
-    lastX = videoPanX;
-    lastY = videoPanY;
-    panLayer.classList.add("dragging");
-  };
-
-  const onMove = (clientX, clientY) => {
-    if (!isDragging || videoZoomScale <= 1.05) return;
-    const dx = clientX - startX;
-    const dy = clientY - startY;
-
-    const rect = wrapper.getBoundingClientRect();
-    const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
-    const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
-
-    videoPanX = Math.max(-maxPanX - 25, Math.min(maxPanX + 25, lastX + dx));
-    videoPanY = Math.max(-maxPanY - 25, Math.min(maxPanY + 25, lastY + dy));
-    applyVideoTransform(false);
-  };
-
-  const onEnd = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    panLayer.classList.remove("dragging");
-
-    const rect = wrapper.getBoundingClientRect();
-    const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
-    const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
-    videoPanX = Math.max(-maxPanX, Math.min(maxPanX, videoPanX));
-    videoPanY = Math.max(-maxPanY, Math.min(maxPanY, videoPanY));
-    applyVideoTransform(true);
-  };
-
-  // Mouse pan (only on panLayer when active, i.e., zoomed in)
-  panLayer.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    onStart(e.clientX, e.clientY);
-  });
-  window.addEventListener("mousemove", (e) => {
-    if (isDragging) onMove(e.clientX, e.clientY);
-  });
-  window.addEventListener("mouseup", onEnd);
-
-  // Touch pan (only on panLayer when active)
-  panLayer.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 1) {
-      onStart(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: true });
-
-  panLayer.addEventListener("touchmove", (e) => {
-    if (isDragging && e.touches.length === 1) {
-      onMove(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: true });
-
-  panLayer.addEventListener("touchend", onEnd);
-  panLayer.addEventListener("touchcancel", onEnd);
-
-  // Double tap / double click on panLayer resets zoom to 100%
-  let lastTap = 0;
-  panLayer.addEventListener("click", (e) => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      resetVideoZoom(e);
-      lastTap = 0;
-    } else {
-      lastTap = now;
-    }
-  });
-}
+/* ── Video Player State Helpers ── */
+window.resetVideoZoom = function() {};
+function initZoomPanControls() {}
 
 /* ══════════════════════════════════════════
    📺 YOUTUBE FULLSCREEN & ORIENTATION CONTROLLER
@@ -4389,22 +4100,12 @@ window.updateVideoTitle = function(id, newTitle) {
     </div>
     <div class="video-wrapper" id="videoWrapper">
         <div class="player-video-container" id="playerVideoContainer"></div>
-        <!-- Pan layer: strictly pointer-events:none at 100% scale so all YouTube iframe taps/clicks work natively!
-             Only active when scale > 1.0 to let users drag/pan the enlarged video frame -->
-        <div class="video-pan-layer" id="videoPanLayer"></div>
     </div>
     <div class="notes-section">
         <div class="notes-header-row">
             <h3 id="notesToggleBtn" onclick="toggleNotesSection()" style="cursor:pointer; user-select:none;">📝 My Notes</h3>
             <div class="notes-header-actions">
-                <!-- 🔍 Video Zoom Controls (Always accessible, outside video screen, never blocks video) -->
-                <div class="video-zoom-pill" id="videoZoomPill" title="Zoom Video">
-                    <button type="button" class="vzp-btn" onclick="zoomVideoOut(event)" title="Zoom Out" aria-label="Zoom Out">−</button>
-                    <span class="vzp-label" id="zoomLevelText" onclick="resetVideoZoom(event)" title="Click to Reset (100%)">100%</span>
-                    <button type="button" class="vzp-btn" onclick="zoomVideoIn(event)" title="Zoom In" aria-label="Zoom In">+</button>
-                    <button type="button" class="vzp-reset" id="zoomQuickResetBtn" onclick="resetVideoZoom(event)" title="Reset to 100%" aria-label="Reset Zoom">↺</button>
-                </div>
-                <button class="report-issue-btn" id="reportIssueBtn" onclick="openReportIssueModal()" title="Report an issue">
+            <button class="report-issue-btn" id="reportIssueBtn" onclick="openReportIssueModal()" title="Report an issue">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="16" x2="12" y2="11"/>
