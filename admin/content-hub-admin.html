@@ -13,6 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>try{eruda.init();}catch(e){console.warn('Eruda init error:',e);}</script>
 
   <style>
     /* ============================================================
@@ -1139,8 +1141,17 @@
 
 <script>
 window.signInWithGoogleContentAdmin = function () {
+  console.log("[ContentHubAdmin] signInWithGoogleContentAdmin called");
   if (typeof window._signInWithGoogleContentAdminImpl === "function") {
     window._signInWithGoogleContentAdminImpl();
+  } else {
+    window._signInContentAdminPending = true;
+    const btn = document.getElementById("googleSignInBtn") || document.querySelector(".auth-google-btn");
+    if (btn) {
+      btn.disabled = true;
+      const span = btn.querySelector("span");
+      if (span) span.textContent = "Connecting…";
+    }
   }
 };
 </script>
@@ -1152,6 +1163,8 @@ import {
   onSnapshot, serverTimestamp, increment, orderBy, limit
 } from "../firebase.js";
 import { sgpLogActivity } from "../activity-log.js";
+
+console.log("[ContentHubAdmin] Firebase Auth module loaded successfully");
 
 const $ = (id) => document.getElementById(id);
 let CURRENT_USER = null;
@@ -1175,15 +1188,14 @@ const state = {
 
 /* ═══════════════════════ AUTH ═══════════════════════ */
 function unlockContentAdmin(user) {
+  if (!user) return;
+  console.log("[ContentHubAdmin] unlockContentAdmin running for:", user.email || user.uid);
   const gate = $("authGate");
   const loading = $("authLoading");
 
   if (gate) {
     gate.classList.add("auth-exit");
-    setTimeout(() => {
-      gate.style.display = "none";
-      gate.classList.remove("auth-exit");
-    }, 300);
+    gate.style.display = "none";
   }
   if (loading) loading.style.display = "none";
 
@@ -1197,39 +1209,62 @@ function unlockContentAdmin(user) {
   if ($("adminAvatarSidebar")) $("adminAvatarSidebar").textContent = (displayName[0] || "A").toUpperCase();
 
   window.IS_SUB_ADMIN = true;
-  try { sgpLogActivity("login", "Signed in to Content Hub Admin"); } catch (e) {}
+  try { sgpLogActivity("login", "Signed in to Content Hub Admin"); } catch (e) { console.warn(e); }
 
-  bootData();
-  if (typeof window.initContentStudio === "function") window.initContentStudio();
-  if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
-  if (typeof window.initTaxonomy === "function") window.initTaxonomy();
+  try { bootData(); } catch (e) { console.error("bootData error:", e); }
+  try { if (typeof window.initContentStudio === "function") window.initContentStudio(); } catch (e) { console.error(e); }
+  try { if (typeof window.initMediaLibrary === "function") window.initMediaLibrary(); } catch (e) { console.error(e); }
+  try { if (typeof window.initTaxonomy === "function") window.initTaxonomy(); } catch (e) { console.error(e); }
 }
 
 window._signInWithGoogleContentAdminImpl = async function () {
+  console.log("[ContentHubAdmin] Starting Google Sign-In Popup...");
   const errEl = $("authError");
   if (errEl) errEl.textContent = "";
-  const btn = document.querySelector(".auth-google-btn") || $("googleSignInBtn");
-  if (btn) btn.disabled = true;
+  const btn = $("googleSignInBtn") || document.querySelector(".auth-google-btn");
+  if (btn) {
+    btn.disabled = true;
+    const span = btn.querySelector("span");
+    if (span) span.textContent = "Signing in…";
+  }
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    console.log("[ContentHubAdmin] Sign-in successful:", result?.user?.email);
     if (result && result.user) {
       unlockContentAdmin(result.user);
     }
   } catch (e) {
-    console.error("Content admin sign-in error:", e);
+    console.error("[ContentHubAdmin] Sign-in error:", e);
     if (errEl) errEl.textContent = "Sign-in failed: " + (e.message || "Try again.");
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      const span = btn.querySelector("span");
+      if (span) span.textContent = "Continue with Google";
+    }
   }
 };
 window.signInWithGoogleContentAdmin = window._signInWithGoogleContentAdminImpl;
 
-const googleBtnEl = document.querySelector(".auth-google-btn") || $("googleSignInBtn");
+// Execute pending sign-in if user clicked before module evaluated
+if (window._signInContentAdminPending) {
+  window._signInContentAdminPending = false;
+  window.signInWithGoogleContentAdmin();
+}
+
+const googleBtnEl = $("googleSignInBtn") || document.querySelector(".auth-google-btn");
 if (googleBtnEl) {
   googleBtnEl.addEventListener("click", window.signInWithGoogleContentAdmin);
 }
 
+// Immediate check if user is already initialized
+if (auth.currentUser) {
+  console.log("[ContentHubAdmin] Immediate auth.currentUser detected:", auth.currentUser.email);
+  unlockContentAdmin(auth.currentUser);
+}
+
 onAuthStateChanged(auth, (user) => {
+  console.log("[ContentHubAdmin] onAuthStateChanged fired:", user ? user.email : "no user");
   const gate = $("authGate");
   const loading = $("authLoading");
 

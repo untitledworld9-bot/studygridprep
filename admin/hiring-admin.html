@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>try{eruda.init();}catch(e){console.warn('Eruda init error:',e);}</script>
 
 <style>html{visibility:hidden;} html[data-theme]{visibility:visible;}</style>
 <script>
@@ -617,8 +619,17 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 
 <script>
 window.signInHiringAdmin = function() {
+  console.log("[HiringAdmin] signInHiringAdmin called");
   if (typeof window._signInHiringAdminImpl === 'function') {
     window._signInHiringAdminImpl();
+  } else {
+    window._signInHiringAdminPending = true;
+    const btn = document.getElementById("googleSignInBtn") || document.querySelector(".auth-google-btn");
+    if (btn) {
+      btn.disabled = true;
+      const span = btn.querySelector("span");
+      if (span) span.textContent = "Connecting…";
+    }
   }
 };
 </script>
@@ -631,6 +642,8 @@ import {
 } from "../firebase.js";
 import { sgpLogActivity } from "../activity-log.js";
 import * as CERT from "../cert-core.js";
+
+console.log("[HiringAdmin] Firebase Auth module loaded successfully");
 
 const $ = (id) => document.getElementById(id);
 let CURRENT_USER = null;
@@ -648,15 +661,14 @@ const state = {
    AUTH
 ================================================================ */
 function unlockHiringAdmin(user) {
+  if (!user) return;
+  console.log("[HiringAdmin] unlockHiringAdmin running for:", user.email || user.uid);
   const gate = $('authGate');
   const loading = $('authLoading');
 
   if (gate) {
     gate.classList.add('auth-exit');
-    setTimeout(() => {
-      gate.style.display = 'none';
-      gate.classList.remove('auth-exit');
-    }, 300);
+    gate.style.display = 'none';
   }
   if (loading) loading.style.display = 'none';
 
@@ -669,35 +681,58 @@ function unlockHiringAdmin(user) {
   if ($('adminAvatar')) $('adminAvatar').textContent = (displayName[0] || 'A').toUpperCase();
 
   window.IS_SUB_ADMIN = true;
-  try { sgpLogActivity('login', 'Signed in to Hiring Admin'); } catch (e) {}
-  bootData();
+  try { sgpLogActivity('login', 'Signed in to Hiring Admin'); } catch (e) { console.warn(e); }
+  try { bootData(); } catch (err) { console.error("bootData error:", err); }
 }
 
 window._signInHiringAdminImpl = async function(){
+  console.log("[HiringAdmin] Starting Google Sign-In Popup...");
   const errEl = $('authError');
   if (errEl) errEl.textContent = '';
-  const btn = document.querySelector('.auth-google-btn') || $('googleSignInBtn');
-  if (btn) btn.disabled = true;
+  const btn = $('googleSignInBtn') || document.querySelector('.auth-google-btn');
+  if (btn) {
+    btn.disabled = true;
+    const span = btn.querySelector("span");
+    if (span) span.textContent = "Signing in…";
+  }
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    console.log("[HiringAdmin] Sign-in successful:", result?.user?.email);
     if (result && result.user) {
       unlockHiringAdmin(result.user);
     }
   } catch (e) {
-    console.error("Hiring admin sign-in error:", e);
+    console.error("[HiringAdmin] Sign-in error:", e);
     if (errEl) errEl.textContent = 'Sign-in failed: ' + (e.message || "Try again.");
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      const span = btn.querySelector("span");
+      if (span) span.textContent = "Continue with Google";
+    }
   }
 };
 window.signInHiringAdmin = window._signInHiringAdminImpl;
 
-const googleBtnEl = document.querySelector('.auth-google-btn') || $('googleSignInBtn');
+// Execute pending sign-in if user clicked before module evaluated
+if (window._signInHiringAdminPending) {
+  window._signInHiringAdminPending = false;
+  window.signInHiringAdmin();
+}
+
+const googleBtnEl = $('googleSignInBtn') || document.querySelector('.auth-google-btn');
 if (googleBtnEl) {
   googleBtnEl.addEventListener('click', window.signInHiringAdmin);
 }
 
+// Immediate check if user is already initialized
+if (auth.currentUser) {
+  console.log("[HiringAdmin] Immediate auth.currentUser detected:", auth.currentUser.email);
+  unlockHiringAdmin(auth.currentUser);
+}
+
 onAuthStateChanged(auth, (user) => {
+  console.log("[HiringAdmin] onAuthStateChanged fired:", user ? user.email : "no user");
   const gate = $('authGate');
   const loading = $('authLoading');
 
