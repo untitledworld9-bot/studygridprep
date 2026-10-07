@@ -48,18 +48,30 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!user) {
     if (loading) loading.style.display = "none";
-    if (gate) gate.style.display = "flex";
+    if (gate) {
+      gate.classList.remove("auth-exit");
+      gate.style.display = "flex";
+    }
     return;
   }
 
-  if (gate) gate.style.display = "none";
+  if (gate && gate.style.display !== "none") {
+    gate.classList.add("auth-exit");
+    setTimeout(() => {
+      gate.style.display = "none";
+      gate.classList.remove("auth-exit");
+    }, 320);
+  }
   if (loading) loading.style.display = "flex";
 
   try {
     const subAdminDoc = await getDoc(doc(db, "subAdmins", user.email));
     if (!subAdminDoc.exists()) {
       if (loading) loading.style.display = "none";
-      if (gate) gate.style.display = "flex";
+      if (gate) {
+        gate.classList.remove("auth-exit");
+        gate.style.display = "flex";
+      }
       showError("Your account isn't appointed as a Sub-Admin yet. Ask the site owner to appoint you, then try again.");
       await signOut(auth);
       return;
@@ -67,7 +79,10 @@ onAuthStateChanged(auth, async (user) => {
   } catch (e) {
     console.error(e);
     if (loading) loading.style.display = "none";
-    if (gate) gate.style.display = "flex";
+    if (gate) {
+      gate.classList.remove("auth-exit");
+      gate.style.display = "flex";
+    }
     showError("Could not verify your access — please try again.");
     return;
   }

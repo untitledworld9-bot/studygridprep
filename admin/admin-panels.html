@@ -383,6 +383,28 @@
       transform: scale(0.92);
     }
 
+    /* ── PULL TO REFRESH & TOAST (EDTECH APP STYLE) ── */
+    .admin-pull-indicator {
+      height: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; font-size: 12.5px; font-weight: 700;
+      color: var(--accent);
+      transition: height 0.18s ease;
+      margin-bottom: 8px;
+    }
+    .admin-pull-indicator.active { height: 44px; }
+    .admin-pull-indicator.release i { transform: rotate(180deg); }
+    .admin-toast-pill {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: rgba(13, 17, 32, 0.94); backdrop-filter: blur(12px);
+      border: 1px solid rgba(91, 91, 246, 0.35);
+      color: #FFFFFF; font-size: 13px; font-weight: 700;
+      padding: 10px 20px; border-radius: 99px;
+      display: flex; align-items: center; gap: 9px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(91, 91, 246, 0.25);
+      z-index: 10000; animation: fadeUp 0.25s ease both;
+    }
+
     /* ── MAIN CONTAINER & OPENING STAGGER ANIMATIONS ── */
     .main-container {
       position: relative;
@@ -803,20 +825,53 @@
       font-weight: 500;
     }
 
-    /* ── RESPONSIVE TWEAKS ── */
-    @media (max-width: 768px) {
+    /* ── RESPONSIVE (LAPTOP, TABLET & PHONE) ── */
+    @media (min-width: 1025px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
+    }
+
+    /* Tablet (641px - 1024px) */
+    @media (min-width: 641px) and (max-width: 1024px) {
       .app-header {
-        padding: max(12px, env(safe-area-inset-top, 12px)) 16px 12px;
+        padding: max(14px, env(safe-area-inset-top, 14px)) 20px 14px;
+      }
+      .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 16px;
+      }
+      .main-container { padding: 22px 20px 54px; }
+      .hero-strip { padding: 22px 20px; }
+    }
+
+    /* Phone (<= 640px) */
+    @media (max-width: 640px) {
+      .app-header {
+        padding: max(12px, env(safe-area-inset-top, 12px)) 14px 12px;
       }
       .brand-text h1 { font-size: 15px; }
       .brand-logo-badge { width: 38px; height: 38px; font-size: 17px; }
-      .back-app-btn { padding: 7px 12px; font-size: 12px; }
+      .back-app-btn { padding: 7px 11px; font-size: 12px; min-height: 38px; }
       .theme-toggle-btn { width: 38px; height: 38px; font-size: 14px; }
-      .hero-strip { padding: 20px 18px; gap: 14px; }
-      .hero-left h2 { font-size: 19px; }
+      .hero-strip {
+        padding: 18px 14px; gap: 14px;
+        flex-direction: column; align-items: stretch;
+      }
+      .hero-left h2 { font-size: 18px; }
       .search-box-wrap { max-width: 100%; min-width: 100%; }
-      .cards-grid { grid-template-columns: 1fr; gap: 16px; }
-      .main-container { padding: 18px 16px 54px; }
+      .search-input {
+        font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+      }
+      .cards-grid { grid-template-columns: 1fr; gap: 14px; }
+      .main-container {
+        padding: 16px 14px;
+        padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+      }
+      .module-card { padding: 20px 18px; }
+      .card-cta-btn { min-height: 44px; }
+      .metrics-bar { grid-template-columns: 1fr; gap: 12px; }
     }
   </style>
 </head>
@@ -844,6 +899,11 @@
       </div>
 
       <div class="header-actions">
+        <button id="adminRefreshBtn" class="back-app-btn" onclick="refreshAdminPanelsHub()" title="Refresh Hub" style="padding:9px 13px;">
+          <i class="fa-solid fa-arrows-rotate" id="adminRefreshIcon"></i>
+          <span>Refresh</span>
+        </button>
+
         <a href="/dashboard-home.html" class="back-app-btn" onclick="navigateWithVeil(event, '/dashboard-home.html')" title="Back to Student App">
           <i class="fa-solid fa-arrow-left"></i>
           <span>App</span>
@@ -857,7 +917,13 @@
   </header>
 
   <!-- Main Content -->
-  <main class="main-container">
+  <main class="main-container" id="mainPanelsContainer">
+
+    <!-- Pull-To-Refresh Visual Indicator (EdTech App Experience) -->
+    <div id="adminPullRefresh" class="admin-pull-indicator">
+      <i class="fa-solid fa-arrow-down" id="adminPullIcon"></i>
+      <span id="adminPullText">Pull to refresh</span>
+    </div>
 
     <!-- Hero Search & Action Strip -->
     <section class="hero-strip">
@@ -1179,6 +1245,86 @@
         filterModules();
       });
     });
+
+    // ── 4. Refresh & Pull-To-Refresh (EdTech App Experience) ──
+    window.refreshAdminPanelsHub = async function() {
+      const icon = document.getElementById("adminRefreshIcon");
+      if (icon) icon.classList.add("fa-spin");
+      try {
+        filterModules();
+        const pill = document.createElement("div");
+        pill.className = "admin-toast-pill";
+        pill.innerHTML = '<i class="fa-solid fa-check"></i> Admin Hub refreshed';
+        document.body.appendChild(pill);
+        setTimeout(() => pill.remove(), 2000);
+      } catch(e) {
+        console.warn("[AdminHub Refresh]", e);
+      } finally {
+        setTimeout(() => { if (icon) icon.classList.remove("fa-spin"); }, 600);
+      }
+    };
+
+    (function setupPullToRefresh(){
+      const container = document.getElementById("mainPanelsContainer") || document.body;
+      const indicator = document.getElementById("adminPullRefresh");
+      const pullIcon = document.getElementById("adminPullIcon");
+      const pullText = document.getElementById("adminPullText");
+      if (!indicator) return;
+
+      let startY = 0;
+      let currentY = 0;
+      let isPulling = false;
+      const THRESHOLD = 65;
+
+      window.addEventListener("touchstart", (e) => {
+        if (window.scrollY <= 2) {
+          startY = e.touches[0].clientY;
+          isPulling = true;
+        } else {
+          isPulling = false;
+        }
+      }, { passive: true });
+
+      window.addEventListener("touchmove", (e) => {
+        if (!isPulling) return;
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        if (diff > 0 && window.scrollY <= 2) {
+          const pullDist = Math.min(diff * 0.45, 90);
+          indicator.classList.add("active");
+          indicator.style.height = pullDist + "px";
+          if (pullDist >= THRESHOLD) {
+            indicator.classList.add("release");
+            if (pullText) pullText.textContent = "Release to refresh";
+          } else {
+            indicator.classList.remove("release");
+            if (pullText) pullText.textContent = "Pull to refresh";
+          }
+        }
+      }, { passive: true });
+
+      window.addEventListener("touchend", async () => {
+        if (!isPulling) return;
+        isPulling = false;
+        const diff = currentY - startY;
+        const pullDist = Math.min(diff * 0.45, 90);
+        if (diff > 0 && pullDist >= THRESHOLD && window.scrollY <= 2) {
+          if (pullText) pullText.textContent = "Refreshing...";
+          if (pullIcon) pullIcon.className = "fa-solid fa-arrows-rotate fa-spin";
+          if (navigator.vibrate) try { navigator.vibrate(20); } catch(err){}
+          await window.refreshAdminPanelsHub();
+          setTimeout(() => {
+            indicator.style.height = "0px";
+            indicator.classList.remove("active", "release");
+            if (pullIcon) pullIcon.className = "fa-solid fa-arrow-down";
+            if (pullText) pullText.textContent = "Pull to refresh";
+          }, 500);
+        } else {
+          indicator.style.height = "0px";
+          indicator.classList.remove("active", "release");
+        }
+      }, { passive: true });
+    })();
   </script>
 </body>
 </html>

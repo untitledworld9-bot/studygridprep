@@ -230,17 +230,25 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!user) {
     if (loading) loading.style.display = "none";
-    if (gate) gate.style.display = "flex";
+    if (gate) {
+      gate.classList.remove("auth-exit");
+      gate.style.display = "flex";
+    }
     return;
   }
 
-  if (gate) gate.style.display = "none";
-  if (loading) loading.style.display = "flex";
+  if (gate && gate.style.display !== "none") {
+    gate.classList.add("auth-exit");
+    setTimeout(() => {
+      gate.style.display = "none";
+      gate.classList.remove("auth-exit");
+    }, 320);
+  }
+  if (loading) loading.style.display = "none";
 
   // No client-side email check — Firestore rules (isAdmin()) are the
   // real gate. If this account isn't an admin, subsequent reads will
   // simply fail/return empty rather than exposing real data.
-  if (loading) loading.style.display = "none";
   initAdminPanel(user);
   if (typeof window.initContentStudio === "function") window.initContentStudio();
   if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();

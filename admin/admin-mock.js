@@ -249,11 +249,20 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!user) {
     if (loading) loading.style.display = 'none';
-    if (gate) gate.style.display = 'flex';
+    if (gate) {
+      gate.classList.remove('auth-exit');
+      gate.style.display = 'flex';
+    }
     return;
   }
 
-  if (gate) gate.style.display = 'none';
+  if (gate && gate.style.display !== 'none') {
+    gate.classList.add('auth-exit');
+    setTimeout(() => {
+      gate.style.display = 'none';
+      gate.classList.remove('auth-exit');
+    }, 320);
+  }
   if (loading) loading.style.display = 'flex';
 
   let isAdmin = ADMIN_EMAILS.includes(user.email);
@@ -267,7 +276,10 @@ onAuthStateChanged(auth, async (user) => {
     } catch (e) {
       console.error(e);
       if (loading) loading.style.display = 'none';
-      if (gate) gate.style.display = 'flex';
+      if (gate) {
+        gate.classList.remove('auth-exit');
+        gate.style.display = 'flex';
+      }
       showAuthError('Could not verify your access — please try again.');
       return;
     }
@@ -275,7 +287,10 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!isAdmin && !isMockAdmin) {
     if (loading) loading.style.display = 'none';
-    if (gate) gate.style.display = 'flex';
+    if (gate) {
+      gate.classList.remove('auth-exit');
+      gate.style.display = 'flex';
+    }
     showAuthError("This account doesn't have Mock Admin access. Ask the site owner to appoint you, then try again.");
     await signOut(auth);
     return;

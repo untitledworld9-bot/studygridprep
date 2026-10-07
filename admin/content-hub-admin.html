@@ -95,34 +95,168 @@
       padding-right: env(safe-area-inset-right);
     }
 
-    /* ============================================================  AUTH GATE  */
+    /* ============================================================  AUTH GATE & LOGIN FLOW  */
     #authGate {
       position: fixed; inset: 0; z-index: 9999;
       background: var(--bg-void);
       display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      transition: opacity .35s cubic-bezier(0.16, 1, 0.3, 1), transform .35s cubic-bezier(0.16, 1, 0.3, 1), visibility .35s;
+    }
+    #authGate.auth-exit {
+      opacity: 0;
+      transform: scale(1.025);
+      pointer-events: none;
+    }
+    .auth-backdrop-glow {
+      position: absolute; width: 480px; height: 480px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,184,48,.16) 0%, rgba(124,92,252,.12) 40%, transparent 70%);
+      pointer-events: none; filter: blur(50px); animation: authGlowPulse 7s ease-in-out infinite alternate;
+    }
+    @keyframes authGlowPulse {
+      0%   { transform: scale(0.92) translate(-14px, -14px); opacity: 0.65; }
+      50%  { transform: scale(1.06) translate(10px, -6px); opacity: 0.95; }
+      100% { transform: scale(1.0) translate(14px, 14px); opacity: 0.75; }
     }
     .auth-box {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 48px 40px; width: 380px;
-      text-align: center; box-shadow: var(--shadow-card), var(--shadow-glow);
-      animation: fadeSlideUp .5s ease both;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 44px 38px;
+      width: 100%;
+      max-width: 410px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 24px 64px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07), 0 0 40px rgba(255,184,48,.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      animation: authEntrance .48s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
+    @keyframes authEntrance {
+      from { opacity: 0; transform: translateY(28px) scale(0.95); filter: blur(4px); }
+      to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    .auth-logo-badge {
+      width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 18px;
+      background: linear-gradient(135deg, rgba(255,184,48,.2), rgba(124,92,252,.22));
+      border: 1.5px solid rgba(255,184,48,.38);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 28px rgba(255,184,48,.22), inset 0 1px 0 rgba(255,255,255,.2);
+      overflow: hidden;
+      transition: transform .25s ease;
+    }
+    .auth-box:hover .auth-logo-badge { transform: scale(1.04); }
+    .auth-logo-badge img { width: 100%; height: 100%; object-fit: cover; }
     .auth-logo {
-      font-family: var(--font-display); font-size: 22px; font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 25px; font-weight: 800;
+      letter-spacing: -0.025em;
       background: linear-gradient(135deg, var(--accent-amber), var(--accent-violet));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
     }
-    .auth-sub { font-size: 12px; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 36px; }
+    .auth-sub {
+      font-size: 11.5px; color: var(--text-muted);
+      letter-spacing: .09em; text-transform: uppercase; font-weight: 700;
+      margin-bottom: 22px;
+    }
+    .auth-desc {
+      font-size: 13.5px; color: var(--text-secondary); line-height: 1.55;
+      margin-bottom: 28px;
+    }
     .auth-google-btn {
-      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 14px; background: var(--bg-input); border: 1px solid var(--border);
-      border-radius: var(--radius-md); color: var(--text-primary);
-      font-family: var(--font-body); font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: all .18s ease;
+      width: 100%; padding: 14px 20px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      cursor: pointer;
+      transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.05);
     }
-    .auth-google-btn:hover { border-color: var(--accent-amber); }
-    .auth-google-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .auth-error { color: var(--accent-red); font-size: 12px; margin-top: 16px; min-height: 18px; }
+    .auth-google-btn:hover {
+      border-color: var(--accent-amber);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,184,48,.2);
+      background: var(--bg-card-hover);
+    }
+    .auth-google-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+    .auth-google-btn svg { width: 19px; height: 19px; flex-shrink: 0; }
+    .auth-google-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .auth-error {
+      color: var(--accent-red); font-size: 12.5px; margin-top: 14px;
+      min-height: 18px; line-height: 1.4; font-weight: 600;
+    }
+
+    /* Checking Session Container (#authLoading) */
+    #authLoading {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-void); align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+      transition: opacity .3s ease;
+    }
+    .auth-loader-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 22px; padding: 36px 42px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      box-shadow: 0 20px 48px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06);
+      animation: authEntrance .35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .auth-spin-ring {
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 3px solid rgba(255,184,48,.18);
+      border-top-color: var(--accent-amber);
+      box-shadow: 0 0 18px rgba(255,184,48,.2);
+      animation: spin .75s linear infinite;
+    }
+    .auth-loader-text {
+      color: var(--text-primary); font-size: 13.5px; font-weight: 600;
+      letter-spacing: .02em;
+    }
+
+    /* Refresh button & pull-to-refresh */
+    .admin-refresh-btn {
+      background: rgba(255,184,48,.08); border: 1px solid rgba(255,184,48,.25);
+      color: var(--accent-amber); border-radius: var(--radius-md);
+      padding: 8px 14px; font-size: 12.5px; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+      transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .admin-refresh-btn:hover {
+      background: rgba(255,184,48,.18); border-color: rgba(255,184,48,.4);
+      transform: translateY(-1px);
+    }
+    .admin-refresh-btn:active { transform: translateY(0) scale(0.97); }
+
+    .admin-pull-indicator {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      height: 0; overflow: hidden; opacity: 0;
+      transition: height .2s ease, opacity .2s ease;
+      color: var(--accent-amber); font-size: 12px; font-weight: 700;
+      margin-bottom: 0;
+    }
+    .admin-pull-indicator.active {
+      height: 44px; opacity: 1; margin-bottom: 12px;
+    }
+    .admin-pull-indicator i {
+      transition: transform .2s ease;
+    }
+    .admin-pull-indicator.release i {
+      transform: rotate(180deg);
+    }
+    .admin-toast-pill {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 100000; padding: 10px 20px; border-radius: 99px;
+      background: var(--bg-card); border: 1px solid var(--border-glow);
+      color: var(--accent-amber); font-size: 13px; font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,.4); display: flex; align-items: center; gap: 8px;
+      animation: toastIn .3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
 
     /* ============================================================  SIDEBAR  */
     .sidebar {
@@ -167,33 +301,63 @@
     .live-dot { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: var(--accent-green); background: rgba(0,229,160,.1); border: 1px solid rgba(0,229,160,.2); padding: 5px 12px; border-radius: 99px; font-weight: 600; }
     .live-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-green); animation: pulse 1.5s ease infinite; }
 
-    /* ============================================================  STAT CARDS  */
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden; transition: border-color .2s, transform .2s; cursor: default; }
-    .stat-card:hover { border-color: var(--border-glow); transform: translateY(-2px); }
-    .stat-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--card-glow, transparent); opacity: .6; pointer-events: none; }
-    .stat-card.cyan  { --card-glow: radial-gradient(ellipse at top right, rgba(0,224,255,.07), transparent 60%); }
-    .stat-card.violet{ --card-glow: radial-gradient(ellipse at top right, rgba(124,92,252,.07), transparent 60%); }
-    .stat-card.green { --card-glow: radial-gradient(ellipse at top right, rgba(0,229,160,.07), transparent 60%); }
-    .stat-card.amber { --card-glow: radial-gradient(ellipse at top right, rgba(255,184,48,.07), transparent 60%); }
-    .stat-card.red   { --card-glow: radial-gradient(ellipse at top right, rgba(255,79,106,.07), transparent 60%); }
-    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px; }
-    .stat-card.cyan   .stat-icon { background: rgba(0,224,255,.1);   color: var(--accent-cyan);   }
-    .stat-card.violet .stat-icon { background: rgba(124,92,252,.1);  color: var(--accent-violet); }
-    .stat-card.green  .stat-icon { background: rgba(0,229,160,.1);   color: var(--accent-green);  }
-    .stat-card.amber  .stat-icon { background: rgba(255,184,48,.1);  color: var(--accent-amber);  }
-    .stat-card.red    .stat-icon { background: rgba(255,79,106,.1);  color: var(--accent-red);    }
-    .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
-    .stat-value { font-family: var(--font-display); font-size: 32px; font-weight: 800; margin: 6px 0 4px; }
+    /* ============================================================  STAT CARDS (EDTECH APP STYLE)  */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 22px; position: relative; overflow: hidden;
+      transition: transform .24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .24s cubic-bezier(0.16, 1, 0.3, 1), border-color .24s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
+      cursor: default;
+    }
+    [data-theme="light"] .stat-card { box-shadow: 0 4px 18px rgba(15,23,42,.06), inset 0 1px 0 #ffffff; }
+    .stat-card:hover {
+      border-color: var(--border-glow); transform: translateY(-3px);
+      box-shadow: 0 16px 36px rgba(0,0,0,.4), var(--shadow-glow);
+    }
+    [data-theme="light"] .stat-card:hover { box-shadow: 0 14px 32px rgba(15,23,42,.12), var(--shadow-glow); }
+    .stat-card::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: var(--card-glow, transparent); opacity: .75; pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card.cyan  { --card-glow: radial-gradient(ellipse at top right, rgba(0,224,255,.12), transparent 65%); }
+    .stat-card.violet{ --card-glow: radial-gradient(ellipse at top right, rgba(124,92,252,.12), transparent 65%); }
+    .stat-card.green { --card-glow: radial-gradient(ellipse at top right, rgba(0,229,160,.12), transparent 65%); }
+    .stat-card.amber { --card-glow: radial-gradient(ellipse at top right, rgba(255,184,48,.12), transparent 65%); }
+    .stat-card.red   { --card-glow: radial-gradient(ellipse at top right, rgba(255,79,106,.12), transparent 65%); }
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 14px;
+      transition: transform .22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stat-card:hover .stat-icon { transform: scale(1.06); }
+    .stat-card.cyan   .stat-icon { background: rgba(0,224,255,.12);   color: var(--accent-cyan);   border: 1px solid rgba(0,224,255,.22); }
+    .stat-card.violet .stat-icon { background: rgba(124,92,252,.12);  color: var(--accent-violet); border: 1px solid rgba(124,92,252,.22); }
+    .stat-card.green  .stat-icon { background: rgba(0,229,160,.12);   color: var(--accent-green);  border: 1px solid rgba(0,229,160,.22); }
+    .stat-card.amber  .stat-icon { background: rgba(255,184,48,.12);  color: var(--accent-amber);  border: 1px solid rgba(255,184,48,.22); }
+    .stat-card.red    .stat-icon { background: rgba(255,79,106,.12);  color: var(--accent-red);    border: 1px solid rgba(255,79,106,.22); }
+    .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+    .stat-value {
+      font-family: var(--font-display); font-size: 34px; font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.15; font-variant-numeric: tabular-nums;
+      margin: 8px 0 5px; transition: all .3s ease;
+    }
     .stat-card.cyan   .stat-value { color: var(--accent-cyan);   }
     .stat-card.violet .stat-value { color: var(--accent-violet); }
     .stat-card.green  .stat-value { color: var(--accent-green);  }
     .stat-card.amber  .stat-value { color: var(--accent-amber);  }
     .stat-card.red    .stat-value { color: var(--accent-red);    }
-    .stat-delta { font-size: 11px; color: var(--text-muted); }
+    .stat-delta { font-size: 11.5px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 4px; }
 
     /* ============================================================  FORM PANELS  */
-    .form-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; }
+    .form-panel {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    [data-theme="light"] .form-panel { box-shadow: 0 4px 18px rgba(15,23,42,.06), inset 0 1px 0 #ffffff; }
     .form-panel-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .pill { font-size: 10px; padding: 3px 9px; border-radius: 99px; background: rgba(255,184,48,.1); color: var(--accent-amber); border: 1px solid rgba(255,184,48,.2); font-weight: 600; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
@@ -337,39 +501,127 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 4px; }
 
-    /* ============================================================  RESPONSIVE  */
+    /* ============================================================  RESPONSIVE (LAPTOP, TABLET & PHONE)  */
     .sidebar-backdrop { display: none; }
     .mobile-topbar { display: none; }
+    .main {
+      width: 100%;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
     @media (max-width: 1024px) {
-      .sidebar { position: fixed; z-index: 8000; transform: translateX(-100%); width: 260px; }
-      .sidebar.mobile-open { transform: translateX(0); }
-      .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 7999; }
+      .sidebar {
+        position: fixed; z-index: 8000;
+        transform: translate3d(-100%, 0, 0);
+        width: 260px;
+        max-width: 85vw;
+        transition: transform .28s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 0 30px rgba(0,0,0,0.7);
+      }
+      .sidebar.mobile-open { transform: translate3d(0, 0, 0); }
+      .sidebar-backdrop {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 7999;
+      }
       .sidebar-backdrop.open { display: block; }
-      .mobile-topbar { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 500; }
-      .mobile-menu-btn { width: 38px; height: 38px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); font-size: 16px; cursor: pointer; }
-      body { flex-direction: column; overflow: auto; }
-      .main { height: auto; padding: 20px 16px; }
+      .mobile-topbar {
+        display: flex; align-items: center; gap: 12px;
+        padding: max(12px, env(safe-area-inset-top, 12px)) 16px 12px;
+        background: var(--bg-panel); border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; z-index: 500;
+      }
+      .mobile-menu-btn {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: var(--bg-input); border: 1px solid var(--border);
+        color: var(--text-primary); font-size: 16px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        touch-action: manipulation;
+      }
+      body { flex-direction: column; overflow: auto; min-height: 100dvh; }
+      .main {
+        height: auto;
+        padding: 18px 14px;
+        padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+      }
       .form-row, .form-row-3 { grid-template-columns: 1fr; }
     }
-    @media (min-width: 1025px) { .sidebar-backdrop, .mobile-topbar { display: none !important; } }
+
+    /* Tablet (641px - 1024px) */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
+        gap: 14px;
+      }
+    }
+
+    /* Phone (<= 640px) */
+    @media (max-width: 640px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        padding: 14px 12px;
+        min-width: 0;
+      }
+      .stat-value {
+        font-size: clamp(20px, 5.5vw, 26px);
+      }
+      .stat-label {
+        font-size: 11px;
+      }
+      .table-card { padding: 16px 12px; }
+      .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        border-radius: 12px;
+      }
+      .form-input, .form-select {
+        font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+      }
+      .section-header { flex-wrap: wrap; gap: 10px; }
+    }
+
+    @media (min-width: 1025px) {
+      .sidebar-backdrop, .mobile-topbar { display: none !important; }
+      .cards-grid { grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 16px; }
+    }
   </style>
 </head>
 <body>
 
 <!-- ============================================================  AUTH GATE  -->
 <div id="authGate">
+  <div class="auth-backdrop-glow"></div>
   <div class="auth-box">
+    <div class="auth-logo-badge">
+      <img src="/icon-192.png" alt="Study Grid Prep" />
+    </div>
     <div class="auth-logo">Content Hub Admin</div>
-    <div class="auth-sub">Study Grid Prep</div>
-    <button class="auth-google-btn" onclick="signInWithGoogleContentAdmin()">
-      <i class="fa-brands fa-google"></i> Continue with Google
+    <div class="auth-sub">Study Grid Prep • Editorial Console</div>
+    <p class="auth-desc">
+      Sign in with your authorized admin Google account to manage platform content.
+    </p>
+    <button class="auth-btn auth-google-btn" onclick="signInWithGoogleContentAdmin()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      <span>Continue with Google</span>
     </button>
     <div class="auth-error" id="authError"></div>
   </div>
 </div>
-<div id="authLoading" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg-void);align-items:center;justify-content:center;flex-direction:column;gap:14px;">
-  <div class="spinner" style="width:32px;height:32px;border-width:3px;border-top-color:var(--accent-amber);"></div>
-  <div style="color:var(--text-muted);font-size:13px;">Checking access…</div>
+
+<div id="authLoading">
+  <div class="auth-loader-card">
+    <div class="auth-spin-ring"></div>
+    <div class="auth-loader-text">Verifying content admin session…</div>
+  </div>
 </div>
 
 <!-- ============================================================  MOBILE TOPBAR  -->
@@ -421,6 +673,12 @@
 <!-- ============================================================  MAIN  -->
 <main class="main" id="mainContent">
 
+  <!-- Pull-To-Refresh Visual Indicator (EdTech App Experience) -->
+  <div id="adminPullRefresh" class="admin-pull-indicator">
+    <i class="fa-solid fa-arrow-down" id="adminPullIcon"></i>
+    <span id="adminPullText">Pull to refresh</span>
+  </div>
+
   <!-- ───────── DASHBOARD ───────── -->
   <section class="section active" id="section-dashboard">
     <div class="section-header">
@@ -428,7 +686,13 @@
         <div class="section-title">Dashboard</div>
         <div class="section-subtitle">Content Hub at a glance</div>
       </div>
-      <span class="live-dot">Live</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="admin-refresh-btn" onclick="refreshContentHubAdmin()" title="Refresh Content Hub">
+          <i class="fa-solid fa-arrows-rotate" id="adminRefreshIcon"></i>
+          <span>Refresh</span>
+        </button>
+        <span class="live-dot">Live</span>
+      </div>
     </div>
 
     <div class="cards-grid">
@@ -916,8 +1180,16 @@ window.signInWithGoogleContentAdmin = async function () {
 };
 
 async function checkContentAdminAccess(user) {
-  $("authGate").style.display = "none";
-  $("authLoading").style.display = "flex";
+  const gate = $("authGate");
+  const loading = $("authLoading");
+  if (gate && gate.style.display !== "none") {
+    gate.classList.add("auth-exit");
+    setTimeout(() => {
+      gate.style.display = "none";
+      gate.classList.remove("auth-exit");
+    }, 320);
+  }
+  if (loading) loading.style.display = "flex";
   try {
     const email = user.email;
     const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
@@ -933,10 +1205,14 @@ async function checkContentAdminAccess(user) {
     }
     if (!role) {
       await signOut(auth);
-      $("authLoading").style.display = "none";
-      $("authGate").style.display = "flex";
+      if (loading) loading.style.display = "none";
+      if (gate) {
+        gate.classList.remove("auth-exit");
+        gate.style.display = "flex";
+      }
       $("authError").textContent = "This Google account doesn't have Content Hub Admin access.";
-      document.querySelector(".auth-google-btn").disabled = false;
+      const googleBtn = document.querySelector(".auth-google-btn");
+      if (googleBtn) googleBtn.disabled = false;
       return;
     }
     CURRENT_USER = user;
@@ -944,7 +1220,7 @@ async function checkContentAdminAccess(user) {
     $("adminNameSidebar").textContent = user.displayName || email.split("@")[0];
     $("adminEmailSidebar").textContent = email;
     $("adminAvatarSidebar").textContent = (user.displayName || email)[0].toUpperCase();
-    $("authLoading").style.display = "none";
+    if (loading) loading.style.display = "none";
     // Required for sgpLogActivity to actually write anything — it's a
     // silent no-op otherwise (see activity-log.js). This also matches
     // the exact flag sub-admin-auth.js sets, so anything elsewhere that
@@ -957,14 +1233,27 @@ async function checkContentAdminAccess(user) {
     if (window.initTaxonomy) window.initTaxonomy();
   } catch (e) {
     console.error(e);
-    $("authLoading").style.display = "none";
-    $("authGate").style.display = "flex";
+    if (loading) loading.style.display = "none";
+    if (gate) {
+      gate.classList.remove("auth-exit");
+      gate.style.display = "flex";
+    }
     $("authError").textContent = "Something went wrong checking access.";
   }
 }
 
 onAuthStateChanged(auth, (user) => {
-  if (user) checkContentAdminAccess(user);
+  const gate = $("authGate");
+  const loading = $("authLoading");
+  if (user) {
+    checkContentAdminAccess(user);
+  } else {
+    if (loading) loading.style.display = "none";
+    if (gate) {
+      gate.classList.remove("auth-exit");
+      gate.style.display = "flex";
+    }
+  }
 });
 
 window.chaLogout = async function () {
@@ -1572,7 +1861,86 @@ window.resolveIssue = async function (id) {
     toast("Marked resolved", "success");
     closeModal();
   } catch (e) { console.error(e); toast("Couldn't resolve — check permissions", "error"); }
+window.refreshContentHubAdmin = async function() {
+  const icon = document.getElementById("adminRefreshIcon");
+  if (icon) icon.classList.add("fa-spin");
+  try {
+    if (typeof renderDashboard === "function") renderDashboard();
+    if (typeof renderTrending === "function") renderTrending();
+    if (typeof renderIssuesList === "function") renderIssuesList();
+    const pill = document.createElement("div");
+    pill.className = "admin-toast-pill";
+    pill.innerHTML = '<i class="fa-solid fa-check"></i> Content Hub refreshed';
+    document.body.appendChild(pill);
+    setTimeout(() => pill.remove(), 2000);
+  } catch(e) {
+    console.warn("[ContentHub Refresh]", e);
+  } finally {
+    setTimeout(() => { if (icon) icon.classList.remove("fa-spin"); }, 600);
+  }
 };
+
+(function setupPullToRefresh(){
+  const main = document.getElementById("mainContent") || document.querySelector(".main");
+  const indicator = document.getElementById("adminPullRefresh");
+  const pullIcon = document.getElementById("adminPullIcon");
+  const pullText = document.getElementById("adminPullText");
+  if (!main || !indicator) return;
+
+  let startY = 0;
+  let currentY = 0;
+  let isPulling = false;
+  const THRESHOLD = 65;
+
+  main.addEventListener("touchstart", (e) => {
+    if (main.scrollTop <= 0) {
+      startY = e.touches[0].clientY;
+      isPulling = true;
+    } else {
+      isPulling = false;
+    }
+  }, { passive: true });
+
+  main.addEventListener("touchmove", (e) => {
+    if (!isPulling) return;
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    if (diff > 0 && main.scrollTop <= 0) {
+      const pullDist = Math.min(diff * 0.45, 90);
+      indicator.classList.add("active");
+      indicator.style.height = pullDist + "px";
+      if (pullDist >= THRESHOLD) {
+        indicator.classList.add("release");
+        if (pullText) pullText.textContent = "Release to refresh";
+      } else {
+        indicator.classList.remove("release");
+        if (pullText) pullText.textContent = "Pull to refresh";
+      }
+    }
+  }, { passive: true });
+
+  main.addEventListener("touchend", async () => {
+    if (!isPulling) return;
+    isPulling = false;
+    const diff = currentY - startY;
+    const pullDist = Math.min(diff * 0.45, 90);
+    if (diff > 0 && pullDist >= THRESHOLD && main.scrollTop <= 0) {
+      if (pullText) pullText.textContent = "Refreshing...";
+      if (pullIcon) pullIcon.className = "fa-solid fa-arrows-rotate fa-spin";
+      if (navigator.vibrate) try { navigator.vibrate(20); } catch(err){}
+      await window.refreshContentHubAdmin();
+      setTimeout(() => {
+        indicator.style.height = "0px";
+        indicator.classList.remove("active", "release");
+        if (pullIcon) pullIcon.className = "fa-solid fa-arrow-down";
+        if (pullText) pullText.textContent = "Pull to refresh";
+      }, 500);
+    } else {
+      indicator.style.height = "0px";
+      indicator.classList.remove("active", "release");
+    }
+  }, { passive: true });
+})();
 
 </script>
 
