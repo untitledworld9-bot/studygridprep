@@ -280,17 +280,27 @@ canvas{
 [data-theme="light"] .wlc-feat-progress { background:#fff; border-color:rgba(249,115,22,0.2); }
 [data-theme="dark"]  .wlc-feat-progress { background:var(--surface); }
 
+.wlc-feat-contenthub { border:1.5px solid rgba(245,158,11,0.25); }
+[data-theme="light"] .wlc-feat-contenthub { background:#fff; border-color:rgba(245,158,11,0.25); }
+[data-theme="dark"]  .wlc-feat-contenthub { background:var(--surface); }
+
+.wlc-feat-community { border:1.5px solid rgba(236,72,153,0.25); }
+[data-theme="light"] .wlc-feat-community { background:#fff; border-color:rgba(236,72,153,0.25); }
+[data-theme="dark"]  .wlc-feat-community { background:var(--surface); }
+
 .wlc-feat-icon-wrap{
   width:34px; height:34px; border-radius:10px;
   display:flex; align-items:center; justify-content:center;
   font-size:15px; flex-shrink:0;
 }
-.wlc-feat-mock     .wlc-feat-icon-wrap{ background:rgba(124,58,237,0.12); color:#7C3AED; }
-.wlc-feat-focus    .wlc-feat-icon-wrap{ background:rgba(16,185,129,0.12);  color:#10B981; }
-.wlc-feat-ai       .wlc-feat-icon-wrap{ background:rgba(91,91,246,0.12);  color:#5B5BF6; }
-.wlc-feat-playlist .wlc-feat-icon-wrap{ background:rgba(239,68,68,0.12);  color:#EF4444; }
-.wlc-feat-todo     .wlc-feat-icon-wrap{ background:rgba(14,165,233,0.12); color:#0EA5E9; }
-.wlc-feat-progress .wlc-feat-icon-wrap{ background:rgba(249,115,22,0.12); color:#F97316; }
+.wlc-feat-mock       .wlc-feat-icon-wrap{ background:rgba(124,58,237,0.12); color:#7C3AED; }
+.wlc-feat-focus      .wlc-feat-icon-wrap{ background:rgba(16,185,129,0.12);  color:#10B981; }
+.wlc-feat-ai         .wlc-feat-icon-wrap{ background:rgba(91,91,246,0.12);  color:#5B5BF6; }
+.wlc-feat-playlist   .wlc-feat-icon-wrap{ background:rgba(239,68,68,0.12);  color:#EF4444; }
+.wlc-feat-todo       .wlc-feat-icon-wrap{ background:rgba(14,165,233,0.12); color:#0EA5E9; }
+.wlc-feat-progress   .wlc-feat-icon-wrap{ background:rgba(249,115,22,0.12); color:#F97316; }
+.wlc-feat-contenthub .wlc-feat-icon-wrap{ background:rgba(245,158,11,0.14); color:#D97706; }
+.wlc-feat-community  .wlc-feat-icon-wrap{ background:rgba(236,72,153,0.14); color:#EC4899; }
 
 .wlc-feat-label{
   font-size:12px; font-weight:700; color:var(--text); line-height:1.25;
@@ -308,12 +318,14 @@ canvas{
   padding:2px 6px; border-radius:50px;
   line-height:1;
 }
-.wlc-feat-mock     .wlc-tag{ background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.28); color:#7C3AED; }
-.wlc-feat-focus    .wlc-tag{ background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.28); color:#10B981; }
-.wlc-feat-ai       .wlc-tag{ background:rgba(91,91,246,0.12); border:1px solid rgba(91,91,246,0.28); color:#5B5BF6; }
-.wlc-feat-playlist .wlc-tag{ background:rgba(239,68,68,0.10);  border:1px solid rgba(239,68,68,0.25);  color:#EF4444; }
-.wlc-feat-todo     .wlc-tag{ background:rgba(14,165,233,0.12); border:1px solid rgba(14,165,233,0.28); color:#0EA5E9; }
-.wlc-feat-progress .wlc-tag{ background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.28); color:#F97316; }
+.wlc-feat-mock       .wlc-tag{ background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.28); color:#7C3AED; }
+.wlc-feat-focus      .wlc-tag{ background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.28); color:#10B981; }
+.wlc-feat-ai         .wlc-tag{ background:rgba(91,91,246,0.12); border:1px solid rgba(91,91,246,0.28); color:#5B5BF6; }
+.wlc-feat-playlist   .wlc-tag{ background:rgba(239,68,68,0.10);  border:1px solid rgba(239,68,68,0.25);  color:#EF4444; }
+.wlc-feat-todo       .wlc-tag{ background:rgba(14,165,233,0.12); border:1px solid rgba(14,165,233,0.28); color:#0EA5E9; }
+.wlc-feat-progress   .wlc-tag{ background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.28); color:#F97316; }
+.wlc-feat-contenthub .wlc-tag{ background:rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.3);  color:#D97706; }
+.wlc-feat-community  .wlc-tag{ background:rgba(236,72,153,0.14); border:1px solid rgba(236,72,153,0.3);  color:#EC4899; }
 
 /* ─── AGREE CARD ─── */
 .wlc-agree-card{
@@ -638,27 +650,27 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
       </div>
     </div>
 
-    <!-- 5. Todo & Daily Planner -->
-    <div class="wlc-feat-card wlc-feat-todo">
-      <div class="wlc-tag">Daily Tasks</div>
+    <!-- 5. Content Hub -->
+    <div class="wlc-feat-card wlc-feat-contenthub">
+      <div class="wlc-tag">Free Material</div>
       <div class="wlc-feat-icon-wrap">
-        <i class="fa-solid fa-list-check"></i>
+        <i class="fa-solid fa-folder-open"></i>
       </div>
       <div>
-        <div class="wlc-feat-label">Todo &amp; Planner</div>
-        <div class="wlc-feat-sub">Daily schedule tracker &amp; streak keeper</div>
+        <div class="wlc-feat-label">Content Hub</div>
+        <div class="wlc-feat-sub">Notes, formulas, mind maps &amp; PYQ PDFs</div>
       </div>
     </div>
 
-    <!-- 6. Progress & Leaderboard -->
-    <div class="wlc-feat-card wlc-feat-progress">
-      <div class="wlc-tag">Top Ranks</div>
+    <!-- 6. Study Community -->
+    <div class="wlc-feat-card wlc-feat-community">
+      <div class="wlc-tag">Peer Chat</div>
       <div class="wlc-feat-icon-wrap">
-        <i class="fa-solid fa-trophy"></i>
+        <i class="fa-solid fa-users"></i>
       </div>
       <div>
-        <div class="wlc-feat-label">XP &amp; Leaderboard</div>
-        <div class="wlc-feat-sub">Weekly rankings, milestones &amp; badges</div>
+        <div class="wlc-feat-label">Study Community</div>
+        <div class="wlc-feat-sub">Doubt solving, discussions &amp; group study</div>
       </div>
     </div>
 
