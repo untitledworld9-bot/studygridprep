@@ -1171,116 +1171,65 @@ window.signInWithGoogleContentAdmin = async function () {
   const btn = document.querySelector(".auth-google-btn");
   if (btn) btn.disabled = true;
   try {
-    await signInWithPopup(auth, googleProvider);
-    // onAuthStateChanged below will pick up the user and initialize
+    const result = await signInWithPopup(auth, googleProvider);
+    await checkContentAdminAccess(result.user);
   } catch (e) {
-    console.error("Content Hub Admin sign-in error:", e);
-    $("authError").textContent = "Sign-in failed: " + (e.message || "Please try again.");
+    $("authError").textContent = "Sign-in failed. Try again.";
     if (btn) btn.disabled = false;
   }
 };
 
-let _chaChecking = false;
-
 async function checkContentAdminAccess(user) {
-  if (_chaChecking) return;
-  _chaChecking = true;
-
-  const gate = $("authGate");
-  const loading = $("authLoading");
-
-  if (gate && gate.style.display !== "none") {
-    gate.classList.add("auth-exit");
-    setTimeout(() => {
-      gate.style.display = "none";
-      gate.classList.remove("auth-exit");
-    }, 320);
-  }
-  if (loading) loading.style.display = "flex";
-
+  $("authGate").style.display = "none";
+  $("authLoading").style.display = "flex";
   try {
-    const rawEmail = user?.email || "";
-    const email = rawEmail.toLowerCase().trim();
+    const email = user.email;
     const ADMIN_EMAILS = ["untitledworld9@gmail.com", "ayushgupt640@gmail.com"];
     let role = null;
-
-    if (ADMIN_EMAILS.some(a => a.toLowerCase() === email)) {
+    if (ADMIN_EMAILS.includes(email)) {
       role = "admin";
     } else {
-      try {
-        const snap = await getDoc(doc(db, "subAdmins", rawEmail));
-        if (snap.exists()) {
-          const r = snap.data().role;
-          if (r === "content-admin" || r === "both" || r === "sub-admin" || !r) role = r || "content-admin";
-        }
-      } catch (docErr) {
-        console.warn("subAdmin doc check:", docErr);
+      const snap = await getDoc(doc(db, "subAdmins", email));
+      if (snap.exists()) {
+        const r = snap.data().role;
+        if (r === "content-admin" || r === "both") role = r;
       }
     }
-
     if (!role) {
-      if (loading) loading.style.display = "none";
-      if (gate) {
-        gate.classList.remove("auth-exit");
-        gate.style.display = "flex";
-      }
-      $("authError").textContent = "This Google account (" + (email || "unknown") + ") doesn't have Content Hub Admin access.";
+      await signOut(auth);
+      $("authLoading").style.display = "none";
+      $("authGate").style.display = "flex";
+      $("authError").textContent = "This Google account doesn't have Content Hub Admin access.";
       const googleBtn = document.querySelector(".auth-google-btn");
       if (googleBtn) googleBtn.disabled = false;
-      await signOut(auth);
-      _chaChecking = false;
       return;
     }
-
     CURRENT_USER = user;
     CURRENT_ROLE = role;
-    const displayName = user.displayName || rawEmail.split("@")[0] || "Admin";
-    if ($("adminNameSidebar")) $("adminNameSidebar").textContent = displayName;
-    if ($("adminEmailSidebar")) $("adminEmailSidebar").textContent = rawEmail;
-    if ($("adminAvatarSidebar")) $("adminAvatarSidebar").textContent = (displayName[0] || "A").toUpperCase();
-
-    if (loading) loading.style.display = "none";
-    if (gate) {
-      gate.style.display = "none";
-      gate.classList.remove("auth-exit");
-    }
-
+    $("adminNameSidebar").textContent = user.displayName || email.split("@")[0];
+    $("adminEmailSidebar").textContent = email;
+    $("adminAvatarSidebar").textContent = (user.displayName || email)[0].toUpperCase();
+    $("authLoading").style.display = "none";
+    // Required for sgpLogActivity to actually write anything — it's a
+    // silent no-op otherwise (see activity-log.js). This also matches
+    // the exact flag sub-admin-auth.js sets, so anything elsewhere that
+    // checks it behaves consistently for Content Hub Admin too.
     window.IS_SUB_ADMIN = true;
     sgpLogActivity("login", "Signed in to Content Hub Admin");
     bootData();
-    if (typeof window.initContentStudio === "function") window.initContentStudio();
-    if (typeof window.initMediaLibrary === "function") window.initMediaLibrary();
-    if (typeof window.initTaxonomy === "function") window.initTaxonomy();
+    if (window.initContentStudio) window.initContentStudio();
+    if (window.initMediaLibrary) window.initMediaLibrary();
+    if (window.initTaxonomy) window.initTaxonomy();
   } catch (e) {
-    console.error("Content Hub Admin access error:", e);
-    if (loading) loading.style.display = "none";
-    if (gate) {
-      gate.classList.remove("auth-exit");
-      gate.style.display = "flex";
-    }
-    $("authError").textContent = "Something went wrong checking access. Please refresh.";
-    const googleBtn = document.querySelector(".auth-google-btn");
-    if (googleBtn) googleBtn.disabled = false;
-  } finally {
-    _chaChecking = false;
+    console.error(e);
+    $("authLoading").style.display = "none";
+    $("authGate").style.display = "flex";
+    $("authError").textContent = "Something went wrong checking access.";
   }
 }
 
 onAuthStateChanged(auth, (user) => {
-  const gate = $("authGate");
-  const loading = $("authLoading");
-  if (user) {
-    checkContentAdminAccess(user);
-  } else {
-    _chaChecking = false;
-    if (loading) loading.style.display = "none";
-    if (gate) {
-      gate.classList.remove("auth-exit");
-      gate.style.display = "flex";
-    }
-    const googleBtn = document.querySelector(".auth-google-btn");
-    if (googleBtn) googleBtn.disabled = false;
-  }
+  if (user) checkContentAdminAccess(user);
 });
 
 window.chaLogout = async function () {
