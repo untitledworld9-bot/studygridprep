@@ -810,55 +810,199 @@
     .save-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(91,91,246,0.25); }
 
     /* ============================================================
-       ⏰ STUDY ALARMS & DAILY REMINDERS STYLES
+       ⏰ STUDY REMINDERS & SEGMENTED CONTROLS
     ============================================================ */
-    .alarm-hero-banner {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 14px; padding: 16px 18px; margin-bottom: 16px;
-      background: linear-gradient(135deg, rgba(91,91,246,0.12), rgba(124,58,237,0.08));
-      border: 1.5px solid rgba(91,91,246,0.25); border-radius: var(--radius-card);
-      box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+    /* Top Main Segmented Switcher (Under Header) */
+    .main-segment-wrap {
+      padding: 12px 16px 8px;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: var(--bg);
     }
-    .alarm-hero-left { display: flex; align-items: center; gap: 13px; }
-    .alarm-hero-icon {
-      width: 44px; height: 44px; border-radius: 14px;
-      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; flex-shrink: 0; box-shadow: 0 4px 14px rgba(91,91,246,0.35);
-      font-size: 20px;
-    }
-    .alarm-hero-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-    .alarm-hero-sub { font-size: 11.5px; color: var(--text2); line-height: 1.35; }
-    .add-alarm-btn-top {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 9px 15px; background: linear-gradient(135deg, #5B5BF6, #7C3AED);
-      border: none; border-radius: var(--radius-pill);
-      color: #fff; font-family: var(--font-body); font-size: 12.5px; font-weight: 700;
-      cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(91,91,246,0.3);
-      transition: all 0.2s ease; flex-shrink: 0;
-    }
-    .add-alarm-btn-top:active { transform: scale(0.95); }
-
-    .next-alarm-notice {
-      display: flex; align-items: center; gap: 10px;
-      padding: 11px 14px; background: var(--surface);
-      border: 1.5px solid var(--border); border-radius: 14px;
-      margin-bottom: 18px; font-size: 12px; color: var(--text2); font-weight: 500;
+    .main-segment-bar {
+      display: flex;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 4px;
+      gap: 5px;
       box-shadow: var(--shadow-sm);
     }
-    .next-alarm-notice b { color: var(--teal); font-weight: 700; }
-    .next-alarm-pulse {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.25);
-      animation: pulseGreen 1.8s infinite; flex-shrink: 0;
+    .main-segment-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 12px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      -webkit-tap-highlight-color: transparent;
     }
-    @keyframes pulseGreen {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
-      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16,185,129,0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    .main-segment-btn.active {
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(91,91,246,0.32);
+    }
+    .main-segment-btn .seg-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+      background: var(--surface2);
+      color: var(--text2);
+      min-width: 18px;
+      text-align: center;
+    }
+    .main-segment-btn.active .seg-badge {
+      background: rgba(255,255,255,0.25);
+      color: #fff;
     }
 
-    /* Alarms List Cards */
+    /* FAB Action Selection Menu Bottom Sheet */
+    .fab-menu-overlay {
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(13,17,32,0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .fab-menu-overlay.show { opacity: 1; pointer-events: all; }
+    .fab-menu-sheet {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      border-radius: 26px 26px 0 0;
+      width: 100%; max-width: 440px;
+      padding: 12px 18px 24px;
+      box-shadow: 0 -12px 36px rgba(0,0,0,0.35);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .fab-menu-overlay.show .fab-menu-sheet {
+      transform: translateY(0);
+    }
+    .fab-menu-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--border); margin: 0 auto 14px;
+    }
+    .fab-menu-title {
+      font-size: 15px; font-weight: 800; color: var(--text);
+      margin-bottom: 12px; text-align: center;
+    }
+    .fab-menu-options {
+      display: flex; flex-direction: column; gap: 9px;
+      margin-bottom: 14px;
+    }
+    .fab-menu-opt {
+      display: flex; align-items: center; gap: 13px;
+      padding: 12px 14px; border-radius: 16px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      cursor: pointer; transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fab-menu-opt:hover {
+      border-color: var(--teal); background: var(--surface);
+      transform: translateY(-1px);
+    }
+    .fab-menu-opt:active {
+      transform: scale(0.98);
+    }
+    .fab-opt-icon {
+      width: 42px; height: 42px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; flex-shrink: 0;
+    }
+    .fab-opt-icon.task {
+      background: linear-gradient(135deg, #10B981, #059669);
+      box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    }
+    .fab-opt-icon.reminder {
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      box-shadow: 0 4px 12px rgba(91,91,246,0.3);
+    }
+    .fab-opt-text { flex: 1; min-width: 0; }
+    .fab-opt-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .fab-opt-sub { font-size: 11.5px; color: var(--text2); }
+    .fab-opt-arrow { color: var(--text3); }
+    .fab-menu-cancel-btn {
+      width: 100%; padding: 11px; border-radius: 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text2); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s ease;
+    }
+
+    /* Reminders Panel Header & Top Action */
+    .reminders-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-top: 4px;
+    }
+    .reminders-header-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .add-reminder-btn-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      border: none;
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(91,91,246,0.3);
+      transition: all 0.2s ease;
+    }
+    .add-reminder-btn-top:active {
+      transform: scale(0.96);
+    }
+    .next-reminder-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      background: rgba(91,91,246,0.08);
+      border: 1px solid rgba(91,91,246,0.22);
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 14px;
+    }
+    .next-reminder-notice b { color: var(--text); }
+    .next-reminder-notice i { color: var(--teal); font-style: normal; font-weight: 600; }
+    .next-alarm-pulse {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 8px var(--teal);
+      animation: pulseDot 1.8s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    /* Study Reminders List Cards */
     .alarms-list { display: flex; flex-direction: column; gap: 13px; margin-bottom: 24px; }
     .alarm-card {
       background: var(--surface); border: 1.5px solid var(--border);
@@ -937,27 +1081,6 @@
     .alarms-empty-icon { font-size: 36px; margin-bottom: 10px; }
     .alarms-empty-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
     .alarms-empty-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
-
-    /* Quick Presets Section */
-    .alarm-presets-section { margin-top: 24px; padding-bottom: 24px; }
-    .presets-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px; margin-top: 10px;
-    }
-    .preset-card-btn {
-      background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: 14px; padding: 12px 13px; text-align: left;
-      cursor: pointer; transition: all 0.2s ease; display: flex;
-      flex-direction: column; gap: 4px; box-shadow: var(--shadow-sm);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .preset-card-btn:hover {
-      border-color: var(--teal); transform: translateY(-2px); box-shadow: var(--shadow);
-    }
-    .preset-card-btn:active { transform: scale(0.97); }
-    .preset-card-time { font-size: 15px; font-weight: 800; color: var(--teal); }
-    .preset-card-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; }
-    .preset-card-days { font-size: 10.5px; color: var(--text3); }
 
     /* Modal Days Grid */
     .alarm-chips-row {
@@ -1257,6 +1380,28 @@ pointer-events:none;">
     </div>
   </header>
 
+  <!-- ====================== MAIN SEGMENT SWITCHER (UNDER HEADER) ====================== -->
+  <div class="main-segment-wrap">
+    <div class="main-segment-bar">
+      <button class="main-segment-btn active" id="segBtnTodo" onclick="switchMainSegment('todo')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+        Todo Tasks
+        <span class="seg-badge" id="segTodoCount">0</span>
+      </button>
+      <button class="main-segment-btn" id="segBtnReminders" onclick="switchMainSegment('reminders')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+        Study Reminders
+        <span class="seg-badge" id="segRemindersCount">0</span>
+      </button>
+    </div>
+  </div>
+
   <!-- ====================== XP TOAST ====================== -->
   <div class="xp-toast" id="xpToast">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -1266,8 +1411,8 @@ pointer-events:none;">
   <!-- ====================== MAIN SCROLL ====================== -->
   <div class="main-scroll">
 
-    <!-- TAB BAR -->
-    <div class="tab-bar-wrap">
+    <!-- TAB BAR (Active when Todo Tasks is selected) -->
+    <div class="tab-bar-wrap" id="todoTabBarWrap">
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1299,17 +1444,6 @@ pointer-events:none;">
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
           Calendar <span class="tab-count" id="cnt-calendar">0</span>
-        </button>
-        <button class="tab-btn" data-tab="alarms" onclick="switchTab('alarms')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="13" r="8"/>
-            <path d="M12 9v4l2 2"/>
-            <path d="M5 3L2 6"/>
-            <path d="M22 6l-3-3"/>
-            <path d="M6.38 18.7L4 21"/>
-            <path d="M17.64 18.67L20 21"/>
-          </svg>
-          Study Alarms <span class="tab-count" id="cnt-alarms">0</span>
         </button>
       </div>
     </div>
@@ -1418,81 +1552,29 @@ pointer-events:none;">
       <div class="tasks-list" id="list-calendar"></div>
     </div>
 
-    <!-- ===== STUDY ALARMS PANEL ===== -->
-    <div class="content-panel" id="panel-alarms">
-
-      <!-- Hero Banner -->
-      <div class="alarm-hero-banner">
-        <div class="alarm-hero-left">
-          <div class="alarm-hero-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="13" r="8"/>
-              <path d="M12 9v4l2 2"/>
-              <path d="M5 3L2 6"/>
-              <path d="M22 6l-3-3"/>
-              <path d="M6.38 18.7L4 21"/>
-              <path d="M17.64 18.67L20 21"/>
-            </svg>
-          </div>
-          <div>
-            <div class="alarm-hero-title">Daily Study Alarms</div>
-            <div class="alarm-hero-sub">Auto background alert 1 min prior • Select weekly days</div>
-          </div>
+    <!-- ===== STUDY REMINDERS PANEL ===== -->
+    <div class="content-panel" id="panel-reminders">
+      <div class="reminders-header-bar">
+        <div class="reminders-header-title">
+          Scheduled Reminders
+          <span class="section-badge" id="badge-reminders">0</span>
         </div>
-        <button class="add-alarm-btn-top" onclick="openAlarmModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button class="add-reminder-btn-top" onclick="openReminderModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Add Alarm
+          New Reminder
         </button>
       </div>
 
-      <!-- Live Next Alarm Countdown Notice -->
-      <div class="next-alarm-notice" id="nextAlarmNotice">
+      <!-- Live Next Reminder Notice -->
+      <div class="next-reminder-notice" id="nextReminderNotice">
         <span class="next-alarm-pulse"></span>
-        <span id="nextAlarmNoticeText">No active alarms scheduled</span>
+        <span id="nextReminderNoticeText">No active reminders scheduled</span>
       </div>
 
-      <!-- Alarms List -->
-      <div class="section-header">
-        <div class="section-title">
-          Scheduled Study Alarms
-          <span class="section-badge" id="badge-alarms">0</span>
-        </div>
-      </div>
-      <div class="alarms-list" id="list-alarms"></div>
-
-      <!-- Recommended Quick Presets -->
-      <div class="alarm-presets-section">
-        <div class="section-header" style="margin-bottom:8px;">
-          <div class="section-title" style="font-size:13.5px;">
-            ⚡ Quick Study Presets
-          </div>
-        </div>
-        <div class="presets-grid">
-          <div class="preset-card-btn" onclick="applyAlarmPreset('06:00', 'Morning Revision & Formula Recap', 'Revision', [1,2,3,4,5,6])">
-            <span class="preset-card-time">06:00 AM</span>
-            <span class="preset-card-title">🌅 Morning Revision</span>
-            <span class="preset-card-days">Mon – Sat</span>
-          </div>
-          <div class="preset-card-btn" onclick="applyAlarmPreset('14:00', 'Afternoon Practice & Numericals', 'Practice', [0,1,2,3,4,5,6])">
-            <span class="preset-card-time">02:00 PM</span>
-            <span class="preset-card-title">📖 Deep Practice</span>
-            <span class="preset-card-days">Every Day</span>
-          </div>
-          <div class="preset-card-btn" onclick="applyAlarmPreset('19:30', 'Evening Subject Deep Dive', 'Study', [0,1,2,3,4,5,6])">
-            <span class="preset-card-time">07:30 PM</span>
-            <span class="preset-card-title">⚡ Evening Focus</span>
-            <span class="preset-card-days">Every Day</span>
-          </div>
-          <div class="preset-card-btn" onclick="applyAlarmPreset('22:00', 'Night Mock Test & Analysis', 'Mock Test', [1,2,3,4,5])">
-            <span class="preset-card-time">10:00 PM</span>
-            <span class="preset-card-title">🌙 Mock Test Recap</span>
-            <span class="preset-card-days">Mon – Fri</span>
-          </div>
-        </div>
-      </div>
-
+      <!-- Reminders List -->
+      <div class="alarms-list" id="list-reminders"></div>
     </div>
 
   </div><!-- /main-scroll -->
@@ -1504,6 +1586,52 @@ pointer-events:none;">
       <line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   </button>
+
+  <!-- ====================== FAB ACTION SELECTION MENU ====================== -->
+  <div class="fab-menu-overlay" id="fabMenuOverlay" onclick="closeFabMenu(event)">
+    <div class="fab-menu-sheet" onclick="event.stopPropagation()">
+      <div class="fab-menu-handle"></div>
+      <div class="fab-menu-title">Create New</div>
+      <div class="fab-menu-options">
+        <div class="fab-menu-opt" onclick="selectFabOption('task')">
+          <div class="fab-opt-icon task">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+          </div>
+          <div class="fab-opt-text">
+            <div class="fab-opt-title">Add Todo Task</div>
+            <div class="fab-opt-sub">New study task for today, tomorrow, or calendar</div>
+          </div>
+          <div class="fab-opt-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="fab-menu-opt" onclick="selectFabOption('reminder')">
+          <div class="fab-opt-icon reminder">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+          </div>
+          <div class="fab-opt-text">
+            <div class="fab-opt-title">Set Study Reminder</div>
+            <div class="fab-opt-sub">Scheduled routine with 1-min pre-alert and repeat days</div>
+          </div>
+          <div class="fab-opt-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="fab-menu-cancel-btn" onclick="closeFabMenu()">Cancel</button>
+    </div>
+  </div>
 
   <!-- ====================== MODAL ====================== -->
   <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
@@ -1578,12 +1706,12 @@ pointer-events:none;">
     </div>
   </div>
 
-  <!-- ====================== STUDY ALARM MODAL ====================== -->
+  <!-- ====================== STUDY REMINDER MODAL ====================== -->
   <div class="modal-overlay" id="alarmModalOverlay" onclick="handleAlarmOverlayClick(event)">
     <div class="modal-sheet" id="alarmModalSheet">
       <div class="modal-handle"></div>
       <div class="modal-header">
-        <div class="modal-title" id="alarmModalTitle">Set Study Alarm</div>
+        <div class="modal-title" id="alarmModalTitle">Set Study Reminder</div>
         <button class="modal-close" onclick="closeAlarmModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -1594,11 +1722,11 @@ pointer-events:none;">
 
         <!-- Time Picker -->
         <div class="field-group">
-          <label class="field-label">Alarm Time</label>
+          <label class="field-label">Reminder Time</label>
           <input type="time" class="field-input" id="alarmTimeInput" value="07:00" style="font-size: 20px; font-weight: 800; font-family: var(--font-display); padding: 12px 14px; color: var(--teal);" required />
         </div>
 
-        <!-- Alarm Title / Subject -->
+        <!-- Reminder Title / Subject -->
         <div class="field-group">
           <label class="field-label">Study Subject / Session Label</label>
           <input type="text" class="field-input" id="alarmLabelInput" placeholder="e.g. Mathematics Practice, Physics Revision..." />
@@ -1606,7 +1734,7 @@ pointer-events:none;">
           <div class="alarm-chips-row">
             <button type="button" class="alarm-chip" onclick="setAlarmChip('Mathematics Practice')">📐 Math</button>
             <button type="button" class="alarm-chip" onclick="setAlarmChip('Physics Revision')">⚡ Physics</button>
-            <button type="button" class="alarm-chip" onclick="setAlarmChip('Chemistry Numericals')">🧪 Chemistry</button>
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Chemistry Practice')">🧪 Chemistry</button>
             <button type="button" class="alarm-chip" onclick="setAlarmChip('Daily Vocabulary')">📚 Vocab</button>
             <button type="button" class="alarm-chip" onclick="setAlarmChip('Mock Test & Analysis')">📝 Mock Test</button>
             <button type="button" class="alarm-chip" onclick="setAlarmChip('Evening Daily Recap')">🎯 Recap</button>
@@ -1642,7 +1770,7 @@ pointer-events:none;">
           </svg>
           <div>
             <strong style="color:var(--text);">Smart 1-Min Auto Alert:</strong>
-            A background push notification will be sent automatically <b>1 minute before</b> your alarm time so you can prepare your books and sit down on time.
+            An alert will show <b>1 minute before</b> study time so you can get ready.
           </div>
         </div>
 
@@ -1652,27 +1780,23 @@ pointer-events:none;">
             <polyline points="17 21 17 13 7 13 7 21"/>
             <polyline points="7 3 7 8 15 8"/>
           </svg>
-          Save Study Alarm
+          Save Reminder
         </button>
 
       </div>
     </div>
   </div>
 
-  <!-- ====================== IN-APP ALARM RINGING OVERLAY ====================== -->
+  <!-- ====================== IN-APP STUDY REMINDER OVERLAY ====================== -->
   <div class="alarm-ring-overlay" id="alarmRingOverlay">
     <div class="alarm-ring-card">
       <div class="alarm-ring-icon">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="13" r="8"/>
-          <path d="M12 9v4l2 2"/>
-          <path d="M5 3L2 6"/>
-          <path d="M22 6l-3-3"/>
-          <path d="M6.38 18.7L4 21"/>
-          <path d="M17.64 18.67L20 21"/>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
       </div>
-      <div class="alarm-ring-tag">⏰ STUDY ALARM RINGING</div>
+      <div class="alarm-ring-tag">⏰ STUDY REMINDER</div>
       <div class="alarm-ring-title" id="alarmRingTitle">Study Time!</div>
       <div class="alarm-ring-time" id="alarmRingTime">Scheduled for <b>07:00 AM</b></div>
       <div class="alarm-ring-actions">
@@ -1683,7 +1807,7 @@ pointer-events:none;">
           Start Study Timer Now
         </a>
         <button class="alarm-dismiss-btn" onclick="dismissAlarmRinging()">
-          Dismiss Alarm
+          Dismiss Reminder
         </button>
       </div>
     </div>
@@ -2159,7 +2283,7 @@ pointer-events:none;">
           scheduleSwAlarmNotif({
             id: 'alarm_1min_' + alarm.id,
             endTime: oneMinPrior,
-            title: '⏰ Study Alarm in 1 Minute!',
+            title: '⏰ Study Reminder in 1 Minute!',
             body: `Get ready! "${alarm.label || 'Study Session'}" starts at ${fmt12(alarm.time)}. Grab your notes!`,
             url: '/todo.html'
           });
@@ -2226,7 +2350,7 @@ pointer-events:none;">
       if (subEl)   subEl.innerHTML = `Starts at <b>${opts.time || ''}</b> • Get ready!`;
       if (tagEl)   tagEl.textContent = opts.tag || '⏰ Starting in 1 Minute';
 
-      oneMinPopupTargetTab = opts.tab || (opts.type === 'alarm' ? 'alarms' : 'today');
+      oneMinPopupTargetTab = opts.tab || (opts.type === 'alarm' || opts.type === 'reminder' ? 'reminders' : 'today');
 
       // Animate countdown progress bar over 7 seconds
       if (barEl) {
@@ -2257,8 +2381,11 @@ pointer-events:none;">
 
     function handleOneMinPopupClick() {
       hideOneMinPopup();
-      if (oneMinPopupTargetTab) {
-        switchTab(oneMinPopupTargetTab);
+      if (oneMinPopupTargetTab === 'alarms' || oneMinPopupTargetTab === 'reminders') {
+        switchMainSegment('reminders');
+      } else {
+        switchMainSegment('todo');
+        switchTab(oneMinPopupTargetTab || 'today');
       }
     }
 
@@ -2269,7 +2396,7 @@ pointer-events:none;">
       const currentTotalMins = now.getHours() * 60 + now.getMinutes();
       const dateStr = dateKey(now);
 
-      // 1. Check Study Alarms (1 Min Prior + Exact Ring)
+      // 1. Check Study Reminders (1 Min Prior + Exact Ring)
       studyAlarms.forEach(alarm => {
         if (!alarm.enabled) return;
         if (!alarm.days || !alarm.days.includes(currentDay)) return;
@@ -2285,14 +2412,14 @@ pointer-events:none;">
           localStorage.setItem(oneMinStorageKey, 'true'); // One time in a day
           playAlarmChime();
           showOneMinPopup({
-            type: 'alarm',
+            type: 'reminder',
             title: alarm.label || 'Study Session',
             time: fmt12(alarm.time),
-            tag: '⏰ Study Alarm in 1 Min',
-            tab: 'alarms'
+            tag: '⏰ Reminder in 1 Min',
+            tab: 'reminders'
           });
           fireNotif(
-            '⏰ Study Alarm in 1 Minute!',
+            '⏰ Study Reminder in 1 Minute!',
             `Get ready: "${alarm.label || 'Study Session'}" starts at ${fmt12(alarm.time)}.`
           );
         }
@@ -2378,7 +2505,7 @@ pointer-events:none;">
       const timeFormatted = `${h % 12 || 12}:${pad(m)}`;
       const ampm = h >= 12 ? 'PM' : 'AM';
       const nextOccurrence = alarm.enabled ? getNextOccurrence(alarm) : null;
-      const countdown = alarm.enabled ? formatCountdown(nextOccurrence) : 'Alarm paused';
+      const countdown = alarm.enabled ? formatCountdown(nextOccurrence) : 'Reminder paused';
 
       const dayNames = ['S','M','T','W','T','F','S'];
       const dayPillsHtml = dayNames.map((letter, idx) => {
@@ -2415,11 +2542,11 @@ pointer-events:none;">
             <span class="countdown-val">${countdown}</span>
           </div>
           <div class="alarm-actions-row">
-            <button class="alarm-action-btn" onclick="openAlarmModal('${alarm.id}')" title="Edit Alarm">
+            <button class="alarm-action-btn" onclick="openAlarmModal('${alarm.id}')" title="Edit Reminder">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Edit
             </button>
-            <button class="alarm-action-btn delete-btn" onclick="deleteAlarm('${alarm.id}')" title="Delete Alarm">
+            <button class="alarm-action-btn delete-btn" onclick="deleteAlarm('${alarm.id}')" title="Delete Reminder">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
               Delete
             </button>
@@ -2430,7 +2557,7 @@ pointer-events:none;">
     }
 
     function renderAlarmsList() {
-      const container = document.getElementById('list-alarms');
+      const container = document.getElementById('list-reminders') || document.getElementById('list-alarms');
       if (!container) return;
       container.innerHTML = '';
 
@@ -2439,10 +2566,10 @@ pointer-events:none;">
         empty.className = 'alarms-empty';
         empty.innerHTML = `
           <div class="alarms-empty-icon">⏰</div>
-          <div class="alarms-empty-title">No Study Alarms Scheduled</div>
-          <div class="alarms-empty-sub">Create your first alarm to receive automatic background alerts 1 minute before study sessions.</div>
-          <button class="add-alarm-btn-top" onclick="openAlarmModal()" style="margin:0 auto;">
-            + Set Study Alarm
+          <div class="alarms-empty-title">No Study Reminders Scheduled</div>
+          <div class="alarms-empty-sub">Add your daily or weekly study sessions to get 1-minute auto alerts before you begin.</div>
+          <button class="add-reminder-btn-top" onclick="openAlarmModal()" style="margin:0 auto;">
+            + Set Study Reminder
           </button>
         `;
         container.appendChild(empty);
@@ -2455,19 +2582,21 @@ pointer-events:none;">
       const totalCount = studyAlarms.length;
       const tabBadge = document.getElementById('cnt-alarms');
       if (tabBadge) tabBadge.textContent = activeCount;
-      const secBadge = document.getElementById('badge-alarms');
+      const secBadge = document.getElementById('badge-reminders') || document.getElementById('badge-alarms');
       if (secBadge) secBadge.textContent = totalCount;
+      const segRemCount = document.getElementById('segRemindersCount');
+      if (segRemCount) segRemCount.textContent = activeCount;
 
       updateNextAlarmLiveNotice();
     }
 
     function updateNextAlarmLiveNotice() {
-      const noticeText = document.getElementById('nextAlarmNoticeText');
+      const noticeText = document.getElementById('nextReminderNoticeText') || document.getElementById('nextAlarmNoticeText');
       if (!noticeText) return;
 
       const enabledAlarms = studyAlarms.filter(a => a.enabled);
       if (!enabledAlarms.length) {
-        noticeText.textContent = 'All alarms are paused. Tap Add Alarm or toggle on to activate.';
+        noticeText.textContent = 'All reminders are paused. Tap New Reminder or toggle on to activate.';
         return;
       }
 
@@ -2485,7 +2614,7 @@ pointer-events:none;">
       });
 
       if (!earliestAlarm || !earliestDate) {
-        noticeText.textContent = 'No upcoming alarms scheduled for selected days.';
+        noticeText.textContent = 'No upcoming reminders scheduled for selected days.';
         return;
       }
 
@@ -2496,7 +2625,7 @@ pointer-events:none;">
       const timeStr = fmt12(earliestAlarm.time);
       const diffStr = hours > 0 ? `in ${hours}h ${mins}m` : `in ${mins}m`;
 
-      noticeText.innerHTML = `Next: <b>${earliestAlarm.label || 'Study Session'}</b> at <b>${timeStr}</b> (${diffStr}) • <i>Auto notification 1 min prior</i>`;
+      noticeText.innerHTML = `Next: <b>${earliestAlarm.label || 'Study Session'}</b> at <b>${timeStr}</b> (${diffStr}) • <i>1-min pre-alert active</i>`;
     }
 
     function updateAlarmCountdowns() {
@@ -2522,10 +2651,10 @@ pointer-events:none;">
       scheduleAllAlarmNotifs();
       syncTodoToFirebase();
       if (alarm.enabled) {
-        showXPToast('Alarm Enabled');
+        showXPToast('Reminder Enabled');
       } else {
         cancelSwAlarmNotif(id);
-        showXPToast('Alarm Paused');
+        showXPToast('Reminder Paused');
       }
     }
 
@@ -2538,46 +2667,36 @@ pointer-events:none;">
       renderAlarmsList();
       scheduleAllAlarmNotifs();
       syncTodoToFirebase();
-      showXPToast('Alarm Removed');
+      showXPToast('Reminder Removed');
     }
 
-    function applyAlarmPreset(time, label, tag, days) {
-      const existing = studyAlarms.find(a => a.time === time && a.label === label);
-      if (existing) {
-        existing.enabled = true;
-        saveStudyAlarms();
-        renderAlarmsList();
-        scheduleAllAlarmNotifs();
-        syncTodoToFirebase();
-        showXPToast('Preset Alarm Activated!');
+    /* ─── FAB Bottom Sheet Action Menu ─── */
+    function handleFabClick() {
+      openFabMenu();
+    }
+
+    function openFabMenu() {
+      const overlay = document.getElementById('fabMenuOverlay');
+      if (overlay) overlay.classList.add('show');
+    }
+
+    function closeFabMenu(e) {
+      if (e && e.target && e.target !== document.getElementById('fabMenuOverlay') && !e.target.classList.contains('fab-menu-cancel-btn')) {
         return;
       }
-
-      const newAlarm = {
-        id: 'alarm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-        time: time,
-        label: label,
-        tag: tag || 'Study',
-        days: days || [0, 1, 2, 3, 4, 5, 6],
-        enabled: true,
-        createdAt: Date.now()
-      };
-
-      studyAlarms.push(newAlarm);
-      saveStudyAlarms();
-      renderAlarmsList();
-      scheduleAllAlarmNotifs();
-      syncTodoToFirebase();
-      showXPToast('⏰ Alarm Added: ' + label);
+      const overlay = document.getElementById('fabMenuOverlay');
+      if (overlay) overlay.classList.remove('show');
     }
 
-    function handleFabClick() {
-      const activeBtn = document.querySelector('.tab-btn.active');
-      const tab = activeBtn ? activeBtn.dataset.tab : 'today';
-      if (tab === 'alarms') {
-        openAlarmModal();
-      } else {
+    function selectFabOption(type) {
+      const overlay = document.getElementById('fabMenuOverlay');
+      if (overlay) overlay.classList.remove('show');
+      if (type === 'task') {
+        switchMainSegment('todo');
         openModal();
+      } else if (type === 'reminder') {
+        switchMainSegment('reminders');
+        openAlarmModal();
       }
     }
 
@@ -2588,12 +2707,12 @@ pointer-events:none;">
       if (editingAlarmId) {
         const a = studyAlarms.find(x => x.id === editingAlarmId);
         if (!a) return;
-        document.getElementById('alarmModalTitle').textContent = 'Edit Study Alarm';
+        document.getElementById('alarmModalTitle').textContent = 'Edit Study Reminder';
         document.getElementById('alarmTimeInput').value = a.time || '07:00';
         document.getElementById('alarmLabelInput').value = a.label || '';
         modalSelectedDays = Array.isArray(a.days) ? [...a.days] : [0,1,2,3,4,5,6];
       } else {
-        document.getElementById('alarmModalTitle').textContent = 'New Study Alarm';
+        document.getElementById('alarmModalTitle').textContent = 'Set Study Reminder';
         document.getElementById('alarmTimeInput').value = '07:00';
         document.getElementById('alarmLabelInput').value = '';
         modalSelectedDays = [0, 1, 2, 3, 4, 5, 6];
@@ -2604,6 +2723,9 @@ pointer-events:none;">
       if (fab) fab.classList.add('open');
       setTimeout(() => document.getElementById('alarmLabelInput').focus(), 300);
     }
+
+    window.openReminderModal = function(id) { openAlarmModal(id); };
+    window.closeReminderModal = function() { closeAlarmModal(); };
 
     function closeAlarmModal() {
       document.getElementById('alarmModalOverlay').classList.remove('show');
@@ -2637,12 +2759,14 @@ pointer-events:none;">
       updateModalDaysUI();
     }
 
+    window.setReminderDaysPreset = setAlarmDaysPreset;
+
     function updateModalDaysUI() {
       document.querySelectorAll('#modalDaysGrid .modal-day-btn').forEach(btn => {
         const day = Number(btn.dataset.day);
         btn.classList.toggle('selected', modalSelectedDays.includes(day));
       });
-      const summaryEl = document.getElementById('alarmDaysSummaryText');
+      const summaryEl = document.getElementById('alarmDaysSummaryText') || document.getElementById('reminderDaysSummaryText');
       if (summaryEl) {
         summaryEl.textContent = 'Repeats: ' + formatDaysSummary(modalSelectedDays);
       }
@@ -2655,6 +2779,8 @@ pointer-events:none;">
         input.focus();
       }
     }
+
+    window.setReminderChip = setAlarmChip;
 
     function saveAlarm() {
       const timeInput = document.getElementById('alarmTimeInput');
@@ -2713,9 +2839,11 @@ pointer-events:none;">
       renderAlarmsList();
       scheduleAllAlarmNotifs();
       syncTodoToFirebase();
-      showXPToast('⏰ Study Alarm Saved!');
-      switchTab('alarms');
+      showXPToast('⏰ Study Reminder Saved!');
+      switchMainSegment('reminders');
     }
+
+    window.saveReminder = saveAlarm;
 
     /* ============================================================
        MODAL: OPEN / CLOSE / SAVE
@@ -3067,6 +3195,15 @@ syncTodoToFirebase();
       document.getElementById('doneCount').textContent  = tasks.filter(t=>t.done).length;
       document.getElementById('totalCount').textContent = tasks.length;
 
+      // Segment counters
+      const pendingTasks = tasks.filter(t => !t.done).length;
+      const segTodoEl = document.getElementById('segTodoCount');
+      if (segTodoEl) segTodoEl.textContent = pendingTasks;
+
+      const activeReminders = studyAlarms.filter(a => a.enabled).length;
+      const segRemEl = document.getElementById('segRemindersCount');
+      if (segRemEl) segRemEl.textContent = activeReminders;
+
       // XP display
       document.getElementById('xpDisplay').textContent = getXP() + ' XP';
 
@@ -3075,7 +3212,7 @@ syncTodoToFirebase();
       renderCalGrid();
       document.getElementById('calDateLabel').textContent = friendlyDate(calSel)||'—';
 
-      // Study Alarms
+      // Study Reminders
       renderAlarmsList();
     }
 
@@ -3148,9 +3285,47 @@ syncTodoToFirebase();
     }
 
     /* ============================================================
-       TAB SWITCHING
+       TAB & MAIN SEGMENT SWITCHING
     ============================================================ */
+    let currentMainSegment = 'todo'; // 'todo' or 'reminders'
+    let currentTodoTab     = 'today';
+
+    function switchMainSegment(seg) {
+      currentMainSegment = seg;
+      const btnTodo = document.getElementById('segBtnTodo');
+      const btnRem  = document.getElementById('segBtnReminders');
+      if (btnTodo) btnTodo.classList.toggle('active', seg === 'todo');
+      if (btnRem)  btnRem.classList.toggle('active', seg === 'reminders');
+
+      const tabBarWrap = document.getElementById('todoTabBarWrap');
+      const panelReminders = document.getElementById('panel-reminders');
+
+      if (seg === 'todo') {
+        if (tabBarWrap) tabBarWrap.classList.remove('hidden');
+        if (panelReminders) panelReminders.classList.remove('active');
+        document.querySelectorAll('.tab-btn').forEach(b =>
+          b.classList.toggle('active', b.dataset.tab === currentTodoTab));
+        document.querySelectorAll('.content-panel').forEach(p =>
+          p.classList.toggle('active', p.id === 'panel-' + currentTodoTab));
+      } else {
+        if (tabBarWrap) tabBarWrap.classList.add('hidden');
+        document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+        if (panelReminders) panelReminders.classList.add('active');
+        renderAlarmsList();
+      }
+      renderAll();
+    }
+
     function switchTab(tab) {
+      if (tab === 'alarms' || tab === 'reminders') {
+        switchMainSegment('reminders');
+        return;
+      }
+      currentTodoTab = tab;
+      if (currentMainSegment !== 'todo') {
+        switchMainSegment('todo');
+        return;
+      }
       document.querySelectorAll('.tab-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.tab===tab));
       document.querySelectorAll('.content-panel').forEach(p =>
@@ -3165,6 +3340,7 @@ syncTodoToFirebase();
       if (e.key === 'Escape') {
         closeModal();
         closeAlarmModal();
+        closeFabMenu();
         dismissAlarmRinging();
       }
       if ((e.ctrlKey||e.metaKey) && e.key==='Enter') {
