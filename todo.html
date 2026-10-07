@@ -810,6 +810,243 @@
     .save-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(91,91,246,0.25); }
 
     /* ============================================================
+       ⏰ STUDY ALARMS & DAILY REMINDERS STYLES
+    ============================================================ */
+    .alarm-hero-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; padding: 16px 18px; margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(91,91,246,0.12), rgba(124,58,237,0.08));
+      border: 1.5px solid rgba(91,91,246,0.25); border-radius: var(--radius-card);
+      box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+    }
+    .alarm-hero-left { display: flex; align-items: center; gap: 13px; }
+    .alarm-hero-icon {
+      width: 44px; height: 44px; border-radius: 14px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; flex-shrink: 0; box-shadow: 0 4px 14px rgba(91,91,246,0.35);
+      font-size: 20px;
+    }
+    .alarm-hero-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .alarm-hero-sub { font-size: 11.5px; color: var(--text2); line-height: 1.35; }
+    .add-alarm-btn-top {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 15px; background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      border: none; border-radius: var(--radius-pill);
+      color: #fff; font-family: var(--font-body); font-size: 12.5px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(91,91,246,0.3);
+      transition: all 0.2s ease; flex-shrink: 0;
+    }
+    .add-alarm-btn-top:active { transform: scale(0.95); }
+
+    .next-alarm-notice {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; background: var(--surface);
+      border: 1.5px solid var(--border); border-radius: 14px;
+      margin-bottom: 18px; font-size: 12px; color: var(--text2); font-weight: 500;
+      box-shadow: var(--shadow-sm);
+    }
+    .next-alarm-notice b { color: var(--teal); font-weight: 700; }
+    .next-alarm-pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.25);
+      animation: pulseGreen 1.8s infinite; flex-shrink: 0;
+    }
+    @keyframes pulseGreen {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+
+    /* Alarms List Cards */
+    .alarms-list { display: flex; flex-direction: column; gap: 13px; margin-bottom: 24px; }
+    .alarm-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-card); padding: 16px 18px;
+      box-shadow: var(--shadow-sm); transition: all 0.22s ease;
+      position: relative;
+    }
+    .alarm-card.disabled { opacity: 0.62; border-color: var(--border-soft); }
+    .alarm-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .alarm-time-wrap { display: flex; align-items: baseline; gap: 6px; }
+    .alarm-time-digits {
+      font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--text); line-height: 1; font-family: var(--font-display);
+    }
+    .alarm-ampm {
+      font-size: 13px; font-weight: 700; color: var(--teal); text-transform: uppercase;
+    }
+    .alarm-card.disabled .alarm-ampm { color: var(--text3); }
+
+    .alarm-card-body { margin-bottom: 12px; }
+    .alarm-title-text {
+      font-size: 14.5px; font-weight: 700; color: var(--text);
+      margin-bottom: 5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .alarm-badge-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700;
+      background: rgba(91,91,246,0.1); color: var(--teal); border: 1px solid rgba(91,91,246,0.2);
+    }
+
+    .alarm-days-row { display: flex; gap: 5px; align-items: center; margin-top: 6px; }
+    .alarm-day-pill {
+      width: 25px; height: 25px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10.5px; font-weight: 700;
+      background: var(--surface2); color: var(--text3);
+      border: 1px solid var(--border); transition: all 0.2s ease;
+    }
+    .alarm-day-pill.active {
+      background: var(--teal); color: #fff; border-color: var(--teal);
+      box-shadow: 0 2px 6px rgba(91,91,246,0.3);
+    }
+    .alarm-card.disabled .alarm-day-pill.active {
+      background: var(--text3); border-color: var(--text3); box-shadow: none;
+    }
+
+    .alarm-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 11px; border-top: 1px solid var(--border);
+      font-size: 11.5px; color: var(--text2);
+    }
+    .alarm-countdown-text {
+      display: flex; align-items: center; gap: 5px; font-weight: 500;
+    }
+    .alarm-countdown-text svg { color: var(--teal); }
+    .alarm-actions-row { display: flex; align-items: center; gap: 6px; }
+    .alarm-action-btn {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 8px; padding: 4px 8px; color: var(--text2);
+      cursor: pointer; font-size: 11px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+      transition: all 0.18s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .alarm-action-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--teal); }
+    .alarm-action-btn.delete-btn:hover { background: rgba(239,68,68,0.08); color: var(--red); border-color: var(--red); }
+
+    /* Empty state */
+    .alarms-empty {
+      background: var(--surface); border: 1.5px dashed var(--border);
+      border-radius: var(--radius-card); padding: 36px 20px;
+      text-align: center; color: var(--text2);
+    }
+    .alarms-empty-icon { font-size: 36px; margin-bottom: 10px; }
+    .alarms-empty-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .alarms-empty-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+
+    /* Quick Presets Section */
+    .alarm-presets-section { margin-top: 24px; padding-bottom: 24px; }
+    .presets-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px; margin-top: 10px;
+    }
+    .preset-card-btn {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 12px 13px; text-align: left;
+      cursor: pointer; transition: all 0.2s ease; display: flex;
+      flex-direction: column; gap: 4px; box-shadow: var(--shadow-sm);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .preset-card-btn:hover {
+      border-color: var(--teal); transform: translateY(-2px); box-shadow: var(--shadow);
+    }
+    .preset-card-btn:active { transform: scale(0.97); }
+    .preset-card-time { font-size: 15px; font-weight: 800; color: var(--teal); }
+    .preset-card-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .preset-card-days { font-size: 10.5px; color: var(--text3); }
+
+    /* Modal Days Grid */
+    .alarm-chips-row {
+      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+      padding: 6px 0 2px; margin-top: 4px;
+    }
+    .alarm-chips-row::-webkit-scrollbar { display: none; }
+    .alarm-chip {
+      padding: 4px 10px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-pill); font-size: 11px; font-weight: 600;
+      color: var(--text2); cursor: pointer; white-space: nowrap; transition: all 0.18s ease;
+    }
+    .alarm-chip:hover { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+
+    .alarm-modal-days-grid {
+      display: flex; gap: 6px; margin: 10px 0; justify-content: space-between;
+    }
+    .modal-day-btn {
+      flex: 1; height: 38px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: var(--surface2);
+      color: var(--text2); font-weight: 700; font-size: 12px;
+      cursor: pointer; transition: all 0.18s ease; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .modal-day-btn.selected {
+      background: var(--teal); border-color: var(--teal); color: #fff;
+      box-shadow: 0 3px 10px rgba(91,91,246,0.3);
+    }
+
+    /* In-App Alarm Ringing Notification Overlay */
+    .alarm-ring-overlay {
+      position: fixed; inset: 0; z-index: 999999;
+      background: rgba(13,17,32,0.82); backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px); display: flex; align-items: center;
+      justify-content: center; padding: 20px; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .alarm-ring-overlay.show { opacity: 1; pointer-events: all; }
+    .alarm-ring-card {
+      background: var(--surface); border: 2px solid var(--teal);
+      border-radius: 28px; max-width: 390px; width: 100%;
+      padding: 30px 24px 24px; text-align: center;
+      box-shadow: 0 24px 60px rgba(91,91,246,0.45);
+      transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      animation: ringCardGlow 2s infinite alternate;
+    }
+    @keyframes ringCardGlow {
+      0% { box-shadow: 0 10px 30px rgba(91,91,246,0.3); }
+      100% { box-shadow: 0 18px 55px rgba(91,91,246,0.6); }
+    }
+    .alarm-ring-overlay.show .alarm-ring-card { transform: scale(1); }
+    .alarm-ring-icon {
+      width: 68px; height: 68px; border-radius: 22px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; font-size: 30px;
+      box-shadow: 0 10px 28px rgba(91,91,246,0.5);
+      animation: bellJiggle 0.8s infinite ease-in-out;
+    }
+    @keyframes bellJiggle {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-14deg); }
+      40% { transform: rotate(14deg); }
+      60% { transform: rotate(-8deg); }
+      80% { transform: rotate(8deg); }
+    }
+    .alarm-ring-tag {
+      display: inline-block; padding: 4px 12px; border-radius: var(--radius-pill);
+      background: rgba(91,91,246,0.12); color: var(--teal); font-size: 11px;
+      font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .alarm-ring-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .alarm-ring-time { font-size: 13.5px; color: var(--text2); margin-bottom: 22px; }
+    .alarm-ring-time b { color: var(--teal); font-weight: 700; }
+    .alarm-ring-actions { display: flex; flex-direction: column; gap: 10px; }
+    .alarm-start-btn {
+      width: 100%; padding: 13px; border-radius: 14px;
+      background: linear-gradient(135deg, #5B5BF6, #7C3AED); border: none;
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 6px 18px rgba(91,91,246,0.35); display: flex;
+      align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .alarm-dismiss-btn {
+      width: 100%; padding: 11px; border-radius: 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+
+    /* ============================================================
        UTILITY
     ============================================================ */
     .hidden { display: none !important; }
@@ -906,6 +1143,17 @@ pointer-events:none;">
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
           Calendar <span class="tab-count" id="cnt-calendar">0</span>
+        </button>
+        <button class="tab-btn" data-tab="alarms" onclick="switchTab('alarms')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="13" r="8"/>
+            <path d="M12 9v4l2 2"/>
+            <path d="M5 3L2 6"/>
+            <path d="M22 6l-3-3"/>
+            <path d="M6.38 18.7L4 21"/>
+            <path d="M17.64 18.67L20 21"/>
+          </svg>
+          Study Alarms <span class="tab-count" id="cnt-alarms">0</span>
         </button>
       </div>
     </div>
@@ -1014,10 +1262,87 @@ pointer-events:none;">
       <div class="tasks-list" id="list-calendar"></div>
     </div>
 
+    <!-- ===== STUDY ALARMS PANEL ===== -->
+    <div class="content-panel" id="panel-alarms">
+
+      <!-- Hero Banner -->
+      <div class="alarm-hero-banner">
+        <div class="alarm-hero-left">
+          <div class="alarm-hero-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="13" r="8"/>
+              <path d="M12 9v4l2 2"/>
+              <path d="M5 3L2 6"/>
+              <path d="M22 6l-3-3"/>
+              <path d="M6.38 18.7L4 21"/>
+              <path d="M17.64 18.67L20 21"/>
+            </svg>
+          </div>
+          <div>
+            <div class="alarm-hero-title">Daily Study Alarms</div>
+            <div class="alarm-hero-sub">Auto background alert 1 min prior • Select weekly days</div>
+          </div>
+        </div>
+        <button class="add-alarm-btn-top" onclick="openAlarmModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Alarm
+        </button>
+      </div>
+
+      <!-- Live Next Alarm Countdown Notice -->
+      <div class="next-alarm-notice" id="nextAlarmNotice">
+        <span class="next-alarm-pulse"></span>
+        <span id="nextAlarmNoticeText">No active alarms scheduled</span>
+      </div>
+
+      <!-- Alarms List -->
+      <div class="section-header">
+        <div class="section-title">
+          Scheduled Study Alarms
+          <span class="section-badge" id="badge-alarms">0</span>
+        </div>
+      </div>
+      <div class="alarms-list" id="list-alarms"></div>
+
+      <!-- Recommended Quick Presets -->
+      <div class="alarm-presets-section">
+        <div class="section-header" style="margin-bottom:8px;">
+          <div class="section-title" style="font-size:13.5px;">
+            ⚡ Quick Study Presets
+          </div>
+        </div>
+        <div class="presets-grid">
+          <div class="preset-card-btn" onclick="applyAlarmPreset('06:00', 'Morning Revision & Formula Recap', 'Revision', [1,2,3,4,5,6])">
+            <span class="preset-card-time">06:00 AM</span>
+            <span class="preset-card-title">🌅 Morning Revision</span>
+            <span class="preset-card-days">Mon – Sat</span>
+          </div>
+          <div class="preset-card-btn" onclick="applyAlarmPreset('14:00', 'Afternoon Practice & Numericals', 'Practice', [0,1,2,3,4,5,6])">
+            <span class="preset-card-time">02:00 PM</span>
+            <span class="preset-card-title">📖 Deep Practice</span>
+            <span class="preset-card-days">Every Day</span>
+          </div>
+          <div class="preset-card-btn" onclick="applyAlarmPreset('19:30', 'Evening Subject Deep Dive', 'Study', [0,1,2,3,4,5,6])">
+            <span class="preset-card-time">07:30 PM</span>
+            <span class="preset-card-title">⚡ Evening Focus</span>
+            <span class="preset-card-days">Every Day</span>
+          </div>
+          <div class="preset-card-btn" onclick="applyAlarmPreset('22:00', 'Night Mock Test & Analysis', 'Mock Test', [1,2,3,4,5])">
+            <span class="preset-card-time">10:00 PM</span>
+            <span class="preset-card-title">🌙 Mock Test Recap</span>
+            <span class="preset-card-days">Mon – Fri</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div><!-- /main-scroll -->
 
   <!-- ====================== FAB ====================== -->
-  <button class="fab" id="fab" onclick="openModal()" aria-label="Add task">
+  <button class="fab" id="fab" onclick="handleFabClick()" aria-label="Add item">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" y1="5" x2="12" y2="19"/>
       <line x1="5" y1="12" x2="19" y2="12"/>
@@ -1097,6 +1422,117 @@ pointer-events:none;">
     </div>
   </div>
 
+  <!-- ====================== STUDY ALARM MODAL ====================== -->
+  <div class="modal-overlay" id="alarmModalOverlay" onclick="handleAlarmOverlayClick(event)">
+    <div class="modal-sheet" id="alarmModalSheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title" id="alarmModalTitle">Set Study Alarm</div>
+        <button class="modal-close" onclick="closeAlarmModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Time Picker -->
+        <div class="field-group">
+          <label class="field-label">Alarm Time</label>
+          <input type="time" class="field-input" id="alarmTimeInput" value="07:00" style="font-size: 20px; font-weight: 800; font-family: var(--font-display); padding: 12px 14px; color: var(--teal);" required />
+        </div>
+
+        <!-- Alarm Title / Subject -->
+        <div class="field-group">
+          <label class="field-label">Study Subject / Session Label</label>
+          <input type="text" class="field-input" id="alarmLabelInput" placeholder="e.g. Mathematics Practice, Physics Revision..." />
+          <!-- Quick Subject Chips -->
+          <div class="alarm-chips-row">
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Mathematics Practice')">📐 Math</button>
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Physics Revision')">⚡ Physics</button>
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Chemistry Numericals')">🧪 Chemistry</button>
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Daily Vocabulary')">📚 Vocab</button>
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Mock Test & Analysis')">📝 Mock Test</button>
+            <button type="button" class="alarm-chip" onclick="setAlarmChip('Evening Daily Recap')">🎯 Recap</button>
+          </div>
+        </div>
+
+        <!-- Days of Week Selector -->
+        <div class="field-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label class="field-label" style="margin-bottom:0;">Repeat on Days</label>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="alarm-chip" style="font-size:10px; padding:2px 8px;" onclick="setAlarmDaysPreset('all')">All Days</button>
+              <button type="button" class="alarm-chip" style="font-size:10px; padding:2px 8px;" onclick="setAlarmDaysPreset('weekdays')">Weekdays</button>
+              <button type="button" class="alarm-chip" style="font-size:10px; padding:2px 8px;" onclick="setAlarmDaysPreset('weekends')">Weekends</button>
+            </div>
+          </div>
+          <div class="alarm-modal-days-grid" id="modalDaysGrid">
+            <button type="button" class="modal-day-btn" data-day="0" onclick="toggleModalDay(0)">Su</button>
+            <button type="button" class="modal-day-btn" data-day="1" onclick="toggleModalDay(1)">Mo</button>
+            <button type="button" class="modal-day-btn" data-day="2" onclick="toggleModalDay(2)">Tu</button>
+            <button type="button" class="modal-day-btn" data-day="3" onclick="toggleModalDay(3)">We</button>
+            <button type="button" class="modal-day-btn" data-day="4" onclick="toggleModalDay(4)">Th</button>
+            <button type="button" class="modal-day-btn" data-day="5" onclick="toggleModalDay(5)">Fr</button>
+            <button type="button" class="modal-day-btn" data-day="6" onclick="toggleModalDay(6)">Sa</button>
+          </div>
+          <div id="alarmDaysSummaryText" style="font-size:11.5px; color:var(--text2); margin-top:4px;">Repeats: Every Day</div>
+        </div>
+
+        <!-- 1 Minute Prior Auto Alert Notice Box -->
+        <div style="background:rgba(91,91,246,0.08); border:1px solid rgba(91,91,246,0.22); border-radius:12px; padding:10px 12px; font-size:11.5px; color:var(--text2); display:flex; gap:8px; align-items:flex-start; margin-bottom:18px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--teal); flex-shrink:0; margin-top:1px;">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <div>
+            <strong style="color:var(--text);">Smart 1-Min Auto Alert:</strong>
+            A background push notification will be sent automatically <b>1 minute before</b> your alarm time so you can prepare your books and sit down on time.
+          </div>
+        </div>
+
+        <button class="save-btn" onclick="saveAlarm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save Study Alarm
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== IN-APP ALARM RINGING OVERLAY ====================== -->
+  <div class="alarm-ring-overlay" id="alarmRingOverlay">
+    <div class="alarm-ring-card">
+      <div class="alarm-ring-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="13" r="8"/>
+          <path d="M12 9v4l2 2"/>
+          <path d="M5 3L2 6"/>
+          <path d="M22 6l-3-3"/>
+          <path d="M6.38 18.7L4 21"/>
+          <path d="M17.64 18.67L20 21"/>
+        </svg>
+      </div>
+      <div class="alarm-ring-tag">⏰ STUDY ALARM RINGING</div>
+      <div class="alarm-ring-title" id="alarmRingTitle">Study Time!</div>
+      <div class="alarm-ring-time" id="alarmRingTime">Scheduled for <b>07:00 AM</b></div>
+      <div class="alarm-ring-actions">
+        <a href="/timer.html" class="alarm-start-btn" onclick="dismissAlarmRinging()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Start Study Timer Now
+        </a>
+        <button class="alarm-dismiss-btn" onclick="dismissAlarmRinging()">
+          Dismiss Alarm
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ====================== JAVASCRIPT ====================== -->
   <script>
     /* ============================================================
@@ -1106,12 +1542,21 @@ pointer-events:none;">
     const STORAGE_XP       = 'uw_xp';          // Shared key with existing app XP system
     const STORAGE_REMIND   = 'uw_reminders';
     const STORAGE_BONUS    = 'uw_todo_daily_bonus';
+    const STORAGE_ALARMS   = 'uw_study_alarms_v1';
 
-    let tasks     = [];            // Array of task objects
-    let editingId = null;          // ID of task being edited (null = new)
-    let calMonth  = new Date();    // Month displayed in calendar grid
-    let calSel    = todayKey();    // Currently selected calendar date (YYYY-MM-DD)
-    let notifTimers = {};          // taskId → setTimeout handle
+    let tasks             = [];            // Array of task objects
+    let studyAlarms       = [];            // Array of study alarm objects
+    let editingId         = null;          // ID of task being edited (null = new)
+    let editingAlarmId    = null;          // ID of alarm being edited (null = new)
+    let modalSelectedDays = [0, 1, 2, 3, 4, 5, 6]; // Selected days in alarm modal
+    let alarmCheckInterval= null;          // Interval for in-page alarm checks
+    let ringAudioContext  = null;          // Web Audio API context for chime
+    let ringAudioInterval = null;          // Audio repetition interval
+    const lastFired1Min   = {};            // key -> boolean tracking 1-min alert fired
+    const lastFiredRing   = {};            // key -> boolean tracking ring fired
+    let calMonth          = new Date();    // Month displayed in calendar grid
+    let calSel            = todayKey();    // Currently selected calendar date (YYYY-MM-DD)
+    let notifTimers       = {};            // taskId → setTimeout handle
 
     /* ============================================================
        DATE HELPERS
@@ -1411,6 +1856,603 @@ pointer-events:none;">
     }
 
     /* ============================================================
+       ⏰ STUDY ALARMS & DAILY REMINDERS ENGINE
+    ============================================================ */
+    function loadStudyAlarms() {
+      try {
+        const raw = localStorage.getItem(STORAGE_ALARMS);
+        if (raw) {
+          studyAlarms = JSON.parse(raw);
+        } else {
+          // Default professional study alarm presets
+          studyAlarms = [
+            {
+              id: 'alarm_def_1',
+              time: '06:00',
+              label: 'Morning Revision & Formula Recap',
+              tag: 'Revision',
+              days: [1, 2, 3, 4, 5, 6],
+              enabled: true,
+              createdAt: Date.now()
+            },
+            {
+              id: 'alarm_def_2',
+              time: '19:30',
+              label: 'Evening Practice & Deep Dive',
+              tag: 'Study',
+              days: [0, 1, 2, 3, 4, 5, 6],
+              enabled: true,
+              createdAt: Date.now()
+            }
+          ];
+          saveStudyAlarms();
+        }
+      } catch(e) {
+        studyAlarms = [];
+      }
+    }
+
+    function saveStudyAlarms() {
+      localStorage.setItem(STORAGE_ALARMS, JSON.stringify(studyAlarms));
+    }
+
+    // Gentle modern audio chime synthesis via Web Audio API (zero external assets required)
+    function playAlarmChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!ringAudioContext) ringAudioContext = new AudioCtx();
+        if (ringAudioContext.state === 'suspended') {
+          ringAudioContext.resume().catch(()=>{});
+        }
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 melodic bell
+        notes.forEach((freq, idx) => {
+          const osc = ringAudioContext.createOscillator();
+          const gain = ringAudioContext.createGain();
+          osc.type = 'sine';
+          const startTime = ringAudioContext.currentTime + idx * 0.12;
+          osc.frequency.setValueAtTime(freq, startTime);
+          gain.gain.setValueAtTime(0.001, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.25, startTime + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.55);
+          osc.connect(gain);
+          gain.connect(ringAudioContext.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.6);
+        });
+      } catch(e) {}
+    }
+
+    // Calculates next occurrence date of an alarm based on selected weekly days
+    function getNextOccurrence(alarm) {
+      if (!alarm || !alarm.days || !alarm.days.length || !alarm.time) return null;
+      const [h, m] = alarm.time.split(':').map(Number);
+      const now = new Date();
+      for (let offset = 0; offset <= 7; offset++) {
+        const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset, h, m, 0, 0);
+        const dayOfWeek = candidate.getDay();
+        if (alarm.days.includes(dayOfWeek)) {
+          if (candidate.getTime() > now.getTime()) {
+            return candidate;
+          }
+        }
+      }
+      return null;
+    }
+
+    function formatCountdown(targetDate) {
+      if (!targetDate) return 'No upcoming ring';
+      const diffMs = targetDate.getTime() - Date.now();
+      if (diffMs <= 0) return 'Ringing soon';
+      const totalMins = Math.round(diffMs / 60000);
+      const hours = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      if (hours === 0) return `Rings in ${mins}m (Auto alert 1 min prior)`;
+      if (hours < 24) return `Rings in ${hours}h ${mins}m (Auto alert 1 min prior)`;
+      const days = Math.floor(hours / 24);
+      const remHours = hours % 24;
+      return `Rings in ${days}d ${remHours}h`;
+    }
+
+    function formatDaysSummary(days) {
+      if (!days || !days.length) return 'Never';
+      if (days.length === 7) return 'Every Day';
+      const dSort = [...days].sort((a,b)=>a-b);
+      if (dSort.length === 5 && [1,2,3,4,5].every(v => dSort.includes(v))) return 'Mon – Fri (Weekdays)';
+      if (dSort.length === 2 && [0,6].every(v => dSort.includes(v))) return 'Sat – Sun (Weekends)';
+      const names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      return dSort.map(d => names[d]).join(', ');
+    }
+
+    // ── Schedule both 1-minute-prior auto alert AND alarm ring in Service Worker ──
+    function scheduleAllAlarmNotifs() {
+      if (!("serviceWorker" in navigator)) return;
+      const now = Date.now();
+      studyAlarms.forEach(alarm => {
+        if (!alarm.enabled) {
+          cancelSwAlarmNotif(alarm.id);
+          return;
+        }
+        const nextDate = getNextOccurrence(alarm);
+        if (!nextDate) return;
+        const nextTime = nextDate.getTime();
+
+        // ⚡ 1 MINUTE PRIOR Auto Background Alert
+        const oneMinPrior = nextTime - 60000;
+        if (oneMinPrior > now) {
+          scheduleSwAlarmNotif({
+            id: 'alarm_1min_' + alarm.id,
+            endTime: oneMinPrior,
+            title: '⏰ Study Alarm in 1 Minute!',
+            body: `Get ready! "${alarm.label || 'Study Session'}" starts at ${fmt12(alarm.time)}. Grab your notes!`,
+            url: '/todo.html'
+          });
+        }
+
+        // Exact Alarm Time notification
+        if (nextTime > now) {
+          scheduleSwAlarmNotif({
+            id: 'alarm_ring_' + alarm.id,
+            endTime: nextTime,
+            title: '🔔 Study Time Now!',
+            body: `Time to start: "${alarm.label || 'Study Session'}" (${fmt12(alarm.time)}). Let's achieve your study goals!`,
+            url: '/todo.html'
+          });
+        }
+      });
+    }
+
+    function scheduleSwAlarmNotif(opts) {
+      const msg = {
+        type: 'SCHEDULE_NOTIFICATION',
+        id: opts.id,
+        endTime: opts.endTime,
+        title: opts.title,
+        body: opts.body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        url: opts.url || '/todo.html'
+      };
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage(msg);
+      }
+      navigator.serviceWorker.ready.then(reg => {
+        if (reg.active) reg.active.postMessage(msg);
+      }).catch(()=>{});
+    }
+
+    function cancelSwAlarmNotif(alarmId) {
+      ['alarm_1min_', 'alarm_ring_'].forEach(prefix => {
+        const msg = { type: 'CANCEL_NOTIFICATION', id: prefix + alarmId };
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage(msg);
+        }
+        navigator.serviceWorker.ready.then(reg => {
+          if (reg.active) reg.active.postMessage(msg);
+        }).catch(()=>{});
+      });
+    }
+
+    // ── In-page interval check (every 10s) ──
+    function checkAlarmTriggers() {
+      const now = new Date();
+      const currentDay = now.getDay();
+      const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+      const dateStr = dateKey(now);
+
+      studyAlarms.forEach(alarm => {
+        if (!alarm.enabled) return;
+        if (!alarm.days || !alarm.days.includes(currentDay)) return;
+
+        const [ah, am] = alarm.time.split(':').map(Number);
+        const alarmTotalMins = ah * 60 + am;
+
+        // ── 1 MINUTE PRIOR ALERT ──
+        const oneMinKey = `${dateStr}_${alarm.id}_${alarmTotalMins - 1}`;
+        if (currentTotalMins === alarmTotalMins - 1 && !lastFired1Min[oneMinKey]) {
+          lastFired1Min[oneMinKey] = true;
+          playAlarmChime();
+          fireNotif(
+            '⏰ Study Alarm in 1 Minute!',
+            `Get ready: "${alarm.label || 'Study Session'}" starts at ${fmt12(alarm.time)}.`
+          );
+        }
+
+        // ── EXACT ALARM TIME RINGING ──
+        const ringKey = `${dateStr}_${alarm.id}_${alarmTotalMins}`;
+        if (currentTotalMins === alarmTotalMins && !lastFiredRing[ringKey]) {
+          lastFiredRing[ringKey] = true;
+          triggerAlarmRinging(alarm);
+        }
+      });
+
+      updateAlarmCountdowns();
+    }
+
+    function triggerAlarmRinging(alarm) {
+      fireNotif(
+        '🔔 Study Time Now!',
+        `Time to study: "${alarm.label || 'Study Session'}" (${fmt12(alarm.time)})`
+      );
+
+      const overlay = document.getElementById('alarmRingOverlay');
+      if (overlay) {
+        document.getElementById('alarmRingTitle').textContent = alarm.label || 'Study Time!';
+        document.getElementById('alarmRingTime').innerHTML = `Scheduled for <b>${fmt12(alarm.time)}</b>`;
+        overlay.classList.add('show');
+      }
+
+      playAlarmChime();
+      if (ringAudioInterval) clearInterval(ringAudioInterval);
+      ringAudioInterval = setInterval(playAlarmChime, 2500);
+
+      // Auto-stop ringing audio after 45 seconds to avoid battery consumption
+      setTimeout(() => {
+        if (ringAudioInterval) {
+          clearInterval(ringAudioInterval);
+          ringAudioInterval = null;
+        }
+      }, 45000);
+    }
+
+    function dismissAlarmRinging() {
+      const overlay = document.getElementById('alarmRingOverlay');
+      if (overlay) overlay.classList.remove('show');
+      if (ringAudioInterval) {
+        clearInterval(ringAudioInterval);
+        ringAudioInterval = null;
+      }
+    }
+
+    function buildAlarmCard(alarm) {
+      const card = document.createElement('div');
+      card.className = 'alarm-card' + (alarm.enabled ? '' : ' disabled');
+      card.dataset.alarmId = alarm.id;
+
+      const [h, m] = alarm.time.split(':').map(Number);
+      const timeFormatted = `${h % 12 || 12}:${pad(m)}`;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const nextOccurrence = alarm.enabled ? getNextOccurrence(alarm) : null;
+      const countdown = alarm.enabled ? formatCountdown(nextOccurrence) : 'Alarm paused';
+
+      const dayNames = ['S','M','T','W','T','F','S'];
+      const dayPillsHtml = dayNames.map((letter, idx) => {
+        const isActive = alarm.days && alarm.days.includes(idx);
+        return `<div class="alarm-day-pill ${isActive ? 'active' : ''}">${letter}</div>`;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="alarm-card-header">
+          <div class="alarm-time-wrap">
+            <span class="alarm-time-digits">${timeFormatted}</span>
+            <span class="alarm-ampm">${ampm}</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" ${alarm.enabled ? 'checked' : ''} onchange="toggleAlarmEnabled('${alarm.id}')" />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="alarm-card-body">
+          <div class="alarm-title-text">
+            <span>${alarm.label || 'Study Session'}</span>
+            ${alarm.tag ? `<span class="alarm-badge-tag">${alarm.tag}</span>` : ''}
+          </div>
+          <div class="alarm-days-row">
+            ${dayPillsHtml}
+            <span style="font-size:11px; color:var(--text3); margin-left:6px;">${formatDaysSummary(alarm.days)}</span>
+          </div>
+        </div>
+        <div class="alarm-card-footer">
+          <div class="alarm-countdown-text">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="countdown-val">${countdown}</span>
+          </div>
+          <div class="alarm-actions-row">
+            <button class="alarm-action-btn" onclick="openAlarmModal('${alarm.id}')" title="Edit Alarm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button class="alarm-action-btn delete-btn" onclick="deleteAlarm('${alarm.id}')" title="Delete Alarm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    function renderAlarmsList() {
+      const container = document.getElementById('list-alarms');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!studyAlarms.length) {
+        const empty = document.createElement('div');
+        empty.className = 'alarms-empty';
+        empty.innerHTML = `
+          <div class="alarms-empty-icon">⏰</div>
+          <div class="alarms-empty-title">No Study Alarms Scheduled</div>
+          <div class="alarms-empty-sub">Create your first alarm to receive automatic background alerts 1 minute before study sessions.</div>
+          <button class="add-alarm-btn-top" onclick="openAlarmModal()" style="margin:0 auto;">
+            + Set Study Alarm
+          </button>
+        `;
+        container.appendChild(empty);
+      } else {
+        const sorted = [...studyAlarms].sort((a,b) => a.time.localeCompare(b.time));
+        sorted.forEach(alarm => container.appendChild(buildAlarmCard(alarm)));
+      }
+
+      const activeCount = studyAlarms.filter(a => a.enabled).length;
+      const totalCount = studyAlarms.length;
+      const tabBadge = document.getElementById('cnt-alarms');
+      if (tabBadge) tabBadge.textContent = activeCount;
+      const secBadge = document.getElementById('badge-alarms');
+      if (secBadge) secBadge.textContent = totalCount;
+
+      updateNextAlarmLiveNotice();
+    }
+
+    function updateNextAlarmLiveNotice() {
+      const noticeText = document.getElementById('nextAlarmNoticeText');
+      if (!noticeText) return;
+
+      const enabledAlarms = studyAlarms.filter(a => a.enabled);
+      if (!enabledAlarms.length) {
+        noticeText.textContent = 'All alarms are paused. Tap Add Alarm or toggle on to activate.';
+        return;
+      }
+
+      let earliestTime = Infinity;
+      let earliestAlarm = null;
+      let earliestDate = null;
+
+      enabledAlarms.forEach(alarm => {
+        const nextDate = getNextOccurrence(alarm);
+        if (nextDate && nextDate.getTime() < earliestTime) {
+          earliestTime = nextDate.getTime();
+          earliestAlarm = alarm;
+          earliestDate = nextDate;
+        }
+      });
+
+      if (!earliestAlarm || !earliestDate) {
+        noticeText.textContent = 'No upcoming alarms scheduled for selected days.';
+        return;
+      }
+
+      const diffMs = earliestDate.getTime() - Date.now();
+      const totalMins = Math.round(diffMs / 60000);
+      const hours = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      const timeStr = fmt12(earliestAlarm.time);
+      const diffStr = hours > 0 ? `in ${hours}h ${mins}m` : `in ${mins}m`;
+
+      noticeText.innerHTML = `Next: <b>${earliestAlarm.label || 'Study Session'}</b> at <b>${timeStr}</b> (${diffStr}) • <i>Auto notification 1 min prior</i>`;
+    }
+
+    function updateAlarmCountdowns() {
+      document.querySelectorAll('.alarm-card').forEach(card => {
+        const id = card.dataset.alarmId;
+        const alarm = studyAlarms.find(a => a.id === id);
+        if (!alarm || !alarm.enabled) return;
+        const el = card.querySelector('.countdown-val');
+        if (el) {
+          const nextDate = getNextOccurrence(alarm);
+          el.textContent = formatCountdown(nextDate);
+        }
+      });
+      updateNextAlarmLiveNotice();
+    }
+
+    function toggleAlarmEnabled(id) {
+      const alarm = studyAlarms.find(a => a.id === id);
+      if (!alarm) return;
+      alarm.enabled = !alarm.enabled;
+      saveStudyAlarms();
+      renderAlarmsList();
+      scheduleAllAlarmNotifs();
+      syncTodoToFirebase();
+      if (alarm.enabled) {
+        showXPToast('Alarm Enabled');
+      } else {
+        cancelSwAlarmNotif(id);
+        showXPToast('Alarm Paused');
+      }
+    }
+
+    function deleteAlarm(id) {
+      const idx = studyAlarms.findIndex(a => a.id === id);
+      if (idx < 0) return;
+      cancelSwAlarmNotif(id);
+      studyAlarms.splice(idx, 1);
+      saveStudyAlarms();
+      renderAlarmsList();
+      scheduleAllAlarmNotifs();
+      syncTodoToFirebase();
+      showXPToast('Alarm Removed');
+    }
+
+    function applyAlarmPreset(time, label, tag, days) {
+      const existing = studyAlarms.find(a => a.time === time && a.label === label);
+      if (existing) {
+        existing.enabled = true;
+        saveStudyAlarms();
+        renderAlarmsList();
+        scheduleAllAlarmNotifs();
+        syncTodoToFirebase();
+        showXPToast('Preset Alarm Activated!');
+        return;
+      }
+
+      const newAlarm = {
+        id: 'alarm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        time: time,
+        label: label,
+        tag: tag || 'Study',
+        days: days || [0, 1, 2, 3, 4, 5, 6],
+        enabled: true,
+        createdAt: Date.now()
+      };
+
+      studyAlarms.push(newAlarm);
+      saveStudyAlarms();
+      renderAlarmsList();
+      scheduleAllAlarmNotifs();
+      syncTodoToFirebase();
+      showXPToast('⏰ Alarm Added: ' + label);
+    }
+
+    function handleFabClick() {
+      const activeBtn = document.querySelector('.tab-btn.active');
+      const tab = activeBtn ? activeBtn.dataset.tab : 'today';
+      if (tab === 'alarms') {
+        openAlarmModal();
+      } else {
+        openModal();
+      }
+    }
+
+    function openAlarmModal(id) {
+      editingAlarmId = id || null;
+      const fab = document.getElementById('fab');
+
+      if (editingAlarmId) {
+        const a = studyAlarms.find(x => x.id === editingAlarmId);
+        if (!a) return;
+        document.getElementById('alarmModalTitle').textContent = 'Edit Study Alarm';
+        document.getElementById('alarmTimeInput').value = a.time || '07:00';
+        document.getElementById('alarmLabelInput').value = a.label || '';
+        modalSelectedDays = Array.isArray(a.days) ? [...a.days] : [0,1,2,3,4,5,6];
+      } else {
+        document.getElementById('alarmModalTitle').textContent = 'New Study Alarm';
+        document.getElementById('alarmTimeInput').value = '07:00';
+        document.getElementById('alarmLabelInput').value = '';
+        modalSelectedDays = [0, 1, 2, 3, 4, 5, 6];
+      }
+
+      updateModalDaysUI();
+      document.getElementById('alarmModalOverlay').classList.add('show');
+      if (fab) fab.classList.add('open');
+      setTimeout(() => document.getElementById('alarmLabelInput').focus(), 300);
+    }
+
+    function closeAlarmModal() {
+      document.getElementById('alarmModalOverlay').classList.remove('show');
+      const fab = document.getElementById('fab');
+      if (fab) fab.classList.remove('open');
+      editingAlarmId = null;
+    }
+
+    function handleAlarmOverlayClick(e) {
+      if (e.target === document.getElementById('alarmModalOverlay')) closeAlarmModal();
+    }
+
+    function toggleModalDay(dayIndex) {
+      dayIndex = Number(dayIndex);
+      if (modalSelectedDays.includes(dayIndex)) {
+        if (modalSelectedDays.length === 1) {
+          showXPToast('Select at least 1 day');
+          return;
+        }
+        modalSelectedDays = modalSelectedDays.filter(d => d !== dayIndex);
+      } else {
+        modalSelectedDays.push(dayIndex);
+      }
+      updateModalDaysUI();
+    }
+
+    function setAlarmDaysPreset(preset) {
+      if (preset === 'all') modalSelectedDays = [0,1,2,3,4,5,6];
+      else if (preset === 'weekdays') modalSelectedDays = [1,2,3,4,5];
+      else if (preset === 'weekends') modalSelectedDays = [0,6];
+      updateModalDaysUI();
+    }
+
+    function updateModalDaysUI() {
+      document.querySelectorAll('#modalDaysGrid .modal-day-btn').forEach(btn => {
+        const day = Number(btn.dataset.day);
+        btn.classList.toggle('selected', modalSelectedDays.includes(day));
+      });
+      const summaryEl = document.getElementById('alarmDaysSummaryText');
+      if (summaryEl) {
+        summaryEl.textContent = 'Repeats: ' + formatDaysSummary(modalSelectedDays);
+      }
+    }
+
+    function setAlarmChip(label) {
+      const input = document.getElementById('alarmLabelInput');
+      if (input) {
+        input.value = label;
+        input.focus();
+      }
+    }
+
+    function saveAlarm() {
+      const timeInput = document.getElementById('alarmTimeInput');
+      const labelInput = document.getElementById('alarmLabelInput');
+      const time = timeInput.value;
+      let label = labelInput.value.trim();
+
+      if (!time) {
+        timeInput.style.borderColor = 'var(--red-priority)';
+        setTimeout(() => timeInput.style.borderColor='', 1500);
+        return;
+      }
+      if (!label) {
+        label = 'Study Session';
+      }
+      if (!modalSelectedDays.length) {
+        modalSelectedDays = [0,1,2,3,4,5,6];
+      }
+
+      let tag = 'Study';
+      const lower = label.toLowerCase();
+      if (lower.includes('math')) tag = 'Math';
+      else if (lower.includes('phys')) tag = 'Physics';
+      else if (lower.includes('chem')) tag = 'Chemistry';
+      else if (lower.includes('bio')) tag = 'Biology';
+      else if (lower.includes('revis')) tag = 'Revision';
+      else if (lower.includes('mock') || lower.includes('test')) tag = 'Mock Test';
+      else if (lower.includes('vocab')) tag = 'Vocab';
+
+      if (editingAlarmId) {
+        const idx = studyAlarms.findIndex(a => a.id === editingAlarmId);
+        if (idx > -1) {
+          studyAlarms[idx] = {
+            ...studyAlarms[idx],
+            time,
+            label,
+            tag,
+            days: [...modalSelectedDays],
+            enabled: true
+          };
+        }
+      } else {
+        studyAlarms.push({
+          id: 'alarm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          time,
+          label,
+          tag,
+          days: [...modalSelectedDays],
+          enabled: true,
+          createdAt: Date.now()
+        });
+      }
+
+      saveStudyAlarms();
+      closeAlarmModal();
+      renderAlarmsList();
+      scheduleAllAlarmNotifs();
+      syncTodoToFirebase();
+      showXPToast('⏰ Study Alarm Saved!');
+      switchTab('alarms');
+    }
+
+    /* ============================================================
        MODAL: OPEN / CLOSE / SAVE
     ============================================================ */
     // Returns the date a NEW task should default to, based on whichever
@@ -1508,8 +2550,9 @@ pointer-events:none;">
       if (!user) return;
       try {
         await window.UW.syncData({
-          tasks:  tasks,
-          name:   user.displayName || user.email || "Anonymous"
+          tasks:        tasks,
+          studyAlarms:  studyAlarms,
+          name:         user.displayName || user.email || "Anonymous"
         });
         console.log("[Todo] Synced to Firebase");
       } catch(e) {
@@ -1536,6 +2579,12 @@ pointer-events:none;">
           tasks = data.tasks;
           saveTasks();
           renderAll();
+        }
+        if (Array.isArray(data.studyAlarms) && data.studyAlarms.length > 0) {
+          studyAlarms = data.studyAlarms;
+          saveStudyAlarms();
+          renderAlarmsList();
+          scheduleAllAlarmNotifs();
         }
         if (data.xp !== undefined) {
           // setXP already called by UW Core loadUserData, just update UI
@@ -1760,6 +2809,9 @@ syncTodoToFirebase();
       renderStrip();
       renderCalGrid();
       document.getElementById('calDateLabel').textContent = friendlyDate(calSel)||'—';
+
+      // Study Alarms
+      renderAlarmsList();
     }
 
     /* ============================================================
@@ -1845,9 +2897,14 @@ syncTodoToFirebase();
        KEYBOARD SHORTCUTS
     ============================================================ */
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') {
+        closeModal();
+        closeAlarmModal();
+        dismissAlarmRinging();
+      }
       if ((e.ctrlKey||e.metaKey) && e.key==='Enter') {
         if (document.getElementById('modalOverlay').classList.contains('show')) saveTask();
+        if (document.getElementById('alarmModalOverlay').classList.contains('show')) saveAlarm();
       }
     });
 
@@ -1865,10 +2922,14 @@ syncTodoToFirebase();
     (function init() {
       loadTasks();
       loadReminders();
+      loadStudyAlarms();
       checkNotifBanner();
       renderAll();
       scheduleTaskNotifs();
       scheduleReminders();
+      scheduleAllAlarmNotifs();
+      if (alarmCheckInterval) clearInterval(alarmCheckInterval);
+      alarmCheckInterval = setInterval(checkAlarmTriggers, 10000);
       loadFromFirebase();
     })();
   </script>
