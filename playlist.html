@@ -1793,7 +1793,7 @@ input::placeholder { color: var(--text3); }
 
 /* fixed-playlist-header — already defined above */
 
-/* ── VIDEO WRAPPER, YOUTUBE-STYLE PINCH ZOOM & FULLSCREEN LANDSCAPE ── */
+/* ── VIDEO WRAPPER & YOUTUBE ZOOM CONTROLS ── */
 .video-wrapper {
   position: relative;
   width: 100%;
@@ -1801,7 +1801,6 @@ input::placeholder { color: var(--text3); }
   background: #000;
   flex-shrink: 0;
   overflow: hidden;
-  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1819,13 +1818,111 @@ input::placeholder { color: var(--text3); }
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
-/* Gesture interceptor layer */
-.video-gesture-overlay {
+/* Pan layer: STRICTLY pointer-events: none at 100% zoom so ALL YouTube taps pass through!
+   Only activated (pointer-events: auto) when user explicitly zooms in > 100% */
+.video-pan-layer {
   position: absolute;
   inset: 0;
   z-index: 8;
+  pointer-events: none;
   touch-action: none;
+  cursor: grab;
+}
+.video-pan-layer.active {
   pointer-events: auto;
+}
+.video-pan-layer.dragging {
+  cursor: grabbing;
+}
+
+/* YouTube style auto-hiding Zoom In / Zoom Out controls */
+.video-zoom-bar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(15, 23, 42, 0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 99px;
+  padding: 3px 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease;
+  opacity: 1;
+  pointer-events: auto;
+}
+.video-zoom-bar.autohide {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  visibility: hidden;
+}
+
+.zoom-bar-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.zoom-bar-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.zoom-bar-btn:active {
+  transform: scale(0.88);
+}
+
+.zoom-level-label {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 2px 6px;
+  min-width: 38px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.zoom-level-label:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.zoom-bar-reset-btn {
+  background: rgba(239, 68, 68, 0.25);
+  border: none;
+  color: #fca5a5;
+  width: 22px;
+  height: 22px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.zoom-bar-reset-btn.visible {
+  display: flex;
+}
+.zoom-bar-reset-btn:hover {
+  background: rgba(239, 68, 68, 0.45);
+}
+.zoom-bar-reset-btn:active {
+  transform: scale(0.88);
 }
 
 /* YouTube style zoom pill indicator */
@@ -1848,7 +1945,7 @@ input::placeholder { color: var(--text3); }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 15;
+  z-index: 22;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -1857,54 +1954,6 @@ input::placeholder { color: var(--text3); }
   opacity: 1;
   transform: translateX(-50%) translateY(0) scale(1);
 }
-
-/* Reset zoom button */
-.video-zoom-reset-btn {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
-  border-radius: 99px;
-  padding: 5px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  z-index: 15;
-  display: none;
-  align-items: center;
-  gap: 5px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-  transition: transform 0.15s ease, background 0.2s ease;
-}
-.video-zoom-reset-btn.visible { display: flex; }
-.video-zoom-reset-btn:active { transform: scale(0.92); }
-
-/* Quick Landscape / Rotate Button */
-.video-rotate-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
-  background: rgba(15, 23, 42, 0.78);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 15;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-  transition: transform 0.15s ease, background 0.2s ease;
-}
-.video-rotate-btn:active { transform: scale(0.9); }
 
 /* Fullscreen / Landscape modes */
 .video-wrapper:fullscreen,
@@ -2823,10 +2872,11 @@ if (_flBtn) {
 }
 flShowBtn();
 
-// Initialize YouTube-style pinch zoom & landscape orientation engine
+// Initialize YouTube-style auto-hiding zoom controls & reset zoom to 100%
 try {
   resetVideoZoom();
-  initPinchToZoom();
+  initZoomPanControls();
+  showZoomBar(true);
 } catch(e) {}
 
 }
@@ -2962,31 +3012,33 @@ function closePlayer() {
 
 /* ════════════════════════════════════════════════════════════
    🔍 YOUTUBE-STYLE PINCH TO ZOOM & PAN ENGINE
-   - Supports 2-finger smooth pinch zoom (1x to 4.5x)
-   - Smooth 1-finger panning while zoomed in
-   - Double-tap toggle zoom (1x <-> 2x / Fill)
-   - Elastic rubberband snapback when zooming below 1x
-   - Real-time zoom level badge pill
-   - Seamlessly works in Portrait AND Landscape / Fullscreen!
+    - YouTube-style Auto-Hiding Zoom In / Zoom Out Controls
+    - Unblocked YouTube iframe (100% native clicks, taps, settings, play/pause)
+    - Auto-hides after 2.8s of inactivity, smoothly reappears on interaction
+    - Drag-to-pan when zoomed in (> 100%), instant reset to 100%
 ════════════════════════════════════════════════════════════ */
 let videoZoomScale = 1.0;
 let videoPanX = 0;
 let videoPanY = 0;
-let isPinching = false;
-let isPanning = false;
-let pinchStartDist = 0;
-let pinchStartScale = 1.0;
-let pinchStartPanX = 0;
-let pinchStartPanY = 0;
-let pinchStartMidX = 0;
-let pinchStartMidY = 0;
-let panStartX = 0;
-let panStartY = 0;
-let lastPanX = 0;
-let lastPanY = 0;
-let lastTapTime = 0;
 let zoomBadgeTimer = null;
-let pinchZoomInitialized = false;
+let zoomAutoHideTimer = null;
+let zoomPanInitialized = false;
+
+function showZoomBar(autoHide = true) {
+  const bar = document.getElementById("videoZoomBar");
+  if (!bar) return;
+  bar.classList.remove("autohide");
+  if (zoomAutoHideTimer) clearTimeout(zoomAutoHideTimer);
+  if (autoHide) {
+    zoomAutoHideTimer = setTimeout(() => {
+      // Don't auto-hide if user is actively hovering on the zoom bar
+      try {
+        if (bar.matches(":hover")) return;
+      } catch (err) {}
+      bar.classList.add("autohide");
+    }, 2800);
+  }
+}
 
 function applyVideoTransform(animate = false) {
   const container = document.getElementById("playerVideoContainer");
@@ -3003,15 +3055,28 @@ function applyVideoTransform(animate = false) {
 
   container.style.transform = `translate(${videoPanX}px, ${videoPanY}px) scale(${videoZoomScale})`;
 
-  // Update UI Elements
-  const resetBtn = document.getElementById("videoZoomResetBtn");
-  if (resetBtn) {
-    if (videoZoomScale > 1.05) {
-      resetBtn.classList.add("visible");
-      const span = resetBtn.querySelector("span");
-      if (span) span.textContent = Math.round(videoZoomScale * 100) + "%";
+  // Update Zoom Text & Quick Reset Button
+  const zoomText = document.getElementById("zoomLevelText");
+  if (zoomText) {
+    zoomText.textContent = Math.round(videoZoomScale * 100) + "%";
+  }
+  const quickResetBtn = document.getElementById("zoomQuickResetBtn");
+  if (quickResetBtn) {
+    if (videoZoomScale > 1.02) {
+      quickResetBtn.classList.add("visible");
     } else {
-      resetBtn.classList.remove("visible");
+      quickResetBtn.classList.remove("visible");
+    }
+  }
+
+  // Pan layer is STRICTLY active ONLY when zoomed in (> 100%)
+  // At 100%, it remains pointer-events: none so native YouTube taps & clicks are NEVER blocked!
+  const panLayer = document.getElementById("videoPanLayer");
+  if (panLayer) {
+    if (videoZoomScale > 1.05) {
+      panLayer.classList.add("active");
+    } else {
+      panLayer.classList.remove("active");
     }
   }
 }
@@ -3029,140 +3094,153 @@ function showZoomBadge(text) {
   }, 1300);
 }
 
+window.zoomVideoIn = function(e) {
+  if (e) e.stopPropagation();
+  showZoomBar(true);
+  const steps = [1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
+  let nextScale = steps.find(s => s > videoZoomScale + 0.05);
+  if (!nextScale) nextScale = Math.min(3.0, videoZoomScale + 0.25);
+  videoZoomScale = Math.round(nextScale * 100) / 100;
+  applyVideoTransform(true);
+  showZoomBadge(Math.round(videoZoomScale * 100) + "%");
+};
+
+window.zoomVideoOut = function(e) {
+  if (e) e.stopPropagation();
+  showZoomBar(true);
+  const steps = [3.0, 2.5, 2.0, 1.75, 1.5, 1.25, 1.0];
+  let prevScale = steps.find(s => s < videoZoomScale - 0.05);
+  if (!prevScale) prevScale = Math.max(1.0, videoZoomScale - 0.25);
+  videoZoomScale = Math.round(prevScale * 100) / 100;
+  if (videoZoomScale <= 1.02) {
+    videoZoomScale = 1.0;
+    videoPanX = 0;
+    videoPanY = 0;
+  } else {
+    // Reclamp pan within bounds
+    const wrapper = document.getElementById("videoWrapper");
+    if (wrapper) {
+      const rect = wrapper.getBoundingClientRect();
+      const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
+      const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
+      videoPanX = Math.max(-maxPanX, Math.min(maxPanX, videoPanX));
+      videoPanY = Math.max(-maxPanY, Math.min(maxPanY, videoPanY));
+    }
+  }
+  applyVideoTransform(true);
+  showZoomBadge(Math.round(videoZoomScale * 100) + "%");
+};
+
 window.resetVideoZoom = function(e) {
   if (e) e.stopPropagation();
   videoZoomScale = 1.0;
   videoPanX = 0;
   videoPanY = 0;
   applyVideoTransform(true);
-  showZoomBadge("Original (100%)");
+  showZoomBadge("100%");
+  showZoomBar(true);
 };
 
-function initPinchToZoom() {
-  if (pinchZoomInitialized) return;
+function initZoomPanControls() {
+  if (zoomPanInitialized) return;
   const wrapper = document.getElementById("videoWrapper");
-  const gestureOverlay = document.getElementById("videoGestureOverlay");
-  if (!wrapper || !gestureOverlay) return;
-  pinchZoomInitialized = true;
+  const panLayer = document.getElementById("videoPanLayer");
+  const zoomBar = document.getElementById("videoZoomBar");
+  if (!wrapper || !panLayer) return;
+  zoomPanInitialized = true;
 
-  gestureOverlay.addEventListener("touchstart", (e) => {
-    const container = document.getElementById("playerVideoContainer");
-    if (container) container.classList.remove("animating");
+  // Auto-hide controller interactions: shows on movement or touch, hides after 2.8s
+  wrapper.addEventListener("mousemove", () => showZoomBar(true));
+  wrapper.addEventListener("mouseenter", () => showZoomBar(true));
+  wrapper.addEventListener("touchstart", () => showZoomBar(true), { passive: true });
 
-    if (e.touches.length === 2) {
-      isPinching = true;
-      isPanning = false;
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      pinchStartDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-      pinchStartScale = videoZoomScale;
-      pinchStartPanX = videoPanX;
-      pinchStartPanY = videoPanY;
-      pinchStartMidX = (t1.clientX + t2.clientX) / 2;
-      pinchStartMidY = (t1.clientY + t2.clientY) / 2;
-    } else if (e.touches.length === 1) {
-      const now = Date.now();
-      if (now - lastTapTime < 300) {
-        // Double tap toggle
-        if (videoZoomScale > 1.05) {
-          videoZoomScale = 1.0;
-          videoPanX = 0;
-          videoPanY = 0;
-          applyVideoTransform(true);
-          showZoomBadge("100%");
-        } else {
-          videoZoomScale = 2.0;
-          videoPanX = 0;
-          videoPanY = 0;
-          applyVideoTransform(true);
-          showZoomBadge("Zoomed (200%)");
-        }
-        lastTapTime = 0;
-        return;
-      }
-      lastTapTime = now;
+  if (zoomBar) {
+    zoomBar.addEventListener("mouseenter", () => {
+      if (zoomAutoHideTimer) clearTimeout(zoomAutoHideTimer);
+    });
+    zoomBar.addEventListener("mouseleave", () => showZoomBar(true));
+  }
 
-      if (videoZoomScale > 1.05) {
-        isPanning = true;
-        panStartX = e.touches[0].clientX;
-        panStartY = e.touches[0].clientY;
-        lastPanX = videoPanX;
-        lastPanY = videoPanY;
-      }
-    }
-  }, { passive: false });
+  // Panning when zoomed in (> 100%)
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let lastX = 0, lastY = 0;
 
-  gestureOverlay.addEventListener("touchmove", (e) => {
-    if (isPinching && e.touches.length === 2) {
-      e.preventDefault();
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-      const ratio = currentDist / (pinchStartDist || 1);
-      let targetScale = pinchStartScale * ratio;
-      // Clamp with slight elasticity
-      targetScale = Math.max(0.8, Math.min(targetScale, 4.5));
-      videoZoomScale = targetScale;
-
-      const currentMidX = (t1.clientX + t2.clientX) / 2;
-      const currentMidY = (t1.clientY + t2.clientY) / 2;
-      videoPanX = pinchStartPanX + (currentMidX - pinchStartMidX);
-      videoPanY = pinchStartPanY + (currentMidY - pinchStartMidY);
-
-      applyVideoTransform(false);
-      showZoomBadge(Math.round(videoZoomScale * 100) + "%");
-    } else if (isPanning && e.touches.length === 1 && videoZoomScale > 1.05) {
-      e.preventDefault();
-      const dx = e.touches[0].clientX - panStartX;
-      const dy = e.touches[0].clientY - panStartY;
-      
-      const rect = wrapper.getBoundingClientRect();
-      const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
-      const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
-
-      let targetX = lastPanX + dx;
-      let targetY = lastPanY + dy;
-      
-      // Bounded panning with gentle elasticity
-      videoPanX = Math.max(-maxPanX - 30, Math.min(maxPanX + 30, targetX));
-      videoPanY = Math.max(-maxPanY - 30, Math.min(maxPanY + 30, targetY));
-
-      applyVideoTransform(false);
-    }
-  }, { passive: false });
-
-  const endHandler = () => {
-    if (isPinching || isPanning) {
-      isPinching = false;
-      isPanning = false;
-
-      // Elastic snap-back
-      let needSnap = false;
-      if (videoZoomScale < 1.02) {
-        videoZoomScale = 1.0;
-        videoPanX = 0;
-        videoPanY = 0;
-        needSnap = true;
-      } else if (videoZoomScale > 4.0) {
-        videoZoomScale = 4.0;
-        needSnap = true;
-      }
-
-      const rect = wrapper.getBoundingClientRect();
-      const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
-      const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
-
-      if (videoPanX > maxPanX) { videoPanX = maxPanX; needSnap = true; }
-      if (videoPanX < -maxPanX) { videoPanX = -maxPanX; needSnap = true; }
-      if (videoPanY > maxPanY) { videoPanY = maxPanY; needSnap = true; }
-      if (videoPanY < -maxPanY) { videoPanY = -maxPanY; needSnap = true; }
-
-      applyVideoTransform(needSnap);
-    }
+  const onStart = (clientX, clientY) => {
+    if (videoZoomScale <= 1.05) return;
+    isDragging = true;
+    startX = clientX;
+    startY = clientY;
+    lastX = videoPanX;
+    lastY = videoPanY;
+    panLayer.classList.add("dragging");
   };
 
-  gestureOverlay.addEventListener("touchend", endHandler);
-  gestureOverlay.addEventListener("touchcancel", endHandler);
+  const onMove = (clientX, clientY) => {
+    if (!isDragging || videoZoomScale <= 1.05) return;
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+
+    const rect = wrapper.getBoundingClientRect();
+    const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
+    const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
+
+    videoPanX = Math.max(-maxPanX - 25, Math.min(maxPanX + 25, lastX + dx));
+    videoPanY = Math.max(-maxPanY - 25, Math.min(maxPanY + 25, lastY + dy));
+    applyVideoTransform(false);
+  };
+
+  const onEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    panLayer.classList.remove("dragging");
+
+    const rect = wrapper.getBoundingClientRect();
+    const maxPanX = Math.max(0, ((videoZoomScale - 1) * rect.width) / 2);
+    const maxPanY = Math.max(0, ((videoZoomScale - 1) * rect.height) / 2);
+    videoPanX = Math.max(-maxPanX, Math.min(maxPanX, videoPanX));
+    videoPanY = Math.max(-maxPanY, Math.min(maxPanY, videoPanY));
+    applyVideoTransform(true);
+  };
+
+  // Mouse pan (only triggered on panLayer when active, i.e., zoomed in)
+  panLayer.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    onStart(e.clientX, e.clientY);
+  });
+  window.addEventListener("mousemove", (e) => {
+    if (isDragging) onMove(e.clientX, e.clientY);
+  });
+  window.addEventListener("mouseup", onEnd);
+
+  // Touch pan (only on panLayer when active)
+  panLayer.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      onStart(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  panLayer.addEventListener("touchmove", (e) => {
+    if (isDragging && e.touches.length === 1) {
+      onMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  panLayer.addEventListener("touchend", onEnd);
+  panLayer.addEventListener("touchcancel", onEnd);
+
+  // Double tap / double click on panLayer resets zoom to 100%
+  let lastTap = 0;
+  panLayer.addEventListener("click", (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      resetVideoZoom(e);
+      lastTap = 0;
+    } else {
+      lastTap = now;
+      showZoomBar(true);
+    }
+  });
 }
 
 /* ══════════════════════════════════════════
@@ -3178,21 +3256,11 @@ window.togglePlayerLandscape = function(e) {
   if (!wrapper) return;
 
   const isLandscape = wrapper.classList.contains("is-landscape-fullscreen");
-  const rotateBtn = document.getElementById("videoRotateBtn");
 
   if (!isLandscape) {
     // Enter Landscape Fullscreen
     wrapper.classList.add("is-landscape-fullscreen");
     isPlayerLandscape = true;
-    
-    if (rotateBtn) {
-      rotateBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6l7 7M4 10h6m0 0V4m0 6L3 3m17 7h-6m0 0V4m0 6l7-7"/>
-        </svg>
-      `;
-      rotateBtn.title = "Exit Landscape Fullscreen";
-    }
 
     if (screen.orientation && typeof screen.orientation.lock === "function") {
       screen.orientation.lock("landscape").catch(() => {
@@ -3211,15 +3279,6 @@ window.togglePlayerLandscape = function(e) {
     // Exit Landscape Fullscreen
     wrapper.classList.remove("is-landscape-fullscreen");
     exitPlayerLandscape();
-
-    if (rotateBtn) {
-      rotateBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-        </svg>
-      `;
-      rotateBtn.title = "Toggle Landscape / Portrait Fullscreen";
-    }
   }
 };
 
@@ -3227,16 +3286,6 @@ function exitPlayerLandscape() {
   isPlayerLandscape = false;
   const wrapper = document.getElementById("videoWrapper");
   if (wrapper) wrapper.classList.remove("is-landscape-fullscreen");
-
-  const rotateBtn = document.getElementById("videoRotateBtn");
-  if (rotateBtn) {
-    rotateBtn.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-      </svg>
-    `;
-    rotateBtn.title = "Toggle Landscape / Portrait Fullscreen";
-  }
 
   if (screen.orientation && typeof screen.orientation.unlock === "function") {
     try { screen.orientation.unlock(); } catch (e) {}
@@ -3261,18 +3310,10 @@ function onNativeFullscreenChange() {
                document.msFullscreenElement;
 
   const wrapper = document.getElementById("videoWrapper");
-  const rotateBtn = document.getElementById("videoRotateBtn");
 
   if (fsEl) {
     isPlayerLandscape = true;
     if (wrapper) wrapper.classList.add("is-landscape-fullscreen");
-    if (rotateBtn) {
-      rotateBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6l7 7M4 10h6m0 0V4m0 6L3 3m17 7h-6m0 0V4m0 6l7-7"/>
-        </svg>
-      `;
-    }
     if (screen.orientation && typeof screen.orientation.lock === "function") {
       screen.orientation.lock("landscape").catch(() => {
         screen.orientation.lock("landscape-primary").catch(() => {});
@@ -3281,24 +3322,15 @@ function onNativeFullscreenChange() {
   } else {
     isPlayerLandscape = false;
     if (wrapper) wrapper.classList.remove("is-landscape-fullscreen");
-    if (rotateBtn) {
-      rotateBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-        </svg>
-      `;
-    }
     if (screen.orientation && typeof screen.orientation.unlock === "function") {
       try { screen.orientation.unlock(); } catch (e) {}
     }
   }
 }
-
 document.addEventListener("fullscreenchange", onNativeFullscreenChange);
 document.addEventListener("webkitfullscreenchange", onNativeFullscreenChange);
 document.addEventListener("mozfullscreenchange", onNativeFullscreenChange);
 document.addEventListener("MSFullscreenChange", onNativeFullscreenChange);
-
 /* ─────────────────────────────────────────────────────────────
    WATCH TIME TRACKER + MOTIVATION POPUPS
    _videoStartTime: set when playVideo() called, cleared on close
@@ -4442,21 +4474,30 @@ window.updateVideoTitle = function(id, newTitle) {
     </div>
     <div class="video-wrapper" id="videoWrapper">
         <div class="player-video-container" id="playerVideoContainer"></div>
-        <!-- Smart YouTube-style Pinch-to-Zoom Gesture Overlay -->
-        <div class="video-gesture-overlay" id="videoGestureOverlay"></div>
+        
+        <!-- Pan layer: strictly pointer-events:none at 100% scale so all YouTube iframe taps/clicks work natively!
+             Only active when scale > 1.0 to let users drag/pan the enlarged video frame -->
+        <div class="video-pan-layer" id="videoPanLayer"></div>
+
+        <!-- Sleek Auto-Hiding Zoom In / Zoom Out Controls: Fades out after 2.8s of inactivity, never obstructs YouTube taps -->
+        <div class="video-zoom-bar autohide" id="videoZoomBar">
+          <button type="button" class="zoom-bar-btn" id="zoomOutBtn" onclick="zoomVideoOut(event)" title="Zoom Out" aria-label="Zoom Out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="zoom-level-label" id="zoomLevelText" onclick="resetVideoZoom(event)" title="Click to Reset (100%)">100%</span>
+          <button type="button" class="zoom-bar-btn" id="zoomInBtn" onclick="zoomVideoIn(event)" title="Zoom In" aria-label="Zoom In">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button type="button" class="zoom-bar-reset-btn" id="zoomQuickResetBtn" onclick="resetVideoZoom(event)" title="Reset Zoom to 100%" aria-label="Reset Zoom">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+
+        <!-- Zoom Floating Badge indicator -->
         <div class="video-zoom-badge" id="videoZoomBadge">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
           <span id="videoZoomBadgeText">100%</span>
         </div>
-        <button class="video-zoom-reset-btn" id="videoZoomResetBtn" onclick="resetVideoZoom(event)" title="Reset Zoom to 100%">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-          <span>100%</span>
-        </button>
-        <button class="video-rotate-btn" id="videoRotateBtn" onclick="togglePlayerLandscape(event)" title="Toggle Landscape / Portrait Fullscreen">
-          <svg id="rotateBtnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-          </svg>
-        </button>
     </div>
     <div class="notes-section">
         <div class="notes-header-row">
