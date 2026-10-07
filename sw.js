@@ -274,6 +274,22 @@ self.addEventListener("message", event => {
     return;
   }
 
+  if (data.type === "SHOW_NOTIFICATION") {
+    const { title = "Study Grid Prep", body = "", url = "/todo.html", tag = "sgp_notif_" + Date.now() } = data;
+    event.waitUntil(
+      self.registration.showNotification(title, {
+        body: body,
+        icon: APP_ICON,
+        badge: APP_ICON,
+        vibrate: [200, 100, 200],
+        requireInteraction: true,
+        tag: tag,
+        data: { url: url }
+      }).catch(err => console.warn("[SW] showNotification failed:", err))
+    );
+    return;
+  }
+
   if (data.type === "SCHEDULE_NOTIFICATION") {
     const { id = "default", endTime, title, body, url } = data;
     const delay = endTime - Date.now();
@@ -283,6 +299,22 @@ self.addEventListener("message", event => {
       if (ex.timeout) clearTimeout(ex.timeout);
       if (ex.resolve) ex.resolve();
       scheduledNotifications.delete(id);
+    }
+
+    // If due right now or within the past minute, show immediately
+    if (delay <= 1000 && delay > -60000) {
+      event.waitUntil(
+        self.registration.showNotification(title || "Study Grid Prep", {
+          body: body || "",
+          icon: APP_ICON,
+          badge: APP_ICON,
+          vibrate: [200, 100, 200],
+          requireInteraction: true,
+          tag: id,
+          data: { url: url || "/" }
+        }).catch(err => console.warn("[SW] immediate show failed:", err))
+      );
+      return;
     }
 
     if (delay <= 0) return;
@@ -300,20 +332,22 @@ self.addEventListener("message", event => {
           data: { url: url || "/" }
         }).catch(err => console.warn("[SW] showTrigger failed:", err))
       );
-      return;
     }
 
+    // Always keep fallback timeout running
     event.waitUntil(new Promise(resolve => {
       const timeout = setTimeout(async () => {
-        await self.registration.showNotification(title || "Study Grid Prep", {
-          body: body || "",
-          icon: APP_ICON,
-          badge: APP_ICON,
-          vibrate: [200, 100, 200],
-          requireInteraction: true,
-          tag: id,
-          data: { url: url || "/" }
-        });
+        try {
+          await self.registration.showNotification(title || "Study Grid Prep", {
+            body: body || "",
+            icon: APP_ICON,
+            badge: APP_ICON,
+            vibrate: [200, 100, 200],
+            requireInteraction: true,
+            tag: id,
+            data: { url: url || "/" }
+          });
+        } catch(e) {}
         scheduledNotifications.delete(id);
         resolve();
       }, delay);

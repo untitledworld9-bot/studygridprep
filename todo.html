@@ -268,7 +268,7 @@
        TAB BAR
     ============================================================ */
     .tab-bar-wrap {
-      position: sticky; top: var(--header-h); z-index: 90;
+      position: sticky; top: calc(var(--header-h) + 56px); z-index: 90;
       background: var(--header-bg);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
@@ -812,20 +812,23 @@
     /* ============================================================
        ⏰ STUDY REMINDERS & SEGMENTED CONTROLS
     ============================================================ */
-    /* Top Main Segmented Switcher (Under Header) */
+    /* Top Main Segmented Switcher (Inside main-scroll, right below header) */
     .main-segment-wrap {
-      padding: 12px 16px 8px;
+      padding: 8px 16px;
       position: sticky;
-      top: 0;
-      z-index: 60;
-      background: var(--bg);
+      top: var(--header-h);
+      z-index: 95;
+      background: var(--header-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
     .main-segment-bar {
       display: flex;
       background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: var(--radius-pill);
-      padding: 4px;
+      padding: 3px;
       gap: 5px;
       box-shadow: var(--shadow-sm);
     }
@@ -835,13 +838,14 @@
       align-items: center;
       justify-content: center;
       gap: 7px;
-      padding: 9px 12px;
+      padding: 7px 12px;
       border-radius: var(--radius-pill);
       border: none;
       background: transparent;
       color: var(--text2);
       font-family: var(--font-body);
       font-size: 13px;
+      line-height: 1.2;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1000,6 +1004,27 @@
     @keyframes pulseDot {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.75); }
+    }
+    .test-reminder-btn {
+      margin-left: auto;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .test-reminder-btn:active {
+      transform: scale(0.95);
+      background: var(--teal-dim);
     }
 
     /* Study Reminders List Cards */
@@ -1380,28 +1405,6 @@ pointer-events:none;">
     </div>
   </header>
 
-  <!-- ====================== MAIN SEGMENT SWITCHER (UNDER HEADER) ====================== -->
-  <div class="main-segment-wrap">
-    <div class="main-segment-bar">
-      <button class="main-segment-btn active" id="segBtnTodo" onclick="switchMainSegment('todo')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-        </svg>
-        Todo Tasks
-        <span class="seg-badge" id="segTodoCount">0</span>
-      </button>
-      <button class="main-segment-btn" id="segBtnReminders" onclick="switchMainSegment('reminders')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 01-3.46 0"/>
-        </svg>
-        Study Reminders
-        <span class="seg-badge" id="segRemindersCount">0</span>
-      </button>
-    </div>
-  </div>
-
   <!-- ====================== XP TOAST ====================== -->
   <div class="xp-toast" id="xpToast">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -1410,6 +1413,28 @@ pointer-events:none;">
 
   <!-- ====================== MAIN SCROLL ====================== -->
   <div class="main-scroll">
+
+    <!-- MAIN SEGMENT SWITCHER (Under Header, Flush with no gap) -->
+    <div class="main-segment-wrap">
+      <div class="main-segment-bar">
+        <button class="main-segment-btn active" id="segBtnTodo" onclick="switchMainSegment('todo')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+          Todo Tasks
+          <span class="seg-badge" id="segTodoCount">0</span>
+        </button>
+        <button class="main-segment-btn" id="segBtnReminders" onclick="switchMainSegment('reminders')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+          Study Reminders
+          <span class="seg-badge" id="segRemindersCount">0</span>
+        </button>
+      </div>
+    </div>
 
     <!-- TAB BAR (Active when Todo Tasks is selected) -->
     <div class="tab-bar-wrap" id="todoTabBarWrap">
@@ -1567,10 +1592,13 @@ pointer-events:none;">
         </button>
       </div>
 
-      <!-- Live Next Reminder Notice -->
+      <!-- Live Next Reminder Notice with Test Button -->
       <div class="next-reminder-notice" id="nextReminderNotice">
         <span class="next-alarm-pulse"></span>
-        <span id="nextReminderNoticeText">No active reminders scheduled</span>
+        <span id="nextReminderNoticeText" style="flex:1;">No active reminders scheduled</span>
+        <button type="button" class="test-reminder-btn" onclick="testReminderNotification()" title="Verify alerts on your device">
+          🔔 Test Alert
+        </button>
       </div>
 
       <!-- Reminders List -->
@@ -2023,31 +2051,37 @@ pointer-events:none;">
     }
 
         // Use the existing app notification system if available, otherwise fall back
+    // Use the existing app notification system if available, otherwise fall back
     function fireNotif(title, body) {
-      if (Notification.permission !== 'granted') return;
       if (typeof window.showUWNotification === 'function') {
-        window.showUWNotification(title, body); return;
+        try { window.showUWNotification(title, body); } catch(e){}
       }
-      
-      // Options me badge aur baki cheezein add kar di (Focus.html jaisa)
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
       const options = { 
-          body: body, 
-          icon: '/icon-192.png', 
-          badge: '/icon-192.png', // <-- YE ZAROORI HAI chhote icon ke liye
-          vibrate: [200, 100, 200], // <-- Mast feel ke liye
-          requireInteraction: true, // <-- Jab tak click na ho notification hatega nahi
-          tag: 'uw-todo-' + Date.now(),
-          data: { url: "/todo.html" } 
+        body: body, 
+        icon: '/icon-192.png', 
+        badge: '/icon-192.png',
+        vibrate: [250, 100, 250],
+        requireInteraction: true,
+        tag: 'uw-reminder-' + Date.now(),
+        data: { url: "/todo.html" } 
       };
 
-      // Direct Service Worker se notification bhejenge (Isse logo 100% aayega)
       if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.ready.then(reg => {
-              reg.showNotification(title, options);
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SHOW_NOTIFICATION',
+            title: title,
+            body: body,
+            url: '/todo.html'
           });
+        }
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, options).catch(()=>{});
+        }).catch(()=>{});
       } else {
-          // Agar service worker support nahi karta toh fallback
-          new Notification(title, options);
+        try { new Notification(title, options); } catch(e){}
       }
     }
 
@@ -2388,6 +2422,59 @@ pointer-events:none;">
         switchTab(oneMinPopupTargetTab || 'today');
       }
     }
+
+    // ── Test Alert Function for User Device Verification ──
+    async function testReminderNotification() {
+      // 1. Request browser / PWA notification permission if not yet granted
+      if ('Notification' in window) {
+        if (Notification.permission !== 'granted') {
+          try {
+            const res = await Notification.requestPermission();
+            checkNotifBanner();
+            if (res !== 'granted') {
+              window.showTodoNotifDialog();
+              return;
+            }
+          } catch(e) {
+            window.showTodoNotifDialog();
+            return;
+          }
+        }
+      }
+
+      // 2. Play audio chime
+      playAlarmChime();
+
+      // 3. Show in-app 1-minute popup preview
+      showOneMinPopup({
+        type: 'reminder',
+        title: 'Demo Study Reminder (Test)',
+        time: 'Right Now',
+        tag: '🔔 Alert Verified',
+        tab: 'reminders'
+      });
+
+      // 4. Send immediate notification
+      fireNotif(
+        '🔔 Study Reminder Test Alert!',
+        'Great news! Reminders and notifications are fully enabled and working on your device.'
+      );
+
+      // 5. Schedule 5-second background test through Service Worker
+      if ('serviceWorker' in navigator) {
+        const testEndTime = Date.now() + 5000;
+        scheduleSwAlarmNotif({
+          id: 'test_sw_alert_' + Date.now(),
+          endTime: testEndTime,
+          title: '⏰ Study Reminder in 1 Minute (Test)!',
+          body: 'This is how your upcoming study session alerts will look even if you are outside the app.',
+          url: '/todo.html'
+        });
+      }
+
+      showXPToast('🔔 Test notification sent! Check notification bar');
+    }
+
 
     // ── In-page interval check (every 10s) ──
     function checkAlarmTriggers() {
@@ -2782,7 +2869,7 @@ pointer-events:none;">
 
     window.setReminderChip = setAlarmChip;
 
-    function saveAlarm() {
+    async function saveAlarm() {
       const timeInput = document.getElementById('alarmTimeInput');
       const labelInput = document.getElementById('alarmLabelInput');
       const time = timeInput.value;
@@ -2796,6 +2883,20 @@ pointer-events:none;">
       if (!label) {
         label = 'Study Session';
       }
+
+      // Check / request notification permission if not yet decided
+      if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+          try {
+            await Notification.requestPermission();
+            checkNotifBanner();
+          } catch(e) {}
+        }
+        if (Notification.permission === 'denied') {
+          showXPToast('⚠️ Notifications blocked. Tap banner to enable');
+        }
+      }
+
       if (!modalSelectedDays.length) {
         modalSelectedDays = [0,1,2,3,4,5,6];
       }
@@ -2810,6 +2911,7 @@ pointer-events:none;">
       else if (lower.includes('mock') || lower.includes('test')) tag = 'Mock Test';
       else if (lower.includes('vocab')) tag = 'Vocab';
 
+      let targetAlarmId = editingAlarmId;
       if (editingAlarmId) {
         const idx = studyAlarms.findIndex(a => a.id === editingAlarmId);
         if (idx > -1) {
@@ -2823,8 +2925,9 @@ pointer-events:none;">
           };
         }
       } else {
+        targetAlarmId = 'alarm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
         studyAlarms.push({
-          id: 'alarm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          id: targetAlarmId,
           time,
           label,
           tag,
@@ -2833,6 +2936,12 @@ pointer-events:none;">
           createdAt: Date.now()
         });
       }
+
+      // Clear today's 1-min fired marker for this alarm ID so newly set/edited time can ring today
+      const todayDKey = dateKey(new Date());
+      delete lastFired1Min[`${todayDKey}_alarm_${targetAlarmId}`];
+      delete lastFiredRing[`${todayDKey}_${targetAlarmId}`];
+      localStorage.removeItem(`uw_popup_1min_${todayDKey}_alarm_${targetAlarmId}`);
 
       saveStudyAlarms();
       closeAlarmModal();
@@ -3358,9 +3467,18 @@ syncTodoToFirebase();
     });
 
     /* ============================================================
-       INIT
+       INIT & LIFECYCLE
     ============================================================ */
     (function init() {
+      // 1. Ensure Service Worker is registered for background push & reminder notifications
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(reg => {
+          // Re-schedule once registration resolves
+          scheduleAllAlarmNotifs();
+          scheduleTaskNotifs();
+        }).catch(err => console.warn('[SW] Register notice:', err));
+      }
+
       loadTasks();
       loadReminders();
       loadStudyAlarms();
@@ -3373,6 +3491,18 @@ syncTodoToFirebase();
       alarmCheckInterval = setInterval(checkAlarmTriggers, 10000);
       loadFromFirebase();
     })();
+
+    // Re-check reminders and re-sync timers whenever app becomes visible or focused
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkAlarmTriggers();
+        scheduleAllAlarmNotifs();
+      }
+    });
+    window.addEventListener('focus', () => {
+      checkAlarmTriggers();
+      scheduleAllAlarmNotifs();
+    });
   </script>
 
 <script src="theme.js"></script>
