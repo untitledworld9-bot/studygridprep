@@ -140,7 +140,7 @@ canvas{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:14px 18px;
+  padding:10px 16px;
   background:var(--header-bg);
   border-bottom:1px solid var(--border);
   position:sticky; top:0; z-index:9999;
@@ -149,13 +149,13 @@ canvas{
   box-shadow:var(--shadow-sm);
 }
 .wlc-logo-row{
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:8px;
 }
 .wlc-logo-icon{
-  width:36px; height:36px; border-radius:11px;
+  width:32px; height:32px; border-radius:9px;
   overflow:hidden;
   flex-shrink:0;
-  box-shadow:0 4px 12px rgba(91,91,246,0.25);
+  box-shadow:0 3px 10px rgba(91,91,246,0.25);
 }
 .wlc-logo-icon img{
   width:100%; height:100%; object-fit:cover; display:block;
@@ -164,18 +164,18 @@ canvas{
   display:flex; flex-direction:column;
 }
 .wlc-logo-name{
-  font-size:14px; font-weight:800; color:var(--text);
+  font-size:13.5px; font-weight:800; color:var(--text);
   letter-spacing:-0.2px; line-height:1;
 }
 .wlc-logo-sub{
-  font-size:10px; font-weight:500; color:var(--text3);
-  margin-top:2px; letter-spacing:0.2px;
+  font-size:9.5px; font-weight:500; color:var(--text3);
+  margin-top:1px; letter-spacing:0.2px;
 }
 .wlc-header-badge{
-  display:flex; align-items:center; gap:5px;
-  padding:6px 12px;
+  display:flex; align-items:center; gap:4px;
+  padding:4px 10px;
   border-radius:50px;
-  font-size:11.5px; font-weight:700;
+  font-size:11px; font-weight:700;
   transition:var(--t);
 }
 .wlc-header-badge.new-member{
@@ -195,7 +195,7 @@ canvas{
   z-index:1;
   width:100%;
   max-width:420px;
-  padding:16px 14px 32px 14px;
+  padding:8px 13px 18px 13px;
   display:flex;
   flex-direction:column;
   gap:0;
@@ -206,17 +206,17 @@ canvas{
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:20px 0 16px 0;
+  padding:6px 0 8px 0;
   text-align:center;
 }
 .wlc-avatar{
-  width:76px; height:76px;
-  border-radius:22px;
+  width:56px; height:56px;
+  border-radius:18px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
   display:flex; align-items:center; justify-content:center;
-  font-size:32px; font-weight:800; color:#fff;
-  box-shadow:0 8px 28px rgba(91,91,246,0.35);
-  margin-bottom:12px;
+  font-size:24px; font-weight:800; color:#fff;
+  box-shadow:0 6px 20px rgba(91,91,246,0.32);
+  margin-bottom:6px;
   animation:avatarPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
   letter-spacing:-1px;
 }
@@ -225,33 +225,33 @@ canvas{
   to{ transform:scale(1) rotate(0deg); opacity:1; }
 }
 .wlc-hero-title{
-  font-size:21px; font-weight:800; color:var(--text);
-  line-height:1.25; margin-bottom:4px;
+  font-size:18px; font-weight:800; color:var(--text);
+  line-height:1.2; margin-bottom:2px;
   letter-spacing:-0.3px;
 }
 .wlc-hero-sub{
-  font-size:12.5px; color:var(--text2); font-weight:400;
-  line-height:1.5; max-width:300px;
+  font-size:11px; color:var(--text2); font-weight:400;
+  line-height:1.35; max-width:290px;
 }
 
 /* ─── 6 COMPACT FEATURE CARDS ─── */
 .wlc-features-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin:4px 0 12px 0;
+  gap:6px;
+  margin:3px 0 8px 0;
 }
 
 .wlc-feat-card{
   background:var(--surface);
-  border-radius:16px;
-  padding:12px 11px;
+  border-radius:13px;
+  padding:9px 9px 8px 9px;
   box-shadow:var(--shadow-sm);
-  display:flex; flex-direction:column; gap:7px;
+  display:flex; flex-direction:column; gap:5px;
   transition:all 0.2s ease;
   cursor:default;
   position:relative; overflow:hidden;
-  min-height:98px;
+  min-height:74px;
 }
 .wlc-feat-card:active{ transform:scale(0.98); }
 
@@ -264,21 +264,13 @@ canvas{
 [data-theme="light"] .wlc-feat-focus { background:#fff; border-color:rgba(16,185,129,0.2); }
 [data-theme="dark"]  .wlc-feat-focus { background:var(--surface); }
 
-.wlc-feat-ai { border:1.5px solid rgba(91,91,246,0.22); }
-[data-theme="light"] .wlc-feat-ai { background:#fff; border-color:rgba(91,91,246,0.2); }
-[data-theme="dark"]  .wlc-feat-ai { background:var(--surface); }
+.wlc-feat-progress { border:1.5px solid rgba(249,115,22,0.22); }
+[data-theme="light"] .wlc-feat-progress { background:#fff; border-color:rgba(249,115,22,0.2); }
+[data-theme="dark"]  .wlc-feat-progress { background:var(--surface); }
 
 .wlc-feat-playlist { border:1.5px solid rgba(239,68,68,0.22); }
 [data-theme="light"] .wlc-feat-playlist { background:#fff; border-color:rgba(239,68,68,0.2); }
 [data-theme="dark"]  .wlc-feat-playlist { background:var(--surface); }
-
-.wlc-feat-todo { border:1.5px solid rgba(14,165,233,0.22); }
-[data-theme="light"] .wlc-feat-todo { background:#fff; border-color:rgba(14,165,233,0.2); }
-[data-theme="dark"]  .wlc-feat-todo { background:var(--surface); }
-
-.wlc-feat-progress { border:1.5px solid rgba(249,115,22,0.22); }
-[data-theme="light"] .wlc-feat-progress { background:#fff; border-color:rgba(249,115,22,0.2); }
-[data-theme="dark"]  .wlc-feat-progress { background:var(--surface); }
 
 .wlc-feat-contenthub { border:1.5px solid rgba(245,158,11,0.25); }
 [data-theme="light"] .wlc-feat-contenthub { background:#fff; border-color:rgba(245,158,11,0.25); }
@@ -289,41 +281,37 @@ canvas{
 [data-theme="dark"]  .wlc-feat-community { background:var(--surface); }
 
 .wlc-feat-icon-wrap{
-  width:34px; height:34px; border-radius:10px;
+  width:28px; height:28px; border-radius:8px;
   display:flex; align-items:center; justify-content:center;
-  font-size:15px; flex-shrink:0;
+  font-size:13px; flex-shrink:0;
 }
 .wlc-feat-mock       .wlc-feat-icon-wrap{ background:rgba(124,58,237,0.12); color:#7C3AED; }
 .wlc-feat-focus      .wlc-feat-icon-wrap{ background:rgba(16,185,129,0.12);  color:#10B981; }
-.wlc-feat-ai         .wlc-feat-icon-wrap{ background:rgba(91,91,246,0.12);  color:#5B5BF6; }
-.wlc-feat-playlist   .wlc-feat-icon-wrap{ background:rgba(239,68,68,0.12);  color:#EF4444; }
-.wlc-feat-todo       .wlc-feat-icon-wrap{ background:rgba(14,165,233,0.12); color:#0EA5E9; }
 .wlc-feat-progress   .wlc-feat-icon-wrap{ background:rgba(249,115,22,0.12); color:#F97316; }
+.wlc-feat-playlist   .wlc-feat-icon-wrap{ background:rgba(239,68,68,0.12);  color:#EF4444; }
 .wlc-feat-contenthub .wlc-feat-icon-wrap{ background:rgba(245,158,11,0.14); color:#D97706; }
 .wlc-feat-community  .wlc-feat-icon-wrap{ background:rgba(236,72,153,0.14); color:#EC4899; }
 
 .wlc-feat-label{
-  font-size:12px; font-weight:700; color:var(--text); line-height:1.25;
+  font-size:11px; font-weight:700; color:var(--text); line-height:1.2;
 }
 .wlc-feat-sub{
-  font-size:10px; color:var(--text2); font-weight:500; line-height:1.35;
-  margin-top:2px;
+  font-size:9px; color:var(--text2); font-weight:500; line-height:1.25;
+  margin-top:1px;
 }
 
 /* Feature Badge Tags */
 .wlc-tag{
-  position:absolute; top:8px; right:8px;
-  font-size:8px; font-weight:800; letter-spacing:0.6px;
+  position:absolute; top:6px; right:6px;
+  font-size:7px; font-weight:800; letter-spacing:0.5px;
   text-transform:uppercase;
-  padding:2px 6px; border-radius:50px;
+  padding:1.5px 5px; border-radius:50px;
   line-height:1;
 }
 .wlc-feat-mock       .wlc-tag{ background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.28); color:#7C3AED; }
 .wlc-feat-focus      .wlc-tag{ background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.28); color:#10B981; }
-.wlc-feat-ai         .wlc-tag{ background:rgba(91,91,246,0.12); border:1px solid rgba(91,91,246,0.28); color:#5B5BF6; }
-.wlc-feat-playlist   .wlc-tag{ background:rgba(239,68,68,0.10);  border:1px solid rgba(239,68,68,0.25);  color:#EF4444; }
-.wlc-feat-todo       .wlc-tag{ background:rgba(14,165,233,0.12); border:1px solid rgba(14,165,233,0.28); color:#0EA5E9; }
 .wlc-feat-progress   .wlc-tag{ background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.28); color:#F97316; }
+.wlc-feat-playlist   .wlc-tag{ background:rgba(239,68,68,0.10);  border:1px solid rgba(239,68,68,0.25);  color:#EF4444; }
 .wlc-feat-contenthub .wlc-tag{ background:rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.3);  color:#D97706; }
 .wlc-feat-community  .wlc-tag{ background:rgba(236,72,153,0.14); border:1px solid rgba(236,72,153,0.3);  color:#EC4899; }
 
@@ -331,22 +319,22 @@ canvas{
 .wlc-agree-card{
   background:var(--surface);
   border:1px solid var(--border);
-  border-radius:15px;
-  padding:12px 14px;
-  margin:2px 0 10px 0;
+  border-radius:12px;
+  padding:8px 12px;
+  margin:0 0 7px 0;
   box-shadow:var(--shadow-sm);
 }
 .wlc-agree-row{
   display:flex;
   align-items:flex-start;
-  gap:9px;
-  font-size:12px;
+  gap:7px;
+  font-size:11px;
   color:var(--text2);
-  line-height:1.5;
+  line-height:1.4;
 }
 .wlc-agree-row input[type="checkbox"]{
-  margin-top:2px;
-  width:16px; height:16px;
+  margin-top:1px;
+  width:14px; height:14px;
   accent-color:var(--accent);
   cursor:pointer; flex-shrink:0;
 }
@@ -359,20 +347,20 @@ canvas{
 /* ─── CTA BUTTON ─── */
 .wlc-btn{
   width:100%;
-  padding:14px 22px;
+  padding:11px 18px;
   background:linear-gradient(135deg,#5B5BF6,#7C3AED);
   color:#fff;
   font-weight:700;
-  font-size:14.5px;
+  font-size:13.5px;
   border:none;
-  border-radius:14px;
+  border-radius:12px;
   cursor:pointer;
   transition:all 0.22s ease;
-  box-shadow:0 6px 22px rgba(91,91,246,0.38);
+  box-shadow:0 4px 16px rgba(91,91,246,0.35);
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:9px;
+  gap:8px;
   letter-spacing:0.1px;
 }
 .wlc-btn:active{
@@ -626,15 +614,15 @@ if (sessionStorage.getItem('sgp_splash_shown')) {
       </div>
     </div>
 
-    <!-- 3. AI Study Buddy -->
-    <div class="wlc-feat-card wlc-feat-ai">
-      <div class="wlc-tag">24/7 AI</div>
+    <!-- 3. Progress & Analytics -->
+    <div class="wlc-feat-card wlc-feat-progress">
+      <div class="wlc-tag">Top Ranks</div>
       <div class="wlc-feat-icon-wrap">
-        <i class="fa-solid fa-robot"></i>
+        <i class="fa-solid fa-chart-line"></i>
       </div>
       <div>
-        <div class="wlc-feat-label">AI Study Buddy</div>
-        <div class="wlc-feat-sub">Instant doubt solving &amp; revision notes</div>
+        <div class="wlc-feat-label">Progress &amp; Analytics</div>
+        <div class="wlc-feat-sub">Weekly XP, streak goals &amp; rank insights</div>
       </div>
     </div>
 
