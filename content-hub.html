@@ -535,19 +535,26 @@ body.panel-open .pwa-bottom-nav{ display:none; }
 
 /* ─── BOTTOM NAV (shared) ─── */
 .pwa-bottom-nav{
-  position:fixed; bottom:0; left:0; width:100%; height:64px;
+  position:fixed; bottom:0; left:0; width:100%; height:calc(64px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
   background:var(--nav-bg); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
-  display:flex; justify-content:space-around; align-items:center;
+  display:flex; justify-content:center; align-items:center;
   z-index:10002; border-top:1px solid var(--border);
-  padding:0 10px; box-sizing:border-box;
+  box-sizing:border-box;
 }
 [data-theme="light"] .pwa-bottom-nav{ background:rgba(255,255,255,0.99) !important; box-shadow:0 -2px 12px rgba(0,0,0,0.07); }
 [data-theme="dark"] .pwa-bottom-nav{ background:rgba(13,17,32,0.99) !important; }
+
+.pwa-bottom-nav-inner{
+  display:flex; justify-content:space-around; align-items:center;
+  width:100%; max-width:540px; margin:0 auto; padding:0 10px;
+}
+
 .nav-tab{
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   text-decoration:none; color:var(--text3); font-size:10px; font-weight:500;
-  gap:3px; padding:5px 8px; border-radius:14px;
-  transition:color 0.15s ease, transform 0.12s ease; min-width:52px; flex:1; max-width:120px;
+  gap:3px; padding:6px 12px; border-radius:14px;
+  transition:color 0.15s ease, transform 0.12s ease; min-width:56px; flex:1; max-width:120px;
   cursor:pointer; border:none; background:none;
   -webkit-tap-highlight-color:transparent; outline:none; user-select:none;
 }
@@ -565,17 +572,13 @@ body.panel-open .pwa-bottom-nav{ display:none; }
 
 /* Responsive Tablet & Desktop Styles */
 @media (min-width:640px){
-  .hub-search-wrap, .hub-section{ max-width:1000px; margin:0 auto; width:100%; }
-  .hub-quick-grid{ max-width:1000px; margin:16px auto; }
-  .pwa-bottom-nav{ justify-content:center; gap:clamp(16px, 5vw, 64px); }
+  .hub-header-inner, .hub-search-wrap, .hub-quicklinks, .hub-chip-row, .hub-section{ max-width:760px; margin:0 auto; width:100%; }
+  .hub-quick-grid{ max-width:760px; margin:16px auto; }
   .panel-sheet{ max-width:680px; left:50%; transform:translateX(-50%); right:auto; border-radius:28px 28px 0 0; }
   .panel-sheet.open{ transform:translateX(-50%) translateY(0); }
 }
 @media (min-width:1024px){
-  .hub-header-inner{ max-width:1060px; }
-  .hub-search-wrap, .hub-section{ max-width:1060px; }
-  .hub-quick-grid{ max-width:1060px; grid-template-columns: repeat(2, 1fr); }
-  .hub-grid{ grid-template-columns: repeat(2, 1fr); gap:16px; display:grid; }
+  .hub-header-inner, .hub-search-wrap, .hub-quicklinks, .hub-chip-row, .hub-section{ max-width:800px; margin:0 auto; }
 }
 </style>
 </head>
@@ -740,18 +743,20 @@ body.panel-open .pwa-bottom-nav{ display:none; }
 
 <!-- ─── BOTTOM NAV ─── -->
 <div class="pwa-bottom-nav">
-  <button class="nav-tab" onclick="location.href='dashboard-home.html'">
-    <i class="fa-solid fa-house"></i><span>Home</span>
-  </button>
-  <button class="nav-tab active" id="nav-hub">
-    <i class="fa-solid fa-layer-group"></i><span>Hub</span>
-  </button>
-  <button class="nav-tab" onclick="location.href='mainleaderboard.html'">
-    <i class="fa-solid fa-trophy"></i><span>Leaderboard</span>
-  </button>
-  <button class="nav-tab" onclick="location.href='profile.html'">
-    <i class="fa-regular fa-circle-user"></i><span>Profile</span>
-  </button>
+  <div class="pwa-bottom-nav-inner">
+    <button class="nav-tab" onclick="location.href='dashboard-home.html'">
+      <i class="fa-solid fa-house"></i><span>Home</span>
+    </button>
+    <button class="nav-tab active" id="nav-hub">
+      <i class="fa-solid fa-layer-group"></i><span>Hub</span>
+    </button>
+    <button class="nav-tab" onclick="location.href='mainleaderboard.html'">
+      <i class="fa-solid fa-trophy"></i><span>Leaderboard</span>
+    </button>
+    <button class="nav-tab" onclick="location.href='profile.html'">
+      <i class="fa-regular fa-circle-user"></i><span>Profile</span>
+    </button>
+  </div>
 </div>
 
 <script type="module">
@@ -1341,8 +1346,13 @@ function renderFilterTypeGrid(){
 function openFilterSheet(){ renderFilterTypeGrid(); $('filterSheetMask').classList.add('on'); $('filterSheet').classList.add('on'); }
 function closeFilterSheet(){ $('filterSheetMask').classList.remove('on'); $('filterSheet').classList.remove('on'); }
 
-function boot(){
-  $('backBtn').onclick = () => location.href = 'dashboard-home.html';
+  $('backBtn').onclick = () => {
+    if(window.history.length > 1){
+      window.history.back();
+    } else {
+      location.href = 'dashboard-home.html';
+    }
+  };
   $('savedBtn').onclick = () => { state.showSavedOnly = !state.showSavedOnly; $('savedBtn').classList.toggle('on', state.showSavedOnly); renderAll(); };
   $('refreshBtn').onclick = () => location.reload();
   $('searchInput').addEventListener('input', applySearch);

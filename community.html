@@ -424,26 +424,28 @@
 
 <!-- ─── 9. BOTTOM NAVIGATION (HOME | HUB | COMMUNITY | MY POSTS | PROFILE — DASHBOARD-HOME EXACT) ─── -->
 <div id="pwaBottomNav" class="pwa-bottom-nav">
-  <button class="nav-tab" id="navHomeTab" onclick="location.href='dashboard-home.html'">
-    <i class="fa-solid fa-house"></i>
-    <span>Home</span>
-  </button>
-  <button class="nav-tab" id="navHubTab" onclick="location.href='content-hub.html'">
-    <i class="fa-solid fa-layer-group"></i>
-    <span>Hub</span>
-  </button>
-  <button class="nav-tab active" id="navCommunityTab" onclick="switchMainTab('community')">
-    <i class="fa-solid fa-comments"></i>
-    <span>Community</span>
-  </button>
-  <button class="nav-tab" id="navMyPostsTab" onclick="switchMainTab('myPosts')">
-    <i class="fa-solid fa-user-pen"></i>
-    <span>My Posts</span>
-  </button>
-  <button class="nav-tab" id="navProfileTab" onclick="location.href='profile.html'">
-    <i class="fa-regular fa-circle-user"></i>
-    <span>Profile</span>
-  </button>
+  <div class="pwa-bottom-nav-inner">
+    <button class="nav-tab" id="navHomeTab" onclick="location.href='dashboard-home.html'">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav-tab" id="navHubTab" onclick="location.href='content-hub.html'">
+      <i class="fa-solid fa-layer-group"></i>
+      <span>Hub</span>
+    </button>
+    <button class="nav-tab active" id="navCommunityTab" onclick="switchMainTab('community')">
+      <i class="fa-solid fa-comments"></i>
+      <span>Community</span>
+    </button>
+    <button class="nav-tab" id="navMyPostsTab" onclick="switchMainTab('myPosts')">
+      <i class="fa-solid fa-user-pen"></i>
+      <span>My Posts</span>
+    </button>
+    <button class="nav-tab" id="navProfileTab" onclick="location.href='profile.html'">
+      <i class="fa-regular fa-circle-user"></i>
+      <span>Profile</span>
+    </button>
+  </div>
 </div>
 
 <script src="theme.js"></script>
