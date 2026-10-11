@@ -873,9 +873,302 @@
       .card-cta-btn { min-height: 44px; }
       .metrics-bar { grid-template-columns: 1fr; gap: 12px; }
     }
+
+    /* ============================================================
+       ADMIN LOGIN GUARD MODAL & LOCKED STATE (PASSCODE: 7905)
+    ============================================================ */
+    body.admin-locked {
+      overflow: hidden !important;
+      height: 100vh !important;
+    }
+    body.admin-locked .app-header,
+    body.admin-locked .main-container {
+      filter: blur(14px) brightness(0.7);
+      pointer-events: none !important;
+      user-select: none !important;
+      transition: filter 0.3s ease;
+    }
+    .admin-guard-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(13, 17, 32, 0.76);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    [data-theme="light"] .admin-guard-overlay {
+      background: rgba(240, 242, 248, 0.88);
+    }
+    .admin-guard-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .admin-guard-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 26px;
+      padding: 34px 28px 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38), 0 0 0 1px var(--border);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: heroReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .admin-guard-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--cyan));
+    }
+    .admin-guard-shield {
+      width: 68px;
+      height: 68px;
+      border-radius: 20px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, rgba(124, 92, 252, 0.16), rgba(91, 91, 246, 0.28));
+      border: 1.5px solid var(--border-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: var(--accent);
+      box-shadow: 0 8px 24px var(--accent-glow);
+      position: relative;
+    }
+    .admin-guard-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+    .admin-guard-subtitle {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .admin-guard-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 6px;
+    }
+    .admin-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .admin-input-icon {
+      position: absolute;
+      left: 16px;
+      font-size: 15px;
+      color: var(--text3);
+      pointer-events: none;
+      transition: color var(--t);
+    }
+    .admin-guard-input {
+      width: 100%;
+      height: 52px;
+      padding: 0 48px;
+      border-radius: 14px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-align: center;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t), background var(--t);
+      font-family: inherit;
+    }
+    .admin-guard-input:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+      box-shadow: 0 0 0 3.5px var(--accent-glow);
+    }
+    .admin-guard-input:focus + .admin-input-icon,
+    .admin-input-wrap:focus-within .admin-input-icon {
+      color: var(--accent);
+    }
+    .admin-toggle-pwd-btn {
+      position: absolute;
+      right: 14px;
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      font-size: 15px;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: color var(--t);
+    }
+    .admin-toggle-pwd-btn:hover {
+      color: var(--text);
+    }
+    .admin-guard-error {
+      min-height: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: all 0.2s ease;
+    }
+    .admin-guard-error.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .admin-guard-btn {
+      height: 50px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #FFFFFF;
+      font-size: 14.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      box-shadow: 0 8px 22px var(--accent-glow);
+      transition: transform var(--t), box-shadow var(--t), opacity var(--t);
+    }
+    .admin-guard-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px var(--accent-glow);
+      opacity: 0.95;
+    }
+    .admin-guard-btn:active {
+      transform: scale(0.98);
+    }
+    .admin-guard-footer {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text3);
+    }
+    .admin-guard-back-link {
+      color: var(--text2);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color var(--t);
+    }
+    .admin-guard-back-link:hover {
+      color: var(--accent);
+    }
+    .shake-animation {
+      animation: guardShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    @keyframes guardShake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+    .admin-logout-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--t);
+      box-shadow: var(--shadow-sm);
+    }
+    .admin-logout-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--red);
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- ============================================================
+       ADMIN ACCESS GUARD (PASSCODE: 7905)
+  ============================================================ -->
+  <div id="adminGuardOverlay" class="admin-guard-overlay">
+    <div class="admin-guard-card" id="adminGuardCard">
+      <div class="admin-guard-shield">
+        <i class="fa-solid fa-lock" id="guardShieldIcon"></i>
+      </div>
+      <h2 class="admin-guard-title">Admin Security Check</h2>
+      <p class="admin-guard-subtitle">Enter your 4-digit admin access code to unlock the control panels.</p>
+      
+      <form class="admin-guard-form" id="adminGuardForm" onsubmit="handleAdminGuardSubmit(event)">
+        <div class="admin-input-wrap">
+          <i class="fa-solid fa-key admin-input-icon"></i>
+          <input 
+            type="password" 
+            id="adminGuardPasscode" 
+            class="admin-guard-input" 
+            placeholder="••••" 
+            maxlength="6" 
+            autocomplete="current-password" 
+            inputmode="numeric" 
+            autofocus 
+            required 
+          />
+          <button type="button" class="admin-toggle-pwd-btn" id="toggleGuardPwdBtn" onclick="toggleGuardPasswordVisibility()" aria-label="Toggle password visibility">
+            <i class="fa-solid fa-eye" id="toggleGuardEyeIcon"></i>
+          </button>
+        </div>
+        
+        <div class="admin-guard-error" id="adminGuardError" role="alert">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="adminGuardErrorText">Incorrect passcode</span>
+        </div>
+        
+        <button type="submit" class="admin-guard-btn" id="adminGuardSubmitBtn">
+          <span>Unlock Admin Hub</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="admin-guard-footer">
+        <a href="/dashboard-home.html" class="admin-guard-back-link">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Return to Student App</span>
+        </a>
+        <span>SGP Protection</span>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Ambient Glow -->
   <div class="ambient-bg"></div>
@@ -899,6 +1192,10 @@
       </div>
 
       <div class="header-actions">
+        <button id="adminLockBtn" class="admin-logout-btn" onclick="lockAdminHub()" title="Lock Admin Panels">
+          <i class="fa-solid fa-lock"></i>
+          <span>Lock</span>
+        </button>
         <button id="adminRefreshBtn" class="back-app-btn" onclick="refreshAdminPanelsHub()" title="Refresh Hub" style="padding:9px 13px;">
           <i class="fa-solid fa-arrows-rotate" id="adminRefreshIcon"></i>
           <span>Refresh</span>
@@ -1148,6 +1445,117 @@
 
   <!-- APP-STYLE SCRIPTS: THEME, VEIL TRANSITION & SEARCH -->
   <script>
+
+    // ── 0. ADMIN PASSCODE GUARD (PASSWORD: 7905) ──
+    const SGP_ADMIN_PASSCODE = "7905";
+    const SGP_GUARD_SESSION_KEY = "sgp_admin_panel_auth";
+
+    function isHubUnlocked() {
+      return sessionStorage.getItem(SGP_GUARD_SESSION_KEY) === "unlocked_7905";
+    }
+
+    function initAdminGuard() {
+      const overlay = document.getElementById("adminGuardOverlay");
+      const passInput = document.getElementById("adminGuardPasscode");
+      const lockBtn = document.getElementById("adminLockBtn");
+      
+      if (isHubUnlocked()) {
+        document.body.classList.remove("admin-locked");
+        if (overlay) overlay.classList.add("hidden");
+        if (lockBtn) lockBtn.style.display = "inline-flex";
+      } else {
+        document.body.classList.add("admin-locked");
+        if (overlay) overlay.classList.remove("hidden");
+        if (lockBtn) lockBtn.style.display = "none";
+        setTimeout(function() {
+          if (passInput) passInput.focus();
+        }, 150);
+      }
+    }
+
+    function handleAdminGuardSubmit(e) {
+      if (e) e.preventDefault();
+      const passInput = document.getElementById("adminGuardPasscode");
+      const errEl = document.getElementById("adminGuardError");
+      const errText = document.getElementById("adminGuardErrorText");
+      const card = document.getElementById("adminGuardCard");
+      const shieldIcon = document.getElementById("guardShieldIcon");
+      const overlay = document.getElementById("adminGuardOverlay");
+      const lockBtn = document.getElementById("adminLockBtn");
+
+      if (!passInput) return;
+      const entered = (passInput.value || "").trim();
+
+      if (entered === SGP_ADMIN_PASSCODE) {
+        // Unlock Success
+        sessionStorage.setItem(SGP_GUARD_SESSION_KEY, "unlocked_7905");
+        if (errEl) errEl.classList.remove("visible");
+        if (shieldIcon) {
+          shieldIcon.className = "fa-solid fa-lock-open";
+          shieldIcon.style.color = "var(--green)";
+        }
+        
+        // Success feedback vibration
+        if (navigator.vibrate) try { navigator.vibrate([30, 40, 30]); } catch(err){}
+        
+        setTimeout(function() {
+          document.body.classList.remove("admin-locked");
+          if (overlay) overlay.classList.add("hidden");
+          if (lockBtn) lockBtn.style.display = "inline-flex";
+          if (shieldIcon) {
+            shieldIcon.className = "fa-solid fa-lock";
+            shieldIcon.style.color = "";
+          }
+          passInput.value = "";
+        }, 300);
+      } else {
+        // Invalid passcode
+        if (errText) errText.textContent = entered ? "Incorrect passcode (Try again)" : "Please enter passcode";
+        if (errEl) errEl.classList.add("visible");
+        if (card) {
+          card.classList.remove("shake-animation");
+          void card.offsetWidth; // trigger reflow
+          card.classList.add("shake-animation");
+        }
+        if (navigator.vibrate) try { navigator.vibrate(100); } catch(err){}
+        passInput.select();
+        passInput.focus();
+      }
+    }
+
+    function toggleGuardPasswordVisibility() {
+      const input = document.getElementById("adminGuardPasscode");
+      const icon = document.getElementById("toggleGuardEyeIcon");
+      if (!input || !icon) return;
+      if (input.type === "password") {
+        input.type = "text";
+        icon.className = "fa-solid fa-eye-slash";
+      } else {
+        input.type = "password";
+        icon.className = "fa-solid fa-eye";
+      }
+    }
+
+    function lockAdminHub() {
+      sessionStorage.removeItem(SGP_GUARD_SESSION_KEY);
+      const overlay = document.getElementById("adminGuardOverlay");
+      const passInput = document.getElementById("adminGuardPasscode");
+      const lockBtn = document.getElementById("adminLockBtn");
+      const errEl = document.getElementById("adminGuardError");
+      
+      if (errEl) errEl.classList.remove("visible");
+      if (passInput) passInput.value = "";
+      document.body.classList.add("admin-locked");
+      if (overlay) overlay.classList.remove("hidden");
+      if (lockBtn) lockBtn.style.display = "none";
+      setTimeout(function() {
+        if (passInput) passInput.focus();
+      }, 100);
+    }
+
+    // Run guard check immediately
+    initAdminGuard();
+
     // ── 1. App-Style Page Navigation Veil ──
     function navigateWithVeil(e, url) {
       if (e) e.preventDefault();
