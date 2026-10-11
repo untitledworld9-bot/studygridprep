@@ -56,5 +56,10 @@
   "signing": {
     "scheme": "v2",
     "sha256Fingerprint": "03:EF:F5:65:5A:0E:D9:C6:F3:03:13:0E:70:04:CA:94:F1:07:C8:74:03:54:48:EE:4A:93:C3:42:5E:8F:4B:0C"
-  }
+  },
+  "additionalTrustedOrigins": [
+    "https://www.studygridprep.online",
+    "https://untitled-world-2e645.firebaseapp.com",
+    "https://untitled-world-2e645.web.app"
+  ]
 }
