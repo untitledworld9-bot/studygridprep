@@ -43,7 +43,14 @@
       "sizes": "1080x1920",
       "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Study Grid Prep Dashboard"
+      "label": "Study Grid Prep Mobile Study Dashboard"
+    },
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Study Grid Prep Desktop Study Workspace"
     }
   ],
   "categories": [
@@ -217,6 +224,21 @@
     {
       "platform": "webapp",
       "url": "https://studygridprep.online/manifest.json"
+    }
+  ],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "scope_extensions": [
+    {
+      "origin": "https://studygridprep.online"
+    },
+    {
+      "origin": "https://www.studygridprep.online"
+    },
+    {
+      "origin": "https://untitled-world-2e645.firebaseapp.com"
+    },
+    {
+      "origin": "https://untitled-world-2e645.web.app"
     }
   ]
 }
