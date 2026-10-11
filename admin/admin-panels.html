@@ -875,7 +875,7 @@
     }
 
     /* ============================================================
-       ADMIN LOGIN GUARD MODAL & LOCKED STATE (PASSCODE: 7905)
+       ADMIN LOGIN GUARD MODAL & LOCKED STATE
     ============================================================ */
     body.admin-locked {
       overflow: hidden !important;
@@ -1119,7 +1119,7 @@
 <body>
 
   <!-- ============================================================
-       ADMIN ACCESS GUARD (PASSCODE: 7905)
+       ADMIN ACCESS GUARD
   ============================================================ -->
   <div id="adminGuardOverlay" class="admin-guard-overlay">
     <div class="admin-guard-card" id="adminGuardCard">
@@ -1446,12 +1446,20 @@
   <!-- APP-STYLE SCRIPTS: THEME, VEIL TRANSITION & SEARCH -->
   <script>
 
-    // ── 0. ADMIN PASSCODE GUARD (PASSWORD: 7905) ──
-    const SGP_ADMIN_PASSCODE = "7905";
+    // ── 0. ADMIN PASSCODE GUARD (SECURE HASH VERIFICATION) ──
+    const SGP_ADMIN_HASH = "91cf42608863db6dc767f5b8e3d6e2f8656016d53b6aaf68e833373587c73bd2";
     const SGP_GUARD_SESSION_KEY = "sgp_admin_panel_auth";
 
+    async function hashAdminInput(str) {
+      if (window.crypto && crypto.subtle) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+      }
+      return "";
+    }
+
     function isHubUnlocked() {
-      return sessionStorage.getItem(SGP_GUARD_SESSION_KEY) === "unlocked_7905";
+      return sessionStorage.getItem(SGP_GUARD_SESSION_KEY) === "authorized";
     }
 
     function initAdminGuard() {
@@ -1473,7 +1481,7 @@
       }
     }
 
-    function handleAdminGuardSubmit(e) {
+    async function handleAdminGuardSubmit(e) {
       if (e) e.preventDefault();
       const passInput = document.getElementById("adminGuardPasscode");
       const errEl = document.getElementById("adminGuardError");
@@ -1485,10 +1493,11 @@
 
       if (!passInput) return;
       const entered = (passInput.value || "").trim();
+      const enteredHash = await hashAdminInput(entered);
 
-      if (entered === SGP_ADMIN_PASSCODE) {
+      if (enteredHash === SGP_ADMIN_HASH) {
         // Unlock Success
-        sessionStorage.setItem(SGP_GUARD_SESSION_KEY, "unlocked_7905");
+        sessionStorage.setItem(SGP_GUARD_SESSION_KEY, "authorized");
         if (errEl) errEl.classList.remove("visible");
         if (shieldIcon) {
           shieldIcon.className = "fa-solid fa-lock-open";
