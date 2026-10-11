@@ -2,13 +2,13 @@
   "name": "Study Grid Prep - Study Platform",
   "short_name": "Study Grid Prep",
   "id": "Study-Grid-Prep-app",
-  "description": "Distraction free study platform for JEE, NEET, CUET & BOARDS with Mock Tests,Focus Timer, YouTube study playlist, Progress tracking and Todo list.",
+  "description": "Distraction-free exam preparation for JEE, NEET, CUET & Boards with live Exam Alerts, Study Reminders, Mock Tests, Focus Timer, Study Playlists and Focus Runner Game.",
   "start_url": "/dashboard-home.html",
   "scope": "/",
-  "display": "standalone",
+  "display": "tabbed",
   "display_override": [
-    "window-controls-overlay",
     "tabbed",
+    "window-controls-overlay",
     "standalone",
     "minimal-ui"
   ],
@@ -183,5 +183,40 @@
   },
   "edge_side_panel": {
     "preferred_width": 480
-  }
+  },
+  "tab_strip": {
+    "home_tab": {
+      "scope_patterns": [
+        {
+          "pathname": "/dashboard-home.html"
+        },
+        {
+          "pathname": "/"
+        },
+        {
+          "pathname": "/index.html"
+        }
+      ]
+    },
+    "new_tab_button": {
+      "url": "/dashboard-home.html"
+    }
+  },
+  "permissions": [
+    "notifications",
+    "periodic-background-sync",
+    "background-sync"
+  ],
+  "orientation": "portrait-primary",
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "online.studygridprep.twa",
+      "url": "https://play.google.com/store/apps/details?id=online.studygridprep.twa"
+    },
+    {
+      "platform": "webapp",
+      "url": "https://studygridprep.online/manifest.json"
+    }
+  ]
 }
