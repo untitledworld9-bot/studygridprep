@@ -4,11 +4,46 @@
    ══════════════════════════════════════════════════════════════ */
 'use strict';
 
-// ─── FIREBASE DISABLED (this build = full game features, no live/cloud system yet) ───
-// Sab _db/_auth/etc null hi rahenge — jahan bhi code `if(_db && ...)` check karta hai,
-// wahan wo silently skip ho jaayega. Koi crash nahi, bas cloud sync off hai is build mein.
+// ─── FIREBASE INTEGRATION & LIVE CLOUD SYNC ───
 let _db=null,_auth=null,_setDoc=null,_doc=null,_getDoc=null,_serverTimestamp=null,_firebaseUser=null;
-console.log('[FR] Cloud sync disabled in this build — local-only mode.');
+let _sessionId=null,_lastSessionHeartbeat=0;
+
+// Dynamic import of firebase.js
+(async function initFirebaseGameBridge(){
+  try {
+    const fb = await import('../firebase.js');
+    _db = fb.db;
+    _auth = fb.auth;
+    _setDoc = fb.setDoc;
+    _doc = fb.doc;
+    _getDoc = fb.getDoc;
+    _serverTimestamp = fb.serverTimestamp;
+    
+    if (fb.onAuthStateChanged && _auth) {
+      fb.onAuthStateChanged(_auth, (user) => {
+        if (user) {
+          _firebaseUser = user;
+          loadCloudProfile(user);
+        } else {
+          const email = localStorage.getItem('userEmail');
+          const uid = localStorage.getItem('userUID') || localStorage.getItem('uwUid') || Save.uid;
+          const name = localStorage.getItem('userName') || Save.username;
+          _firebaseUser = { uid, email, displayName: name };
+          loadCloudProfile(_firebaseUser);
+        }
+      });
+    } else {
+      const email = localStorage.getItem('userEmail');
+      const uid = localStorage.getItem('userUID') || localStorage.getItem('uwUid') || Save.uid;
+      const name = localStorage.getItem('userName') || Save.username;
+      _firebaseUser = { uid, email, displayName: name };
+      loadCloudProfile(_firebaseUser);
+    }
+    console.log('[FR] Firebase Game Bridge initialized successfully.');
+  } catch(e) {
+    console.warn('[FR] Firebase Bridge fallback:', e.message);
+  }
+})();
 
 // ─── SETTINGS ───────────────────────────────────────────────────
 const Settings={sound:localStorage.getItem('fr_sound')!=='off',vibrate:localStorage.getItem('fr_vibrate')!=='off',toggle(k){this[k]=!this[k];localStorage.setItem('fr_'+k,this[k]?'on':'off');}};
@@ -111,7 +146,7 @@ const AudioSys={
 const vibe=p=>Settings.vibrate&&navigator.vibrate&&navigator.vibrate(p);
 
 // ─── QUESTIONS (60+) ─────────────────────────────────────────────
-const QUESTIONS=[
+let QUESTIONS=[
   {q:"7 × 8 = ?",a:"56",opts:["48","56","54","63"]},{q:"Capital of France?",a:"Paris",opts:["Berlin","Madrid","Paris","Rome"]},
   {q:"√144 = ?",a:"12",opts:["11","14","12","13"]},{q:"H₂O is?",a:"Water",opts:["Salt","Water","Acid","Gas"]},
   {q:"Largest planet?",a:"Jupiter",opts:["Saturn","Jupiter","Mars","Neptune"]},{q:"9² = ?",a:"81",opts:["72","81","90","64"]},
@@ -188,6 +223,68 @@ const COL_TYPES=[
 
 // ─── GAME STATE ──────────────────────────────────────────────────
 let G={};
+
+// ─── LIVE GAME SESSIONS (for admin/game-admin.html Live Players monitor) ───
+async function startLiveSession(){
+  if (!_db || !_doc || !_setDoc) return;
+  const uid = _firebaseUser?.uid || Save.uid;
+  _sessionId = uid;
+  try {
+    await _setDoc(_doc(_db, 'gameSessions', _sessionId), {
+      uid: uid,
+      name: _firebaseUser?.displayName || Save.username,
+      status: 'playing',
+      score: 0,
+      distance: 0,
+      combo: 1,
+      coins: 0,
+      lives: 3,
+      speedLevel: 1,
+      correctQ: 0,
+      startedAt: _serverTimestamp ? _serverTimestamp() : new Date().toISOString(),
+      lastHeartbeat: Date.now()
+    }, { merge: true });
+  } catch(e) {
+    console.warn('[FR] startLiveSession:', e.message);
+  }
+}
+
+async function heartbeatLiveSession(status = 'playing'){
+  if (!_db || !_doc || !_setDoc || !_sessionId) return;
+  const now = Date.now();
+  if (status === 'playing' && now - _lastSessionHeartbeat < 1800) return;
+  _lastSessionHeartbeat = now;
+  try {
+    await _setDoc(_doc(_db, 'gameSessions', _sessionId), {
+      status: status,
+      score: Math.floor(G?.score || 0),
+      distance: Math.floor(G?.distance || 0),
+      combo: G?.combo || 1,
+      coins: G?.coins || 0,
+      lives: G?.lives || 0,
+      speedLevel: G?.speedLevel || 1,
+      correctQ: G?.correctQ || 0,
+      lastHeartbeat: now
+    }, { merge: true });
+  } catch(e) {}
+}
+
+async function endLiveSession(){
+  if (!_db || !_doc || !_setDoc || !_sessionId) return;
+  try {
+    await _setDoc(_doc(_db, 'gameSessions', _sessionId), {
+      status: 'ended',
+      score: Math.floor(G?.score || 0),
+      distance: Math.floor(G?.distance || 0),
+      combo: G?.bestCombo || 1,
+      coins: G?.coins || 0,
+      lives: 0,
+      endedAt: _serverTimestamp ? _serverTimestamp() : new Date().toISOString(),
+      lastHeartbeat: Date.now()
+    }, { merge: true });
+  } catch(e) {}
+}
+
 function resetState(){
   ghostFrames=[];ghostIdx=0;ghostPlayback=Save.ghostBest||null;
   sessionXP=0;sessionAch=new Set();TRAIL.length=0;
@@ -879,7 +976,7 @@ function gameLoop(ts){
   }
 
   if(G.frame%3===0)recordGhost();
-  if(G.frame%3===0)updateHUD();
+  if(G.frame%3===0)updateHUD(); if(G.frame%30===0)heartbeatLiveSession('playing');
 
   // Draw order
   drawEnv();
@@ -983,8 +1080,26 @@ function handleCollect(c){
 
 // ─── QUESTION SYSTEM ─────────────────────────────────────────────
 let currentQ=null,qTimeout=null;
+
+async function loadCustomQuestions(){
+  if (!_db) return;
+  try {
+    const fb = await import('../firebase.js');
+    if (fb.getDocs && fb.collection) {
+      const snap = await fb.getDocs(fb.collection(_db, 'gameQuestions'));
+      if (!snap.empty) {
+        const custom = snap.docs.map(d => d.data()).filter(q => q && q.q && q.a && q.opts);
+        if (custom.length) {
+          QUESTIONS = [...custom, ...QUESTIONS];
+          console.log('[FR] Loaded ' + custom.length + ' custom quiz questions from Firestore.');
+        }
+      }
+    }
+  } catch(e) {}
+}
+
 function showQuestion(){
-  G.running=false;cancelAnimationFrame(G.raf);
+  G.running=false;cancelAnimationFrame(G.raf); heartbeatLiveSession("quiz");
   currentQ=QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)];
   const opts=[...currentQ.opts].sort(()=>Math.random()-.5);
   $('qText').textContent=currentQ.q;
@@ -1024,7 +1139,7 @@ function answerQ(answer,btn,oe){
     G.flash=.28;G.flashCol='#ff003388';G.shakeDecay=.6;
   }
   updateCombo();
-  setTimeout(()=>{hideScreen('questionOverlay');G.running=true;G.lastTime=performance.now();G.raf=requestAnimationFrame(gameLoop);},750);
+  setTimeout(()=>{hideScreen('questionOverlay');G.running=true;G.lastTime=performance.now();heartbeatLiveSession('playing');G.raf=requestAnimationFrame(gameLoop);},750);
 }
 
 // ─── CONTROLS ────────────────────────────────────────────────────
@@ -1100,7 +1215,7 @@ function startGame(){
   AudioSys.init();lastRankName=getRank(Save.totalXP).name;
   resetState();G.playerX=LANE_X[1];G.nextQuestion=G.questionInterval();
   G.lastTime=performance.now();G.running=true;
-  switchScreen('startScreen','gameScreen');
+  switchScreen('startScreen','gameScreen'); startLiveSession();
   updateLives();updateCombo();updateSpeed();updateHUD();
   setTimeout(()=>{G.raf=requestAnimationFrame(gameLoop);},320);
 }
@@ -1137,7 +1252,7 @@ async function endGame(){
 }
 
 function restartGame(){
-  switchScreen('gameOverScreen','gameScreen');
+  switchScreen('gameOverScreen','gameScreen'); startLiveSession();
   setTimeout(()=>{
     resetState();G.playerX=LANE_X[1];G.nextQuestion=G.questionInterval();
     G.lastTime=performance.now();G.running=true;lastRankName=getRank(Save.totalXP).name;
@@ -1170,5 +1285,6 @@ function updateStartStats(){
 }
 
 // ─── BOOT ────────────────────────────────────────────────────────
+loadCustomQuestions();
 window.startGame=startGame;window.restartGame=restartGame;window.goBack=goBack;
 updateStartStats();showScreen('startScreen');maybeShowTutorial();
