@@ -1,0 +1,60 @@
+{
+  "packageId": "online.studygridprep.twa",
+  "host": "studygridprep.online",
+  "name": "Study Grid Prep",
+  "launcherName": "Study Grid",
+  "themeColor": "#F0F2F8",
+  "themeColorDark": "#07080D",
+  "navigationColor": "#F0F2F8",
+  "navigationColorDark": "#07080D",
+  "backgroundColor": "#F0F2F8",
+  "startUrl": "/dashboard-home.html",
+  "iconUrl": "https://studygridprep.online/icon-512.png",
+  "maskableIconUrl": "https://studygridprep.online/icon-512-maskable.png",
+  "splashScreenUrl": "https://studygridprep.online/icon-512.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Focus Timer",
+      "shortName": "Timer",
+      "url": "https://studygridprep.online/timer.html",
+      "icon": "https://studygridprep.online/icon-192.png"
+    },
+    {
+      "name": "Mock Tests",
+      "shortName": "Tests",
+      "url": "https://studygridprep.online/mock.html",
+      "icon": "https://studygridprep.online/icon-192.png"
+    },
+    {
+      "name": "Study Playlist",
+      "shortName": "Playlist",
+      "url": "https://studygridprep.online/playlist.html",
+      "icon": "https://studygridprep.online/icon-192.png"
+    },
+    {
+      "name": "Focus Runner Game",
+      "shortName": "Runner",
+      "url": "https://studygridprep.online/game/game.html",
+      "icon": "https://studygridprep.online/icon-192.png"
+    }
+  ],
+  "webManifestUrl": "https://studygridprep.online/manifest.json",
+  "fallbackType": "customtabs",
+  "enableNotifications": true,
+  "features": {
+    "playBilling": false,
+    "locationDelegation": false
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isAndroidXEnabled": true,
+  "signing": {
+    "scheme": "v2",
+    "sha256Fingerprint": "03:EF:F5:65:5A:0E:D9:C6:F3:03:13:0E:70:04:CA:94:F1:07:C8:74:03:54:48:EE:4A:93:C3:42:5E:8F:4B:0C"
+  }
+}

@@ -387,3 +387,33 @@ self.addEventListener("notificationclick", event => {
       })
   );
 });
+
+
+// ── BACKGROUND SYNC & PERIODIC SYNC (PWABUILDER ENHANCEMENTS) ──
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-study-progress' || event.tag === 'sync-notes' || event.tag === 'sync-todos') {
+    event.waitUntil(
+      (async () => {
+        try {
+          const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+          allClients.forEach(client => {
+            client.postMessage({ type: 'TRIGGER_BACKGROUND_SYNC', tag: event.tag });
+          });
+        } catch(e) {}
+      })()
+    );
+  }
+});
+
+self.addEventListener('periodicsync', event => {
+  if (event.tag === 'update-daily-streak' || event.tag === 'check-announcements') {
+    event.waitUntil(
+      (async () => {
+        try {
+          const cache = await caches.open(CACHE);
+          await cache.add('/dashboard-home.html').catch(() => {});
+        } catch(e) {}
+      })()
+    );
+  }
+});

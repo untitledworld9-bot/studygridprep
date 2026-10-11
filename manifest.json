@@ -6,13 +6,17 @@
   "start_url": "/dashboard-home.html",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": [
+    "window-controls-overlay",
+    "tabbed",
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#F0F2F8",
   "theme_color": "#F0F2F8",
   "lang": "en",
   "dir": "auto",
   "prefer_related_applications": false,
-
   "icons": [
     {
       "src": "/icon-192.png",
@@ -33,33 +37,103 @@
       "purpose": "maskable"
     }
   ],
-  
   "screenshots": [
     {
       "src": "/screenshot1.png",
       "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/screenshot2.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide"
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Study Grid Prep Dashboard"
     }
   ],
-
-  "categories": ["education", "productivity"],
-
+  "categories": [
+    "education",
+    "productivity"
+  ],
   "widgets": [
+    {
+      "name": "Target Exam Countdown",
+      "short_name": "Exam",
+      "description": "Days left for your target exam in Study Grid Prep",
+      "tag": "target-exam",
+      "ms_ac_template": "widgets/exam-card.json",
+      "data": "/widget-exam.html",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/screenshot1.png",
+          "sizes": "1080x1920",
+          "label": "Exam Widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ],
+      "auth": false,
+      "update": 3600
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Focus Timer",
+      "short_name": "Timer",
+      "description": "Start a focus timer",
+      "url": "/timer.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Todo List",
+      "short_name": "Todo",
+      "description": "View your todo list",
+      "url": "/todo.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Playlist",
+      "short_name": "Playlist",
+      "description": "Open study playlist",
+      "url": "/playlist.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Mock Tests",
+      "short_name": "Tests",
+      "description": "Take a mock test",
+      "url": "/mock.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
     {
       "name": "Target Exam",
       "short_name": "Exam",
-      "description": "Days left for your target exam",
-      "tag": "target-exam",
-      "url": "/widget-exam.html",
-      "auth": false,
-      "update": 3600,
+      "description": "Open Profile",
+      "url": "/profile.html",
       "icons": [
         {
           "src": "/icon-192.png",
@@ -69,45 +143,6 @@
       ]
     }
   ],
-
-  "shortcuts": [
-    {
-      "name": "Focus Timer",
-      "short_name": "Timer",
-      "description": "Start a focus timer",
-      "url": "/timer.html",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Todo List",
-      "short_name": "Todo",
-      "description": "View your todo list",
-      "url": "/todo.html",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Playlist",
-      "short_name": "Playlist",
-      "description": "Open study playlist",
-      "url": "/playlist.html",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Mock Tests",
-      "short_name": "Tests",
-      "description": "Take a mock test",
-      "url": "/mock.html",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Target Exam",
-      "short_name": "Exam",
-      "description": "Open Profile",
-      "url": "/profile.html",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    }
-  ],
-
   "share_target": {
     "action": "/playlist.html",
     "method": "GET",
@@ -116,5 +151,37 @@
       "text": "text",
       "url": "url"
     }
+  },
+  "file_handlers": [
+    {
+      "action": "/notes-hub.html",
+      "name": "Study Notes & Documents",
+      "accept": {
+        "text/plain": [
+          ".txt"
+        ],
+        "application/pdf": [
+          ".pdf"
+        ]
+      }
+    }
+  ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+sgp",
+      "url": "/dashboard-home.html?action=%s"
+    }
+  ],
+  "note_taking": {
+    "new_note_url": "/todo.html?mode=note"
+  },
+  "edge_side_panel": {
+    "preferred_width": 480
   }
 }
