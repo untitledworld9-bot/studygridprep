@@ -5,11 +5,11 @@
   "description": "Distraction-free exam preparation for JEE, NEET, CUET & Boards with live Exam Alerts, Study Reminders, Mock Tests, Focus Timer, Study Playlists and Focus Runner Game.",
   "start_url": "/dashboard-home.html",
   "scope": "/",
-  "display": "tabbed",
+  "display": "standalone",
   "display_override": [
-    "tabbed",
-    "window-controls-overlay",
     "standalone",
+    "window-controls-overlay",
+    "tabbed",
     "minimal-ui"
   ],
   "background_color": "#F0F2F8",
