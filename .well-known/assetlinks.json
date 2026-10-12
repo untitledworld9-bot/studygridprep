@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "online.studygridprep.twa",
-        "sha256_cert_fingerprints": ["03:EF:F5:65:5A:0E:D9:C6:F3:03:13:0E:70:04:CA:94:F1:07:C8:74:03:54:48:EE:4A:93:C3:42:5E:8F:4B:0C"]
+        "sha256_cert_fingerprints": ["CA:06:6D:B9:A4:C5:EF:7D:64:F0:8A:1C:5F:64:B4:12:9A:25:08:B3:F3:9B:15:1A:48:93:7B:2F:D8:3B:0E:60"]
       }
     }]
