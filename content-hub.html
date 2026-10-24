@@ -1346,6 +1346,7 @@ function renderFilterTypeGrid(){
 function openFilterSheet(){ renderFilterTypeGrid(); $('filterSheetMask').classList.add('on'); $('filterSheet').classList.add('on'); }
 function closeFilterSheet(){ $('filterSheetMask').classList.remove('on'); $('filterSheet').classList.remove('on'); }
 
+function boot() {
   $('backBtn').onclick = () => {
     if(window.history.length > 1){
       window.history.back();

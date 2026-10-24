@@ -206,7 +206,6 @@ self.addEventListener("activate", event => {
 // ── FETCH ────────────────────────────────────────────────────
 self.addEventListener("fetch", event => {
   const req = event.request;
-
   if (!req.url.startsWith(self.location.origin)) return;
   if (req.method !== "GET") return;
 
@@ -216,16 +215,13 @@ self.addEventListener("fetch", event => {
       fetch(req)
         .then(res => {
           if (res && res.status === 200) {
-            caches.open(CACHE).then(c => c.put(req, res.clone()));
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(req, clone)).catch(() => {});
           }
           return res;
         })
         .catch(async () => {
-          // ✅ FIX: Cloudflare Pages serves "clean" URLs (e.g. /profile
-          // instead of /profile.html), but ASSETS above are cached under
-          // their real .html filenames. An exact-URL cache lookup for
-          // the clean URL was missing, so try the .html version too
-          // before falling all the way back to the generic offline page.
+          // Cloudflare Pages / clean URL cache lookup fallback
           let cached = await caches.match(req, { ignoreSearch: true });
           if (!cached) {
             const url = new URL(req.url);
@@ -248,12 +244,13 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // ── STATIC FILES (CSS, JS, images) ──────────────────────
+  // ── STATIC FILES (CSS, JS, images, fonts) ──────────────────
   event.respondWith(
     caches.match(req, { ignoreSearch: true }).then(cached => {
       const networkFetch = fetch(req).then(res => {
         if (res && res.status === 200) {
-          caches.open(CACHE).then(c => c.put(req, res.clone()));
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(req, clone)).catch(() => {});
         }
         return res;
       }).catch(() => null);
@@ -262,7 +259,6 @@ self.addEventListener("fetch", event => {
         event.waitUntil(networkFetch);
         return cached;
       }
-
       return networkFetch;
     })
   );
