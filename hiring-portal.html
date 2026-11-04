@@ -454,20 +454,15 @@ button, input, select, textarea{ font-family:inherit; }
    v2 — modern polish + offer flow (non-neon matte company finish)
 ============================================================ */
 .role-card{ position:relative; overflow:hidden; border-radius:16px; }
-.role-card::before{ display:none; }
+.role-card::before{ content:''; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); opacity:0; transition:opacity var(--t); }
+.role-card:hover::before{ opacity:1; }
 .role-card-icon{ box-shadow:none; }
-.role-card.final-selected,
-.role-card.final-selected:hover,
-.role-card.final-not-selected,
-.role-card.final-not-selected:hover{ border-color:var(--border); box-shadow:var(--shadow-sm); }
-.role-card:hover{ border-color:var(--border); box-shadow:var(--shadow); transform:translateY(-2px); }
-.applied-status-box.status-selected,
-.applied-status-box.status-selected:hover,
-.applied-status-box.status-not-selected,
-.applied-status-box.status-not-selected:hover{ border-color:var(--border); box-shadow:none; }
+.role-card-pulse{ animation:cardPulse 1.1s ease 2; }
+@keyframes cardPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(91,91,246,0); } 50%{ box-shadow:0 0 0 7px rgba(91,91,246,0.28); } }
+.role-card:hover{ border-color:rgba(91,91,246,0.32); box-shadow:var(--shadow); transform:translateY(-3px); }
 .modal-sheet{ box-shadow:var(--shadow-md); border:1px solid var(--border); }
 .form-input, .form-select, .form-textarea{ border-radius:12px; }
-.form-input:focus, .form-select:focus, .form-textarea:focus{ box-shadow:none; border-color:var(--accent); }
+.form-input:focus, .form-select:focus, .form-textarea:focus{ box-shadow:0 0 0 3px rgba(91,91,246,0.12); border-color:var(--accent); }
 .modal-submit-btn{ border-radius:12px; }
 .modal-submit-btn.primary{ background:var(--accent); color:#fff; box-shadow:none; }
 .modal-submit-btn.primary:hover{ background:var(--accent2); filter:none; }
@@ -488,57 +483,61 @@ button, input, select, textarea{ font-family:inherit; }
 .role-lock-note{ margin-top:10px; font-size:11px; font-weight:600; color:var(--amber); display:flex; gap:6px; align-items:center; }
 
 /* sidebar offer banner */
-.sb-offer{ border-radius:12px; padding:12px; cursor:pointer; border:1px solid var(--border);
-  background:var(--surface2); transition:var(--t); }
-.sb-offer:hover{ border-color:rgba(91,91,246,0.3); background:var(--surface); box-shadow:var(--shadow-sm); transform:none; }
+.sb-offer{ border-radius:14px; padding:12px; cursor:pointer; border:1px solid rgba(22,163,74,0.35);
+  background:linear-gradient(135deg,rgba(22,163,74,0.14),rgba(22,163,74,0.05)); transition:var(--t); }
+.sb-offer:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(22,163,74,0.18); }
 .sb-offer-title{ font-size:12.5px; font-weight:800; color:var(--green); display:flex; gap:6px; align-items:center; }
 .sb-offer-role{ font-size:12px; font-weight:700; color:var(--text); margin-top:4px; }
 .sb-offer-sub{ font-size:10.5px; color:var(--text2); margin-top:4px; line-height:1.4; }
 
-/* offer strip on card — clean matte surface */
-.role-offer-strip{ margin-top:10px; border-radius:10px; padding:9px 12px; display:flex; align-items:center; gap:9px; cursor:pointer;
-  font-size:12px; font-weight:700; color:var(--text); position:relative; overflow:hidden;
-  background:var(--surface2); border:1px solid var(--border); transition:var(--t); }
-.role-offer-strip i:first-child{ color:var(--accent); }
-.role-offer-strip:hover{ border-color:rgba(91,91,246,0.3); background:rgba(91,91,246,0.05); }
-.role-offer-strip .chev{ margin-left:auto; color:var(--text3); font-size:11px; }
-.role-offer-strip.done{ background:rgba(22,163,74,0.07); border-color:rgba(22,163,74,0.22); color:var(--green); }
-.role-offer-strip.done i:first-child{ color:var(--green); }
-.role-state-banner{ margin-top:12px; border-radius:10px; padding:9px 12px; font-size:12px; font-weight:700; display:flex; gap:7px; align-items:center; }
-.role-state-banner.red{ background:rgba(239,68,68,0.08); color:var(--red); border:1px solid rgba(239,68,68,0.18); }
+/* offer strip on card — highlight on hover */
+.role-offer-strip{ margin-top:12px; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:9px; cursor:pointer;
+  font-size:12px; font-weight:800; color:#fff; position:relative; overflow:hidden;
+  background:linear-gradient(120deg,#16A34A,#22C55E,#16A34A); background-size:200% 100%; animation:stripShift 4s linear infinite; }
+.role-offer-strip::after{ content:''; position:absolute; top:0; bottom:0; width:40%; left:-50%; background:linear-gradient(100deg,transparent,rgba(255,255,255,0.35),transparent); transform:skewX(-20deg); transition:left .6s ease; }
+.role-offer-strip:hover::after{ left:120%; }
+.role-offer-strip:hover{ box-shadow:0 8px 22px rgba(22,163,74,0.35); transform:translateY(-1px); }
+.role-offer-strip .chev{ margin-left:auto; }
+.role-offer-strip.done{ background:linear-gradient(120deg,#0F766E,#14B8A6); animation:none; }
+@keyframes stripShift{ 0%{ background-position:0% 0; } 100%{ background-position:200% 0; } }
+.role-state-banner{ margin-top:12px; border-radius:10px; padding:9px 12px; font-size:12px; font-weight:800; display:flex; gap:7px; align-items:center; }
+.role-state-banner.red{ background:rgba(239,68,68,0.12); color:var(--red); }
 
 /* offer modal */
-.offer-hero{ position:relative; overflow:hidden; text-align:center; padding:22px 16px 18px; border-radius:14px; margin-bottom:14px; color:var(--text);
-  background:var(--surface2); border:1px solid var(--border); }
-.offer-hero.red{ background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.2); }
-.offer-hero-emoji{ font-size:32px; display:inline-block; }
-.offer-hero-title{ font-size:18px; font-weight:800; margin-top:6px; color:var(--text); }
-.offer-hero-sub{ font-size:12px; color:var(--text2); margin-top:4px; }
-.offer-confetti{ display:none; }
-.offer-block{ border:1px solid var(--border); background:var(--surface2); border-radius:12px; padding:12px 14px; margin-bottom:10px; text-align:left; }
+.offer-hero{ position:relative; overflow:hidden; text-align:center; padding:26px 16px 22px; border-radius:18px; margin-bottom:16px; color:#fff;
+  background:linear-gradient(135deg,#16A34A,#0EA5E9 120%); }
+.offer-hero.red{ background:linear-gradient(135deg,#DC2626,#F97316 130%); }
+.offer-hero-emoji{ font-size:38px; display:inline-block; animation:tada 1.4s ease 1; }
+@keyframes tada{ 0%{ transform:scale(.4) rotate(-12deg); opacity:0; } 50%{ transform:scale(1.25) rotate(8deg); opacity:1; } 100%{ transform:scale(1) rotate(0); } }
+.offer-hero-title{ font-size:19px; font-weight:800; margin-top:6px; color:#fff; }
+.offer-hero-sub{ font-size:12px; opacity:.92; margin-top:4px; color:#fff; }
+.offer-confetti{ position:absolute; inset:0; pointer-events:none; }
+.offer-confetti i{ position:absolute; top:-12px; width:7px; height:12px; border-radius:2px; opacity:0; animation:confFall 2.6s ease-in forwards; }
+@keyframes confFall{ 0%{ transform:translateY(0) rotate(0); opacity:1; } 100%{ transform:translateY(240px) rotate(540deg); opacity:0; } }
+.offer-block{ border:1px solid var(--border); background:var(--surface2); border-radius:14px; padding:13px 14px; margin-bottom:12px; text-align:left; }
 .offer-label{ font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); margin-bottom:5px; display:flex; gap:6px; align-items:center; }
 .offer-val{ font-size:13.5px; color:var(--text); line-height:1.55; word-break:break-word; }
 .offer-val a{ color:var(--accent); font-weight:700; }
 .offer-chips{ display:flex; flex-wrap:wrap; gap:8px; }
 .offer-chip{ display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border-radius:99px; font-size:12px; font-weight:700; text-decoration:none;
   background:var(--surface); border:1px solid var(--border); color:var(--text); transition:var(--t); }
-.offer-chip:hover{ border-color:var(--accent); color:var(--accent); }
+.offer-chip:hover{ border-color:var(--accent); color:var(--accent); transform:translateY(-1px); }
 .offer-chip.wa{ color:#16A34A; } .offer-chip.wa:hover{ border-color:#16A34A; color:#16A34A; }
-.offer-policy{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; background:var(--surface2); text-align:left; }
+.offer-policy{ border:1.5px dashed rgba(91,91,246,0.4); border-radius:14px; padding:13px 14px; margin-bottom:12px; background:rgba(91,91,246,0.04); text-align:left; }
 .offer-policy ul{ margin:6px 0 10px 18px; padding:0; font-size:12px; color:var(--text2); line-height:1.65; }
 .offer-check{ display:flex; gap:10px; align-items:flex-start; font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer; }
 .offer-check input{ width:18px; height:18px; margin-top:1px; accent-color:var(--accent); flex-shrink:0; }
 .offer-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
-.offer-btn{ flex:1; min-width:140px; border:none; border-radius:10px; padding:12px 14px; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;
-  display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:var(--t); font-family:inherit; box-shadow:none; }
+.offer-btn{ flex:1; min-width:140px; border:none; border-radius:12px; padding:13px 14px; font-size:13.5px; font-weight:800; cursor:pointer; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:var(--t); font-family:inherit; }
 .offer-btn:disabled{ opacity:.5; cursor:not-allowed; }
-.offer-btn.accept{ background:var(--green); color:#fff; }
-.offer-btn.leave{ background:var(--red); color:#fff; }
+.offer-btn.accept{ background:linear-gradient(135deg,#16A34A,#22C55E); color:#fff; box-shadow:0 8px 20px rgba(22,163,74,0.28); }
+.offer-btn.leave{ background:linear-gradient(135deg,#DC2626,#EF4444); color:#fff; box-shadow:0 8px 20px rgba(239,68,68,0.28); }
 .offer-btn.mail{ background:var(--surface2); color:var(--text); border:1px solid var(--border); flex:0 0 auto; }
-.offer-btn:not(:disabled):hover{ opacity:.92; }
-.offer-status-pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; font-size:12px; font-weight:700; margin-bottom:12px; }
-.offer-status-pill.green{ background:rgba(22,163,74,0.10); color:var(--green); }
-.offer-status-pill.red{ background:rgba(239,68,68,0.10); color:var(--red); }
+.offer-btn:not(:disabled):hover{ transform:translateY(-1px); filter:brightness(1.05); }
+.offer-status-pill{ display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:99px; font-size:12px; font-weight:800; margin-bottom:12px; }
+.offer-status-pill.green{ background:rgba(22,163,74,0.12); color:var(--green); }
+.offer-status-pill.red{ background:rgba(239,68,68,0.12); color:var(--red); }
 
 /* ============================================================
    v3 — Clean Matte Company Hiring Portal UI (No Neon)
@@ -707,27 +706,33 @@ body{ background:var(--bg); }
 /* result countdown chip */
 .result-countdown{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:10.5px; font-weight:700;
   background:rgba(245,158,11,0.10); color:#D97706; border:1px solid rgba(245,158,11,0.22); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.result-countdown i{ animation:hgFlip 2.4s ease-in-out infinite; }
+@keyframes hgFlip{ 0%,40%{ transform:rotate(0); } 60%,100%{ transform:rotate(180deg); } }
 .role-card-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
 
 .emp-tag{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; background:rgba(91,91,246,0.10); color:var(--accent); }
 .work-timer{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:10.5px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums;
-  background:rgba(22,163,74,0.10); color:#16A34A; border:1px solid rgba(22,163,74,0.22); }
-.work-timer.urgent{ background:rgba(239,68,68,0.10); color:#EF4444; border-color:rgba(239,68,68,0.25); }
-.emp-progress{ height:6px; border-radius:99px; background:rgba(22,163,74,0.14); overflow:hidden; margin-top:10px; }
-.emp-progress span{ display:block; height:100%; border-radius:99px; background:var(--green); transition:width .6s; }
-.emp-progress.urgent{ background:rgba(239,68,68,0.14); } .emp-progress.urgent span{ background:var(--red); }
+  background:rgba(22,163,74,0.12); color:#16A34A; border:1px solid rgba(22,163,74,0.28); }
+.work-timer.urgent{ background:rgba(239,68,68,0.12); color:#EF4444; border-color:rgba(239,68,68,0.35); animation:urgentBlink 1.4s ease-in-out infinite; }
+@keyframes urgentBlink{ 0%,100%{ box-shadow:0 0 0 0 rgba(239,68,68,0); } 50%{ box-shadow:0 0 0 5px rgba(239,68,68,0.16); } }
+.emp-progress{ height:6px; border-radius:99px; background:rgba(22,163,74,0.16); overflow:hidden; margin-top:10px; }
+.emp-progress span{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#16A34A,#22C55E); transition:width .6s; }
+.emp-progress.urgent{ background:rgba(239,68,68,0.16); } .emp-progress.urgent span{ background:linear-gradient(90deg,#DC2626,#F87171); }
 
-.role-state-banner.green{ background:rgba(22,163,74,0.08); color:var(--green); border:1px solid rgba(22,163,74,0.18); }
-.offer-hero.teal{ background:rgba(22,163,74,0.06); border-color:rgba(22,163,74,0.2); }
+.role-state-banner.green{ background:rgba(22,163,74,0.12); color:var(--green); }
+.offer-hero.teal{ background:linear-gradient(135deg,#0F766E,#14B8A6); }
 #appliedStatusHost{ max-height:190px; overflow-y:auto; overscroll-behavior:contain; padding-right:2px; }
 .sidebar-apps .applied-status-box{ padding:9px 10px; gap:9px; margin-bottom:6px; border-radius:10px; }
 .sidebar-apps .applied-status-icon{ width:28px; height:28px; font-size:12px; flex-shrink:0; }
 .sidebar-apps .applied-status-title{ font-size:12px; }
 .sidebar-apps .applied-status-sub{ font-size:10.5px; }
 .sidebar-apps .applied-status-arrow{ display:none; }
-.offer-btn.cert{ background:var(--accent); color:#fff; box-shadow:none; }
+.offer-btn.cert{ background:linear-gradient(135deg,#0EA5E9,#6366F1); color:#fff; box-shadow:0 8px 20px rgba(99,102,241,.28); }
 .lv-box{ text-align:center; padding:4px 2px; }
-.lv-warn{ width:60px; height:60px; border-radius:50%; margin:0 auto 12px; background:rgba(239,68,68,.10); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:24px; position:relative; }
+.lv-warn{ width:66px; height:66px; border-radius:50%; margin:0 auto 12px; background:rgba(239,68,68,.12); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:27px; position:relative; animation:lvShake 1.6s infinite; }
+.lv-warn::after{ content:''; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(239,68,68,.35); animation:lvRing 1.6s infinite; }
+@keyframes lvRing{ 0%{transform:scale(.9);opacity:.9} 100%{transform:scale(1.35);opacity:0} }
+@keyframes lvShake{ 0%,60%,100%{transform:rotate(0)} 65%{transform:rotate(-8deg)} 75%{transform:rotate(8deg)} 85%{transform:rotate(-5deg)} }
 .lv-box h3{ font-size:17px; font-weight:800; margin-bottom:6px; }
 .lv-box p{ font-size:12.5px; color:var(--text2); }
 .lv-box ul{ text-align:left; margin:12px 0; padding:12px 14px 12px 30px; background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.20); border-radius:12px; font-size:12px; color:var(--text2); line-height:1.6; }
@@ -1675,10 +1680,10 @@ function renderRolesGrid(){
       const hasExpCert = !!(applied.certOverride && applied.certOverride.forceIssue && applied.certOverride.kind !== 'ACHIEVEMENT' && applied.certOverride.kind !== 'POSITION');
       const os = offerState(applied);
 
-      // Distinct Certificate Strip Generators (clean matte surfaces)
-      const certExpStrip = () => `<div class="role-offer-strip done" style="margin-top:8px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>Official ${isIntern ? 'Internship' : 'Experience'} Certificate Ready<i class="fa-solid fa-chevron-right chev"></i></div>`;
-      const certPosStrip = () => `<div class="role-offer-strip" style="margin-top:8px;" onclick="location.href='certificate.html?app=${applied.id}&t=position'"><i class="fa-solid fa-id-badge"></i>Certificate of Position &amp; Appointment<i class="fa-solid fa-chevron-right chev"></i></div>`;
-      const certAchStrip = () => `<div class="role-offer-strip" style="margin-top:8px;" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>Certificate of Achievement Awarded<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      // Distinct Certificate Strip Generators
+      const certExpStrip = () => `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#0F766E,#0D9488);margin-top:8px;box-shadow:0 6px 18px rgba(15,118,110,0.3);" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>🎓 Official ${isIntern ? 'Internship' : 'Experience'} Certificate Ready<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      const certPosStrip = () => `<div class="role-offer-strip" style="background:linear-gradient(120deg,#1E40AF,#2563EB,#3B82F6);margin-top:8px;box-shadow:0 6px 18px rgba(37,99,235,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=position'"><i class="fa-solid fa-id-badge"></i>🎖️ Certificate of Position &amp; Appointment<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      const certAchStrip = () => `<div class="role-offer-strip" style="background:linear-gradient(120deg,#D97706,#F59E0B,#D97706);margin-top:8px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement Awarded<i class="fa-solid fa-chevron-right chev"></i></div>`;
 
       if (os) {
         nextStepBadge = '';
@@ -1698,8 +1703,8 @@ function renderRolesGrid(){
           if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'completed') {
           applyLabel = 'View Certificate'; btnAction = `location.href='certificate.html?app=${applied.id}&t=exp'`;
-          resultBanner = `<div class="role-state-banner green" style="cursor:pointer;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship completed · Tap to view Certificate</div>`;
-          offerStrip = `<div class="role-offer-strip done" style="margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship Certificate Ready — Tap to Open<i class="fa-solid fa-chevron-right chev"></i></div>`;
+          resultBanner = `<div class="role-state-banner green" style="cursor:pointer;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship completed 🎓 · Tap to view Certificate</div>`;
+          offerStrip = `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#16A34A,#22C55E);margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>🎓 Internship Certificate Ready — Tap to Open<i class="fa-solid fa-chevron-right chev"></i></div>`;
           if (hasPos) offerStrip += certPosStrip();
           if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'accepted') {
@@ -1716,13 +1721,13 @@ function renderRolesGrid(){
         }
       }
     }
-    const isSelectedOrHired = !!(applied && (applied.finalStatus === 'selected' || ['selected','offered','accepted','completed'].includes(offerState(applied))));
+    const osNow = applied ? offerState(applied) : '';
+    const isSelectedOrHired = !!(applied && (applied.finalStatus === 'selected' || ['selected','offered','accepted','completed'].includes(osNow)));
+    const hideApplyMeta = !!(isSelectedOrHired || osNow);
     const vacTotal = Math.max(1, Number(role.vacancy) || 1);
     const filledNow = Math.max(0, Number(role.filledCount) || 0);
     const seatsLeft = Math.max(0, vacTotal - filledNow);
-    const vacancyLabel = isSelectedOrHired
-      ? `${vacTotal} position${vacTotal > 1 ? 's' : ''}`
-      : (filledNow > 0 && seatsLeft > 0 ? `${seatsLeft} of ${vacTotal} open` : `${vacTotal} opening${vacTotal > 1 ? 's' : ''}`);
+    const vacancyLabel = (filledNow > 0 && seatsLeft > 0) ? `${seatsLeft} of ${vacTotal} open` : `${vacTotal} opening${vacTotal > 1 ? 's' : ''}`;
     return `
       <div class="role-card ${finalStatusClass} ${STATE.highlightRoleId === role.id ? 'role-card-highlight' : ''}" id="role-card-${escapeHtml(role.id)}" style="transition-duration:${role.hoverDurationMs || 200}ms;">
         ${STATE.highlightRoleId === role.id ? `<div class="role-pick-tag" onclick="clearRoleHighlight()"><i class="fa-solid fa-location-dot"></i>Selected on Careers page<i class="fa-solid fa-xmark x"></i></div>` : ''}
@@ -1737,19 +1742,17 @@ function renderRolesGrid(){
           <div class="role-card-top-right">
             ${workChip}
             ${(() => { if (!applied) return ''; const e = getEffectiveResult(applied, role); return (e.status === 'applied' || e.status === 'test_completed') ? countdownChip(role) : ''; })()}
-            ${!isSelectedOrHired ? `<span class="role-card-badge" ${closed ? 'style="background:rgba(239,68,68,0.10);color:#EF4444;border-color:rgba(239,68,68,0.25);"' : ''}>${closed ? 'Closed' : 'Open'}</span>` : ''}
+            ${!hideApplyMeta ? `<span class="role-card-badge" ${closed ? 'style="background:rgba(239,68,68,0.10);color:#EF4444;border-color:rgba(239,68,68,0.25);"' : ''}>${closed ? 'Closed' : 'Open'}</span>` : ''}
           </div>
         </div>
         <div class="role-card-desc">${escapeHtml(role.description || '')}</div>
-        <div class="role-meta-row">
+        ${!hideApplyMeta ? `<div class="role-meta-row">
           <span class="role-meta-chip"><i class="fa-solid fa-briefcase"></i>${escapeHtml(empText)}</span>
-          <span class="role-meta-sep">•</span>
-          <span class="role-meta-chip"><i class="fa-solid fa-location-dot"></i>${escapeHtml(role.location || 'Remote')}</span>
-          ${role.testDurationMinutes ? `<span class="role-meta-sep">•</span><span class="role-meta-chip"><i class="fa-regular fa-clock"></i>${role.testDurationMinutes}m test</span>` : ''}
-        </div>
-        ${criteria.length ? `<div class="role-card-criteria">${criteria.map(c => `<span class="criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
-        <div class="role-card-foot">
-          <span class="role-card-vacancy"><i class="fa-solid fa-users"></i>${vacancyLabel}</span>
+          ${role.location ? `<span class="role-meta-sep">•</span><span class="role-meta-chip"><i class="fa-solid fa-location-dot"></i>${escapeHtml(role.location)}</span>` : ''}
+        </div>` : ''}
+        ${(!hideApplyMeta && criteria.length) ? `<div class="role-card-criteria">${criteria.map(c => `<span class="criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
+        <div class="role-card-foot" style="${hideApplyMeta ? 'justify-content:flex-end;' : ''}">
+          ${!hideApplyMeta ? `<span class="role-card-vacancy"><i class="fa-solid fa-users"></i>${vacancyLabel}</span>` : ''}
           <div style="display:flex;align-items:center;gap:8px;">
             ${nextStepBadge}
             <button class="role-card-apply" style="${nextStepBadge ? 'text-align:left;' : ''}${btnDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${btnDisabled ? 'disabled' : ''} onclick="${btnDisabled ? '' : btnAction}">${applyLabel}</button>
