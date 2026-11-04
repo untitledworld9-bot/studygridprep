@@ -451,238 +451,238 @@ button, input, select, textarea{ font-family:inherit; }
 }
 
 /* ============================================================
-   v2 — modern polish + offer flow
+   v2 — modern polish + offer flow (non-neon matte company finish)
 ============================================================ */
-.role-card{ position:relative; overflow:hidden; border-radius:20px; }
-.role-card::before{ content:''; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); opacity:0; transition:opacity var(--t); }
-.role-card:hover::before{ opacity:1; }
-.role-card-icon{ box-shadow:0 6px 16px rgba(91,91,246,0.25); }
-.role-card-pulse{ animation:cardPulse 1.1s ease 2; }
-@keyframes cardPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(91,91,246,0); } 50%{ box-shadow:0 0 0 7px rgba(91,91,246,0.28); } }
-.modal-sheet{ box-shadow:0 24px 60px rgba(0,0,0,0.35); border:1px solid var(--border); }
+.role-card{ position:relative; overflow:hidden; border-radius:16px; }
+.role-card::before{ display:none; }
+.role-card-icon{ box-shadow:none; }
+.role-card.final-selected,
+.role-card.final-selected:hover,
+.role-card.final-not-selected,
+.role-card.final-not-selected:hover{ border-color:var(--border); box-shadow:var(--shadow-sm); }
+.role-card:hover{ border-color:var(--border); box-shadow:var(--shadow); transform:translateY(-2px); }
+.applied-status-box.status-selected,
+.applied-status-box.status-selected:hover,
+.applied-status-box.status-not-selected,
+.applied-status-box.status-not-selected:hover{ border-color:var(--border); box-shadow:none; }
+.modal-sheet{ box-shadow:var(--shadow-md); border:1px solid var(--border); }
 .form-input, .form-select, .form-textarea{ border-radius:12px; }
-.form-input:focus, .form-select:focus, .form-textarea:focus{ box-shadow:0 0 0 3px rgba(91,91,246,0.12); }
+.form-input:focus, .form-select:focus, .form-textarea:focus{ box-shadow:none; border-color:var(--accent); }
 .modal-submit-btn{ border-radius:12px; }
-.modal-submit-btn.primary{ box-shadow:0 8px 20px rgba(91,91,246,0.28); }
+.modal-submit-btn.primary{ background:var(--accent); color:#fff; box-shadow:none; }
+.modal-submit-btn.primary:hover{ background:var(--accent2); filter:none; }
 
 /* apply modal hero + mini steps */
-.apply-hero{ display:flex; gap:14px; align-items:center; padding:14px; border-radius:16px; margin-bottom:16px;
-  background:linear-gradient(135deg,rgba(91,91,246,0.10),rgba(124,58,237,0.08)); border:1px solid rgba(91,91,246,0.18); }
-.apply-hero-icon{ width:46px; height:46px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; font-size:18px; }
+.apply-hero{ display:flex; gap:14px; align-items:center; padding:14px; border-radius:14px; margin-bottom:16px;
+  background:var(--surface2); border:1px solid var(--border); }
+.apply-hero-icon{ width:44px; height:44px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(91,91,246,0.10); color:var(--accent); font-size:17px; }
 .apply-hero-title{ font-size:14.5px; font-weight:800; color:var(--text); }
 .apply-hero-sub{ font-size:11.5px; color:var(--text2); margin-top:2px; }
 .apply-steps{ display:flex; gap:6px; margin-bottom:16px; }
-.apply-step{ flex:1; text-align:center; font-size:10.5px; font-weight:700; color:var(--text3); padding:8px 4px; border-radius:10px; background:var(--surface2); }
-.apply-step.on{ color:var(--accent); background:rgba(91,91,246,0.10); }
+.apply-step{ flex:1; text-align:center; font-size:10.5px; font-weight:700; color:var(--text3); padding:8px 4px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); }
+.apply-step.on{ color:var(--accent); background:rgba(91,91,246,0.08); border-color:rgba(91,91,246,0.22); }
 .apply-step b{ display:block; font-size:13px; margin-bottom:1px; }
 
 /* locked roles (selected elsewhere) */
 .role-lock-note{ margin-top:10px; font-size:11px; font-weight:600; color:var(--amber); display:flex; gap:6px; align-items:center; }
 
 /* sidebar offer banner */
-.sb-offer{ border-radius:14px; padding:12px; cursor:pointer; border:1px solid rgba(22,163,74,0.35);
-  background:linear-gradient(135deg,rgba(22,163,74,0.14),rgba(22,163,74,0.05)); transition:var(--t); }
-.sb-offer:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(22,163,74,0.18); }
+.sb-offer{ border-radius:12px; padding:12px; cursor:pointer; border:1px solid var(--border);
+  background:var(--surface2); transition:var(--t); }
+.sb-offer:hover{ border-color:rgba(91,91,246,0.3); background:var(--surface); box-shadow:var(--shadow-sm); transform:none; }
 .sb-offer-title{ font-size:12.5px; font-weight:800; color:var(--green); display:flex; gap:6px; align-items:center; }
 .sb-offer-role{ font-size:12px; font-weight:700; color:var(--text); margin-top:4px; }
 .sb-offer-sub{ font-size:10.5px; color:var(--text2); margin-top:4px; line-height:1.4; }
 
-/* offer strip on card — highlight on hover */
-.role-offer-strip{ margin-top:12px; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:9px; cursor:pointer;
-  font-size:12px; font-weight:800; color:#fff; position:relative; overflow:hidden;
-  background:linear-gradient(120deg,#16A34A,#22C55E,#16A34A); background-size:200% 100%; animation:stripShift 4s linear infinite; }
-.role-offer-strip::after{ content:''; position:absolute; top:0; bottom:0; width:40%; left:-50%; background:linear-gradient(100deg,transparent,rgba(255,255,255,0.35),transparent); transform:skewX(-20deg); transition:left .6s ease; }
-.role-offer-strip:hover::after{ left:120%; }
-.role-offer-strip:hover{ box-shadow:0 8px 22px rgba(22,163,74,0.35); transform:translateY(-1px); }
-.role-offer-strip .chev{ margin-left:auto; }
-.role-offer-strip.done{ background:linear-gradient(120deg,#0F766E,#14B8A6); animation:none; }
-@keyframes stripShift{ 0%{ background-position:0% 0; } 100%{ background-position:200% 0; } }
-.role-state-banner{ margin-top:12px; border-radius:10px; padding:9px 12px; font-size:12px; font-weight:800; display:flex; gap:7px; align-items:center; }
-.role-state-banner.red{ background:rgba(239,68,68,0.12); color:var(--red); }
+/* offer strip on card — clean matte surface */
+.role-offer-strip{ margin-top:10px; border-radius:10px; padding:9px 12px; display:flex; align-items:center; gap:9px; cursor:pointer;
+  font-size:12px; font-weight:700; color:var(--text); position:relative; overflow:hidden;
+  background:var(--surface2); border:1px solid var(--border); transition:var(--t); }
+.role-offer-strip i:first-child{ color:var(--accent); }
+.role-offer-strip:hover{ border-color:rgba(91,91,246,0.3); background:rgba(91,91,246,0.05); }
+.role-offer-strip .chev{ margin-left:auto; color:var(--text3); font-size:11px; }
+.role-offer-strip.done{ background:rgba(22,163,74,0.07); border-color:rgba(22,163,74,0.22); color:var(--green); }
+.role-offer-strip.done i:first-child{ color:var(--green); }
+.role-state-banner{ margin-top:12px; border-radius:10px; padding:9px 12px; font-size:12px; font-weight:700; display:flex; gap:7px; align-items:center; }
+.role-state-banner.red{ background:rgba(239,68,68,0.08); color:var(--red); border:1px solid rgba(239,68,68,0.18); }
 
 /* offer modal */
-.offer-hero{ position:relative; overflow:hidden; text-align:center; padding:26px 16px 22px; border-radius:18px; margin-bottom:16px; color:#fff;
-  background:linear-gradient(135deg,#16A34A,#0EA5E9 120%); }
-.offer-hero.red{ background:linear-gradient(135deg,#DC2626,#F97316 130%); }
-.offer-hero-emoji{ font-size:38px; display:inline-block; animation:tada 1.4s ease 1; }
-@keyframes tada{ 0%{ transform:scale(.4) rotate(-12deg); opacity:0; } 50%{ transform:scale(1.25) rotate(8deg); opacity:1; } 100%{ transform:scale(1) rotate(0); } }
-.offer-hero-title{ font-size:19px; font-weight:800; margin-top:6px; }
-.offer-hero-sub{ font-size:12px; opacity:.92; margin-top:4px; }
-.offer-confetti{ position:absolute; inset:0; pointer-events:none; }
-.offer-confetti i{ position:absolute; top:-12px; width:7px; height:12px; border-radius:2px; opacity:0; animation:confFall 2.6s ease-in forwards; }
-@keyframes confFall{ 0%{ transform:translateY(0) rotate(0); opacity:1; } 100%{ transform:translateY(240px) rotate(540deg); opacity:0; } }
-.offer-block{ border:1px solid var(--border); background:var(--surface2); border-radius:14px; padding:13px 14px; margin-bottom:12px; text-align:left; }
+.offer-hero{ position:relative; overflow:hidden; text-align:center; padding:22px 16px 18px; border-radius:14px; margin-bottom:14px; color:var(--text);
+  background:var(--surface2); border:1px solid var(--border); }
+.offer-hero.red{ background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.2); }
+.offer-hero-emoji{ font-size:32px; display:inline-block; }
+.offer-hero-title{ font-size:18px; font-weight:800; margin-top:6px; color:var(--text); }
+.offer-hero-sub{ font-size:12px; color:var(--text2); margin-top:4px; }
+.offer-confetti{ display:none; }
+.offer-block{ border:1px solid var(--border); background:var(--surface2); border-radius:12px; padding:12px 14px; margin-bottom:10px; text-align:left; }
 .offer-label{ font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); margin-bottom:5px; display:flex; gap:6px; align-items:center; }
 .offer-val{ font-size:13.5px; color:var(--text); line-height:1.55; word-break:break-word; }
 .offer-val a{ color:var(--accent); font-weight:700; }
 .offer-chips{ display:flex; flex-wrap:wrap; gap:8px; }
 .offer-chip{ display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border-radius:99px; font-size:12px; font-weight:700; text-decoration:none;
   background:var(--surface); border:1px solid var(--border); color:var(--text); transition:var(--t); }
-.offer-chip:hover{ border-color:var(--accent); color:var(--accent); transform:translateY(-1px); }
+.offer-chip:hover{ border-color:var(--accent); color:var(--accent); }
 .offer-chip.wa{ color:#16A34A; } .offer-chip.wa:hover{ border-color:#16A34A; color:#16A34A; }
-.offer-policy{ border:1.5px dashed rgba(91,91,246,0.4); border-radius:14px; padding:13px 14px; margin-bottom:12px; background:rgba(91,91,246,0.04); text-align:left; }
+.offer-policy{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; background:var(--surface2); text-align:left; }
 .offer-policy ul{ margin:6px 0 10px 18px; padding:0; font-size:12px; color:var(--text2); line-height:1.65; }
 .offer-check{ display:flex; gap:10px; align-items:flex-start; font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer; }
 .offer-check input{ width:18px; height:18px; margin-top:1px; accent-color:var(--accent); flex-shrink:0; }
 .offer-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
-.offer-btn{ flex:1; min-width:140px; border:none; border-radius:12px; padding:13px 14px; font-size:13.5px; font-weight:800; cursor:pointer; text-decoration:none;
-  display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:var(--t); font-family:inherit; }
+.offer-btn{ flex:1; min-width:140px; border:none; border-radius:10px; padding:12px 14px; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:var(--t); font-family:inherit; box-shadow:none; }
 .offer-btn:disabled{ opacity:.5; cursor:not-allowed; }
-.offer-btn.accept{ background:linear-gradient(135deg,#16A34A,#22C55E); color:#fff; box-shadow:0 8px 20px rgba(22,163,74,0.28); }
-.offer-btn.leave{ background:linear-gradient(135deg,#DC2626,#EF4444); color:#fff; box-shadow:0 8px 20px rgba(239,68,68,0.28); }
+.offer-btn.accept{ background:var(--green); color:#fff; }
+.offer-btn.leave{ background:var(--red); color:#fff; }
 .offer-btn.mail{ background:var(--surface2); color:var(--text); border:1px solid var(--border); flex:0 0 auto; }
-.offer-btn:not(:disabled):hover{ transform:translateY(-1px); filter:brightness(1.05); }
-.offer-status-pill{ display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:99px; font-size:12px; font-weight:800; margin-bottom:12px; }
-.offer-status-pill.green{ background:rgba(22,163,74,0.12); color:var(--green); }
-.offer-status-pill.red{ background:rgba(239,68,68,0.12); color:var(--red); }
+.offer-btn:not(:disabled):hover{ opacity:.92; }
+.offer-status-pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; font-size:12px; font-weight:700; margin-bottom:12px; }
+.offer-status-pill.green{ background:rgba(22,163,74,0.10); color:var(--green); }
+.offer-status-pill.red{ background:rgba(239,68,68,0.10); color:var(--red); }
 
 /* ============================================================
-   v3 — Enterprise Company Hiring Portal UI
+   v3 — Clean Matte Company Hiring Portal UI (No Neon)
 ============================================================ */
 body{ background:var(--bg); }
 .roles-sidebar{
   background:var(--surface); border-right:1px solid var(--border);
-  width:248px; padding:20px 16px; display:flex; flex-direction:column; gap:18px;
+  width:244px; padding:20px 16px; display:flex; flex-direction:column; gap:18px;
 }
 .sidebar-brand{
   display:flex; align-items:center; gap:10px; padding:2px 6px 12px;
   border-bottom:1px solid var(--border);
 }
-.sidebar-brand-name{ font-size:15px; font-weight:800; letter-spacing:-0.02em; color:var(--text); }
+.sidebar-brand-name{ font-size:15px; font-weight:800; letter-spacing:-0.015em; color:var(--text); }
 .sidebar-profile{
-  background:var(--surface2); border:1px solid var(--border); border-radius:14px;
-  padding:11px 12px; box-shadow:none; position:relative;
+  background:var(--surface2); border:1px solid var(--border); border-radius:12px;
+  padding:10px 12px; box-shadow:none; position:relative;
 }
-.sidebar-filter-btn{ border-radius:10px; font-size:12.5px; padding:9px 11px; }
+.sidebar-filter-btn{ border-radius:9px; font-size:12.5px; padding:9px 11px; }
 .sidebar-filter-btn.active{
-  background:rgba(91,91,246,0.10); color:var(--accent); font-weight:700;
-  box-shadow:inset 3px 0 0 var(--accent);
+  background:rgba(91,91,246,0.08); color:var(--accent); font-weight:700;
+  box-shadow:none;
 }
 .roles-header-sticky{
-  position:relative; z-index:5; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  position:relative; z-index:5;
+  background:var(--bg);
   padding:18px 28px 12px !important; border-bottom:1px solid var(--border); margin-bottom:18px;
 }
-.roles-header-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-.roles-header-title{ font-size:20px; font-weight:800; letter-spacing:-0.02em; color:var(--text); }
+.roles-header-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.roles-header-title{ font-size:20px; font-weight:800; letter-spacing:-0.015em; color:var(--text); }
 .roles-header-sub{ font-size:12px !important; color:var(--text2); margin:2px 0 0 !important; line-height:1.35; }
 .roles-topbar{ margin-bottom:0 !important; gap:10px !important; display:flex; align-items:center; }
 .roles-search-box{
-  border-radius:11px; padding:9px 14px; background:var(--surface);
-  border:1px solid var(--border); box-shadow:var(--shadow-sm);
+  border-radius:10px; padding:9px 14px; background:var(--surface);
+  border:1px solid var(--border); box-shadow:none;
 }
-.roles-filter-select{ border-radius:11px; padding:9px 14px; border:1px solid var(--border); }
+.roles-search-box:focus-within{ border-color:var(--accent); box-shadow:none; }
+.roles-filter-select{ border-radius:10px; padding:9px 14px; border:1px solid var(--border); }
 
-/* Executive Hero Banner */
+/* Clean Matte Summary Banner */
 .hero{
-  position:relative; overflow:hidden; border-radius:18px !important;
-  padding:18px 22px !important; margin-bottom:18px !important; color:#fff;
-  background:linear-gradient(135deg,#4338CA 0%,#5B5BF6 55%,#7C3AED 100%);
-  box-shadow:0 10px 28px rgba(91,91,246,0.22);
-  display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  position:relative; overflow:hidden; border-radius:14px !important;
+  padding:16px 20px !important; margin-bottom:18px !important; color:var(--text);
+  background:var(--surface); border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
 }
-.hero::before, .hero::after{ content:''; position:absolute; border-radius:50%; background:rgba(255,255,255,0.07); pointer-events:none; }
-.hero::before{ width:220px; height:220px; right:-60px; top:-90px; }
-.hero::after{ width:140px; height:140px; right:90px; bottom:-70px; background:rgba(255,255,255,0.05); }
-.hero-copy{ flex:1; min-width:220px; position:relative; z-index:1; }
-.hero-hi{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.82; }
-.hero-title{ font-size:18px !important; font-weight:800; margin:3px 0 4px !important; letter-spacing:-0.015em; line-height:1.25; }
-.hero-sub{ font-size:12px !important; opacity:.88; max-width:460px; line-height:1.45; }
+.hero::before, .hero::after{ display:none; }
+.hero-copy{ flex:1; min-width:220px; }
+.hero-hi{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--accent); }
+.hero-title{ font-size:17px !important; font-weight:800; margin:2px 0 3px !important; letter-spacing:-0.015em; line-height:1.25; color:var(--text); }
+.hero-sub{ font-size:12px !important; color:var(--text2); max-width:480px; line-height:1.45; }
 .hero-stats{
-  display:grid; grid-template-columns:repeat(3,minmax(82px,1fr)); gap:10px !important;
-  margin-top:0 !important; position:relative; z-index:1;
+  display:grid; grid-template-columns:repeat(3,minmax(80px,1fr)); gap:8px !important;
+  margin-top:0 !important;
 }
 .hero-stat{
-  background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.22);
-  border-radius:12px !important; padding:9px 14px !important; text-align:center;
-  backdrop-filter:blur(6px); transition:var(--t);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px !important; padding:8px 12px !important; text-align:center;
 }
-.hero-stat:hover{ background:rgba(255,255,255,0.22); transform:translateY(-1px); }
-.hero-stat b{ display:block; font-size:19px !important; font-weight:800; line-height:1.15; font-variant-numeric:tabular-nums; }
-.hero-stat span{ font-size:9.5px !important; font-weight:700; opacity:.9; text-transform:uppercase; letter-spacing:.05em !important; white-space:nowrap; }
+.hero-stat b{ display:block; font-size:17px !important; font-weight:800; line-height:1.15; color:var(--text); font-variant-numeric:tabular-nums; }
+.hero-stat span{ font-size:9.5px !important; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.05em !important; white-space:nowrap; }
 
 /* Company-grade Role Cards */
-.roles-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:16px; }
+.roles-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
 .role-card{
-  padding:20px; border-radius:16px; background:var(--surface); border:1px solid var(--border);
+  padding:18px; border-radius:14px; background:var(--surface); border:1px solid var(--border);
   box-shadow:var(--shadow-sm); display:flex; flex-direction:column;
   transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.role-card:hover{ transform:translateY(-3px); box-shadow:0 12px 30px rgba(15,23,42,0.08); border-color:rgba(91,91,246,0.38); }
+.role-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--border); }
 .role-card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .role-card-head-left{ display:flex; align-items:center; gap:12px; min-width:0; flex:1; }
 .role-card-icon{
-  width:42px; height:42px; border-radius:12px;
-  background:linear-gradient(135deg,rgba(91,91,246,0.14),rgba(124,58,237,0.10));
-  color:var(--accent); border:1px solid rgba(91,91,246,0.2);
-  font-size:16px; box-shadow:none; flex-shrink:0;
+  width:40px; height:40px; border-radius:10px;
+  background:rgba(91,91,246,0.08);
+  color:var(--accent); border:1px solid rgba(91,91,246,0.14);
+  font-size:15px; box-shadow:none; flex-shrink:0;
 }
 .role-card-title-wrap{ min-width:0; }
-.role-card-title{ font-size:15.5px; font-weight:800; letter-spacing:-0.015em; color:var(--text); margin-bottom:2px; line-height:1.25; }
+.role-card-title{ font-size:15px; font-weight:700; letter-spacing:-0.01em; color:var(--text); margin-bottom:2px; line-height:1.25; }
 .role-card-dept{ font-size:11.5px; font-weight:600; color:var(--text3); margin-bottom:0; }
 .role-card-badge{
-  border-radius:8px; padding:4px 9px; font-size:10px; font-weight:800;
-  text-transform:uppercase; letter-spacing:.04em; border:1px solid rgba(22,163,74,0.25);
+  border-radius:6px; padding:3px 8px; font-size:10px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.04em; border:none;
 }
 .role-card-desc{ font-size:12.5px; color:var(--text2); line-height:1.55; margin-bottom:12px; }
 .role-meta-row{
   display:flex; flex-wrap:wrap; align-items:center; gap:6px;
-  margin-bottom:12px; padding:8px 10px; border-radius:10px;
+  margin-bottom:12px; padding:7px 10px; border-radius:8px;
   background:var(--surface2); border:1px solid var(--border);
 }
 .role-meta-chip{
   display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
   padding:0; border-radius:0; background:none; color:var(--text2); border:none;
 }
-.role-meta-chip i{ color:var(--accent); font-size:11px; }
+.role-meta-chip i{ color:var(--text3); font-size:11px; }
 .role-meta-sep{ color:var(--border); font-size:11px; user-select:none; }
 .role-card-criteria{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
 .criteria-chip{ border-radius:6px; font-size:10.5px; font-weight:600; padding:3px 8px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
 .role-card-foot{ margin-top:auto; padding-top:12px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.role-card-vacancy{ font-size:11.5px; font-weight:700; color:var(--text2); display:inline-flex; align-items:center; gap:5px; }
+.role-card-vacancy{ font-size:11.5px; font-weight:600; color:var(--text2); display:inline-flex; align-items:center; gap:5px; }
 .role-card-vacancy i{ color:var(--text3); }
 .role-card-apply{
-  border-radius:10px; padding:8px 16px; font-size:12px; font-weight:700;
+  border-radius:8px; padding:8px 15px; font-size:12px; font-weight:700;
   background:var(--accent); color:#fff; border:none;
-  box-shadow:0 4px 12px rgba(91,91,246,0.22); transition:var(--t);
+  box-shadow:none; transition:var(--t);
 }
-.role-card-apply:hover{ background:var(--accent2); transform:translateY(-1px); color:#fff; }
+.role-card-apply:hover{ background:var(--accent2); color:#fff; }
 .role-card-apply:disabled{ background:var(--surface2); color:var(--text3); box-shadow:none; transform:none; }
-.role-card-result{ border-radius:10px; font-weight:800; padding:8px 10px; font-size:12px; }
+.role-card-result{ border-radius:8px; font-weight:700; padding:8px 10px; font-size:12px; }
 
 /* Your Applications Panel */
 .applied-section-panel{
-  border-radius:16px; background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; background:var(--surface); border:1px solid var(--border);
   box-shadow:var(--shadow-sm); padding:14px 16px !important; margin-bottom:20px !important;
 }
 .applied-section-header{ margin-bottom:10px !important; align-items:center; }
 .applied-section-sub{ display:none; }
 .applied-status-box{
-  border-radius:12px; padding:12px 14px; background:var(--surface2) !important;
+  border-radius:10px; padding:12px 14px; background:var(--surface2) !important;
   border:1px solid var(--border); transition:var(--t);
 }
-.applied-status-box:hover{ border-color:rgba(91,91,246,0.35); transform:translateY(-1px); }
-.all-roles-heading{ font-size:12px; font-weight:800; letter-spacing:.05em; color:var(--text3); margin-bottom:12px; }
+.applied-status-box:hover{ border-color:var(--border); background:var(--surface) !important; }
+.all-roles-heading{ font-size:11.5px; font-weight:700; letter-spacing:.05em; color:var(--text3); margin-bottom:12px; }
 
 /* Modal & Mobile refinements */
-.modal-sheet{ border-radius:20px; }
+.modal-sheet{ border-radius:18px; }
 @media (max-width:640px){
   .modal-overlay{ align-items:flex-end; padding:0; }
-  .modal-sheet{ border-radius:22px 22px 0 0; max-height:92vh; width:100%; max-width:100%; }
-  .hero{ padding:16px !important; border-radius:16px !important; flex-direction:column; align-items:stretch; gap:12px; }
-  .hero-stat b{ font-size:17px !important; }
+  .modal-sheet{ border-radius:20px 20px 0 0; max-height:92vh; width:100%; max-width:100%; }
+  .hero{ padding:14px 16px !important; border-radius:12px !important; flex-direction:column; align-items:stretch; gap:12px; }
+  .hero-stat b{ font-size:16px !important; }
   .roles-header-sticky{ padding:12px 16px 10px !important; margin-bottom:14px; }
   .roles-scroll-area{ padding:0 16px 60px; }
   .roles-grid{ grid-template-columns:1fr; }
 }
-[data-theme="dark"] .hero{ box-shadow:0 12px 30px rgba(0,0,0,0.45); }
-[data-theme="dark"] .role-card:hover{ box-shadow:0 14px 34px rgba(0,0,0,0.45); }
+[data-theme="dark"] .hero{ box-shadow:var(--shadow-sm); }
+[data-theme="dark"] .role-card:hover{ box-shadow:var(--shadow); }
 
 /* role picked on the careers page */
-.role-card-highlight{ border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(91,91,246,0.28), 0 14px 36px rgba(91,91,246,0.22) !important; }
-.role-pick-tag{ display:flex; align-items:center; gap:8px; margin:-20px -20px 14px; padding:8px 16px; font-size:11px; font-weight:800; letter-spacing:.02em; color:#fff; cursor:pointer;
-  background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+.role-card-highlight{ border-color:var(--accent) !important; box-shadow:var(--shadow) !important; }
+.role-pick-tag{ display:flex; align-items:center; gap:8px; margin:-18px -18px 14px; padding:7px 14px; font-size:11px; font-weight:700; letter-spacing:.02em; color:#fff; cursor:pointer;
+  background:var(--accent); }
 .role-pick-tag .x{ margin-left:auto; opacity:.8; font-size:12px; }
 
 /* logout */
@@ -705,38 +705,32 @@ body{ background:var(--bg); }
 .logout-actions button:disabled{ opacity:.7; cursor:wait; }
 
 /* result countdown chip */
-.result-countdown{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:8px; font-size:10.5px; font-weight:700;
-  background:rgba(245,158,11,0.12); color:#D97706; border:1px solid rgba(245,158,11,0.3); white-space:nowrap; font-variant-numeric:tabular-nums; }
-.result-countdown i{ animation:hgFlip 2.4s ease-in-out infinite; }
-@keyframes hgFlip{ 0%,40%{ transform:rotate(0); } 60%,100%{ transform:rotate(180deg); } }
+.result-countdown{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:10.5px; font-weight:700;
+  background:rgba(245,158,11,0.10); color:#D97706; border:1px solid rgba(245,158,11,0.22); white-space:nowrap; font-variant-numeric:tabular-nums; }
 .role-card-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
 
-.emp-tag{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700; background:rgba(91,91,246,0.12); color:var(--accent); }
-.work-timer{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:8px; font-size:10.5px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums;
-  background:rgba(22,163,74,0.12); color:#16A34A; border:1px solid rgba(22,163,74,0.3); transition:background .3s,color .3s,border-color .3s; }
-.work-timer.urgent{ background:rgba(239,68,68,0.14); color:#EF4444; border-color:rgba(239,68,68,0.4); animation:urgentBlink 1.4s ease-in-out infinite; }
-@keyframes urgentBlink{ 0%,100%{ box-shadow:0 0 0 0 rgba(239,68,68,0); } 50%{ box-shadow:0 0 0 5px rgba(239,68,68,0.16); } }
-.emp-progress{ height:6px; border-radius:99px; background:rgba(22,163,74,0.16); overflow:hidden; margin-top:10px; }
-.emp-progress span{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#16A34A,#22C55E); transition:width .6s; }
-.emp-progress.urgent{ background:rgba(239,68,68,0.16); } .emp-progress.urgent span{ background:linear-gradient(90deg,#DC2626,#F87171); }
+.emp-tag{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; background:rgba(91,91,246,0.10); color:var(--accent); }
+.work-timer{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:10.5px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums;
+  background:rgba(22,163,74,0.10); color:#16A34A; border:1px solid rgba(22,163,74,0.22); }
+.work-timer.urgent{ background:rgba(239,68,68,0.10); color:#EF4444; border-color:rgba(239,68,68,0.25); }
+.emp-progress{ height:6px; border-radius:99px; background:rgba(22,163,74,0.14); overflow:hidden; margin-top:10px; }
+.emp-progress span{ display:block; height:100%; border-radius:99px; background:var(--green); transition:width .6s; }
+.emp-progress.urgent{ background:rgba(239,68,68,0.14); } .emp-progress.urgent span{ background:var(--red); }
 
-.role-state-banner.green{ background:rgba(22,163,74,0.12); color:var(--green); }
-.offer-hero.teal{ background:linear-gradient(135deg,#0F766E,#14B8A6); }
+.role-state-banner.green{ background:rgba(22,163,74,0.08); color:var(--green); border:1px solid rgba(22,163,74,0.18); }
+.offer-hero.teal{ background:rgba(22,163,74,0.06); border-color:rgba(22,163,74,0.2); }
 #appliedStatusHost{ max-height:190px; overflow-y:auto; overscroll-behavior:contain; padding-right:2px; }
 .sidebar-apps .applied-status-box{ padding:9px 10px; gap:9px; margin-bottom:6px; border-radius:10px; }
 .sidebar-apps .applied-status-icon{ width:28px; height:28px; font-size:12px; flex-shrink:0; }
 .sidebar-apps .applied-status-title{ font-size:12px; }
 .sidebar-apps .applied-status-sub{ font-size:10.5px; }
 .sidebar-apps .applied-status-arrow{ display:none; }
-.offer-btn.cert{ background:linear-gradient(135deg,#0EA5E9,#6366F1); color:#fff; box-shadow:0 8px 20px rgba(99,102,241,.28); }
+.offer-btn.cert{ background:var(--accent); color:#fff; box-shadow:none; }
 .lv-box{ text-align:center; padding:4px 2px; }
-.lv-warn{ width:66px; height:66px; border-radius:50%; margin:0 auto 12px; background:rgba(239,68,68,.12); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:27px; position:relative; animation:lvShake 1.6s infinite; }
-.lv-warn::after{ content:''; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(239,68,68,.35); animation:lvRing 1.6s infinite; }
-@keyframes lvRing{ 0%{transform:scale(.9);opacity:.9} 100%{transform:scale(1.35);opacity:0} }
-@keyframes lvShake{ 0%,60%,100%{transform:rotate(0)} 65%{transform:rotate(-8deg)} 75%{transform:rotate(8deg)} 85%{transform:rotate(-5deg)} }
+.lv-warn{ width:60px; height:60px; border-radius:50%; margin:0 auto 12px; background:rgba(239,68,68,.10); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:24px; position:relative; }
 .lv-box h3{ font-size:17px; font-weight:800; margin-bottom:6px; }
 .lv-box p{ font-size:12.5px; color:var(--text2); }
-.lv-box ul{ text-align:left; margin:12px 0; padding:12px 14px 12px 30px; background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.22); border-radius:14px; font-size:12px; color:var(--text2); line-height:1.6; }
+.lv-box ul{ text-align:left; margin:12px 0; padding:12px 14px 12px 30px; background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.20); border-radius:12px; font-size:12px; color:var(--text2); line-height:1.6; }
 .lv-chk{ display:flex; gap:10px; align-items:flex-start; text-align:left; font-size:12.5px; font-weight:600; cursor:pointer; margin:12px 0; }
 .lv-chk input{ display:none; }
 .lv-chk .bx{ width:24px; height:24px; border-radius:8px; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:.2s; }
@@ -1681,10 +1675,10 @@ function renderRolesGrid(){
       const hasExpCert = !!(applied.certOverride && applied.certOverride.forceIssue && applied.certOverride.kind !== 'ACHIEVEMENT' && applied.certOverride.kind !== 'POSITION');
       const os = offerState(applied);
 
-      // Distinct Certificate Strip Generators
-      const certExpStrip = () => `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#0F766E,#0D9488);margin-top:8px;box-shadow:0 6px 18px rgba(15,118,110,0.3);" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>🎓 Official ${isIntern ? 'Internship' : 'Experience'} Certificate Ready<i class="fa-solid fa-chevron-right chev"></i></div>`;
-      const certPosStrip = () => `<div class="role-offer-strip" style="background:linear-gradient(120deg,#1E40AF,#2563EB,#3B82F6);margin-top:8px;box-shadow:0 6px 18px rgba(37,99,235,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=position'"><i class="fa-solid fa-id-badge"></i>🎖️ Certificate of Position &amp; Appointment<i class="fa-solid fa-chevron-right chev"></i></div>`;
-      const certAchStrip = () => `<div class="role-offer-strip" style="background:linear-gradient(120deg,#D97706,#F59E0B,#D97706);margin-top:8px;box-shadow:0 6px 18px rgba(245,158,11,0.35);" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>🏆 Certificate of Achievement Awarded<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      // Distinct Certificate Strip Generators (clean matte surfaces)
+      const certExpStrip = () => `<div class="role-offer-strip done" style="margin-top:8px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>Official ${isIntern ? 'Internship' : 'Experience'} Certificate Ready<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      const certPosStrip = () => `<div class="role-offer-strip" style="margin-top:8px;" onclick="location.href='certificate.html?app=${applied.id}&t=position'"><i class="fa-solid fa-id-badge"></i>Certificate of Position &amp; Appointment<i class="fa-solid fa-chevron-right chev"></i></div>`;
+      const certAchStrip = () => `<div class="role-offer-strip" style="margin-top:8px;" onclick="location.href='certificate.html?app=${applied.id}&t=achieve'"><i class="fa-solid fa-trophy"></i>Certificate of Achievement Awarded<i class="fa-solid fa-chevron-right chev"></i></div>`;
 
       if (os) {
         nextStepBadge = '';
@@ -1704,8 +1698,8 @@ function renderRolesGrid(){
           if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'completed') {
           applyLabel = 'View Certificate'; btnAction = `location.href='certificate.html?app=${applied.id}&t=exp'`;
-          resultBanner = `<div class="role-state-banner green" style="cursor:pointer;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship completed 🎓 · Tap to view Certificate</div>`;
-          offerStrip = `<div class="role-offer-strip done" style="background:linear-gradient(120deg,#16A34A,#22C55E);margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>🎓 Internship Certificate Ready — Tap to Open<i class="fa-solid fa-chevron-right chev"></i></div>`;
+          resultBanner = `<div class="role-state-banner green" style="cursor:pointer;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship completed · Tap to view Certificate</div>`;
+          offerStrip = `<div class="role-offer-strip done" style="margin-top:10px;" onclick="location.href='certificate.html?app=${applied.id}&t=exp'"><i class="fa-solid fa-graduation-cap"></i>Internship Certificate Ready — Tap to Open<i class="fa-solid fa-chevron-right chev"></i></div>`;
           if (hasPos) offerStrip += certPosStrip();
           if (hasAch) offerStrip += certAchStrip();
         } else if (os === 'accepted') {
