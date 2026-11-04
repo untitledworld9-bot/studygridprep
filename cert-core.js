@@ -141,7 +141,11 @@ export function buildPositionCert(app, role, now = Date.now()){
 
 /* Dedicated Achievement Certificate builder */
 export function buildAchievementCert(app, role, now = Date.now()){
-  const ach = (app && (app.achievementCert || (app.certOverride && app.certOverride.achievementCert))) || null;
+  const ach = (app && (
+    app.achievementCert ||
+    (app.certOverride && app.certOverride.achievementCert) ||
+    (app.certOverride && app.certOverride.kind === 'ACHIEVEMENT' ? app.certOverride : null)
+  )) || null;
   if (!ach) return null; // Only available if explicitly given by Admin!
   const o = (app && app.offer) || {}, ov = (app && app.certOverride) || {};
   const start = toMs(ach.startMs || ach.startDate || ov.startMs || ov.startDate || (app && app.offerAcceptedAt)) || now;

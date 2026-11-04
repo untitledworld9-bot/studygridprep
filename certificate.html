@@ -609,12 +609,7 @@ async function verifyMode(id){
       <div><b>Issued Date</b><span>${fD(c.issuedMs || c.endMs || Date.now())}</span></div>
       <div><b>Status</b><span style="color:var(--green)">Authentic &amp; Valid ✓</span></div>
     </div>
-    <div class="acts" style="margin-top:16px;">
-      <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
-      <button class="btn" onclick="dlPng(this)"><i class="fa-solid fa-image"></i> Image (PNG)</button>
-      <button class="btn" onclick="printCert(this)"><i class="fa-solid fa-print"></i> Print</button>
-      <button class="btn" onclick="copyLink()"><i class="fa-regular fa-copy"></i> Copy Link</button>
-    </div>`;
+    <div class="p2" style="margin-top:12px">Certificate owner? <a href="certificate.html?app=${encodeURIComponent(baseId)}">Sign in to download</a></div>`;
   paint($('vprev'), c);
 }
 
@@ -623,6 +618,96 @@ function authView(){
   $('app').innerHTML = topbar('Certificate') + `<div class="card center"><i class="fa-solid fa-award big"></i><div class="h3">Sign in to get your certificate</div><div class="p2" style="margin-bottom:16px">Use the same Google account you applied with.</div><button class="btn p" onclick="signIn()"><i class="fa-brands fa-google"></i> Continue with Google</button></div>`;
 }
 window.signIn = async () => { try { await signInWithPopup(auth, provider); } catch(e) { toast('Sign-in failed'); } };
+
+function isHiredCertApp(a){
+  if (!a) return false;
+  const hasPos = !!(a.positionCert || (a.certOverride && a.certOverride.positionCert) || (a.certOverride && (a.certOverride.kind === 'POSITION' || a.certOverride.kind === 'ROLE')));
+  const hasAch = !!(a.achievementCert || (a.certOverride && a.certOverride.achievementCert) || (a.certOverride && a.certOverride.kind === 'ACHIEVEMENT'));
+  const hasExp = !!(a.certOverride && a.certOverride.forceIssue);
+  const isHired = a.finalStatus === 'selected' || ['accepted','completed','left'].includes(a.offerStatus) || !!a.offerAcceptedAt;
+  return hasPos || hasAch || hasExp || isHired;
+}
+
+async function enrichAppCerts(app){
+  if (!app || !app.id) return app;
+  const baseId = String(app.id).trim().replace(/-(position|achieve)$/, '');
+  try {
+    const [expSnap, posSnap, achSnap] = await Promise.all([
+      getDoc(doc(db, 'certificates', baseId)).catch(() => null),
+      getDoc(doc(db, 'certificates', baseId + '-position')).catch(() => null),
+      getDoc(doc(db, 'certificates', baseId + '-achieve')).catch(() => null)
+    ]);
+    if (posSnap && posSnap.exists()) {
+      const pd = posSnap.data();
+      if (pd && pd.status !== 'revoked' && !app.positionCert && !(app.certOverride && app.certOverride.positionCert)) {
+        app.positionCert = { ...pd, kind: 'POSITION' };
+        if (!app.certOverride) app.certOverride = {};
+        app.certOverride.positionCert = app.positionCert;
+      }
+    }
+    if (achSnap && achSnap.exists()) {
+      const ad = achSnap.data();
+      if (ad && ad.status !== 'revoked' && !app.achievementCert && !(app.certOverride && app.certOverride.achievementCert)) {
+        app.achievementCert = { ...ad, kind: 'ACHIEVEMENT' };
+        if (!app.certOverride) app.certOverride = {};
+        app.certOverride.achievementCert = app.achievementCert;
+      }
+    }
+    if (expSnap && expSnap.exists()) {
+      const ed = expSnap.data();
+      if (ed && ed.status !== 'revoked') {
+        const isPosDoc = ed.isPosition || ed.kind === 'POSITION' || ed.kind === 'ROLE';
+        const isAchDoc = ed.isAchievement || ed.kind === 'ACHIEVEMENT';
+        if (isPosDoc && !app.positionCert) {
+          app.positionCert = { ...ed, kind: 'POSITION' };
+          if (!app.certOverride) app.certOverride = {};
+          app.certOverride.positionCert = app.positionCert;
+        } else if (isAchDoc && !app.achievementCert) {
+          app.achievementCert = { ...ed, kind: 'ACHIEVEMENT' };
+          if (!app.certOverride) app.certOverride = {};
+          app.certOverride.achievementCert = app.achievementCert;
+        } else if (!isPosDoc && !isAchDoc && ed.forceIssued && !(app.certOverride && app.certOverride.forceIssue)) {
+          if (!app.certOverride) app.certOverride = {};
+          Object.assign(app.certOverride, {
+            forceIssue: true,
+            kind: ed.kind || 'JOB',
+            name: ed.name || app.name,
+            roleTitle: ed.roleTitle || app.roleTitle,
+            startMs: ed.startMs,
+            endMs: ed.endMs,
+            months: ed.months,
+            durationLabel: ed.durationLabel,
+            issuedMs: ed.issuedMs,
+            note: ed.note || ''
+          });
+        }
+      }
+    }
+  } catch (e) { console.warn('enrichAppCerts warning', e); }
+  return app;
+}
+
+function initTabFromUrl(){
+  if (S._tabInit) return;
+  S._tabInit = true;
+  const wantTab = P.get('t');
+  const wantApp = P.get('app') || '';
+  if (wantTab === 'position' || wantTab === 'role' || wantApp.endsWith('-position')) S.viewType = 'position';
+  else if (wantTab === 'achieve' || wantTab === 'achievement' || wantApp.endsWith('-achieve')) S.viewType = 'achievement';
+  else if (wantTab === 'exp' || wantTab === 'intern' || wantTab === 'experience') S.viewType = 'experience';
+}
+
+function filterAndLockHiredApps(allApps, cleanWant, directApp){
+  let valid = allApps.filter(a => (directApp && a.id === directApp.id) || isHiredCertApp(a));
+  valid.sort((a, b) => toMs(b.offerAcceptedAt || b.createdAt) - toMs(a.offerAcceptedAt || a.createdAt));
+  if (cleanWant) {
+    const target = valid.find(a => a.id === cleanWant);
+    if (target) return [target];
+  }
+  const activeHired = valid.find(a => a.finalStatus === 'selected' && !a.hiredEndType && ['accepted','completed','offered'].includes(a.offerStatus || (a.offer ? 'offered' : 'selected')));
+  if (activeHired) return [activeHired];
+  return valid;
+}
 
 async function loadOwner(user){
   S.user = user;
@@ -647,32 +732,33 @@ async function loadOwner(user){
           const cSnap = await getDoc(doc(db, 'certificates', cid));
           if (cSnap.exists()) {
             const cd = cSnap.data();
-            directApp = {
-              id: cleanWant,
-              name: cd.name,
-              certName: cd.name,
-              roleTitle: cd.roleTitle,
-              uid: cd.uid || '',
-              finalStatus: 'selected',
-              offerStatus: 'completed',
-              offerAcceptedAt: cd.startMs,
-              ...cd
-            };
+            if (!directApp) {
+              directApp = {
+                id: cleanWant,
+                name: cd.name,
+                certName: cd.name,
+                roleTitle: cd.roleTitle,
+                uid: cd.uid || '',
+                finalStatus: 'selected',
+                offerStatus: 'completed',
+                offerAcceptedAt: cd.startMs,
+                ...cd
+              };
+            }
             if (cd.isPosition || cid.endsWith('-position') || cd.kind === 'POSITION') {
               directApp.positionCert = { ...cd };
               if (!directApp.certOverride) directApp.certOverride = {};
               directApp.certOverride.positionCert = { ...cd };
-            }
-            if (cd.isAchievement || cid.endsWith('-achieve') || cd.kind === 'ACHIEVEMENT') {
+            } else if (cd.isAchievement || cid.endsWith('-achieve') || cd.kind === 'ACHIEVEMENT') {
               directApp.achievementCert = { ...cd };
               if (!directApp.certOverride) directApp.certOverride = {};
               directApp.certOverride.achievementCert = { ...cd };
             }
-            break;
           }
         }
       } catch(e){ console.warn('fallback cert fetch error', e); }
     }
+    if (directApp) await enrichAppCerts(directApp);
   }
 
   let asUid = { docs: [] }, rs = { docs: [] }, asEmail = { docs: [] };
@@ -694,42 +780,42 @@ async function loadOwner(user){
 
   const appMap = new Map();
   if (directApp) appMap.set(directApp.id, directApp);
-  asUid.docs.forEach(d => appMap.set(d.id, { id: d.id, ...d.data() }));
-  if (asEmail) asEmail.docs.forEach(d => appMap.set(d.id, { id: d.id, ...d.data() }));
+  asUid.docs.forEach(d => {
+    const obj = { id: d.id, ...d.data() };
+    if (directApp && obj.id === directApp.id) {
+      appMap.set(obj.id, { ...directApp, ...obj, positionCert: obj.positionCert || directApp.positionCert, achievementCert: obj.achievementCert || directApp.achievementCert, certOverride: { ...(directApp.certOverride || {}), ...(obj.certOverride || {}) } });
+    } else {
+      appMap.set(obj.id, obj);
+    }
+  });
+  if (asEmail) asEmail.docs.forEach(d => {
+    if (!appMap.has(d.id)) appMap.set(d.id, { id: d.id, ...d.data() });
+  });
 
-  S.apps = Array.from(appMap.values()).filter(a => {
-    if (directApp && a.id === directApp.id) return true;
-    const hasPos = !!(a.positionCert || (a.certOverride && a.certOverride.positionCert) || (a.certOverride && (a.certOverride.kind === 'POSITION' || a.certOverride.kind === 'ROLE')));
-    const hasAch = !!(a.achievementCert || (a.certOverride && a.certOverride.achievementCert) || (a.certOverride && a.certOverride.kind === 'ACHIEVEMENT'));
-    const hasExp = !!(a.certOverride && a.certOverride.forceIssue);
-    const isSelected = a.finalStatus === 'selected' || ['accepted','completed','left'].includes(a.offerStatus);
-    return hasPos || hasAch || hasExp || isSelected || !!a.offerAcceptedAt;
-  }).sort((a, b) => toMs(b.offerAcceptedAt || b.createdAt) - toMs(a.offerAcceptedAt || a.createdAt));
+  S.apps = filterAndLockHiredApps(Array.from(appMap.values()), cleanWant, directApp);
 
   if (directApp) {
-    S.cur = directApp;
+    S.cur = S.apps.find(a => a.id === directApp.id) || directApp;
   } else if (cleanWant && appMap.has(cleanWant)) {
     S.cur = appMap.get(cleanWant);
   } else {
     S.cur = S.apps.find(a => a.id === cleanWant) || S.apps[0] || null;
   }
+  if (S.cur) await enrichAppCerts(S.cur);
 
-  const wantTab = P.get('t');
-  if (wantTab === 'position' || wantTab === 'role') S.viewType = 'position';
-  else if (wantTab === 'achieve' || wantTab === 'achievement') S.viewType = 'achievement';
-  else if (wantTab === 'exp' || wantTab === 'intern' || wantTab === 'experience') S.viewType = 'experience';
+  initTabFromUrl();
   renderOwner();
 
   // Live auto-refresh if certificates or applications are updated while viewing
   if (onSnapshot && !S._liveSubscribed) {
     S._liveSubscribed = true;
     if (cleanWant) {
-      onSnapshot(doc(db, 'hiringApplications', cleanWant), snap => {
+      onSnapshot(doc(db, 'hiringApplications', cleanWant), async snap => {
         if (!snap.exists()) return;
-        const updated = { id: snap.id, ...snap.data() };
+        const updated = await enrichAppCerts({ id: snap.id, ...snap.data() });
         const idx = S.apps.findIndex(a => a.id === updated.id);
         if (idx >= 0) S.apps[idx] = updated;
-        else S.apps.unshift(updated);
+        else S.apps = [updated];
         if (!S.cur || S.cur.id === updated.id) {
           S.cur = updated;
           renderOwner();
@@ -737,22 +823,40 @@ async function loadOwner(user){
       }, () => {});
     }
     if (user && user.uid) {
-      onSnapshot(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid)), snap => {
-        snap.docs.forEach(d => {
-          const updated = { id: d.id, ...d.data() };
-          const idx = S.apps.findIndex(a => a.id === updated.id);
-          if (idx >= 0) S.apps[idx] = updated;
-          else S.apps.push(updated);
-          if (S.cur && S.cur.id === updated.id) S.cur = updated;
-        });
-        if (!S.cur && S.apps.length) S.cur = S.apps[0];
+      onSnapshot(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid)), async snap => {
+        const incoming = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        incoming.forEach(u => appMap.set(u.id, u));
+        S.apps = filterAndLockHiredApps(Array.from(appMap.values()), cleanWant, directApp);
+        if (S.cur) {
+          const match = S.apps.find(a => a.id === S.cur.id);
+          if (match) S.cur = await enrichAppCerts(match);
+        } else if (S.apps.length) {
+          S.cur = await enrichAppCerts(S.apps[0]);
+        }
         renderOwner();
       }, () => {});
     }
   }
 }
-window.pick = id => { S.cur = S.apps.find(a => a.id === id); renderOwner(); };
-window.switchView = function(t){ S.viewType = t; renderOwner(); };
+window.pick = async id => {
+  const found = S.apps.find(a => a.id === id);
+  if (found) {
+    S.cur = await enrichAppCerts(found);
+    renderOwner();
+  }
+};
+window.switchView = function(t){
+  S.viewType = t;
+  S._tabInit = true;
+  try {
+    const u = new URL(location.href);
+    const paramVal = t === 'position' ? 'position' : (t === 'achievement' ? 'achieve' : 'exp');
+    u.searchParams.set('t', paramVal);
+    P.set('t', paramVal);
+    history.replaceState(null, '', u.pathname + u.search);
+  } catch(e){}
+  renderOwner();
+};
 
 /* ---- One-Time Edit Name Modal ---- */
 window.openNameModal = function(){
@@ -806,31 +910,39 @@ window.saveCertName = async function(){
   }
 };
 
+function hiredRoleTitleOf(app, role){
+  if (!app) return (role && role.title) || 'Role';
+  if (role && role.title) return role.title;
+  if (app.offer && app.offer.roles) return app.offer.roles;
+  if (app.roleTitle) return app.roleTitle;
+  if (app.positionCert && app.positionCert.roleTitle) return app.positionCert.roleTitle;
+  if (app.achievementCert && app.achievementCert.roleTitle) return app.achievementCert.roleTitle;
+  if (app.certOverride && app.certOverride.roleTitle) return app.certOverride.roleTitle;
+  return 'Hired Role';
+}
+
 async function renderOwner(){
   clearInterval(S.tm);
-  const head = topbar('Certificate');
-  if (!S.cur) { $('app').innerHTML = head + `<div class="card center"><i class="fa-solid fa-award big"></i><div class="h3">No certificate yet</div><div class="p2">Your certificate appears here once you accept an offer and start working.</div></div>`; return; }
+  if (!S.cur) {
+    $('app').innerHTML = topbar('Certificate') + `<div class="card center"><i class="fa-solid fa-award big"></i><div class="h3">No certificate yet</div><div class="p2">Your certificate appears here once you accept an offer and start working.</div></div>`;
+    return;
+  }
   const role = S.roles.find(r => r.id === S.cur.roleId);
+  const hiredRoleName = hiredRoleTitleOf(S.cur, role);
+  const head = topbar(hiredRoleName);
+
   const baseCert = buildCert(S.cur, role);
   const achCert = core.buildAchievementCert ? core.buildAchievementCert(S.cur, role) : null;
   const posCert = core.buildPositionCert ? core.buildPositionCert(S.cur, role) : null;
   const hasAch = !!achCert;
   const hasPos = !!posCert;
-  const isIntern = role && role.employmentType === 'INTERN';
+  const isIntern = (S.cur.offer && S.cur.offer.jobType === 'INTERN') || (role && role.employmentType === 'INTERN') || (baseCert && baseCert.kind === 'INTERN');
 
-  // Ensure active viewType respects URL tab or user toggle
-  const urlTab = P.get('t');
-  if (urlTab === 'position' || urlTab === 'role') {
-    if (hasPos) S.viewType = 'position';
-  } else if (urlTab === 'achieve' || urlTab === 'achievement') {
-    if (hasAch) S.viewType = 'achievement';
-  } else if (urlTab === 'exp' || urlTab === 'intern' || urlTab === 'experience') {
-    S.viewType = 'experience';
-  }
+  initTabFromUrl();
 
   if (!S.viewType) {
-    if (hasPos && (baseCert.state === 'active' || !baseCert.eligible)) S.viewType = 'position';
-    else if (hasAch && (baseCert.state === 'active' || !baseCert.eligible)) S.viewType = 'achievement';
+    if (hasPos && (!baseCert || baseCert.state === 'active' || !baseCert.eligible)) S.viewType = 'position';
+    else if (hasAch && (!baseCert || baseCert.state === 'active' || !baseCert.eligible)) S.viewType = 'achievement';
     else S.viewType = hasPos ? 'position' : (hasAch ? 'achievement' : 'experience');
   }
 
@@ -847,7 +959,7 @@ async function renderOwner(){
     c = {
       id: S.cur.id,
       name: S.cur.certName || S.cur.name || 'Candidate',
-      roleTitle: S.cur.roleTitle || (role && role.title) || 'Team Member',
+      roleTitle: hiredRoleName,
       kind: 'JOB',
       startMs: toMs(S.cur.offerAcceptedAt || S.cur.createdAt) || Date.now() - 30 * 86400000,
       endMs: toMs(S.cur.offerLeftAt) || Date.now(),
@@ -859,21 +971,26 @@ async function renderOwner(){
   }
   S.c = c;
 
-  const appChips = S.apps.length > 1 ? `<div class="chips">${S.apps.map(a => `<div class="chip ${a.id === S.cur.id ? 'on' : ''}" onclick="pick('${a.id}')">${esc((S.roles.find(r => r.id === a.roleId) || {}).title || 'Role')}</div>`).join('')}</div>` : '';
+  // Show the hired role clearly at the top (only hired role(s))
+  const appChips = `<div class="chips">${S.apps.map(a => {
+    const rObj = S.roles.find(r => r.id === a.roleId);
+    const rTitle = hiredRoleTitleOf(a, rObj);
+    return `<div class="chip ${a.id === S.cur.id ? 'on' : ''}" onclick="pick('${a.id}')"><i class="fa-solid fa-briefcase" style="margin-right:6px;"></i>${esc(rTitle)}</div>`;
+  }).join('')}</div>`;
 
-  // Clean 3-Filter Segmented Tab Bar at the Top
+  // Clean 3-Filter Segmented Tab Bar at the Top — clicking any tab switches immediately
   let certSwitcher = '';
   if (hasPos || hasAch) {
     certSwitcher = `<div class="cert-nav-filter">
-      <button class="cert-nav-btn t-exp ${S.viewType === 'experience' ? 'on' : ''}" onclick="switchView('experience')">
+      <button type="button" class="cert-nav-btn t-exp ${S.viewType === 'experience' ? 'on' : ''}" onclick="switchView('experience')">
         <i class="fa-solid ${isIntern ? 'fa-graduation-cap' : 'fa-briefcase'}"></i>
         <span>${isIntern ? 'Internship Certificate' : 'Experience Certificate'}</span>
       </button>
-      ${hasPos ? `<button class="cert-nav-btn t-pos ${S.viewType === 'position' ? 'on' : ''}" onclick="switchView('position')">
+      ${hasPos ? `<button type="button" class="cert-nav-btn t-pos ${S.viewType === 'position' ? 'on' : ''}" onclick="switchView('position')">
         <i class="fa-solid ${posCert && posCert.isExecutive ? 'fa-crown' : 'fa-id-badge'}"></i>
         <span>${posCert && posCert.isExecutive ? 'Executive Appointment' : 'Certificate of Position'}</span>
       </button>` : ''}
-      ${hasAch ? `<button class="cert-nav-btn t-ach ${S.viewType === 'achievement' ? 'on' : ''}" onclick="switchView('achievement')">
+      ${hasAch ? `<button type="button" class="cert-nav-btn t-ach ${S.viewType === 'achievement' ? 'on' : ''}" onclick="switchView('achievement')">
         <i class="fa-solid fa-trophy"></i>
         <span>Certificate of Achievement</span>
       </button>` : ''}
@@ -907,16 +1024,19 @@ async function renderOwner(){
   } else if (c.state === 'active' && !isAdminViewer) {
     const proj = certDuration(c.startMs, Date.now());
     const intern = c.kind === 'INTERN';
+    const previewDurLabel = core.fmtMonths(proj.months, proj.days) || `${Math.max(1, proj.days || 1)} Day${proj.days === 1 ? '' : 's'}`;
     html += `<div class="card"><div class="ok-head"><div class="ok-head-left"><div class="ok-ico amber"><i class="fa-solid fa-hourglass-half"></i></div><div><div class="h3">${intern ? 'Internship in Progress' : 'Active Engagement'}</div><div class="p2">${esc(c.roleTitle)} · Started ${fD(c.startMs)}</div></div></div></div>
       <div class="k">${intern ? 'Certificate unlocks in' : 'Working since'}</div><div class="cd" id="cd">—</div>
       ${intern ? '<div class="bar"><span id="cdBar" style="width:0%"></span></div><div class="p2" style="margin-top:8px">Full certificate for ' + c.plannedMonths + ' months is released automatically on completion.</div>' : ''}
-      <div class="acts">
+      <div class="acts" style="margin-bottom:14px;">
         <button class="btn r" ${proj.eligible ? '' : 'disabled'} onclick="askLeave()"><i class="fa-solid fa-award"></i> ${proj.eligible ? 'Leave & Generate Certificate' : 'Unlocks after 15 days'}</button>
         ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm Legal Name</button>` : ''}
-      </div></div><div id="pv"></div>`;
+      </div>
+      <div id="pv"></div>
+    </div>`;
     $('app').innerHTML = html;
-    const pv = { ...c, endMs: Date.now(), months: proj.months, durationLabel: core.fmtMonths(proj.months, proj.days), issuedMs: Date.now() };
-    if (proj.eligible) paint($('pv'), pv, true);
+    const pv = { ...c, endMs: Date.now(), months: proj.months, durationLabel: previewDurLabel, issuedMs: Date.now() };
+    paint($('pv'), pv, true);
     const tick = () => {
       const el = $('cd'); if (!el) return clearInterval(S.tm);
       if (intern) { const left = c.plannedEndMs - Date.now(); if (left <= 0) { clearInterval(S.tm); return renderOwner(); }
@@ -1036,14 +1156,11 @@ if (vid) {
       try {
         const [snap, rs] = await directFetchPromise;
         if (snap && snap.exists()) {
-          const directApp = { id: snap.id, ...snap.data() };
+          const directApp = await enrichAppCerts({ id: snap.id, ...snap.data() });
           S.roles = rs.docs.map(d => ({ id: d.id, ...d.data() }));
           S.apps = [directApp];
           S.cur = directApp;
-          const wantTab = P.get('t');
-          if (wantTab === 'position' || wantTab === 'role') S.viewType = 'position';
-          else if (wantTab === 'achieve' || wantTab === 'achievement') S.viewType = 'achievement';
-          else if (wantTab === 'exp' || wantTab === 'intern' || wantTab === 'experience') S.viewType = 'experience';
+          initTabFromUrl();
           renderOwner();
           return;
         }
