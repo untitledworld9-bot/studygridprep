@@ -30,42 +30,69 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);min-height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);}
 a{color:var(--accent);text-decoration:none;}
-.wrap{max-width:1020px;margin:0 auto;padding:14px 16px 40px;}
-.top{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.ib{width:42px;height:42px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;box-shadow:var(--shadow);font-size:15px;}
-.ttl{font-size:24px;font-weight:800;letter-spacing:-.01em;flex:1;}
-.sub{font-size:12.5px;color:var(--text2);margin:0 0 14px;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
-.center{text-align:center;padding:36px 18px;}
-.center i.big{font-size:34px;color:var(--accent);margin-bottom:12px;display:block;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:13px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:.18s;color:var(--text);background:var(--surface2);border:1px solid var(--border);}
-.btn:hover{transform:translateY(-1px);} .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.btn.p{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;box-shadow:0 8px 20px rgba(91,91,246,.28);}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 18px 48px;}
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:11px 16px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+.top-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.top-brand{display:flex;align-items:center;gap:10px;min-width:0;}
+.top-brand img{width:34px;height:34px;border-radius:9px;flex-shrink:0;}
+.top-brand-txt{min-width:0;}
+.top-org{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);line-height:1.1;}
+.ttl{font-size:16px;font-weight:800;letter-spacing:-.015em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.top-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;
+  font-size:11px;font-weight:700;background:rgba(22,163,74,.10);color:var(--green);
+  border:1px solid rgba(22,163,74,.25);
+}
+@media(max-width:600px){ .top-badge{display:none;} .wrap{padding:12px 12px 36px;} }
+.ib{
+  width:38px;height:38px;border-radius:11px;background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;
+  font-size:14px;transition:.18s;flex-shrink:0;
+}
+.ib:hover{border-color:var(--accent);color:var(--accent);}
+.sub{font-size:12px;color:var(--text2);margin:0 0 14px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);}
+.center{text-align:center;padding:42px 20px;}
+.center i.big{font-size:36px;color:var(--accent);margin-bottom:12px;display:block;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:11px;padding:10px 15px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s;color:var(--text);background:var(--surface2);border:1px solid var(--border);}
+.btn:hover{transform:translateY(-1px);border-color:rgba(91,91,246,.35);} .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn.p{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;box-shadow:0 6px 16px rgba(91,91,246,.25);}
 .btn.g{background:var(--green);color:#fff;border:0;} .btn.r{background:linear-gradient(135deg,#DC2626,#EF4444);color:#fff;border:0;}
 .btn.li{background:#0A66C2;color:#fff;border:0;}
-.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:16px;}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
-.chip{padding:7px 13px;border-radius:99px;font-size:12px;font-weight:700;background:var(--surface);border:1px solid var(--border);cursor:pointer;color:var(--text2);}
+.chip{padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;background:var(--surface);border:1px solid var(--border);cursor:pointer;color:var(--text2);transition:.18s;}
 .chip.on{background:rgba(91,91,246,.12);color:var(--accent);border-color:var(--accent);}
-.cert-nav-filter{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:5px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.cert-nav-btn{flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;border:0;background:transparent;color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;}
-.cert-nav-btn:hover{background:var(--surface);color:var(--text);}
-.cert-nav-btn.on{background:var(--card);color:var(--text);box-shadow:var(--shadow);border:1px solid var(--border);}
-.cert-nav-btn.t-exp.on{border-color:rgba(15,118,110,0.4);color:#0F766E;}
-.cert-nav-btn.t-pos.on{border-color:rgba(37,99,235,0.4);color:#2563EB;}
-.cert-nav-btn.t-ach.on{border-color:rgba(217,119,6,0.4);color:#D97706;}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 16px;}
-.k{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);} .v{font-size:13px;font-weight:600;margin-top:1px;word-break:break-word;}
-.ok-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.ok-ico{width:44px;height:44px;border-radius:14px;background:rgba(22,163,74,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.cert-nav-filter{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:5px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:var(--shadow);}
+.cert-nav-btn{flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;}
+.cert-nav-btn:hover{background:var(--surface2);color:var(--text);}
+.cert-nav-btn.on{background:var(--surface2);color:var(--accent);border-color:rgba(91,91,246,0.3);}
+.cert-nav-btn.t-exp.on{background:rgba(15,118,110,0.08);border-color:rgba(15,118,110,0.35);color:#0F766E;}
+.cert-nav-btn.t-pos.on{background:rgba(37,99,235,0.08);border-color:rgba(37,99,235,0.35);color:#2563EB;}
+.cert-nav-btn.t-ach.on{background:rgba(217,119,6,0.08);border-color:rgba(217,119,6,0.35);color:#D97706;}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+.meta-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 13px;}
+.k{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);}
+.v{font-size:12.5px;font-weight:700;margin-top:2px;word-break:break-word;color:var(--text);}
+.ok-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.ok-head-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.ok-ico{width:42px;height:42px;border-radius:12px;background:rgba(22,163,74,.12);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
 .ok-ico.amber{background:rgba(245,158,11,.14);color:var(--amber);} .ok-ico.red{background:rgba(239,68,68,.12);color:var(--red);}
-.h3{font-size:15px;font-weight:800;} .p2{font-size:12px;color:var(--text2);margin-top:2px;}
-.cd{font-size:30px;font-weight:800;letter-spacing:-.01em;margin:6px 0 10px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;}
+.h3{font-size:15px;font-weight:800;letter-spacing:-.01em;} .p2{font-size:12px;color:var(--text2);margin-top:2px;}
+.cd{font-size:28px;font-weight:800;letter-spacing:-.01em;margin:6px 0 10px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;}
 .bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;border:1px solid var(--border);} .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;}
-.linkbox{display:flex;gap:8px;align-items:center;background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:9px 12px;margin-top:12px;font-size:11.5px;color:var(--text2);word-break:break-all;}
+.linkbox{display:flex;gap:10px;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-top:12px;font-size:11.5px;color:var(--text2);word-break:break-all;}
+.linkbox-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);white-space:nowrap;}
 
 /* preview stage */
-.stage{position:relative;width:100%;overflow:hidden;border-radius:16px;box-shadow:var(--shadow-md);border:1px solid var(--border);}
+.stage-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:12px;}
+@media(max-width:600px){ .stage-wrap{padding:6px;border-radius:12px;} }
+.stage{position:relative;width:100%;overflow:hidden;border-radius:12px;box-shadow:var(--shadow-md);border:1px solid var(--border);background:#fff;}
 .scaler{width:1123px;height:794px;transform-origin:0 0;}
 .stage.lockd .scaler{filter:blur(7px) grayscale(.3);}
 .lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(15,23,42,.35);color:#fff;font-weight:800;font-size:15px;}
@@ -74,9 +101,9 @@ a{color:var(--accent);text-decoration:none;}
 /* modal */
 .ov{position:fixed;inset:0;z-index:100;background:rgba(8,12,26,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
 .ov.open{display:flex;animation:fi .2s;} @keyframes fi{from{opacity:0}to{opacity:1}}
-.sheet{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:24px 22px;box-shadow:var(--shadow-md);text-align:center;animation:pop .28s cubic-bezier(.2,1.4,.4,1);}
+.sheet{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:24px 22px;box-shadow:var(--shadow-md);text-align:center;animation:pop .28s cubic-bezier(.2,1.4,.4,1);}
 @keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
-.warn{width:68px;height:68px;border-radius:50%;margin:0 auto 12px;background:rgba(239,68,68,.12);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;animation:shake 1.6s infinite;}
+.warn{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;background:rgba(239,68,68,.12);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;animation:shake 1.6s infinite;}
 .warn::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(239,68,68,.35);animation:ring 1.6s infinite;}
 @keyframes ring{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
 @keyframes shake{0%,60%,100%{transform:rotate(0)}65%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}85%{transform:rotate(-5deg)}}
@@ -90,17 +117,18 @@ a{color:var(--accent);text-decoration:none;}
 .tick path{fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60;animation:dr .4s .6s forwards;} @keyframes dr{to{stroke-dashoffset:0}}
 
 /* verify page */
-.vcard{max-width:580px;margin:10px auto 18px;text-align:center;}
-.vseal{width:118px;height:118px;margin:4px auto 12px;position:relative;display:flex;align-items:center;justify-content:center;}
+.vcard{max-width:720px;margin:0 auto 16px;text-align:center;}
+.vseal{width:96px;height:96px;margin:0 auto 10px;position:relative;display:flex;align-items:center;justify-content:center;}
 .scan{position:absolute;inset:0;border-radius:50%;border:4px solid var(--border);border-top-color:var(--accent);animation:sp .8s linear infinite;} @keyframes sp{to{transform:rotate(360deg)}}
-.shield{width:118px;height:118px;filter:drop-shadow(0 10px 22px rgba(22,163,74,.35));animation:pop .5s cubic-bezier(.2,1.4,.4,1);}
+.shield{width:96px;height:96px;filter:drop-shadow(0 8px 18px rgba(22,163,74,.3));animation:pop .5s cubic-bezier(.2,1.4,.4,1);}
 .shield .sh{fill:var(--green);} .shield .ck{fill:none;stroke:#fff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:70;stroke-dashoffset:70;animation:dr .5s .45s forwards;}
 .shield.bad .sh{fill:var(--red);} .shield.bad .ck{stroke-dasharray:90;stroke-dashoffset:90;}
-.pulse{position:absolute;inset:8px;border-radius:50%;border:3px solid rgba(22,163,74,.5);animation:ring 1.8s .6s infinite;}
-.vt{font-size:22px;font-weight:800;} .vs{font-size:12.5px;color:var(--text2);margin-top:3px;}
-.vtable{text-align:left;margin-top:16px;display:grid;gap:10px;}
-.vtable div{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed var(--border);padding-bottom:8px;font-size:12.5px;} .vtable b{color:var(--text2);font-weight:600;} .vtable span{font-weight:700;text-align:right;}
-.brand{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:6px;font-weight:800;font-size:14px;} .brand img{width:26px;height:26px;border-radius:8px;}
+.pulse{position:absolute;inset:6px;border-radius:50%;border:3px solid rgba(22,163,74,.45);animation:ring 1.8s .6s infinite;}
+.vt{font-size:20px;font-weight:800;} .vs{font-size:12px;color:var(--text2);margin-top:2px;}
+.vtable{text-align:left;margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;}
+.vtable div{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;}
+.vtable b{color:var(--text3);font-weight:800;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;}
+.vtable span{font-weight:700;font-size:12.5px;color:var(--text);}
 #printArea{display:none;}
 @media print{ body *{visibility:hidden;} #printArea,#printArea *{visibility:visible;} #printArea{display:block;position:fixed;inset:0;} #printArea img{width:100%;height:100%;object-fit:contain;} @page{size:A4 landscape;margin:0;} }
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#0F172A;color:#fff;padding:10px 18px;border-radius:12px;font-size:12.5px;font-weight:600;opacity:0;transition:.25s;z-index:200;pointer-events:none;max-width:90%;text-align:center;}
@@ -260,7 +288,22 @@ window.toggleTheme = function(){
   document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n);
   $('metaThemeColor').setAttribute('content', n === 'dark' ? '#0D1120' : '#F0F2F8');
 };
-const topbar = (title, back) => `<div class="top"><a class="ib" href="${back || 'hiring-portal.html'}" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></a><div class="ttl">${title}</div><div class="ib" onclick="toggleTheme()"><i class="fa-solid fa-circle-half-stroke"></i></div></div>`;
+const topbar = (title, back) => `<div class="top">
+  <div class="top-left">
+    <a class="ib" href="${back || 'hiring-portal.html'}" aria-label="Back" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+    <div class="top-brand">
+      <img src="/icon-192.png" alt="Study Grid Prep">
+      <div class="top-brand-txt">
+        <div class="top-org">Study Grid Prep</div>
+        <div class="ttl">${title || 'Credential Portal'}</div>
+      </div>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="top-badge"><i class="fa-solid fa-shield-halved"></i> Official Credential</span>
+    <div class="ib" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-circle-half-stroke"></i></div>
+  </div>
+</div>`;
 
 /* ---------- Certificate QR and Fingerprint ---------- */
 const qrCache = {};
@@ -451,7 +494,7 @@ async function paint(host, c, locked){
       fingerprint(c).catch(() => 'SGP-VERIFIED')
     ]);
     host.classList.add('certhost');
-    host.innerHTML = `<div class="stage ${locked ? 'lockd' : ''}"><div class="scaler">${certHtml(c, qr, fp)}</div>${locked ? '<div class="lock"><i class="fa-solid fa-lock"></i>Preview — unlocks on download</div>' : ''}</div>`;
+    host.innerHTML = `<div class="stage-wrap"><div class="stage ${locked ? 'lockd' : ''}"><div class="scaler">${certHtml(c, qr, fp)}</div>${locked ? '<div class="lock"><i class="fa-solid fa-lock"></i>Preview — unlocks on download</div>' : ''}</div></div>`;
     fit(host);
     requestAnimationFrame(() => fit(host));
     setTimeout(() => fit(host), 120);
@@ -516,8 +559,8 @@ window.copyLink = async function(){ try { await navigator.clipboard.writeText(ve
 /* ================= PUBLIC VERIFY (QR) ================= */
 async function verifyMode(id){
   document.title = 'Verify Certificate – Study Grid Prep';
-  $('app').innerHTML = `<div class="brand"><img src="/icon-192.png" alt="Study Grid Prep">Study Grid Prep · Certificate Verification</div>
-    <div class="card vcard" id="vc"><div class="vseal"><div class="scan"></div></div><div class="vt">Verifying…</div><div class="vs">Checking this certificate against Study Grid Prep records</div></div><div id="vprev"></div>`;
+  $('app').innerHTML = topbar('Credential Verification', 'careers.html') + `
+    <div class="card vcard" id="vc"><div class="vseal"><div class="scan"></div></div><div class="vt">Verifying Credential…</div><div class="vs">Checking Study Grid Prep official records</div></div><div id="vprev"></div>`;
   const t0 = Date.now(); let d = null;
   const baseId = id.replace(/-(achieve|position)$/, '');
   try {
@@ -543,29 +586,34 @@ async function verifyMode(id){
       }
     }
   } catch(e) { console.warn(e); }
-  await new Promise(r => setTimeout(r, Math.max(0, 1300 - (Date.now() - t0))));
+  await new Promise(r => setTimeout(r, Math.max(0, 900 - (Date.now() - t0))));
   const vc = $('vc');
   if (!d || d.status === 'revoked') {
     vc.innerHTML = `<div class="vseal"><svg class="shield bad" viewBox="0 0 100 100"><path class="sh" d="M50 6 14 20v28c0 22 15 38 36 46 21-8 36-24 36-46V20z"/><path class="ck" d="M36 36l28 28M64 36 36 64"/></svg></div>
-      <div class="vt" style="color:var(--red)">${d ? 'Certificate revoked' : 'Could not verify'}</div><div class="vs">${d ? 'This certificate is no longer valid.' : 'No certificate with this ID exists in Study Grid Prep records.'}</div>`;
+      <div class="vt" style="color:var(--red)">${d ? 'Certificate Revoked' : 'Could Not Verify'}</div><div class="vs">${d ? 'This credential is no longer valid.' : 'No credential with this ID exists in Study Grid Prep records.'}</div>`;
     return;
   }
   const c = { ...d, id };
+  S.c = c;
   const isAch = c.kind === 'ACHIEVEMENT';
   const isPos = c.kind === 'POSITION' || c.kind === 'ROLE' || c.isPosition;
   vc.innerHTML = `<div class="vseal"><div class="pulse"></div><svg class="shield" viewBox="0 0 100 100"><path class="sh" d="M50 6 14 20v28c0 22 15 38 36 46 21-8 36-24 36-46V20z"/><path class="ck" d="m33 50 12 12 23-26"/></svg></div>
-    <div class="vt" style="color:var(--green)">Verified ✓</div><div class="vs">Official ${isPos ? 'Certificate of Position & Appointment' : (c.kind === 'INTERN' ? 'Internship Certificate' : (isAch ? 'Certificate of Achievement' : 'Experience Certificate'))} from <b>Study Grid Prep</b></div>
+    <div class="vt" style="color:var(--green)">Verified Credential ✓</div><div class="vs">Official ${isPos ? 'Certificate of Position & Appointment' : (c.kind === 'INTERN' ? 'Internship Certificate' : (isAch ? 'Certificate of Achievement' : 'Experience Certificate'))} · <b>Study Grid Prep</b></div>
     <div class="vtable">
-      <div><b>Recipient Name</b><span>${esc(c.name)}</span></div>
-      <div><b>${isPos ? 'Official Appointed Position' : (isAch ? 'Honored Role / Recognition' : (c.kind === 'INTERN' ? 'Internship Role' : 'Designation'))}</b><span>${esc(c.roleTitle)}</span></div>
-      <div><b>${isPos ? 'Engagement Status' : (isAch ? 'Recognition / Duration' : 'Total Experience / Duration')}</b><span>${c.isCurrent ? 'Currently Active / Present' : esc(c.durationLabel)}</span></div>
-      <div><b>${isPos ? 'Appointed / Start Date' : 'Tenure Period'}</b><span>${isPos && c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active)' : `${fD(c.startMs)} – ${fD(c.endMs)}`}</span></div>
-      <div><b>Authorized Signatory</b><span>Ayush Kumar Gupta (Founder)</span></div>
+      <div><b>Recipient</b><span>${esc(c.name)}</span></div>
+      <div><b>${isPos ? 'Appointed Position' : (isAch ? 'Honored Role' : 'Designation')}</b><span>${esc(c.roleTitle)}</span></div>
+      <div><b>${isPos ? 'Engagement Status' : 'Duration'}</b><span>${c.isCurrent ? 'Currently Active / Present' : esc(c.durationLabel)}</span></div>
+      <div><b>${isPos ? 'Start Date' : 'Tenure Period'}</b><span>${isPos && c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active)' : `${fD(c.startMs)} – ${fD(c.endMs)}`}</span></div>
+      <div><b>Signatory</b><span>Ayush Kumar Gupta (Founder)</span></div>
       <div><b>Certificate ID</b><span>${certCode(id)}</span></div>
       <div><b>Issued Date</b><span>${fD(c.issuedMs || c.endMs || Date.now())}</span></div>
+      <div><b>Status</b><span style="color:var(--green)">Authentic &amp; Valid ✓</span></div>
     </div>
-    <div style="margin-top:16px;text-align:center;">
-      <a href="/certificate.html?app=${encodeURIComponent(baseId)}&t=${isPos ? 'position' : (isAch ? 'achieve' : 'exp')}" class="btn p" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font-weight:700;"><i class="fa-solid fa-up-right-from-square"></i> Open Full Certificate Viewer</a>
+    <div class="acts" style="margin-top:16px;">
+      <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+      <button class="btn" onclick="dlPng(this)"><i class="fa-solid fa-image"></i> Image (PNG)</button>
+      <button class="btn" onclick="printCert(this)"><i class="fa-solid fa-print"></i> Print</button>
+      <button class="btn" onclick="copyLink()"><i class="fa-regular fa-copy"></i> Copy Link</button>
     </div>`;
   paint($('vprev'), c);
 }
@@ -849,24 +897,23 @@ async function renderOwner(){
     </div>`;
   }
 
-  let html = head + adminBanner + `<div class="sub">${kindName} — auto-generated, digitally signed and verifiable with a QR code.</div>` + appChips + certSwitcher;
+  let html = head + adminBanner + appChips + certSwitcher;
 
   // Has the candidate already confirmed their name once?
   const isNameConfirmed = S.cur.nameConfirmed === true || (S.cur.certOverride && S.cur.certOverride.nameConfirmed === true);
 
   if (c.state === 'revoked') {
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico red"><i class="fa-solid fa-ban"></i></div><div><div class="h3">Certificate not available</div><div class="p2">Your engagement with this role was ended by the team.</div></div></div></div>`;
+    html += `<div class="card"><div class="ok-head" style="border-bottom:0;margin-bottom:0;padding-bottom:0;"><div class="ok-head-left"><div class="ok-ico red"><i class="fa-solid fa-ban"></i></div><div><div class="h3">Certificate Not Available</div><div class="p2">Your engagement with this role was ended by the team.</div></div></div></div></div>`;
   } else if (c.state === 'active' && !isAdminViewer) {
     const proj = certDuration(c.startMs, Date.now());
     const intern = c.kind === 'INTERN';
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-hourglass-half"></i></div><div><div class="h3">${intern ? 'Internship in progress' : 'You are currently working'}</div><div class="p2">${esc(c.roleTitle)} · Started ${fD(c.startMs)}</div></div></div>
+    html += `<div class="card"><div class="ok-head"><div class="ok-head-left"><div class="ok-ico amber"><i class="fa-solid fa-hourglass-half"></i></div><div><div class="h3">${intern ? 'Internship in Progress' : 'Active Engagement'}</div><div class="p2">${esc(c.roleTitle)} · Started ${fD(c.startMs)}</div></div></div></div>
       <div class="k">${intern ? 'Certificate unlocks in' : 'Working since'}</div><div class="cd" id="cd">—</div>
       ${intern ? '<div class="bar"><span id="cdBar" style="width:0%"></span></div><div class="p2" style="margin-top:8px">Full certificate for ' + c.plannedMonths + ' months is released automatically on completion.</div>' : ''}
       <div class="acts">
-        <button class="btn r" ${proj.eligible ? '' : 'disabled'} onclick="askLeave()"><i class="fa-solid fa-award"></i> ${proj.eligible ? 'Get certificate now' : 'Unlocks after 15 days'}</button>
-        ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm Name</button>` : ''}
-      </div>
-      <div class="p2" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> Downloading before completion means leaving this role. You will be asked to confirm.</div></div><div id="pv"></div>`;
+        <button class="btn r" ${proj.eligible ? '' : 'disabled'} onclick="askLeave()"><i class="fa-solid fa-award"></i> ${proj.eligible ? 'Leave & Generate Certificate' : 'Unlocks after 15 days'}</button>
+        ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm Legal Name</button>` : ''}
+      </div></div><div id="pv"></div>`;
     $('app').innerHTML = html;
     const pv = { ...c, endMs: Date.now(), months: proj.months, durationLabel: core.fmtMonths(proj.months, proj.days), issuedMs: Date.now() };
     if (proj.eligible) paint($('pv'), pv, true);
@@ -878,40 +925,56 @@ async function renderOwner(){
     }; tick(); S.tm = setInterval(tick, 1000);
     return;
   } else if (!c.eligible && !isAdminViewer) {
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico amber"><i class="fa-solid fa-clock"></i></div><div><div class="h3">Certificate not issued</div><div class="p2">A minimum of ${SGP.minDays} days of work is required. You worked ${c.days} day${c.days === 1 ? '' : 's'}.</div></div></div></div>`;
+    html += `<div class="card"><div class="ok-head" style="border-bottom:0;margin-bottom:0;padding-bottom:0;"><div class="ok-head-left"><div class="ok-ico amber"><i class="fa-solid fa-clock"></i></div><div><div class="h3">Certificate Not Issued Yet</div><div class="p2">A minimum of ${SGP.minDays} days of tenure is required (${c.days} day${c.days === 1 ? '' : 's'} recorded).</div></div></div></div></div>`;
   } else {
     const isAch = c.kind === 'ACHIEVEMENT';
     const isPos = c.kind === 'POSITION' || c.kind === 'ROLE' || c.isPosition;
     const isExecutive = !!c.isExecutive;
     const headerTitle = isAch
-      ? (isExecutive ? 'Certificate of Executive Distinction 👑' : 'Certificate of Achievement Awarded 🏆')
+      ? (isExecutive ? 'Certificate of Executive Distinction' : 'Certificate of Achievement')
       : (isPos
-          ? (isExecutive ? 'Official Certificate of Executive Appointment 👑' : 'Official Certificate of Position & Appointment 🎖️')
-          : (isExecutive ? 'Official Certificate of Executive Experience 👑' : 'Your certificate is ready 🎉'));
+          ? (isExecutive ? 'Certificate of Executive Appointment' : 'Certificate of Position & Appointment')
+          : (isExecutive ? 'Certificate of Executive Experience' : kindName));
     const headerSub = isPos
-      ? `${esc(c.name)} · ${esc(c.roleTitle)} · ${c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active & Serving)' : fD(c.startMs) + ' – ' + fD(c.endMs)}`
-      : `${esc(c.name)} · ${esc(c.durationLabel)} · ${fD(c.startMs)} – ${fD(c.endMs)}`;
+      ? `${esc(c.name)} · ${esc(c.roleTitle)} · ${c.isCurrent ? 'Appointed ' + fD(c.startMs) + ' (Active)' : fD(c.startMs) + ' – ' + fD(c.endMs)}`
+      : `${esc(c.name)} · ${esc(c.roleTitle)} · ${esc(c.durationLabel)}`;
 
-    html += `<div class="card"><div class="ok-head"><div class="ok-ico" style="${isPos ? (isExecutive ? 'background:rgba(217,119,6,0.15);color:#D97706;' : 'background:rgba(37,99,235,0.15);color:#2563EB;') : ''}"><i class="fa-solid ${isPos ? (isExecutive ? 'fa-crown' : 'fa-id-badge') : (isAch ? 'fa-trophy' : (isExecutive ? 'fa-crown' : 'fa-circle-check'))}"></i></div><div><div class="h3">${headerTitle}</div><div class="p2">${headerSub}</div></div></div>
+    html += `<div class="card">
+      <div class="ok-head">
+        <div class="ok-head-left">
+          <div class="ok-ico" style="${isPos ? (isExecutive ? 'background:rgba(217,119,6,0.14);color:#D97706;' : 'background:rgba(37,99,235,0.14);color:#2563EB;') : ''}"><i class="fa-solid ${isPos ? (isExecutive ? 'fa-crown' : 'fa-id-badge') : (isAch ? 'fa-trophy' : (isExecutive ? 'fa-crown' : 'fa-award'))}"></i></div>
+          <div>
+            <div class="h3">${headerTitle}</div>
+            <div class="p2">${headerSub}</div>
+          </div>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;font-size:11px;font-weight:800;background:rgba(22,163,74,.10);color:var(--green);border:1px solid rgba(22,163,74,.25);"><i class="fa-solid fa-circle-check"></i> Verified · ${certCode(c.id)}</span>
+      </div>
       <div id="pv"></div>
       <div class="acts">
         <button class="btn p" onclick="dlPdf(this)"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
         <button class="btn" onclick="dlPng(this)"><i class="fa-solid fa-image"></i> Image (PNG)</button>
-        ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm / Edit Name</button>` : ''}
+        ${!isNameConfirmed ? `<button class="btn" onclick="openNameModal()"><i class="fa-solid fa-user-pen"></i> Confirm Legal Name</button>` : ''}
         <button class="btn" onclick="printCert(this)"><i class="fa-solid fa-print"></i> Print</button>
         <button class="btn g" onclick="shareCert(this)"><i class="fa-solid fa-share-nodes"></i> Share</button>
         <button class="btn li" onclick="linkedIn()"><i class="fa-brands fa-linkedin"></i> Add to LinkedIn</button>
       </div>
-      <div class="linkbox"><i class="fa-solid fa-link"></i><span style="flex:1">${verifyUrl(c.id)}</span><button class="btn" style="padding:6px 10px" onclick="copyLink()"><i class="fa-regular fa-copy"></i></button></div></div>
-      <div class="card"><div class="grid2">
-        <div><div class="k">Certificate ID</div><div class="v">${certCode(c.id)}</div></div>
-        <div><div class="k">Type</div><div class="v">${isPos ? (isExecutive ? 'Executive Appointment & Governance' : 'Position & Appointment') : (c.kind === 'INTERN' ? 'Internship' : (isAch ? 'Certificate of Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')'))}</div></div>
-        <div><div class="k">${isPos ? 'Official Appointed Position' : 'Designation'}</div><div class="v">${esc(c.roleTitle)}</div></div>
-        <div><div class="k">${isPos ? 'Status / Engagement' : 'Duration / Recognition'}</div><div class="v">${isPos && c.isCurrent ? 'Currently Active / Present' : esc(c.durationLabel)}</div></div>
-        <div><div class="k">Signatory</div><div class="v">Ayush Kumar Gupta (Founder)</div></div>
-        <div><div class="k">Issued Date</div><div class="v">${fD(c.issuedMs || c.endMs || Date.now())}</div></div>
-        <div><div class="k">Status</div><div class="v" style="color:var(--green)">Verified ✓</div></div>
-      </div></div>`;
+      <div class="linkbox">
+        <span class="linkbox-label"><i class="fa-solid fa-qrcode"></i> Verify URL</span>
+        <span style="flex:1">${verifyUrl(c.id)}</span>
+        <button class="btn" style="padding:6px 12px;font-size:11.5px;" onclick="copyLink()"><i class="fa-regular fa-copy"></i> Copy</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="grid2">
+        <div class="meta-item"><div class="k">Certificate ID</div><div class="v">${certCode(c.id)}</div></div>
+        <div class="meta-item"><div class="k">Credential Type</div><div class="v">${isPos ? (isExecutive ? 'Executive Appointment' : 'Position & Appointment') : (c.kind === 'INTERN' ? 'Internship' : (isAch ? 'Achievement' : 'Experience (' + esc(EMP_LABELS[c.empType] || 'Full-time') + ')'))}</div></div>
+        <div class="meta-item"><div class="k">${isPos ? 'Official Position' : 'Designation'}</div><div class="v">${esc(c.roleTitle)}</div></div>
+        <div class="meta-item"><div class="k">${isPos ? 'Standing' : 'Duration'}</div><div class="v">${isPos && c.isCurrent ? 'Active & Serving' : esc(c.durationLabel)}</div></div>
+        <div class="meta-item"><div class="k">Signatory</div><div class="v">Ayush Kumar Gupta (Founder)</div></div>
+        <div class="meta-item"><div class="k">Issued Date</div><div class="v">${fD(c.issuedMs || c.endMs || Date.now())}</div></div>
+      </div>
+    </div>`;
     $('app').innerHTML = html; paint($('pv'), c); publish(c); return;
   }
   $('app').innerHTML = html;

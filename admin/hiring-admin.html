@@ -811,19 +811,24 @@ function toInputDate(v){
 /* ================================================================
    DATA LOADING
 ================================================================ */
+let _rolesReady = false, _appsReady = false;
 function bootData(){
   onSnapshot(collection(db, 'hiringRoles'), snap => {
     state.roles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     state.roles.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    _rolesReady = true;
     populateRoleFilters();
     renderRoles(); renderDashboard(); renderApplicants(); renderResults(); renderHired(); renderCerts(); renderPositions(); renderCandidates(); renderLeaveAlert();
     adminAutoDeclareDueResults();
+    if (_appsReady) syncAllRolesVacancyState();
   }, e => console.error('roles snapshot error', e));
 
   onSnapshot(collection(db, 'hiringApplications'), snap => {
     state.applications = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _appsReady = true;
     renderDashboard(); renderApplicants(); renderResults(); renderRoles(); renderHired(); renderCerts(); renderPositions(); renderCandidates(); renderLeaveAlert();
     adminAutoDeclareDueResults();
+    if (_rolesReady) syncAllRolesVacancyState();
   }, e => console.error('applications snapshot error', e));
 
   onSnapshot(collection(db, 'hiringCandidates'), snap => {
@@ -915,9 +920,47 @@ function isRoleExpired(role){
   const d = new Date(role.validThrough);
   return !isNaN(d.getTime()) && Date.now() > d.getTime();
 }
+function isRoleFilled(role){
+  if (!role) return false;
+  const vac = Math.max(1, Number(role.vacancy) || 1);
+  return activeHiredCount(role.id) >= vac;
+}
 function isRoleClosed(role){
   if (!role) return false;
-  return role.status !== 'open' || isRoleExpired(role);
+  return role.status !== 'open' || isRoleExpired(role) || isRoleFilled(role);
+}
+
+const _roleSyncInFlight = new Set();
+async function syncRoleVacancyState(roleId){
+  if (!roleId || _roleSyncInFlight.has(roleId)) return;
+  const role = state.roles.find(r => r.id === roleId);
+  if (!role) return;
+  const vac = Math.max(1, Number(role.vacancy) || 1);
+  const hiredNow = activeHiredCount(role.id);
+  const patch = {};
+  if (role.filledCount !== hiredNow) patch.filledCount = hiredNow;
+  if (hiredNow >= vac) {
+    if (role.status === 'open' || !role.autoClosedByFill) {
+      patch.status = 'closed';
+      patch.autoClosedByFill = true;
+    }
+  } else if (role.autoClosedByFill && !isRoleExpired(role)) {
+    patch.status = 'open';
+    patch.autoClosedByFill = false;
+  }
+  if (!Object.keys(patch).length) return;
+  _roleSyncInFlight.add(roleId);
+  try {
+    Object.assign(role, patch);
+    await updateDoc(doc(db, 'hiringRoles', roleId), patch);
+  } catch (e) {
+    console.warn('Role vacancy sync error:', e);
+  } finally {
+    _roleSyncInFlight.delete(roleId);
+  }
+}
+function syncAllRolesVacancyState(){
+  state.roles.forEach(r => syncRoleVacancyState(r.id));
 }
 
 function renderRoles(){
@@ -937,7 +980,7 @@ function renderRoles(){
       </div>
       <div class="tx-row-actions">
         ${filled ? '<span class="badge badge-green role-filled"><i class="fa-solid fa-circle-check"></i>All positions filled</span>' : ''}
-        ${!closed ? '<span class="badge badge-green">Open</span>' : `<span class="badge badge-gray" ${expired ? 'title="Deadline passed — status still says open in DB"' : ''}>Closed${expired ? ' (expired)' : ''}</span>`}
+        ${!closed ? '<span class="badge badge-green">Open</span>' : `<span class="badge badge-gray" ${expired ? 'title="Deadline passed — status still says open in DB"' : ''}>Closed${filled ? ' (filled)' : (expired ? ' (expired)' : '')}</span>`}
         <button class="btn btn-outline btn-sm" onclick="openRoleModal('${r.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
         <button class="btn btn-outline btn-sm" onclick="openQuestionsModal('${r.id}')"><i class="fa-solid fa-list-check"></i> Questions</button>
         <button class="btn ${!closed?'btn-outline':'btn-green'} btn-sm" onclick="toggleRoleStatus('${r.id}')">${!closed?'Close':'Reopen'}</button>
@@ -951,14 +994,25 @@ window.toggleRoleStatus = async function(id){
   const role = state.roles.find(r => r.id === id); if (!role) return;
   const closed = isRoleClosed(role);
   if (!closed) {
-    // Simple manual close — no date involved.
-    try { await updateDoc(doc(db, 'hiringRoles', id), { status: 'closed' }); toast('Role closed', 'success'); }
+    // Simple manual close
+    try { await updateDoc(doc(db, 'hiringRoles', id), { status: 'closed', autoClosedByFill: false }); toast('Role closed', 'success'); }
     catch(e){ console.error(e); toast('Could not update status', 'error'); }
     return;
   }
-  // Reopening always needs a fresh registration deadline — just flipping
-  // status back to "open" does nothing if the old validThrough date is
-  // still in the past, so send the admin to the edit form to set a new one.
+  const vac = Math.max(1, Number(role.vacancy) || 1);
+  const hiredNow = activeHiredCount(id);
+  if (hiredNow >= vac) {
+    toast(`All ${vac} vacancy seat(s) are currently filled. Increase the Vacancy count to reopen this role.`, 'warning');
+    openRoleModal(id);
+    return;
+  }
+  if (!isRoleExpired(role)) {
+    try {
+      await updateDoc(doc(db, 'hiringRoles', id), { status: 'open', autoClosedByFill: false, filledCount: hiredNow });
+      toast('Role reopened', 'success');
+    } catch (e) { console.error(e); toast('Could not reopen role', 'error'); }
+    return;
+  }
   toast('Set a new registration deadline to reopen this role', 'warning');
   openRoleModal(id);
 };
@@ -1061,11 +1115,12 @@ window.saveRole = async function(){
   if (!title) return toast('Role title is required', 'warning');
   const revealVal = $('rfReveal').value;
   const validThroughVal = $('rfValidThrough').value;
+  const newVacancy = Math.max(1, parseInt($('rfVacancy').value, 10) || 1);
   const payload = {
     title,
     department: $('rfDept').value.trim(),
     description: $('rfDesc').value.trim(),
-    vacancy: parseInt($('rfVacancy').value) || 0,
+    vacancy: newVacancy,
     testDurationMinutes: parseInt($('rfDuration').value) || 20,
     passPercentage: parseInt($('rfPass').value) || 60,
     hoverDurationMs: parseInt($('rfHover').value) || 200,
@@ -1076,18 +1131,32 @@ window.saveRole = async function(){
     validThrough: validThroughVal ? new Date(validThroughVal + 'T23:59:59').toISOString() : '',
   };
   const reopenBox = $('rfReopen');
+  const deadlineExpired = !!(validThroughVal && new Date(validThroughVal + 'T23:59:59').getTime() <= Date.now());
   if (reopenBox && reopenBox.checked) {
-    if (!validThroughVal || new Date(validThroughVal + 'T23:59:59').getTime() <= Date.now()) {
+    if (deadlineExpired) {
       return toast('Pick a future registration deadline before reopening', 'warning');
     }
     payload.status = 'open';
+    payload.autoClosedByFill = false;
   }
   try {
     if (state.editingRoleId) {
+      const existingRole = state.roles.find(r => r.id === state.editingRoleId);
+      const hiredNow = activeHiredCount(state.editingRoleId);
+      payload.filledCount = hiredNow;
+      if (hiredNow >= newVacancy) {
+        payload.status = 'closed';
+        payload.autoClosedByFill = true;
+      } else if (existingRole && (existingRole.autoClosedByFill || newVacancy > (Number(existingRole.vacancy) || 1))) {
+        if (!deadlineExpired) {
+          payload.status = 'open';
+          payload.autoClosedByFill = false;
+        }
+      }
       await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), payload);
-      toast(payload.status === 'open' ? 'Role updated and reopened' : 'Role updated', 'success');
+      toast(payload.status === 'open' ? 'Role updated and opened for applicants' : (payload.autoClosedByFill ? 'Role updated (closed — all positions filled)' : 'Role updated'), 'success');
     } else {
-      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', questions:[], createdAt: serverTimestamp(), datePosted: serverTimestamp() });
+      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', autoClosedByFill: false, filledCount: 0, questions:[], createdAt: serverTimestamp(), datePosted: serverTimestamp() });
       toast('Role created', 'success');
     }
     closeModal();
@@ -1640,9 +1709,10 @@ window.setFinalStatus = async function(appId, selected){
     const patch = { finalStatus: selected ? 'selected' : 'not_selected', finalStatusAt: serverTimestamp() };
     await updateDoc(doc(db, 'hiringApplications', appId), patch);
     Object.assign(a, { finalStatus: patch.finalStatus });
+    await syncRoleVacancyState(a.roleId);
     if (selected) {
       const after = activeHiredCount(a.roleId);
-      toast(after >= vac ? `Selected — all ${vac} position(s) filled 🎉` : `Selected (${after} of ${vac} hired)`, 'success');
+      toast(after >= vac ? `Selected — all ${vac} position(s) filled & role auto-closed 🎉` : `Selected (${after} of ${vac} hired)`, 'success');
       if (!a.offer) openOfferModal(appId);
     } else {
       toast('Marked as Not Selected', 'success');
@@ -1751,9 +1821,24 @@ const PORTAL_URL = 'https://studygridprep.online/hiring-portal.html';
 function mailSign(){
   return ['Warm regards,', 'Hiring Team', '', 'Study Grid Prep', 'team@studygridprep.online', 'https://studygridprep.online'].join('\n');
 }
-function openMail(to, subject, body){
-  window.open('mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
+function isMobileOrTabletDevice(){
+  const ua = navigator.userAgent || '';
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua)) return true;
+  if (navigator.maxTouchPoints && navigator.maxTouchPoints > 1 && /Macintosh/i.test(ua)) return true;
+  return window.innerWidth <= 900 && ('ontouchstart' in window);
 }
+window.openMail = function(to, subject, body){
+  to = String(to || '').trim();
+  subject = String(subject || '');
+  body = String(body || '');
+  if (isMobileOrTabletDevice()) {
+    window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  } else {
+    const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    window.open(gmailUrl, '_blank', 'noopener');
+  }
+};
+const openMail = window.openMail;
 function fmtPlain(v){
   if (!v) return 'To be announced';
   const d = v?.toDate ? v.toDate() : new Date(v);
@@ -2030,7 +2115,7 @@ function renderHiredInner(){
         </div>
       </div>
       <div class="hired-contact">
-        ${a.email ? `<a href="mailto:${esc(a.email)}"><i class="fa-solid fa-envelope"></i>${esc(a.email)}</a>` : ''}
+        ${a.email ? `<a href="mailto:${esc(a.email)}" onclick="openMail('${esc(a.email)}','','');return false;"><i class="fa-solid fa-envelope"></i>${esc(a.email)}</a>` : ''}
         ${a.phone ? `<a href="tel:${esc(a.phone)}"><i class="fa-solid fa-phone"></i>${esc(a.phone)}</a>` : ''}
         ${wa ? `<a href="${wa}" target="_blank" rel="noopener" style="color:var(--green);"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>` : ''}
       </div>
@@ -3236,6 +3321,7 @@ window.confirmEnd = async function(appId, type){
   try {
     await updateDoc(doc(db, 'hiringApplications', appId), { hiredEndType: type, hiredEndNote: note, hiredEndAt: serverTimestamp() });
     Object.assign(a, { hiredEndType: type, hiredEndNote: note, hiredEndAt: new Date() });
+    await syncRoleVacancyState(a.roleId);
     toast(type === 'fired' ? 'Marked as fired' : 'Marked as deleted', 'success');
     closeModal();
     renderHired(); renderRoles();
@@ -3314,6 +3400,7 @@ window.reinstateHired = async function(appId){
   try {
     await updateDoc(doc(db, 'hiringApplications', appId), { hiredEndType: null, hiredEndNote: null, hiredEndAt: null, reinstatedAt: serverTimestamp() });
     Object.assign(a, { hiredEndType: null, hiredEndNote: null, hiredEndAt: null });
+    await syncRoleVacancyState(a.roleId);
     toast('Reinstated', 'success');
     renderHired(); renderRoles();
   } catch (e) { console.error(e); toast('Could not reinstate', 'error'); }
@@ -3339,6 +3426,7 @@ window.rehireCandidate = async function(appId){
       reinstatedAt: serverTimestamp()
     });
     Object.assign(a, { offerStatus: 'offered', offerLeftAt: null, offerLeftBy: null, leaveAck: true, hiredEndType: null, hiredEndAt: null });
+    await syncRoleVacancyState(a.roleId);
     toast('Candidate rehired — opening offer modal', 'success');
     renderHired(); renderRoles();
     openOfferModal(appId);

@@ -538,103 +538,182 @@ button, input, select, textarea{ font-family:inherit; }
 .offer-status-pill.red{ background:rgba(239,68,68,0.12); color:var(--red); }
 
 /* ============================================================
-   v3 — full modern app redesign
+   v3 — Enterprise Company Hiring Portal UI
 ============================================================ */
 body{ background:var(--bg); }
-.roles-sidebar{ background:linear-gradient(180deg,var(--surface),var(--surface2)); border-right:1px solid var(--border); }
-.sidebar-profile{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:10px; box-shadow:var(--shadow-sm); }
-.sidebar-filter-btn{ border-radius:12px; }
-.sidebar-filter-btn.active{ background:linear-gradient(135deg,rgba(91,91,246,0.16),rgba(124,58,237,0.10)); box-shadow:inset 3px 0 0 var(--accent); }
-.roles-header-sticky{ position:relative; z-index:5; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); background:color-mix(in srgb, var(--bg) 82%, transparent); padding-bottom:10px; }
-.roles-header-title{ font-size:24px; letter-spacing:-0.02em; }
-.roles-search-box{ border-radius:99px; padding:11px 18px; box-shadow:var(--shadow-sm); }
-.roles-filter-select{ border-radius:99px; }
+.roles-sidebar{
+  background:var(--surface); border-right:1px solid var(--border);
+  width:248px; padding:20px 16px; display:flex; flex-direction:column; gap:18px;
+}
+.sidebar-brand{
+  display:flex; align-items:center; gap:10px; padding:2px 6px 12px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-brand-name{ font-size:15px; font-weight:800; letter-spacing:-0.02em; color:var(--text); }
+.sidebar-profile{
+  background:var(--surface2); border:1px solid var(--border); border-radius:14px;
+  padding:11px 12px; box-shadow:none; position:relative;
+}
+.sidebar-filter-btn{ border-radius:10px; font-size:12.5px; padding:9px 11px; }
+.sidebar-filter-btn.active{
+  background:rgba(91,91,246,0.10); color:var(--accent); font-weight:700;
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+.roles-header-sticky{
+  position:relative; z-index:5; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  padding:18px 28px 12px !important; border-bottom:1px solid var(--border); margin-bottom:18px;
+}
+.roles-header-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.roles-header-title{ font-size:20px; font-weight:800; letter-spacing:-0.02em; color:var(--text); }
+.roles-header-sub{ font-size:12px !important; color:var(--text2); margin:2px 0 0 !important; line-height:1.35; }
+.roles-topbar{ margin-bottom:0 !important; gap:10px !important; display:flex; align-items:center; }
+.roles-search-box{
+  border-radius:11px; padding:9px 14px; background:var(--surface);
+  border:1px solid var(--border); box-shadow:var(--shadow-sm);
+}
+.roles-filter-select{ border-radius:11px; padding:9px 14px; border:1px solid var(--border); }
 
-/* hero */
-.hero{ position:relative; overflow:hidden; border-radius:24px; padding:22px 22px 20px; margin-bottom:20px; color:#fff;
-  background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 55%,#A855F7 100%); box-shadow:0 14px 34px rgba(91,91,246,0.30); animation:fadeUp .5s ease both; }
-.hero::before, .hero::after{ content:''; position:absolute; border-radius:50%; background:rgba(255,255,255,0.10); }
-.hero::before{ width:190px; height:190px; right:-50px; top:-70px; }
-.hero::after{ width:120px; height:120px; right:70px; bottom:-60px; background:rgba(255,255,255,0.07); }
-.hero-hi{ font-size:12px; font-weight:600; opacity:.85; }
-.hero-title{ font-size:21px; font-weight:800; margin:3px 0 4px; letter-spacing:-0.01em; position:relative; }
-.hero-sub{ font-size:12.5px; opacity:.88; max-width:440px; position:relative; }
-.hero-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; position:relative; }
-.hero-stat{ background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.22); border-radius:16px; padding:11px 12px; backdrop-filter:blur(6px); transition:var(--t); }
-.hero-stat:hover{ background:rgba(255,255,255,0.24); transform:translateY(-2px); }
-.hero-stat b{ display:block; font-size:22px; font-weight:800; line-height:1.1; }
-.hero-stat span{ font-size:10.5px; font-weight:600; opacity:.9; text-transform:uppercase; letter-spacing:.05em; }
+/* Executive Hero Banner */
+.hero{
+  position:relative; overflow:hidden; border-radius:18px !important;
+  padding:18px 22px !important; margin-bottom:18px !important; color:#fff;
+  background:linear-gradient(135deg,#4338CA 0%,#5B5BF6 55%,#7C3AED 100%);
+  box-shadow:0 10px 28px rgba(91,91,246,0.22);
+  display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+}
+.hero::before, .hero::after{ content:''; position:absolute; border-radius:50%; background:rgba(255,255,255,0.07); pointer-events:none; }
+.hero::before{ width:220px; height:220px; right:-60px; top:-90px; }
+.hero::after{ width:140px; height:140px; right:90px; bottom:-70px; background:rgba(255,255,255,0.05); }
+.hero-copy{ flex:1; min-width:220px; position:relative; z-index:1; }
+.hero-hi{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.82; }
+.hero-title{ font-size:18px !important; font-weight:800; margin:3px 0 4px !important; letter-spacing:-0.015em; line-height:1.25; }
+.hero-sub{ font-size:12px !important; opacity:.88; max-width:460px; line-height:1.45; }
+.hero-stats{
+  display:grid; grid-template-columns:repeat(3,minmax(82px,1fr)); gap:10px !important;
+  margin-top:0 !important; position:relative; z-index:1;
+}
+.hero-stat{
+  background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.22);
+  border-radius:12px !important; padding:9px 14px !important; text-align:center;
+  backdrop-filter:blur(6px); transition:var(--t);
+}
+.hero-stat:hover{ background:rgba(255,255,255,0.22); transform:translateY(-1px); }
+.hero-stat b{ display:block; font-size:19px !important; font-weight:800; line-height:1.15; font-variant-numeric:tabular-nums; }
+.hero-stat span{ font-size:9.5px !important; font-weight:700; opacity:.9; text-transform:uppercase; letter-spacing:.05em !important; white-space:nowrap; }
 
-/* cards */
-.roles-grid{ gap:20px; }
-.role-card{ padding:22px; border-radius:22px; background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-sm); animation:fadeUp .45s ease both; }
-.role-card:hover{ transform:translateY(-5px); box-shadow:0 18px 40px rgba(91,91,246,0.16); }
-.role-card-icon{ width:46px; height:46px; border-radius:15px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; font-size:18px; }
-.role-card-badge{ border-radius:99px; padding:5px 12px; font-weight:800; letter-spacing:.03em; }
-.role-card-title{ font-size:16.5px; letter-spacing:-0.01em; }
-.criteria-chip{ border-radius:99px; }
-.role-card-foot{ margin-top:2px; padding-top:14px; border-top:1px dashed var(--border); }
-.role-card-apply{ border-radius:99px; padding:9px 18px; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; box-shadow:0 6px 16px rgba(91,91,246,0.28); }
-.role-card-apply:hover{ filter:brightness(1.08); transform:translateY(-1px); color:#fff; }
-.role-card-apply:disabled{ background:var(--surface2); color:var(--text3); box-shadow:none; }
-.role-card-result{ border-radius:12px; font-weight:800; }
+/* Company-grade Role Cards */
+.roles-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:16px; }
+.role-card{
+  padding:20px; border-radius:16px; background:var(--surface); border:1px solid var(--border);
+  box-shadow:var(--shadow-sm); display:flex; flex-direction:column;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.role-card:hover{ transform:translateY(-3px); box-shadow:0 12px 30px rgba(15,23,42,0.08); border-color:rgba(91,91,246,0.38); }
+.role-card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.role-card-head-left{ display:flex; align-items:center; gap:12px; min-width:0; flex:1; }
+.role-card-icon{
+  width:42px; height:42px; border-radius:12px;
+  background:linear-gradient(135deg,rgba(91,91,246,0.14),rgba(124,58,237,0.10));
+  color:var(--accent); border:1px solid rgba(91,91,246,0.2);
+  font-size:16px; box-shadow:none; flex-shrink:0;
+}
+.role-card-title-wrap{ min-width:0; }
+.role-card-title{ font-size:15.5px; font-weight:800; letter-spacing:-0.015em; color:var(--text); margin-bottom:2px; line-height:1.25; }
+.role-card-dept{ font-size:11.5px; font-weight:600; color:var(--text3); margin-bottom:0; }
+.role-card-badge{
+  border-radius:8px; padding:4px 9px; font-size:10px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.04em; border:1px solid rgba(22,163,74,0.25);
+}
+.role-card-desc{ font-size:12.5px; color:var(--text2); line-height:1.55; margin-bottom:12px; }
+.role-meta-row{
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+  margin-bottom:12px; padding:8px 10px; border-radius:10px;
+  background:var(--surface2); border:1px solid var(--border);
+}
+.role-meta-chip{
+  display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
+  padding:0; border-radius:0; background:none; color:var(--text2); border:none;
+}
+.role-meta-chip i{ color:var(--accent); font-size:11px; }
+.role-meta-sep{ color:var(--border); font-size:11px; user-select:none; }
+.role-card-criteria{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+.criteria-chip{ border-radius:6px; font-size:10.5px; font-weight:600; padding:3px 8px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
+.role-card-foot{ margin-top:auto; padding-top:12px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.role-card-vacancy{ font-size:11.5px; font-weight:700; color:var(--text2); display:inline-flex; align-items:center; gap:5px; }
+.role-card-vacancy i{ color:var(--text3); }
+.role-card-apply{
+  border-radius:10px; padding:8px 16px; font-size:12px; font-weight:700;
+  background:var(--accent); color:#fff; border:none;
+  box-shadow:0 4px 12px rgba(91,91,246,0.22); transition:var(--t);
+}
+.role-card-apply:hover{ background:var(--accent2); transform:translateY(-1px); color:#fff; }
+.role-card-apply:disabled{ background:var(--surface2); color:var(--text3); box-shadow:none; transform:none; }
+.role-card-result{ border-radius:10px; font-weight:800; padding:8px 10px; font-size:12px; }
 
-/* your applications */
-.applied-section-panel{ border-radius:22px; background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-sm); }
-.applied-status-box{ border-radius:16px; transition:var(--t); }
-.applied-status-box:hover{ transform:translateX(3px); }
-.all-roles-heading{ font-weight:800; letter-spacing:-0.01em; }
+/* Your Applications Panel */
+.applied-section-panel{
+  border-radius:16px; background:var(--surface); border:1px solid var(--border);
+  box-shadow:var(--shadow-sm); padding:14px 16px !important; margin-bottom:20px !important;
+}
+.applied-section-header{ margin-bottom:10px !important; align-items:center; }
+.applied-section-sub{ display:none; }
+.applied-status-box{
+  border-radius:12px; padding:12px 14px; background:var(--surface2) !important;
+  border:1px solid var(--border); transition:var(--t);
+}
+.applied-status-box:hover{ border-color:rgba(91,91,246,0.35); transform:translateY(-1px); }
+.all-roles-heading{ font-size:12px; font-weight:800; letter-spacing:.05em; color:var(--text3); margin-bottom:12px; }
 
-/* modal → bottom-sheet feel on phones */
-.modal-sheet{ border-radius:26px; }
+/* Modal & Mobile refinements */
+.modal-sheet{ border-radius:20px; }
 @media (max-width:640px){
   .modal-overlay{ align-items:flex-end; padding:0; }
-  .modal-sheet{ border-radius:26px 26px 0 0; max-height:92vh; width:100%; max-width:100%; }
-  .hero{ padding:18px 16px; border-radius:20px; }
-  .hero-stat b{ font-size:19px; }
-  .roles-header-sticky{ padding:14px 16px 8px; }
+  .modal-sheet{ border-radius:22px 22px 0 0; max-height:92vh; width:100%; max-width:100%; }
+  .hero{ padding:16px !important; border-radius:16px !important; flex-direction:column; align-items:stretch; gap:12px; }
+  .hero-stat b{ font-size:17px !important; }
+  .roles-header-sticky{ padding:12px 16px 10px !important; margin-bottom:14px; }
   .roles-scroll-area{ padding:0 16px 60px; }
+  .roles-grid{ grid-template-columns:1fr; }
 }
-[data-theme="dark"] .hero{ box-shadow:0 14px 34px rgba(0,0,0,0.45); }
-[data-theme="dark"] .role-card:hover{ box-shadow:0 18px 40px rgba(0,0,0,0.5); }
+[data-theme="dark"] .hero{ box-shadow:0 12px 30px rgba(0,0,0,0.45); }
+[data-theme="dark"] .role-card:hover{ box-shadow:0 14px 34px rgba(0,0,0,0.45); }
 
 /* role picked on the careers page */
-.role-card-highlight{ border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(91,91,246,0.30), 0 18px 44px rgba(91,91,246,0.28) !important; animation:pickGlow 1.6s ease-in-out infinite; }
-@keyframes pickGlow{ 0%,100%{ box-shadow:0 0 0 3px rgba(91,91,246,0.30), 0 18px 44px rgba(91,91,246,0.22); } 50%{ box-shadow:0 0 0 7px rgba(91,91,246,0.20), 0 18px 44px rgba(91,91,246,0.36); } }
-.role-pick-tag{ display:flex; align-items:center; gap:8px; margin:-22px -22px 14px; padding:9px 16px; font-size:11.5px; font-weight:800; letter-spacing:.02em; color:#fff; cursor:pointer;
+.role-card-highlight{ border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(91,91,246,0.28), 0 14px 36px rgba(91,91,246,0.22) !important; }
+.role-pick-tag{ display:flex; align-items:center; gap:8px; margin:-20px -20px 14px; padding:8px 16px; font-size:11px; font-weight:800; letter-spacing:.02em; color:#fff; cursor:pointer;
   background:linear-gradient(90deg,var(--accent),var(--accent2)); }
 .role-pick-tag .x{ margin-left:auto; opacity:.8; font-size:12px; }
 
 /* logout */
-.sidebar-profile{ position:relative; }
-.sb-logout-mini{ margin-left:auto; flex-shrink:0; width:32px; height:32px; border-radius:10px; border:none; cursor:pointer; background:rgba(239,68,68,0.10); color:var(--red); font-size:13px; transition:var(--t); }
+.sb-logout-mini{ margin-left:auto; flex-shrink:0; width:30px; height:30px; border-radius:8px; border:none; cursor:pointer; background:rgba(239,68,68,0.10); color:var(--red); font-size:12px; transition:var(--t); }
 .sb-logout-mini:hover{ background:var(--red); color:#fff; }
-.sidebar-logout-wrap{ margin-top:auto; position:sticky; bottom:-22px; padding:14px 0 4px; background:linear-gradient(180deg,transparent,var(--surface2) 35%); display:flex; flex-direction:column; gap:6px; }
+.sidebar-logout-wrap{ margin-top:auto; position:sticky; bottom:-20px; padding:12px 0 2px; background:var(--surface); display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--border); }
 .sidebar-logout-wrap .sidebar-filter-btn{ width:100%; }
-.sidebar-logout-btn{ justify-content:center; background:rgba(239,68,68,0.10) !important; color:var(--red) !important; font-weight:800 !important; border:1px solid rgba(239,68,68,0.25) !important; }
+.sidebar-logout-btn{ justify-content:center; background:rgba(239,68,68,0.08) !important; color:var(--red) !important; font-weight:700 !important; border:1px solid rgba(239,68,68,0.2) !important; }
 .sidebar-logout-btn:hover{ background:var(--red) !important; color:#fff !important; }
-.header-logout-btn{ margin-left:auto; display:none; width:38px; height:38px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--red); font-size:15px; cursor:pointer; align-items:center; justify-content:center; }
+.header-logout-btn{ margin-left:auto; display:none; width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--red); font-size:14px; cursor:pointer; align-items:center; justify-content:center; }
 @media(max-width:820px){ .header-logout-btn{ display:flex; } }
 .logout-box{ text-align:center; padding:6px 4px 4px; }
-.logout-box .li{ width:56px; height:56px; border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:22px; background:rgba(239,68,68,0.12); color:var(--red); }
+.logout-box .li{ width:52px; height:52px; border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:20px; background:rgba(239,68,68,0.12); color:var(--red); }
 .logout-box h3{ margin:0 0 6px; font-size:17px; font-weight:800; color:var(--text); }
 .logout-box p{ margin:0 0 18px; font-size:12.5px; color:var(--text2); line-height:1.5; }
 .logout-actions{ display:flex; gap:10px; }
-.logout-actions button{ flex:1; border-radius:12px; padding:12px; font-size:13.5px; font-weight:800; cursor:pointer; border:none; font-family:inherit; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.logout-actions button{ flex:1; border-radius:10px; padding:11px; font-size:13px; font-weight:700; cursor:pointer; border:none; font-family:inherit; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
 .logout-actions .cancel{ background:var(--surface2); color:var(--text); border:1px solid var(--border); }
-.logout-actions .confirm{ background:linear-gradient(135deg,#DC2626,#EF4444); color:#fff; box-shadow:0 8px 20px rgba(239,68,68,0.28); }
+.logout-actions .confirm{ background:var(--red); color:#fff; }
 .logout-actions button:disabled{ opacity:.7; cursor:wait; }
 
 /* result countdown chip */
-.result-countdown{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:99px; font-size:11px; font-weight:800; letter-spacing:.01em;
-  background:rgba(245,158,11,0.14); color:#D97706; border:1px solid rgba(245,158,11,0.35); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.result-countdown{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:8px; font-size:10.5px; font-weight:700;
+  background:rgba(245,158,11,0.12); color:#D97706; border:1px solid rgba(245,158,11,0.3); white-space:nowrap; font-variant-numeric:tabular-nums; }
 .result-countdown i{ animation:hgFlip 2.4s ease-in-out infinite; }
 @keyframes hgFlip{ 0%,40%{ transform:rotate(0); } 60%,100%{ transform:rotate(180deg); } }
-.role-card-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.role-card-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
 
-.emp-tag{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:99px; font-size:11px; font-weight:800; background:rgba(91,91,246,0.12); color:var(--accent); }
-.work-timer{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:99px; font-size:11px; font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums;
-  background:rgba(22,163,74,0.14); color:#16A34A; border:1px solid rgba(22,163,74,0.35); transition:background .3s,color .3s,border-color .3s; }
+.emp-tag{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700; background:rgba(91,91,246,0.12); color:var(--accent); }
+.work-timer{ display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:8px; font-size:10.5px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums;
+  background:rgba(22,163,74,0.12); color:#16A34A; border:1px solid rgba(22,163,74,0.3); transition:background .3s,color .3s,border-color .3s; }
 .work-timer.urgent{ background:rgba(239,68,68,0.14); color:#EF4444; border-color:rgba(239,68,68,0.4); animation:urgentBlink 1.4s ease-in-out infinite; }
 @keyframes urgentBlink{ 0%,100%{ box-shadow:0 0 0 0 rgba(239,68,68,0); } 50%{ box-shadow:0 0 0 5px rgba(239,68,68,0.16); } }
 .emp-progress{ height:6px; border-radius:99px; background:rgba(22,163,74,0.16); overflow:hidden; margin-top:10px; }
@@ -642,27 +721,9 @@ body{ background:var(--bg); }
 .emp-progress.urgent{ background:rgba(239,68,68,0.16); } .emp-progress.urgent span{ background:linear-gradient(90deg,#DC2626,#F87171); }
 
 .role-state-banner.green{ background:rgba(22,163,74,0.12); color:var(--green); }
-.role-meta-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-.role-meta-chip{ display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:5px 10px; border-radius:99px; background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
 .offer-hero.teal{ background:linear-gradient(135deg,#0F766E,#14B8A6); }
-
-/* ── v2: compact hero/header, applications scroller, lock mode, leave caution, certificate button ── */
-.roles-header-sticky{ padding-bottom:6px !important; }
-.roles-header-sub{ font-size:12px !important; margin-bottom:10px !important; line-height:1.35; }
-.roles-header-row{ margin-bottom:2px; }
-.roles-topbar{ margin-bottom:10px !important; gap:10px !important; }
-.hero{ padding:13px 15px 12px !important; margin-bottom:12px !important; border-radius:18px !important; }
-.hero-title{ font-size:16.5px !important; margin:2px 0 3px !important; line-height:1.25; }
-.hero-sub{ font-size:11.5px !important; }
-.hero-stats{ gap:8px !important; margin-top:10px !important; }
-.hero-stat{ padding:7px 10px !important; border-radius:12px !important; }
-.hero-stat b{ font-size:17px !important; }
-.hero-stat span{ font-size:9.5px !important; white-space:nowrap; letter-spacing:.03em !important; }
-.applied-section-panel{ padding:12px 14px !important; margin-bottom:16px !important; }
-.applied-section-header{ margin-bottom:8px !important; }
-.applied-section-sub{ display:none; }
-#appliedStatusHost{ max-height:176px; overflow-y:auto; overscroll-behavior:contain; padding-right:2px; }
-.sidebar-apps .applied-status-box{ padding:9px 10px; gap:9px; margin-bottom:6px; border-radius:12px; }
+#appliedStatusHost{ max-height:190px; overflow-y:auto; overscroll-behavior:contain; padding-right:2px; }
+.sidebar-apps .applied-status-box{ padding:9px 10px; gap:9px; margin-bottom:6px; border-radius:10px; }
 .sidebar-apps .applied-status-icon{ width:28px; height:28px; font-size:12px; flex-shrink:0; }
 .sidebar-apps .applied-status-title{ font-size:12px; }
 .sidebar-apps .applied-status-sub{ font-size:10.5px; }
@@ -1045,8 +1106,28 @@ function waLink(v){
   const d = v.replace(/\D/g, ''); if (!d) return '';
   return 'https://wa.me/' + (d.length === 10 ? '91' + d : d);
 }
+function isMobileOrTabletDevice(){
+  const ua = navigator.userAgent || '';
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua)) return true;
+  if (navigator.maxTouchPoints && navigator.maxTouchPoints > 1 && /Macintosh/i.test(ua)) return true;
+  return window.innerWidth <= 900 && ('ontouchstart' in window);
+}
+window.openSmartMail = function(to, subject, body){
+  to = String(to || TEAM_EMAIL).trim();
+  subject = String(subject || '');
+  body = String(body || '');
+  if (isMobileOrTabletDevice()) {
+    window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  } else {
+    const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    window.open(gmailUrl, '_blank', 'noopener');
+  }
+};
 function mailtoTeam(subject, body){
-  return 'mailto:' + TEAM_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  if (isMobileOrTabletDevice()) {
+    return 'mailto:' + TEAM_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
+  return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(TEAM_EMAIL) + '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
 }
 function findAppById(appId){ return Object.values(STATE.applications || {}).find(a => a.id === appId); }
 
@@ -1206,18 +1287,29 @@ function countdownChip(role){
   return `<span class="result-countdown" data-ts="${t}" title="Result declares at this time"><i class="fa-solid fa-hourglass-half"></i><span>Result in <b>${fmtCountdown(t - Date.now())}</b></span></span>`;
 }
 
-// An applicant may take the test until the result time — even after
-// registration has closed. (If a role has no result time, the old rule applies.)
-function canTakeTest(role){
+function isRoleFilled(role){
   if (!role) return false;
-  const t = revealMs(role);
-  if (t !== null) return Date.now() < t;
-  return !isRoleClosed(role);
+  const vac = Math.max(1, Number(role.vacancy) || 1);
+  if (role.autoClosedByFill) return true;
+  if (typeof role.filledCount === 'number' && role.filledCount >= vac) return true;
+  return false;
 }
 
 function isRoleClosed(role){
   if (!role) return false;
-  return role.status !== 'open' || isRoleExpired(role);
+  return role.status !== 'open' || isRoleExpired(role) || isRoleFilled(role);
+}
+
+// Strict test eligibility: a candidate may ONLY start the test when the role
+// is currently OPEN (not manually closed, not expired, and not auto-closed by
+// filled vacancies) AND before result declaration time. If the admin increases
+// the vacancy count and the role reopens, canTakeTest immediately becomes true again.
+function canTakeTest(role){
+  if (!role) return false;
+  if (isRoleClosed(role)) return false;
+  const t = revealMs(role);
+  if (t !== null && Date.now() >= t) return false;
+  return true;
 }
 
 // ── Google Jobs (JobPosting) structured data ──────────────────────────────
@@ -1572,7 +1664,17 @@ function renderRolesGrid(){
     }
     if (applied) {
       const eff2 = getEffectiveResult(applied, role);
-      if (eff2.status === 'applied' && canTakeTest(role)) { applyLabel = 'Start Test'; btnAction = `startTestById('${role.id}')`; }
+      if (eff2.status === 'applied') {
+        if (canTakeTest(role)) {
+          applyLabel = 'Start Test';
+          btnAction = `startTestById('${role.id}')`;
+          btnDisabled = false;
+        } else {
+          applyLabel = 'Closed';
+          btnAction = `openApplyModal('${role.id}')`;
+          btnDisabled = false;
+        }
+      }
       const isIntern = role.employmentType === 'INTERN';
       const hasAch = !!(applied.achievementCert || (applied.certOverride && applied.certOverride.achievementCert) || (applied.certOverride && applied.certOverride.kind === 'ACHIEVEMENT'));
       const hasPos = !!(applied.positionCert || (applied.certOverride && applied.certOverride.positionCert) || (applied.certOverride && (applied.certOverride.kind === 'POSITION' || applied.certOverride.kind === 'ROLE')));
@@ -1620,27 +1722,40 @@ function renderRolesGrid(){
         }
       }
     }
+    const isSelectedOrHired = !!(applied && (applied.finalStatus === 'selected' || ['selected','offered','accepted','completed'].includes(offerState(applied))));
+    const vacTotal = Math.max(1, Number(role.vacancy) || 1);
+    const filledNow = Math.max(0, Number(role.filledCount) || 0);
+    const seatsLeft = Math.max(0, vacTotal - filledNow);
+    const vacancyLabel = isSelectedOrHired
+      ? `${vacTotal} position${vacTotal > 1 ? 's' : ''}`
+      : (filledNow > 0 && seatsLeft > 0 ? `${seatsLeft} of ${vacTotal} open` : `${vacTotal} opening${vacTotal > 1 ? 's' : ''}`);
     return `
       <div class="role-card ${finalStatusClass} ${STATE.highlightRoleId === role.id ? 'role-card-highlight' : ''}" id="role-card-${escapeHtml(role.id)}" style="transition-duration:${role.hoverDurationMs || 200}ms;">
-        ${STATE.highlightRoleId === role.id ? `<div class="role-pick-tag" onclick="clearRoleHighlight()"><i class="fa-solid fa-location-dot"></i>You picked this role on the Careers page<i class="fa-solid fa-xmark x"></i></div>` : ''}
+        ${STATE.highlightRoleId === role.id ? `<div class="role-pick-tag" onclick="clearRoleHighlight()"><i class="fa-solid fa-location-dot"></i>Selected on Careers page<i class="fa-solid fa-xmark x"></i></div>` : ''}
         <div class="role-card-top">
-          <div class="role-card-icon"><i class="fa-solid ${escapeHtml(role.icon || 'fa-user-tie')}"></i></div>
+          <div class="role-card-head-left">
+            <div class="role-card-icon"><i class="fa-solid ${escapeHtml(role.icon || 'fa-user-tie')}"></i></div>
+            <div class="role-card-title-wrap">
+              <div class="role-card-title">${escapeHtml(role.title || 'Untitled Role')}</div>
+              <div class="role-card-dept">${escapeHtml(role.department || 'General')}</div>
+            </div>
+          </div>
           <div class="role-card-top-right">
             ${workChip}
             ${(() => { if (!applied) return ''; const e = getEffectiveResult(applied, role); return (e.status === 'applied' || e.status === 'test_completed') ? countdownChip(role) : ''; })()}
-            <span class="role-card-badge" ${closed ? 'style="background:rgba(239,68,68,0.12);color:#EF4444;"' : ''}>${closed ? 'Closed' : 'Open'}</span>
+            ${!isSelectedOrHired ? `<span class="role-card-badge" ${closed ? 'style="background:rgba(239,68,68,0.10);color:#EF4444;border-color:rgba(239,68,68,0.25);"' : ''}>${closed ? 'Closed' : 'Open'}</span>` : ''}
           </div>
         </div>
-        <div class="role-card-title">${escapeHtml(role.title || 'Untitled Role')}</div>
-        <div class="role-card-dept">${escapeHtml(role.department || 'General')}</div>
         <div class="role-card-desc">${escapeHtml(role.description || '')}</div>
         <div class="role-meta-row">
           <span class="role-meta-chip"><i class="fa-solid fa-briefcase"></i>${escapeHtml(empText)}</span>
-          ${role.location ? `<span class="role-meta-chip"><i class="fa-solid fa-location-dot"></i>${escapeHtml(role.location)}</span>` : ''}
+          <span class="role-meta-sep">•</span>
+          <span class="role-meta-chip"><i class="fa-solid fa-location-dot"></i>${escapeHtml(role.location || 'Remote')}</span>
+          ${role.testDurationMinutes ? `<span class="role-meta-sep">•</span><span class="role-meta-chip"><i class="fa-regular fa-clock"></i>${role.testDurationMinutes}m test</span>` : ''}
         </div>
         ${criteria.length ? `<div class="role-card-criteria">${criteria.map(c => `<span class="criteria-chip">${escapeHtml(c.label || c.field)}</span>`).join('')}</div>` : ''}
         <div class="role-card-foot">
-          <span class="role-card-vacancy"><i class="fa-solid fa-users" style="margin-right:5px;"></i>${role.vacancy || 1} opening${(role.vacancy||1)>1?'s':''}</span>
+          <span class="role-card-vacancy"><i class="fa-solid fa-users"></i>${vacancyLabel}</span>
           <div style="display:flex;align-items:center;gap:8px;">
             ${nextStepBadge}
             <button class="role-card-apply" style="${nextStepBadge ? 'text-align:left;' : ''}${btnDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${btnDisabled ? 'disabled' : ''} onclick="${btnDisabled ? '' : btnAction}">${applyLabel}</button>
@@ -1649,7 +1764,7 @@ function renderRolesGrid(){
         ${resultBanner}
         ${offerStrip}
         ${lockNote}
-        ${(!applied && role.validThrough) ? `<div style="margin-top:10px;font-size:10.5px;font-weight:600;color:${closed ? 'var(--red)' : 'var(--text3)'};display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-calendar-days"></i>${closed ? 'Registration closed on' : 'Apply by'} ${new Date(role.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
+        ${(!applied && role.validThrough) ? `<div style="margin-top:10px;font-size:10.5px;font-weight:600;color:${closed ? 'var(--red)' : 'var(--text3)'};display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-calendar-days"></i>${closed ? 'Closed on' : 'Apply by'} ${new Date(role.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
       </div>`;
   }).join('');
 }
@@ -1667,16 +1782,17 @@ function renderHero(){
     if (a.finalStatus === 'not_selected' || ['left','fired','deleted'].includes(offerState(a))) return false;
     return offerState(a) !== 'accepted';
   }).length;
-  const openCount = (STATE.roles || []).filter(r => !isRoleClosed(r)).length;
-  const first = (STATE.user.name || '').split(' ')[0] || 'there';
-  const lock = lockingApp();
+  const openCount = (STATE.allRoles || STATE.roles || []).filter(r => !isRoleClosed(r)).length;
+  const first = (STATE.user.name || '').split(' ')[0] || 'Candidate';
   host.innerHTML = `<div class="hero">
-    <div class="hero-hi">Welcome back 👋</div>
-    <div class="hero-title">Hi ${escapeHtml(first)}, let's build your career</div>
-    <div class="hero-sub">${lock ? "You're selected for a role — other roles are paused while it's active." : `${openCount} role${openCount === 1 ? '' : 's'} open right now. Apply, take the test and track everything here.`}</div>
+    <div class="hero-copy">
+      <div class="hero-hi">Study Grid Prep · Careers</div>
+      <div class="hero-title">Welcome, ${escapeHtml(first)}</div>
+      <div class="hero-sub">${openCount} active opening${openCount === 1 ? '' : 's'} available. Apply, complete your assessment, and track your status in real time.</div>
+    </div>
     <div class="hero-stats">
       <div class="hero-stat"><b>${apps.length}</b><span>Applied</span></div>
-      <div class="hero-stat"><b>${inProgress}</b><span>In progress</span></div>
+      <div class="hero-stat"><b>${inProgress}</b><span>In Progress</span></div>
       <div class="hero-stat"><b>${offers}</b><span>Offers</span></div>
     </div>
   </div>`;
@@ -1711,27 +1827,25 @@ function renderAppliedStatusBoxes(){
     const closed = isRoleClosed(role);
     const eff = getEffectiveResult(app, role);
     const done = eff.status === 'qualified' || eff.status === 'not_qualified';
-    // Your own result/status never changes because the role closed —
-    // we just add a small "Closed" tag next to the role name so it's
-    // clear the listing itself isn't taking new applicants anymore.
+    const os = offerState(app);
+    const isSelectedOrHired = app.finalStatus === 'selected' || ['selected','offered','accepted','completed'].includes(os);
     let sub = '';
     if (eff.status === 'not_eligible') sub = 'You did not meet the eligibility criteria for this role.';
-    else if (eff.status === 'applied') sub = 'Application received — start your test from the role card.';
-    else if (eff.status === 'test_completed') sub = `Test submitted. Result on ${fmtDate(role && role.resultRevealAt)}.`;
+    else if (eff.status === 'applied') sub = canTakeTest(role) ? 'Application received — start your test from the role card.' : 'Role is currently closed — test is unavailable.';
+    else if (eff.status === 'test_completed') sub = `Test submitted · Result on ${fmtDate(role && role.resultRevealAt)}.`;
     else if (eff.status === 'qualified') {
       if (app.finalStatus === 'selected') {
-        const os = offerState(app);
-        sub = os === 'offered' ? "You've been selected! 🎉 Your offer is ready — tap to open it."
-            : os === 'accepted' ? 'Offer accepted — welcome to the team!'
-            : os === 'completed' ? 'Internship completed 🎓 — thank you!'
+        sub = os === 'offered' ? "Selected 🎉 · Offer ready — tap to open."
+            : os === 'accepted' ? 'Offer accepted — active on the team.'
+            : os === 'completed' ? 'Internship completed 🎓'
             : os === 'left' ? 'You left this role.'
             : (os === 'fired' || os === 'deleted') ? 'Your engagement with this role has ended.'
-            : "You've been selected! 🎉 Offer details coming soon.";
+            : "Selected 🎉 · Offer details coming soon.";
       }
-      else if (app.finalStatus === 'not_selected') sub = 'You were not selected after the interview.';
-      else sub = 'Result declared — you have qualified! Check your email.';
+      else if (app.finalStatus === 'not_selected') sub = 'Not selected after the interview.';
+      else sub = 'Qualified — check your email for interview details.';
     }
-    else if (eff.status === 'not_qualified') sub = 'Result declared — you did not qualify this time.';
+    else if (eff.status === 'not_qualified') sub = 'Result declared — did not qualify this time.';
     let nextStepTag = '';
     if (eff.status === 'qualified' && app.finalStatus === 'selected') {
       nextStepTag = ` <span class="ns-badge" onclick="event.stopPropagation();openApplyModal('${app.roleId}',{highlightNextStep:true})" style="font-size:10px;font-weight:800;color:#16A34A;background:rgba(22,163,74,0.14);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;display:inline-flex;align-items:center;"><i class="fa-solid fa-circle-check" style="margin-right:3px;"></i>Selected</span>`;
@@ -1744,7 +1858,6 @@ function renderAppliedStatusBoxes(){
     if (eff.status === 'qualified' && app.finalStatus === 'not_selected') statusEdgeClass = 'status-not-selected';
     else if (eff.status === 'qualified') statusEdgeClass = 'status-selected';
     else if (eff.status === 'not_qualified') statusEdgeClass = 'status-not-selected';
-    const os = offerState(app);
     const boxAction = (app.offerStatus === 'left' || os === 'completed' || (app.certOverride && app.certOverride.forceIssue))
       ? `location.href='certificate.html?app=${app.id}'`
       : `openApplyModal('${app.roleId}')`;
@@ -1752,7 +1865,7 @@ function renderAppliedStatusBoxes(){
       <div class="applied-status-box ${statusEdgeClass}" onclick="${boxAction}" style="align-items:center;">
         <div class="applied-status-icon ${done ? 'done' : ''}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i></div>
         <div style="text-align:left;">
-          <div class="applied-status-title">${escapeHtml(roleName)}${closed ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}${nextStepTag}</div>
+          <div class="applied-status-title">${escapeHtml(roleName)}${(closed && !isSelectedOrHired) ? ' <span style="font-size:10px;font-weight:700;color:#EF4444;background:rgba(239,68,68,0.12);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle;">Closed</span>' : ''}${nextStepTag}</div>
           <div class="applied-status-sub">${sub}</div>
         </div>
         <i class="fa-solid fa-chevron-right applied-status-arrow"></i>
@@ -2090,7 +2203,8 @@ function renderExistingStatusBody(app, role){
   }
   if (eff.status === 'applied') {
     if (!canTakeTest(role)) {
-      return `<div class="na-icon"><i class="fa-solid fa-clock"></i></div><div style="text-align:center;font-size:13.5px;color:var(--text2);">Registration for this role has closed and you didn't start the test in time. Thank you for applying.</div>${renderProgressStepper(eff, app)}`;
+      const filled = isRoleFilled(role);
+      return `<div class="na-icon"><i class="fa-solid fa-clock"></i></div><div style="text-align:center;font-size:13.5px;color:var(--text2);">${filled ? 'All positions for this role have been filled and the role is currently closed.' : 'This role is currently closed and the qualifying test cannot be started right now.'}</div>${renderProgressStepper(eff, app)}`;
     }
     return `<div style="text-align:center;">
       <div class="eligibility-banner ok" style="display:inline-flex;">You're eligible — take the test when you're ready.</div><br>
@@ -2172,7 +2286,7 @@ function renderOfferSection(app, role){
 
   const chips = [];
   if (o.phone) { const d = String(o.phone).replace(/\D/g,''); chips.push(`<a class="offer-chip" href="tel:${escapeHtml(o.phone)}"><i class="fa-solid fa-phone"></i>${escapeHtml(o.phone)}</a>`); if (d && !o.whatsapp) chips.push(`<a class="offer-chip wa" href="${escapeHtml(waLink(o.phone))}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>`); }
-  if (o.email) chips.push(`<a class="offer-chip" href="mailto:${escapeHtml(o.email)}"><i class="fa-solid fa-envelope"></i>${escapeHtml(o.email)}</a>`);
+  if (o.email) chips.push(`<a class="offer-chip" href="mailto:${escapeHtml(o.email)}" onclick="openSmartMail('${escapeHtml(o.email)}','','');return false;"><i class="fa-solid fa-envelope"></i>${escapeHtml(o.email)}</a>`);
   if (o.whatsapp) chips.push(`<a class="offer-chip wa" href="${escapeHtml(waLink(o.whatsapp))}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp / Group</a>`);
 
   // engagement: job type, duration, start / end, live timer
@@ -2202,6 +2316,7 @@ function renderOfferSection(app, role){
     `Hello Study Grid Prep Team,\n\nI, ${who}, have read and accepted the offer for the role of ${roleTitle}. Please let me know the next steps.\n\nRegards,\n${who}\n${STATE.user.email}${STATE.user.phone ? '\n' + STATE.user.phone : ''}`);
   const leaveMail = mailtoTeam(`Leaving role — ${roleTitle} (${who})`,
     `Hello Study Grid Prep Team,\n\nI, ${who}, would like to inform you that I am leaving the role of ${roleTitle}.\nDate & time of leaving: ${fmtDate(app.offerLeftAt || new Date())}\n\nThank you for the opportunity.\n\nRegards,\n${who}\n${STATE.user.email}${STATE.user.phone ? '\n' + STATE.user.phone : ''}`);
+  const mailTargetAttr = isMobileOrTabletDevice() ? '' : 'target="_blank" rel="noopener"';
 
   let action = '';
   if (st === 'offered') {
@@ -2213,13 +2328,13 @@ function renderOfferSection(app, role){
       </div>
       <div class="offer-actions">
         <button class="offer-btn accept" id="offerAcceptBtn" disabled onclick="acceptOffer('${app.id}')"><i class="fa-solid fa-check"></i> Accept Offer</button>
-        <a class="offer-btn mail" href="${accMail}" title="Email the team"><i class="fa-solid fa-envelope"></i> Email team</a>
+        <a class="offer-btn mail" href="${accMail}" ${mailTargetAttr} title="Email the team"><i class="fa-solid fa-envelope"></i> Email team</a>
       </div>`;
   } else if (st === 'accepted') {
     action = `
       <div class="offer-actions">
         <button class="offer-btn leave" onclick="leaveRole('${app.id}')"><i class="fa-solid fa-person-walking-arrow-right"></i> Leave Role</button>
-        <a class="offer-btn mail" href="${leaveMail}" title="Email the team about leaving"><i class="fa-solid fa-envelope"></i> Email team</a>
+        <a class="offer-btn mail" href="${leaveMail}" ${mailTargetAttr} title="Email the team about leaving"><i class="fa-solid fa-envelope"></i> Email team</a>
       </div>`;
   }
   let tail = '';
@@ -2453,7 +2568,10 @@ document.addEventListener('click', (e) => {
 window.startTest = function(role){
   role = role || STATE.currentRole;
   if (!role) return;
-  if (!canTakeTest(role)) { alert('The test window for this role has ended — results are declared. You can no longer start the test.'); return; }
+  if (!canTakeTest(role)) {
+    alert(isRoleFilled(role) ? 'All positions for this role have been filled and the role is now closed.' : 'This role is closed and the test cannot be started.');
+    return;
+  }
   STATE.currentRole = role;
   closeApplyModal();
   const questions = Array.isArray(role.questions) ? role.questions : [];

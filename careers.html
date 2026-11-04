@@ -505,10 +505,15 @@ function countdownChip(role){
   return `<span class="result-countdown" data-ts="${t}" title="Result declares at this time"><i class="fa-solid fa-hourglass-half"></i><span>Result in <b>${fmtCountdown(t - Date.now())}</b></span></span>`;
 }
 
-// A role whose registration has closed stays listed ONLY until its result
-// time; once results are declared it leaves this page.
+function isRoleFilled(role){
+  if (!role) return false;
+  const vac = Math.max(1, Number(role.vacancy) || 1);
+  if (role.autoClosedByFill) return true;
+  if (typeof role.filledCount === 'number' && role.filledCount >= vac) return true;
+  return false;
+}
 function isListed(role){
-  if (!isRoleExpired(role)) return true;
+  if (!isRoleExpired(role) && !isRoleFilled(role)) return true;
   const t = revealMs(role);
   return t !== null && Date.now() < t;
 }
@@ -523,7 +528,7 @@ function cardHtml(role){
   const criteria = Array.isArray(role.criteria) ? role.criteria : [];
   const empLabel = EMP_LABELS[role.employmentType] || 'Full-time';
   const locLabel = role.location ? role.location : 'Remote';
-  const expired = isRoleExpired(role);
+  const expired = isRoleExpired(role) || isRoleFilled(role);
   return `
     <div class="role-card" id="role-card-${escapeHtml(role.id)}">
       <div class="role-card-top">
@@ -550,7 +555,7 @@ function cardHtml(role){
           ? `<span class="role-card-apply" style="opacity:0.5;cursor:not-allowed;pointer-events:none;">Applications Closed</span>`
           : `<a class="role-card-apply" href="hiring-portal.html?role=${encodeURIComponent(role.id)}" onclick="try{sessionStorage.setItem('sgp_pending_role','${role.id}')}catch(e){}">Apply <i class="fa-solid fa-arrow-right"></i></a>`}
       </div>
-      ${role.validThrough ? `<div style="margin-top:10px;font-size:11px;font-weight:600;color:${expired ? '#EF4444' : 'var(--text-muted)'};display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-calendar-days"></i>${expired ? 'Registration closed on' : 'Apply by'} ${new Date(role.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
+      ${role.validThrough ? `<div style="margin-top:10px;font-size:11px;font-weight:600;color:${expired ? '#EF4444' : 'var(--text-muted)'};display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-calendar-days"></i>${expired ? 'Closed on' : 'Apply by'} ${new Date(role.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
     </div>`;
 }
 
