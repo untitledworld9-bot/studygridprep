@@ -139,7 +139,7 @@ self.addEventListener("push", function(event) {
 });
 
 // ─────────────────────────────────────────────────────────────
-const CACHE = "sgp-cache-v15";
+const CACHE = "sgp-cache-v16";
 
 // ✅ FIX: notification icon was showing as a generic grey letter-avatar
 // instead of the app logo. Android/Chrome fetches notification icons
@@ -244,7 +244,22 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // ── STATIC FILES (CSS, JS, images, fonts) ──────────────────
+  // ── MANIFEST & STATIC FILES (CSS, JS, images, fonts) ───────
+  if (req.url.endsWith("/manifest.json") || req.url.endsWith("/manifestadmin.json")) {
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(req, clone)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => caches.match(req, { ignoreSearch: true }))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(req, { ignoreSearch: true }).then(cached => {
       const networkFetch = fetch(req).then(res => {

@@ -2086,8 +2086,8 @@ function renderExistingStatusBody(app, role){
     }
     return `<div style="text-align:center;">
       <div class="eligibility-banner ok" style="display:inline-flex;">You're eligible — take the test when you're ready.</div><br>
-      <button class="modal-submit-btn primary" onclick="startTest(STATE_ROLE_PLACEHOLDER)" id="continueTestBtn"><i class="fa-solid fa-play"></i> Start Test</button>
-    </div>`.replace('STATE_ROLE_PLACEHOLDER', "");
+      <button class="modal-submit-btn primary" onclick="startTestById('${escapeHtml(role ? role.id : app.roleId)}')" id="continueTestBtn"><i class="fa-solid fa-play"></i> Start Test</button>
+    </div>`;
   }
   if (eff.status === 'test_completed') {
     return `<div style="text-align:center;font-size:13.5px;color:var(--text2);">Your test is submitted. Result declares on <strong>${fmtDate(role && role.resultRevealAt)}</strong>.</div>${renderProgressStepper(eff, app)}`;
@@ -2323,7 +2323,8 @@ function renderSidebarOfferBanner(){
 }
 
 window.startTestById = function(roleId){
-  const role = (STATE.allRoles || STATE.roles).find(r => r.id === roleId);
+  const role = (STATE.allRoles || STATE.roles || []).find(r => r.id === roleId);
+  if (role) STATE.currentRole = role;
   startTest(role);
 };
 
@@ -2366,15 +2367,18 @@ window.closeApplyModal = function(){ STATE._offerRoleId = null; document.getElem
 
 // fix the start-test button binding for the "already applied" reopen path
 document.addEventListener('click', (e) => {
-  if (e.target && e.target.id === 'continueTestBtn') startTest(STATE.currentRole);
+  const btn = e.target && e.target.closest ? e.target.closest('#continueTestBtn') : null;
+  if (btn && STATE.currentRole) startTest(STATE.currentRole);
 });
 
 /* ================================================================
    TEST ENGINE
 ================================================================ */
 window.startTest = function(role){
+  role = role || STATE.currentRole;
   if (!role) return;
   if (!canTakeTest(role)) { alert('The test window for this role has ended — results are declared. You can no longer start the test.'); return; }
+  STATE.currentRole = role;
   closeApplyModal();
   const questions = Array.isArray(role.questions) ? role.questions : [];
   if (questions.length === 0) {
@@ -2382,11 +2386,14 @@ window.startTest = function(role){
     return;
   }
   STATE.test = {
+    roleId: role.id,
+    role,
     questions,
     index: 0,
     answers: new Array(questions.length).fill(null),
     timeLeft: (role.testDurationMinutes || 20) * 60,
     timerHandle: null,
+    submitting: false,
   };
   document.getElementById('testRoleName').textContent = role.title;
   showScreen('screenTest');
@@ -2469,22 +2476,40 @@ window.testGoNext = function(){
 };
 
 async function finishTest(){
+  if (!STATE.test || STATE.test.submitting) return;
+  STATE.test.submitting = true;
   clearInterval(STATE.test.timerHandle);
-  const role = STATE.currentRole;
-  const existing = STATE.applications[role.id];
+  const nextBtn = document.getElementById('testNextBtn');
+  if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Submitting…'; }
+  const role = (STATE.test && STATE.test.role)
+    || STATE.currentRole
+    || ((STATE.allRoles || STATE.roles || []).find(r => STATE.test && r.id === STATE.test.roleId))
+    || null;
+  const roleId = (role && role.id) || (STATE.test && STATE.test.roleId) || null;
+  let existing = roleId ? STATE.applications[roleId] : null;
+  if (!existing && roleId && STATE.allApps) {
+    existing = STATE.allApps.find(a => a.roleId === roleId) || null;
+  }
   try {
-    if (existing) {
+    if (existing && existing.id) {
       await updateDoc(doc(db, 'hiringApplications', existing.id), {
         answers: STATE.test.answers,
         status: 'test_completed',
         testCompletedAt: serverTimestamp(),
       });
+      existing.answers = STATE.test.answers;
+      existing.status = 'test_completed';
+      existing.testCompletedAt = new Date();
+      renderRolesGrid();
+      renderAppliedStatusBoxes();
     }
   } catch (e) {
     console.error('Finish test save error:', e);
+  } finally {
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit'; }
   }
-  document.getElementById('submittedRoleName').textContent = role.title;
-  document.getElementById('submitRevealTime').textContent = fmtDate(role.resultRevealAt);
+  document.getElementById('submittedRoleName').textContent = (role && role.title) || 'Role Assessment';
+  document.getElementById('submitRevealTime').textContent = fmtDate(role && role.resultRevealAt);
   showScreen('screenSubmitted');
 }
 window.backToRolesFromSubmit = function(){ showScreen('screenRoles'); };
