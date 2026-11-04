@@ -1160,12 +1160,14 @@ function loadRoles(){
   onSnapshot(collection(db, 'hiringRoles'), snap => {
     STATE.allRoles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     STATE.roles = STATE.allRoles.filter(r => r.status === 'open');
+    renderHero();
     renderDeptFilters();
     renderRolesGrid();
     renderAppliedStatusBoxes();
     injectJobPostingSchema();
     STATE._rolesLoaded = true;
     renderSidebarOfferBanner();
+    refreshOfferModal();
     tryDeepLink();
   }, err => {
     console.error('Roles load error:', err);
@@ -1273,7 +1275,13 @@ function loadMyApplications(){
   if (!STATE.user) return;
   onSnapshot(query(collection(db, 'hiringApplications'), where('uid', '==', STATE.user.uid)), snap => {
     STATE.applications = {};
-    snap.docs.forEach(d => { STATE.applications[d.data().roleId] = { id: d.id, ...d.data() }; });
+    STATE.allApps = [];
+    snap.docs.forEach(d => {
+      const appObj = { id: d.id, ...d.data() };
+      STATE.applications[appObj.roleId] = appObj;
+      STATE.allApps.push(appObj);
+    });
+    renderHero();
     renderRolesGrid();
     renderAppliedStatusBoxes();
     autoDeclareDueResults();
@@ -2217,9 +2225,39 @@ function renderOfferSection(app, role){
   let tail = '';
   if (['accepted','left','completed'].includes(st)) {
     const hasPos = !!(app.positionCert || (app.certOverride && app.certOverride.positionCert));
-    tail += `<div class="offer-actions" style="margin-top:10px;"><a class="offer-btn cert" href="certificate.html?app=${app.id}${hasPos ? '&t=position' : ''}"><i class="fa-solid fa-award"></i> ${hasPos ? 'Position Certificate' : (st === 'accepted' ? 'Certificate' : 'View certificate')}</a></div>`;
+    const hasAch = !!(app.achievementCert || (app.certOverride && app.certOverride.achievementCert));
+    const hasExpForce = !!(app.certOverride && app.certOverride.forceIssue && app.certOverride.kind !== 'ACHIEVEMENT' && app.certOverride.kind !== 'POSITION');
+    const hasExpAuto = st === 'left' || st === 'completed';
+    const certBtns = [];
+    if (hasPos) {
+      certBtns.push(`<a class="offer-btn cert" href="certificate.html?app=${app.id}&t=position"><i class="fa-solid fa-id-badge"></i> Position Certificate</a>`);
+    }
+    if (hasAch) {
+      certBtns.push(`<a class="offer-btn cert" href="certificate.html?app=${app.id}&t=achieve"><i class="fa-solid fa-trophy"></i> Achievement Certificate</a>`);
+    }
+    if (hasExpForce || hasExpAuto) {
+      certBtns.push(`<a class="offer-btn cert" href="certificate.html?app=${app.id}&t=exp"><i class="fa-solid fa-award"></i> ${st === 'completed' ? 'Internship Certificate' : 'Experience Certificate'}</a>`);
+    }
+    if (certBtns.length) {
+      tail += `<div class="offer-actions" style="margin-top:10px;flex-wrap:wrap;">${certBtns.join('')}</div>`;
+    }
   }
   return hero + statusPill + details + action + tail;
+}
+
+function offerModalSig(app, role){
+  if (!app) return '';
+  return JSON.stringify({
+    st: offerState(app),
+    offer: app.offer || null,
+    certOverride: app.certOverride || null,
+    positionCert: app.positionCert || null,
+    achievementCert: app.achievementCert || null,
+    hiredEndType: app.hiredEndType || null,
+    hiredEndNote: app.hiredEndNote || null,
+    conversion: app.conversion || null,
+    roleTitle: role && role.title
+  });
 }
 
 window.openOfferModal = function(roleId){
@@ -2229,26 +2267,55 @@ window.openOfferModal = function(roleId){
   if (!app.offer && !app.hiredEndType) { openApplyModal(roleId); return; }
   STATE.currentRole = role;
   STATE._offerRoleId = roleId;
-  STATE._offerRenderedState = offerState(app);
+  STATE._offerRenderedState = offerModalSig(app, role);
   document.getElementById('applyModalTitle').textContent = 'Your Offer';
   document.getElementById('applyModalBody').innerHTML = renderOfferSection(app, role);
   document.getElementById('applyModalOverlay').classList.add('open');
 };
 
-// Live-refresh the open offer modal when the admin changes something
-// (e.g. fires/removes the candidate) — but only when the state actually
-// changed, so the confetti doesn't replay on every snapshot.
+// Live-refresh any open modal (Offer modal OR Application Status modal) whenever
+// Firestore snapshots arrive — so neither Admin nor Candidate ever needs to refresh.
 function refreshOfferModal(){
-  if (!STATE._offerRoleId) return;
   const overlay = document.getElementById('applyModalOverlay');
   if (!overlay || !overlay.classList.contains('open')) return;
-  const app = STATE.applications[STATE._offerRoleId];
-  const role = (STATE.allRoles || STATE.roles).find(r => r.id === STATE._offerRoleId);
-  if (!app || !role) return;
-  const cur = offerState(app);
-  if (cur === STATE._offerRenderedState) return;
-  STATE._offerRenderedState = cur;
-  document.getElementById('applyModalBody').innerHTML = renderOfferSection(app, role);
+
+  if (STATE._offerRoleId) {
+    const app = STATE.applications[STATE._offerRoleId];
+    const role = (STATE.allRoles || STATE.roles || []).find(r => r.id === STATE._offerRoleId);
+    if (!app || !role) return;
+    const sig = offerModalSig(app, role);
+    if (sig === STATE._offerRenderedState) return;
+    const wasChecked = !!(document.getElementById('offerPolicyCheck') && document.getElementById('offerPolicyCheck').checked);
+    STATE._offerRenderedState = sig;
+    document.getElementById('applyModalBody').innerHTML = renderOfferSection(app, role);
+    if (wasChecked && document.getElementById('offerPolicyCheck')) {
+      document.getElementById('offerPolicyCheck').checked = true;
+      if (document.getElementById('offerAcceptBtn')) document.getElementById('offerAcceptBtn').disabled = false;
+    }
+    return;
+  }
+
+  // Also live-refresh the Application Status modal if the candidate has it open
+  if (STATE.currentRole) {
+    const role = (STATE.allRoles || STATE.roles || []).find(r => r.id === STATE.currentRole.id) || STATE.currentRole;
+    STATE.currentRole = role;
+    const existing = STATE.applications[role.id];
+    if (existing) {
+      const statusSig = JSON.stringify({
+        status: existing.status,
+        eff: getEffectiveResult(existing, role).status,
+        finalStatus: existing.finalStatus || null,
+        nextStep: existing.nextStep || null,
+        offer: !!existing.offer,
+        offerStatus: existing.offerStatus || null,
+        canTest: canTakeTest(role)
+      });
+      if (statusSig !== STATE._statusRenderedSig) {
+        STATE._statusRenderedSig = statusSig;
+        document.getElementById('applyModalBody').innerHTML = renderExistingStatusBody(existing, role);
+      }
+    }
+  }
 }
 
 window.acceptOffer = async function(appId){
@@ -2291,6 +2358,15 @@ window.confirmLeaveRole = async function(appId){
     await updateDoc(doc(db, 'hiringApplications', appId), { offerStatus: 'left', offerLeftAt: serverTimestamp(), offerLeftBy: 'candidate', leaveAck: false });
     const now = new Date();
     Object.assign(app, { offerStatus: 'left', offerLeftAt: now, offerLeftBy: 'candidate', leaveAck: false });
+    // Auto-generate and sync the leave certificate to `certificates/{appId}` immediately on leave
+    try {
+      const certMod = await import('./cert-core.js');
+      const role = roleOfApp(app);
+      const expCert = certMod.buildCert(app, role);
+      if (expCert && expCert.eligible) {
+        await setDoc(doc(db, 'certificates', appId), { ...certMod.publicDoc(expCert), updatedAt: serverTimestamp() }, { merge: true });
+      }
+    } catch (ce) { console.warn('Auto leave cert sync:', ce); }
     document.getElementById('leaveOverlay').querySelector('.modal-sheet').innerHTML = `<div class="lv-box">
       <svg class="lv-tick" viewBox="0 0 90 90"><circle cx="45" cy="45" r="40"/><path d="m27 46 12 12 25-27"/></svg>
       <h3>You left this role</h3><p>${escapeHtml(fmtDate(now))}</p>

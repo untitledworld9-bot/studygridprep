@@ -812,15 +812,17 @@ function toInputDate(v){
    DATA LOADING
 ================================================================ */
 function bootData(){
-  onSnapshot(query(collection(db, 'hiringRoles'), orderBy('createdAt', 'desc')), snap => {
+  onSnapshot(collection(db, 'hiringRoles'), snap => {
     state.roles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderRoles(); renderDashboard(); populateRoleFilters(); renderApplicants(); renderResults(); renderHired(); renderCerts(); renderPositions();
+    state.roles.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    populateRoleFilters();
+    renderRoles(); renderDashboard(); renderApplicants(); renderResults(); renderHired(); renderCerts(); renderPositions(); renderCandidates(); renderLeaveAlert();
     adminAutoDeclareDueResults();
   }, e => console.error('roles snapshot error', e));
 
   onSnapshot(collection(db, 'hiringApplications'), snap => {
     state.applications = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderDashboard(); renderApplicants(); renderResults(); renderRoles(); renderHired(); renderCerts(); renderPositions();
+    renderDashboard(); renderApplicants(); renderResults(); renderRoles(); renderHired(); renderCerts(); renderPositions(); renderCandidates(); renderLeaveAlert();
     adminAutoDeclareDueResults();
   }, e => console.error('applications snapshot error', e));
 
@@ -830,7 +832,7 @@ function bootData(){
     // any doc missing the createdAt field entirely, which hid legitimately
     // registered users that predate this field. Missing dates sort last.
     state.candidates.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-    renderDashboard(); renderCandidates(); renderPositions();
+    renderDashboard(); renderCandidates(); renderApplicants(); renderResults(); renderHired(); renderCerts(); renderPositions();
   }, e => console.error('candidates snapshot error', e));
 }
 
@@ -2710,7 +2712,7 @@ window.openCertEdit = function(appId, targetKind = ''){
     
     <div class="form-group">
       <label class="form-label">Target Certificate Type</label>
-      <select class="form-select" id="ceKind">
+      <select class="form-select" id="ceKind" onchange="toggleCertModalDeleteBtn('ce', this.value)">
         <option value="INTERN" ${activeKind === 'INTERN' ? 'selected' : ''}>🎓 Certificate of Internship</option>
         <option value="JOB" ${activeKind === 'JOB' || activeKind === 'EXP' ? 'selected' : ''}>💼 Experience Certificate</option>
         <option value="ACHIEVEMENT" ${activeKind === 'ACHIEVEMENT' ? 'selected' : ''}>🏆 Certificate of Achievement (Honor &amp; Recognition)</option>
@@ -2741,12 +2743,99 @@ window.openCertEdit = function(appId, targetKind = ''){
     </div>
     <div class="form-group"><label class="form-label">Official Issue Date</label><input class="form-input" id="ceDate" type="date" value="${esc(dv)}"></div>
     <div class="form-group"><label class="form-label">Custom line on certificate (optional)</label><textarea class="form-textarea" id="ceNote" maxlength="220" placeholder="Replaces the default appreciation line">${esc(curNote)}</textarea></div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCertEdit('${appId}')"><i class="fa-solid fa-floppy-disk"></i> Save Certificate Changes</button></div></div>`);
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="ceDeleteBtn" onclick="deleteCertFromModal('${appId}', document.getElementById('ceKind').value)" style="display:${activeKind === 'POSITION' ? 'none' : 'inline-flex'};"><i class="fa-solid fa-trash"></i> Delete Certificate</button>
+      <button class="btn btn-primary" onclick="saveCertEdit('${appId}')"><i class="fa-solid fa-floppy-disk"></i> Save Certificate Changes</button>
+    </div></div>`);
 
   window.checkExecTitleCertEdit = function(val){
     const eb = $('ceExecBadge');
     if (eb) eb.style.display = (CERT.isExecRole && CERT.isExecRole(val)) ? 'block' : 'none';
   };
+};
+
+window.toggleCertModalDeleteBtn = function(prefix, kind){
+  const btn = $(prefix + 'DeleteBtn');
+  if (!btn) return;
+  btn.style.display = kind === 'POSITION' ? 'none' : 'inline-flex';
+};
+
+window.deleteCertFromModal = async function(appId, kind){
+  const a = state.applications.find(x => x.id === appId); if (!a) return;
+  const role = state.roles.find(r => r.id === a.roleId);
+  if (kind === 'POSITION') {
+    return revokePositionCert(appId);
+  }
+  if (kind === 'ACHIEVEMENT') {
+    if (!confirm('Are you sure you want to delete this Achievement Certificate?')) return;
+    try {
+      await updateDoc(doc(db, 'hiringApplications', appId), {
+        achievementCert: null,
+        'certOverride.achievementCert': null
+      });
+      try { await deleteDoc(doc(db, 'certificates', appId + '-achieve')); } catch (e) {}
+      delete a.achievementCert;
+      if (a.certOverride) delete a.certOverride.achievementCert;
+      const baseCert = CERT.buildCert(a, role);
+      if (baseCert && baseCert.eligible) {
+        await setDoc(doc(db, 'certificates', appId), { ...CERT.publicDoc(baseCert), updatedAt: serverTimestamp() }, { merge: true });
+      } else {
+        try { await deleteDoc(doc(db, 'certificates', appId)); } catch (e) {}
+      }
+      toast('Achievement Certificate deleted', 'info');
+      closeModal();
+      renderCerts(); renderPositions(); renderHired();
+    } catch (e) {
+      console.error(e);
+      toast('Could not delete Achievement Certificate', 'error');
+    }
+    return;
+  }
+
+  // Experience or Internship Certificate: remove manual override so it reverts to auto-generating on leave/completion
+  if (!confirm('Delete this Experience / Internship Certificate? It will be removed now and will automatically generate when the candidate leaves or completes their tenure.')) return;
+  try {
+    const prevOv = a.certOverride || {};
+    const cleanedOv = { forceIssue: false };
+    if (prevOv.positionCert) cleanedOv.positionCert = prevOv.positionCert;
+    if (prevOv.achievementCert) cleanedOv.achievementCert = prevOv.achievementCert;
+    if (prevOv.nameConfirmed) cleanedOv.nameConfirmed = prevOv.nameConfirmed;
+
+    const patch = { certOverride: cleanedOv };
+    if (a.offerStatus !== 'left') {
+      patch.certIssuedAt = null;
+      patch.certDownloadAt = null;
+      patch.certPrintAt = null;
+      patch.certShareAt = null;
+    }
+    await updateDoc(doc(db, 'hiringApplications', appId), patch);
+    a.certOverride = cleanedOv;
+    if (a.offerStatus !== 'left') {
+      delete a.certIssuedAt;
+      delete a.certDownloadAt;
+      delete a.certPrintAt;
+      delete a.certShareAt;
+    }
+
+    const expCert = CERT.buildCert(a, role);
+    if (expCert && expCert.eligible) {
+      await setDoc(doc(db, 'certificates', appId), { ...CERT.publicDoc(expCert), updatedAt: serverTimestamp() }, { merge: true });
+    } else {
+      try { await deleteDoc(doc(db, 'certificates', appId)); } catch (e) {}
+      const achCert = CERT.buildAchievementCert ? CERT.buildAchievementCert(a, role) : null;
+      if (achCert) {
+        await setDoc(doc(db, 'certificates', appId + '-achieve'), { ...CERT.publicDoc(achCert), updatedAt: serverTimestamp() }, { merge: true });
+      }
+    }
+
+    toast(a.offerStatus === 'left' ? 'Manual override removed — auto-leave certificate restored' : 'Certificate deleted — will auto-generate on leave', 'info');
+    closeModal();
+    renderCerts(); renderPositions(); renderHired();
+  } catch (e) {
+    console.error(e);
+    toast('Could not delete certificate', 'error');
+  }
 };
 
 window.saveCertEdit = async function(appId){
@@ -2875,16 +2964,19 @@ window.openGiveCert = function(appId){
   const startVal = toInputDateYMD(ach.startDate || ach.startMs || pos.startDate || pos.startMs || ov.startDate || ov.startMs || a.offerAcceptedAt || a.createdAt) || today;
   const endVal = toInputDateYMD(ach.endDate || ach.endMs || pos.endDate || pos.endMs || ov.endDate || ov.endMs || a.offerLeftAt) || today;
   const dv = toInputDateYMD(ach.issueDate || pos.issueDate || ov.issueDate) || today;
+  const initKind = (ov.kind === 'POSITION' || a.positionCert)
+    ? ((ov.kind && ov.kind !== 'POSITION') ? ov.kind : (a.achievementCert ? 'ACHIEVEMENT' : (c.kind || 'JOB')))
+    : ((ov.kind === 'ACHIEVEMENT' || a.achievementCert) ? 'ACHIEVEMENT' : (ov.kind || c.kind || 'JOB'));
 
   openModal(`<div class="modal-box" style="max-width:520px;">
     <div class="modal-title"><i class="fa-solid fa-certificate" style="color:var(--green);margin-right:8px;"></i>Give / Issue Certificate <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Recipient: <b>${esc(a.name || 'Candidate')}</b> (${esc(a.email || '')})</div>
     <div class="form-group"><label class="form-label">Certificate type</label>
-      <select class="form-select" id="gcKind">
-        <option value="INTERN" ${(ov.kind || c.kind) === 'INTERN' ? 'selected' : ''}>Certificate of Internship</option>
-        <option value="JOB" ${(ov.kind || c.kind) === 'JOB' ? 'selected' : ''}>Experience Certificate</option>
-        <option value="ACHIEVEMENT" ${(ov.kind || c.kind) === 'ACHIEVEMENT' || a.achievementCert ? 'selected' : ''}>🏆 Certificate of Achievement (Honor &amp; Recognition)</option>
-        <option value="POSITION" ${(ov.kind || c.kind) === 'POSITION' || a.positionCert ? 'selected' : ''}>🎖️ Certificate of Position &amp; Appointment</option>
+      <select class="form-select" id="gcKind" onchange="toggleCertModalDeleteBtn('gc', this.value)">
+        <option value="INTERN" ${initKind === 'INTERN' ? 'selected' : ''}>Certificate of Internship</option>
+        <option value="JOB" ${initKind === 'JOB' ? 'selected' : ''}>Experience Certificate</option>
+        <option value="ACHIEVEMENT" ${initKind === 'ACHIEVEMENT' ? 'selected' : ''}>🏆 Certificate of Achievement (Honor &amp; Recognition)</option>
+        <option value="POSITION" ${initKind === 'POSITION' ? 'selected' : ''}>🎖️ Certificate of Position &amp; Appointment</option>
       </select></div>
     <div class="form-group"><label class="form-label">Legal Name on Certificate</label>
       <input class="form-input" id="gcName" value="${esc(ach.name || pos.name || ov.name || a.certName || a.name || '')}" placeholder="Recipient Full Name"></div>
@@ -2914,6 +3006,7 @@ window.openGiveCert = function(appId){
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="gcDeleteBtn" onclick="deleteCertFromModal('${appId}', document.getElementById('gcKind').value)" style="display:${initKind === 'POSITION' ? 'none' : 'inline-flex'};"><i class="fa-solid fa-trash"></i> Delete Certificate</button>
       <button class="btn btn-solid-green" onclick="saveGiveCert('${appId}')"><i class="fa-solid fa-certificate"></i> Generate / Award Certificate</button>
     </div></div>`);
 

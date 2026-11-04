@@ -47,10 +47,10 @@ export function certDuration(startMs, endMs){
 }
 
 export function fmtMonths(m, days){
-  if (m == null && days != null) return `${days} Day${days === 1 ? '' : 's'}`;
+  if (m == null && days != null) return `${days || 1} Day${days === 1 || !days ? '' : 's'}`;
   if (m == null || isNaN(m)) return '';
-  if (m === 0 && days) return `${days} Day${days === 1 ? '' : 's'}`;
-  if (m < 1 && days && days < 28) return `${days} Day${days === 1 ? '' : 's'}`;
+  if (m === 0 && days != null) return `${days || 1} Day${days === 1 || !days ? '' : 's'}`;
+  if (m < 1 && days != null && days < 28) return `${days || 1} Day${days === 1 || !days ? '' : 's'}`;
   return `${m} Month${m === 1 ? '' : 's'}`;
 }
 
@@ -258,9 +258,9 @@ export function buildCert(app, role, now = Date.now()){
   let months = full ? plannedMonths : d.months;
   if (ov.months != null && ov.months !== '' && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION') months = Number(ov.months);
   
-  const eligible = state !== 'active' && (full || d.eligible || (ov.months != null && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION'));
+  const eligible = state !== 'active' && (full || d.eligible || state === 'left' || (ov.months != null && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION'));
   const finalIssued = (ov.issueDate && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION') ? toMs(ov.issueDate) : (autoIssueDate || end);
-  const durationLabel = (ov.durationLabel && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION') ? ov.durationLabel : fmtMonths(months, d.days);
+  const durationLabel = (ov.durationLabel && ov.kind !== 'ACHIEVEMENT' && ov.kind !== 'POSITION') ? ov.durationLabel : (fmtMonths(months, d.days) || '1 Day');
 
   return {
     ...base,

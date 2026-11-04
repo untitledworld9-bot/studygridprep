@@ -244,7 +244,7 @@ a{color:var(--accent);text-decoration:none;}
 async function loadMod(list){ for (const s of list) { try { return await import(s); } catch(e){} } throw new Error('module not found: ' + list[0]); }
 const fb = await loadMod(['./firebase.js','/firebase.js','../firebase.js'].map(p => p + '?cb=' + Date.now()));
 const core = await loadMod(['./cert-core.js','/cert-core.js','../cert-core.js']);
-const { db, auth, provider, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, serverTimestamp, signInWithPopup, onAuthStateChanged } = fb;
+const { db, auth, provider, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp, signInWithPopup, onAuthStateChanged } = fb;
 const { SGP, EMP_LABELS, buildCert, buildPositionCert, buildAchievementCert, publicDoc, certDuration, certCode, verifyUrl, certTitle, toMs } = core;
 
 const $ = id => document.getElementById(id);
@@ -671,6 +671,37 @@ async function loadOwner(user){
   else if (wantTab === 'achieve' || wantTab === 'achievement') S.viewType = 'achievement';
   else if (wantTab === 'exp' || wantTab === 'intern' || wantTab === 'experience') S.viewType = 'experience';
   renderOwner();
+
+  // Live auto-refresh if certificates or applications are updated while viewing
+  if (onSnapshot && !S._liveSubscribed) {
+    S._liveSubscribed = true;
+    if (cleanWant) {
+      onSnapshot(doc(db, 'hiringApplications', cleanWant), snap => {
+        if (!snap.exists()) return;
+        const updated = { id: snap.id, ...snap.data() };
+        const idx = S.apps.findIndex(a => a.id === updated.id);
+        if (idx >= 0) S.apps[idx] = updated;
+        else S.apps.unshift(updated);
+        if (!S.cur || S.cur.id === updated.id) {
+          S.cur = updated;
+          renderOwner();
+        }
+      }, () => {});
+    }
+    if (user && user.uid) {
+      onSnapshot(query(collection(db, 'hiringApplications'), where('uid', '==', user.uid)), snap => {
+        snap.docs.forEach(d => {
+          const updated = { id: d.id, ...d.data() };
+          const idx = S.apps.findIndex(a => a.id === updated.id);
+          if (idx >= 0) S.apps[idx] = updated;
+          else S.apps.push(updated);
+          if (S.cur && S.cur.id === updated.id) S.cur = updated;
+        });
+        if (!S.cur && S.apps.length) S.cur = S.apps[0];
+        renderOwner();
+      }, () => {});
+    }
+  }
 }
 window.pick = id => { S.cur = S.apps.find(a => a.id === id); renderOwner(); };
 window.switchView = function(t){ S.viewType = t; renderOwner(); };
