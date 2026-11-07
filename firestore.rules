@@ -500,5 +500,10 @@ service cloud.firestore {
     allow delete: if isAdmin() || isSubAdmin() || isHiringAdmin();
   }
 
+  // ✅ HIRING PORTAL — Role Mailer / Outreach sent mail logs.
+  match /hiringMailLogs/{id} {
+    allow read, write: if isAdmin() || isSubAdmin() || isHiringAdmin();
+  }
+
  }
 }

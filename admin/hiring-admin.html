@@ -369,6 +369,134 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 .seg button{ border:0; background:none; padding:7px 13px; border-radius:9px; font-size:12px; font-weight:700; color:var(--text2); cursor:pointer; }
 .seg button.on{ background:var(--card); color:var(--accent); box-shadow:var(--shadow); }
 @media(max-width:600px){ .cert-mini{ display:none; } }
+
+/* ===== v3: Universal White -> Green Mail Send Button & Role Mailer / Outreach ===== */
+.btn-mail-send{
+  background:#FFFFFF; color:#0F172A; border:1.5px solid #CBD5E1;
+  box-shadow:0 2px 6px rgba(15,23,42,0.06); font-weight:700;
+  transition:all .2s cubic-bezier(0.16,1,0.3,1);
+}
+[data-theme="dark"] .btn-mail-send{
+  background:#FFFFFF; color:#0F172A; border-color:#E2E8F0;
+  box-shadow:0 2px 10px rgba(0,0,0,0.28);
+}
+.btn-mail-send:hover{
+  border-color:var(--accent); color:var(--accent); transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(91,91,246,0.18);
+}
+.btn-mail-send.sent{
+  background:linear-gradient(135deg,#16A34A,#22C55E) !important;
+  color:#FFFFFF !important; border-color:#16A34A !important;
+  box-shadow:0 4px 14px rgba(22,163,74,0.28) !important;
+}
+.btn-mail-send.sent:hover{
+  opacity:.94; color:#FFFFFF !important; transform:translateY(-1px);
+}
+.om-role-chips{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:10px; margin-top:10px; }
+.om-role-chip{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 13px;
+  border-radius:12px; background:var(--input); border:1.5px solid var(--border);
+  color:var(--text2); font-size:12px; font-weight:700; cursor:pointer; transition:var(--t);
+  text-align:left; user-select:none;
+}
+.om-role-chip:hover{ border-color:rgba(91,91,246,0.45); color:var(--text); transform:translateY(-1px); }
+.om-role-chip.active{
+  background:rgba(91,91,246,0.10); border-color:var(--accent); color:var(--accent);
+  box-shadow:0 4px 12px rgba(91,91,246,0.12);
+}
+.om-role-chip-left{ display:flex; align-items:center; gap:9px; min-width:0; flex:1; }
+.om-role-chip-meta{ display:flex; flex-direction:column; min-width:0; gap:2px; }
+.om-role-chip-title{ font-size:12.5px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.om-role-chip.active .om-role-chip-title{ color:var(--accent); }
+.om-role-chip-sub{ font-size:10.5px; font-weight:600; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.role-card-cb{
+  width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0;
+  border-radius:4px; margin:0;
+}
+.role-select-all-pill{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 13px;
+  border-radius:10px; background:var(--card); border:1.5px solid var(--border);
+  color:var(--text); font-size:12px; font-weight:700; cursor:pointer; user-select:none;
+  transition:var(--t);
+}
+.role-select-all-pill:hover{ border-color:var(--accent); }
+.role-select-all-pill.has-sel{
+  border-color:var(--accent); background:rgba(91,91,246,0.08); color:var(--accent);
+}
+.role-sel-count{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:2px 8px; border-radius:99px; font-size:10.5px; font-weight:800;
+  background:rgba(91,91,246,0.15); color:var(--accent);
+}
+.tx-row.role-checked{
+  border-color:var(--accent); background:rgba(91,91,246,0.04);
+}
+.om-role-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
+.om-role-dot.closed{ background:var(--text3); }
+.om-send-bar{
+  display:grid; grid-template-columns:1.25fr 0.9fr 0.85fr 1.15fr auto;
+  gap:12px; align-items:end; margin-top:14px;
+}
+@media(max-width:1100px){
+  .om-send-bar{ grid-template-columns:1fr 1fr; }
+}
+@media(max-width:640px){
+  .om-send-bar{ grid-template-columns:1fr; }
+}
+.om-preview-card{
+  margin-top:14px; background:var(--input); border:1px dashed var(--border);
+  border-radius:12px; padding:14px 16px;
+}
+.om-preview-subj{ font-size:12.5px; font-weight:800; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.om-preview-body{
+  font-size:12px; color:var(--text2); white-space:pre-wrap; line-height:1.6;
+  max-height:190px; overflow-y:auto; background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:12px 14px; font-family:inherit;
+}
+.om-bulk-bar{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  margin-top:12px; padding:10px 14px; border-radius:12px;
+  background:rgba(91,91,246,0.05); border:1px dashed rgba(91,91,246,0.32);
+}
+.om-bulk-bar-left{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12px; font-weight:700; color:var(--text2); }
+.om-bulk-bar-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.om-upload-label{
+  display:inline-flex; align-items:center; gap:7px; padding:7px 13px;
+  border-radius:9px; background:var(--card); border:1.5px solid var(--accent);
+  color:var(--accent); font-size:11.5px; font-weight:800; cursor:pointer; transition:var(--t);
+}
+.om-upload-label:hover{ background:var(--accent); color:#fff; transform:translateY(-1px); }
+.om-queue-panel{
+  margin-top:14px; background:var(--card); border:1.5px solid var(--border);
+  border-radius:14px; padding:14px 16px; box-shadow:var(--shadow);
+}
+.om-queue-head{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid var(--border);
+}
+.om-queue-list{ display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; padding-right:2px; }
+.om-q-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  padding:10px 13px; border-radius:11px; background:var(--input); border:1.5px solid var(--border);
+  transition:var(--t);
+}
+.om-q-row:hover{ border-color:rgba(91,91,246,0.4); }
+.om-q-row.sent{
+  background:rgba(22,163,74,0.06); border-color:rgba(22,163,74,0.42);
+}
+.om-q-left{ display:flex; align-items:center; gap:10px; flex:1; min-width:220px; flex-wrap:wrap; }
+.om-q-idx{
+  width:26px; height:26px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800; background:rgba(91,91,246,0.12); color:var(--accent); flex-shrink:0;
+}
+.om-q-row.sent .om-q-idx{
+  background:#16A34A; color:#fff;
+}
+.om-q-name-input{
+  background:var(--card); border:1px solid var(--border); border-radius:7px;
+  padding:4px 8px; font-size:12px; font-weight:700; color:var(--text); width:145px;
+}
+.om-q-name-input:focus{ border-color:var(--accent); outline:none; }
 </style>
 </head>
 <body>
@@ -422,6 +550,9 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 
     <div class="nav-section-label">Position &amp; Leadership</div>
     <button class="nav-btn" data-section="positions" onclick="goSection('positions')"><i class="fa-solid fa-id-badge"></i><span>Roles &amp; Positions</span><span class="nav-badge" id="posBadge" style="display:none;background:#2563EB;">0</span></button>
+
+    <div class="nav-section-label">Mail &amp; Outreach</div>
+    <button class="nav-btn" data-section="outreach" onclick="goSection('outreach')"><i class="fa-solid fa-paper-plane"></i><span>Role Mailer</span><span class="nav-badge" id="outreachBadge" style="display:none;background:var(--green);">0</span></button>
   </nav>
   <div class="sidebar-footer">
     <div class="theme-row">
@@ -472,8 +603,19 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
   <!-- ROLES / TEST MANAGER -->
   <section class="section" id="section-roles">
     <div class="section-header">
-      <div><div class="section-title">Test Manager</div><div class="section-sub">Create roles, set eligibility criteria, build the qualifying test</div></div>
-      <button class="btn btn-primary" onclick="openRoleModal()"><i class="fa-solid fa-plus"></i> New Role</button>
+      <div><div class="section-title">Test Manager</div><div class="section-sub">Create roles, set eligibility criteria, build the qualifying test, or select roles for bulk email recruitment</div></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <label class="role-select-all-pill" id="rolesHeaderSelectAllWrap" title="Select all roles for bulk email recruitment">
+          <input type="checkbox" class="role-card-cb" id="rolesSelectAllCb" onchange="toggleRolesManagerSelectAll(this.checked)">
+          <span>Select All</span>
+          <span class="role-sel-count" id="rolesSelectedCountBadge" style="display:none;">0</span>
+        </label>
+        <button type="button" class="btn btn-mail-send btn-sm" id="rolesBulkMailBtn" onclick="openBulkMailForSelectedRoles()" style="display:none;">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span id="rolesBulkMailBtnLabel">Mail Selected Roles</span>
+        </button>
+        <button class="btn btn-primary" onclick="openRoleModal()"><i class="fa-solid fa-plus"></i> New Role</button>
+      </div>
     </div>
     <div id="rolesList"><div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div></div>
   </section>
@@ -612,6 +754,179 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
     <div id="posList"></div>
   </section>
 
+  <!-- ROLE MAILER / OUTREACH (SIDEBAR BOTTOM SECTION) -->
+  <section class="section" id="section-outreach">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><i class="fa-solid fa-paper-plane" style="color:var(--accent);margin-right:8px;"></i>Role Mailer &amp; Outreach</div>
+        <div class="section-sub">Invite candidates to apply for open roles or send official company follow-up mails for pending tests, applications, interviews, and offers.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <label class="role-select-all-pill" id="omHeaderSelectAllWrap" title="Select or deselect all visible roles for bulk email recruitment">
+          <input type="checkbox" class="role-card-cb" id="omHeaderSelectAllCb" onchange="toggleOmSelectAll(this.checked)">
+          <span>Select All</span>
+          <span class="role-sel-count" id="omSelectedCountBadge">0 selected</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Composer Panel -->
+    <div class="form-panel" style="margin-bottom:18px;">
+      <div class="form-panel-title" style="justify-content:space-between;margin-bottom:14px;">
+        <span><i class="fa-solid fa-envelope-open-text" style="color:var(--accent);"></i> Compose &amp; Send Role Mail <span class="pill">Company Format</span></span>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label class="role-select-all-pill" id="omComposerSelectAllWrap" style="padding:6px 11px;" title="Select all filtered roles">
+            <input type="checkbox" class="role-card-cb" id="omSelectAllCb" onchange="toggleOmSelectAll(this.checked)">
+            <span>Select All</span>
+          </label>
+          <div class="seg" id="omRoleVisSeg">
+            <button type="button" data-vis="open" class="on" onclick="setOmRoleVis('open')">🟢 Open Roles (Hide Closed)</button>
+            <button type="button" data-vis="all" onclick="setOmRoleVis('all')">All Roles (Show Closed)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Role Search + Role Select -->
+      <div class="select-row" style="margin-bottom:8px;">
+        <input class="form-input" id="omRoleSearch" style="max-width:260px;" placeholder="Search role by title or department…" oninput="renderOutreachRoleOptions()">
+        <select class="form-select" id="omRoleSelect" style="flex:1;min-width:240px;" onchange="onOmRoleSelectChange(this.value)"></select>
+        <select class="form-select" id="omDirectoryPick" style="max-width:300px;" onchange="onOmDirectoryPick(this.value)">
+          <option value="">Quick Pick Registered User / Applicant…</option>
+        </select>
+      </div>
+      <div class="om-role-chips" id="omRoleChips"></div>
+
+      <!-- Step 2: Gmail / Phone / Name + Mail Type + Right-Side Add Queue & White->Green Send Button -->
+      <div class="om-send-bar">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Recipient Gmail(s) or Phone (single or comma-separated)</label>
+          <input class="form-input" id="omEmail" list="omCandidateDatalist" placeholder="candidate@gmail.com, second@gmail.com or phone…" oninput="onOmRecipientInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
+          <datalist id="omCandidateDatalist"></datalist>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Phone Number (optional)</label>
+          <input class="form-input" id="omPhone" placeholder="e.g. 9876543210" oninput="onOmPhoneInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Candidate Name</label>
+          <input class="form-input" id="omName" placeholder="Candidate Name (optional)" oninput="resetOmSendBtnState()" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Mail Type</label>
+          <select class="form-select" id="omMailType" onchange="onOmMailTypeChange()">
+            <option value="invite_apply">🚀 Invite to Apply for Role</option>
+            <option value="pending_application">📝 Pending Application — Complete Apply</option>
+            <option value="pending_test">⏱️ Pending Test — Start Qualifying Test</option>
+            <option value="pending_interview">📅 Pending Interview — Check Schedule</option>
+            <option value="pending_offer">🎁 Pending Offer — Review &amp; Accept</option>
+            <option value="role_update">📢 Role Opening / General Follow-Up</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline" onclick="addInputRecipientsToQueue()" title="Add Gmail(s) / Phone(s) to the bulk send queue below" style="height:43px;padding:0 14px;white-space:nowrap;">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add to List</span>
+          </button>
+          <button type="button" class="btn btn-mail-send" id="omSendBtn" onclick="sendOutreachMail()" style="height:43px;padding:0 20px;white-space:nowrap;">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Send Mail</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Optional Bulk Upload (CSV / JSON / CV-Resume) & Multi-Gmail Paste Bar -->
+      <div class="om-bulk-bar">
+        <div class="om-bulk-bar-left">
+          <i class="fa-solid fa-file-import" style="color:var(--accent);font-size:14px;"></i>
+          <span>Bulk Add Gmails / Phones (Optional): Upload <strong>CSV, JSON, or CV/Resume</strong> files to auto-extract &amp; queue recipients after selecting role(s).</span>
+        </div>
+        <div class="om-bulk-bar-actions">
+          <label class="om-upload-label" title="Upload CSV, JSON, TXT, or CV/Resume (.pdf, .docx, .doc) files">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Upload CSV / JSON / CV</span>
+            <input type="file" id="omBulkFileInput" multiple accept=".csv,.json,.txt,.tsv,.pdf,.doc,.docx" style="display:none;" onchange="handleOmBulkFiles(this.files)">
+          </label>
+          <button type="button" class="btn btn-outline btn-sm" onclick="toggleOmBulkPasteBox()">
+            <i class="fa-solid fa-paste"></i> Paste Multiple Gmails / Phones
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="addDirectoryCandidatesToQueue()" title="Add registered portal users to the recipient list">
+            <i class="fa-solid fa-user-plus"></i> + Registered Users
+          </button>
+        </div>
+      </div>
+
+      <!-- Expandable Paste Box for Multiple Gmails / Phones / JSON / CSV text -->
+      <div id="omBulkPasteBox" style="display:none;margin-top:10px;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+          <label class="form-label" style="margin-bottom:0;">Paste Multiple Gmails, Phone Numbers, CSV Rows, or JSON</label>
+          <span style="font-size:11px;color:var(--text3);">Format: <code>Name, email@gmail.com, 9876543210</code> or one Gmail/phone per line</span>
+        </div>
+        <textarea class="form-textarea" id="omBulkPasteInput" style="min-height:84px;" placeholder="e.g.&#10;Rahul Sharma, rahul@gmail.com, 9876543210&#10;priya.verma@gmail.com&#10;9812345678"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="toggleOmBulkPasteBox(false)">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="analyzePastedBulkRecipients()"><i class="fa-solid fa-bolt"></i> Analyze &amp; Add All to List</button>
+        </div>
+      </div>
+
+      <!-- Recipient Queue Panel (Send one-by-one with white->green tick) -->
+      <div class="om-queue-panel" id="omQueuePanel" style="display:none;">
+        <div class="om-queue-head">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:13px;font-weight:800;color:var(--text);"><i class="fa-solid fa-list-check" style="color:var(--accent);margin-right:6px;"></i>Recipient Send List</span>
+            <span class="badge badge-green" id="omQueueProgressBadge">0 / 0 Sent ✓</span>
+            <span style="font-size:11px;color:var(--text3);">Tap <strong>Send</strong> on each row one-by-one — turns <strong style="color:var(--green);">Green ✓</strong> once sent</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-mail-send btn-sm" id="omSendNextQueueBtn" onclick="sendNextPendingInQueue()">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span id="omSendNextQueueBtnLabel">Send Next Pending</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="clearSentFromOmQueue()" title="Remove already-sent rows from this list">Clear Sent</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="clearAllOmQueue()" title="Clear entire list"><i class="fa-solid fa-trash"></i> Clear All</button>
+          </div>
+        </div>
+        <div class="om-queue-list" id="omQueueList"></div>
+      </div>
+
+      <div class="form-group" style="margin-top:12px;margin-bottom:0;">
+        <label class="form-label">Custom Note in Email (optional)</label>
+        <input class="form-input" id="omCustomNote" placeholder="Optional extra line to include in the company email…" oninput="updateOmPreview()">
+      </div>
+
+      <div class="om-preview-card" id="omPreviewCard">
+        <div class="om-preview-subj">
+          <span class="badge badge-accent"><i class="fa-solid fa-eye" style="margin-right:4px;"></i>Mail Preview</span>
+          <span id="omPreviewSubjText">—</span>
+        </div>
+        <div class="om-preview-body" id="omPreviewBodyText">Select an open role above to preview the company email.</div>
+      </div>
+    </div>
+
+    <!-- Recents Panel -->
+    <div class="form-panel">
+      <div class="form-panel-title" style="justify-content:space-between;margin-bottom:14px;">
+        <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--green);"></i> Recents — Sent Role Mails <span class="pill" id="omRecentsPill">0 sent</span></span>
+      </div>
+      <div class="select-row" style="margin-bottom:12px;">
+        <input class="form-input" id="omRecentSearch" style="flex:1;min-width:200px;" placeholder="Search Recents by Gmail, phone number, candidate name, or role…" oninput="renderOutreachRecents()">
+        <select class="form-select" id="omRecentRoleFilter" style="max-width:250px;" onchange="renderOutreachRecents()">
+          <option value="all">All Roles</option>
+        </select>
+        <select class="form-select" id="omRecentTypeFilter" style="max-width:240px;" onchange="renderOutreachRecents()">
+          <option value="all">All Mail Types</option>
+          <option value="invite_apply">Invite to Apply for Role</option>
+          <option value="pending_application">Pending Application</option>
+          <option value="pending_test">Pending Qualifying Test</option>
+          <option value="pending_interview">Pending Interview</option>
+          <option value="pending_offer">Pending Offer</option>
+          <option value="role_update">Role Opening / Follow-Up</option>
+        </select>
+      </div>
+      <div id="omRecentsCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+      <div id="omRecentsList"><div class="empty-state"><i class="fa-solid fa-paper-plane"></i>No role outreach mails sent yet.</div></div>
+    </div>
+  </section>
+
 </main>
 
 <div id="toastContainer"></div>
@@ -652,6 +967,7 @@ const state = {
   roles: [],
   applications: [],
   candidates: [],
+  outreachLogs: [],
   editingRoleId: null,
   criteriaDraft: [],
   questionsDraft: [],
@@ -767,6 +1083,7 @@ window.goSection = function(name){
   if (window.innerWidth <= 1024) toggleSidebar(false);
   if (name === 'positions') renderPositions();
   if (name === 'certs') renderCerts();
+  if (name === 'outreach') renderOutreachSection();
 };
 window.toggleSidebar = function(force){
   const open = typeof force === 'boolean' ? force : !$('sidebar').classList.contains('mobile-open');
@@ -837,8 +1154,17 @@ function bootData(){
     // any doc missing the createdAt field entirely, which hid legitimately
     // registered users that predate this field. Missing dates sort last.
     state.candidates.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-    renderDashboard(); renderCandidates(); renderApplicants(); renderResults(); renderHired(); renderCerts(); renderPositions();
+    renderDashboard(); renderCandidates(); renderApplicants(); renderResults(); renderHired(); renderCerts(); renderPositions(); renderOutreachDirectory();
   }, e => console.error('candidates snapshot error', e));
+
+  onSnapshot(collection(db, 'careerInquiries'), snap => {
+    state.outreachLogs = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(x => x.kind === 'hiring_mail_log');
+    state.outreachLogs.sort((a, b) => (toMs(b.sentAt) || b.sentMs || toMs(b.createdAt) || 0) - (toMs(a.sentAt) || a.sentMs || toMs(a.createdAt) || 0));
+    renderOutreachRecents();
+    updateOmSendBtnFromHistory();
+  }, e => console.error('outreach logs snapshot error', e));
 }
 
 function populateRoleFilters(){
@@ -871,6 +1197,8 @@ function populateRoleFilters(){
     prf.innerHTML = opts;
     if ([...prf.options].some(o => o.value === prfVal)) prf.value = prfVal;
   }
+  renderOutreachRoleOptions();
+  renderOutreachDirectory();
 }
 
 /* ================================================================
@@ -965,7 +1293,12 @@ function syncAllRolesVacancyState(){
 
 function renderRoles(){
   const host = $('rolesList');
-  if (!state.roles.length) { host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div>'; return; }
+  if (!state.roles.length) {
+    host.innerHTML = '<div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet. Tap "New Role" to start.</div>';
+    syncRoleSelectionControls();
+    return;
+  }
+  const selSet = (typeof omUI !== 'undefined' && omUI.selectedRoleIds) ? omUI.selectedRoleIds : new Set();
   host.innerHTML = state.roles.map(r => {
     const appCount = state.applications.filter(a => a.roleId === r.id).length;
     const expired = r.status === 'open' && isRoleExpired(r);
@@ -973,14 +1306,19 @@ function renderRoles(){
     const vac = r.vacancy || 1;
     const hiredNow = activeHiredCount(r.id);
     const filled = hiredNow >= vac;
-    return `<div class="tx-row">
-      <div class="tx-row-info">
-        <div class="tx-row-title">${esc(r.title)} <span style="color:var(--text3);font-weight:500;font-size:11.5px;">· ${esc(r.department||'—')}</span></div>
-        <div class="tx-row-sub">${(r.questions||[]).length} question(s) · ${vac} vacancy · <strong style="color:${filled ? 'var(--green)' : 'var(--text2)'};">${hiredNow} of ${vac} hired</strong> · ${appCount} applicant(s) · Result on ${fmtDate(r.resultRevealAt)}${r.validThrough ? ` · Registration ${expired ? 'closed' : 'until'} ${new Date(r.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}` : ''}</div>
+    const checked = selSet.has(r.id);
+    return `<div class="tx-row ${checked ? 'role-checked' : ''}" data-role-id="${esc(r.id)}">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex:1;min-width:220px;">
+        <input type="checkbox" class="role-card-cb" style="margin-top:3px;" ${checked ? 'checked' : ''} onchange="toggleRoleCheckbox('${r.id}', this.checked)" title="Select role for email recruitment">
+        <div class="tx-row-info" style="min-width:0;">
+          <div class="tx-row-title" style="cursor:pointer;" onclick="toggleRoleCheckbox('${r.id}')">${esc(r.title)} <span style="color:var(--text3);font-weight:500;font-size:11.5px;">· ${esc(r.department||'—')}</span></div>
+          <div class="tx-row-sub">${(r.questions||[]).length} question(s) · ${vac} vacancy · <strong style="color:${filled ? 'var(--green)' : 'var(--text2)'};">${hiredNow} of ${vac} hired</strong> · ${appCount} applicant(s) · Result on ${fmtDate(r.resultRevealAt)}${r.validThrough ? ` · Registration ${expired ? 'closed' : 'until'} ${new Date(r.validThrough).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}` : ''}</div>
+        </div>
       </div>
       <div class="tx-row-actions">
         ${filled ? '<span class="badge badge-green role-filled"><i class="fa-solid fa-circle-check"></i>All positions filled</span>' : ''}
         ${!closed ? '<span class="badge badge-green">Open</span>' : `<span class="badge badge-gray" ${expired ? 'title="Deadline passed — status still says open in DB"' : ''}>Closed${filled ? ' (filled)' : (expired ? ' (expired)' : '')}</span>`}
+        <button class="btn btn-mail-send btn-sm" onclick="mailSingleRole('${r.id}')" title="Open Role Mailer for this role"><i class="fa-solid fa-paper-plane"></i> <span>Mail</span></button>
         <button class="btn btn-outline btn-sm" onclick="openRoleModal('${r.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
         <button class="btn btn-outline btn-sm" onclick="openQuestionsModal('${r.id}')"><i class="fa-solid fa-list-check"></i> Questions</button>
         <button class="btn ${!closed?'btn-outline':'btn-green'} btn-sm" onclick="toggleRoleStatus('${r.id}')">${!closed?'Close':'Reopen'}</button>
@@ -988,6 +1326,7 @@ function renderRoles(){
       </div>
     </div>`;
   }).join('');
+  if (typeof syncRoleSelectionControls === 'function') syncRoleSelectionControls();
 }
 
 window.toggleRoleStatus = async function(id){
@@ -1533,7 +1872,7 @@ function renderResults(){
         ${a.status === 'test_completed' ? `
           <button class="btn btn-green btn-sm" onclick="finalizeResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Qualify</button>
           <button class="btn btn-danger btn-sm" onclick="finalizeResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Reject</button>
-        ` : `<button class="btn btn-outline btn-sm" onclick="emailResult('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Result</button>
+        ` : `<button class="btn btn-mail-send btn-sm ${isAppMailSent(a, a.status === 'qualified' ? 'result_qualified' : 'result_not_qualified') ? 'sent' : ''}" data-mail-key="${a.id}:${a.status === 'qualified' ? 'result_qualified' : 'result_not_qualified'}" onclick="emailResult('${a.id}', this)"><i class="fa-solid ${isAppMailSent(a, a.status === 'qualified' ? 'result_qualified' : 'result_not_qualified') ? 'fa-circle-check' : 'fa-envelope'}"></i> <span>${isAppMailSent(a, a.status === 'qualified' ? 'result_qualified' : 'result_not_qualified') ? 'Result Sent' : 'Email Result'}</span></button>
           ${a.status === 'qualified'
             ? `<button class="btn btn-danger btn-sm" title="Override the result" onclick="overrideResult('${a.id}', false)"><i class="fa-solid fa-xmark"></i> Mark Not Qualified</button>`
             : `<button class="btn btn-green btn-sm" title="Override the result" onclick="overrideResult('${a.id}', true)"><i class="fa-solid fa-check"></i> Mark Qualified</button>`}`}
@@ -1543,7 +1882,7 @@ function renderResults(){
           </button>
         ` : ''}
         ${a.status === 'qualified' && a.nextStep ? `
-          <button class="btn btn-outline btn-sm" onclick="emailNextStep('${a.id}')"><i class="fa-solid fa-envelope"></i> Email</button>
+          <button class="btn btn-mail-send btn-sm ${isAppMailSent(a, 'interview') ? 'sent' : ''}" data-mail-key="${a.id}:interview" onclick="emailNextStep('${a.id}', this)"><i class="fa-solid ${isAppMailSent(a, 'interview') ? 'fa-circle-check' : 'fa-envelope'}"></i> <span>${isAppMailSent(a, 'interview') ? 'Sent' : 'Email'}</span></button>
           <button class="btn ${a.finalStatus === 'selected' ? 'btn-solid-green' : 'btn-outline'} btn-sm" onclick="setFinalStatus('${a.id}', true)"><i class="fa-solid fa-user-check"></i> Selected</button>
           <button class="btn ${a.finalStatus === 'not_selected' ? 'btn-danger' : 'btn-outline'} btn-sm" onclick="setFinalStatus('${a.id}', false)"><i class="fa-solid fa-user-xmark"></i> Not Selected</button>
         ` : ''}
@@ -1551,7 +1890,7 @@ function renderResults(){
           <button class="btn ${a.offer ? 'btn-outline' : 'btn-solid-green'} btn-sm" onclick="openOfferModal('${a.id}')"><i class="fa-solid fa-gift"></i> ${a.offer ? 'Edit Offer' : 'Send Offer'}</button>
         ` : ''}
         ${a.status === 'qualified' && a.finalStatus === 'not_selected' ? `
-          <button class="btn btn-outline btn-sm" onclick="emailFinal('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Decision</button>
+          <button class="btn btn-mail-send btn-sm ${isAppMailSent(a, 'decision_not_selected') ? 'sent' : ''}" data-mail-key="${a.id}:decision_not_selected" onclick="emailFinal('${a.id}', null, this)"><i class="fa-solid ${isAppMailSent(a, 'decision_not_selected') ? 'fa-circle-check' : 'fa-envelope'}"></i> <span>${isAppMailSent(a, 'decision_not_selected') ? 'Decision Sent' : 'Email Decision'}</span></button>
         ` : ''}
       </div>
     </div>`;
@@ -1561,6 +1900,8 @@ function renderResults(){
 window.finalizeResult = async function(appId, qualified){
   try {
     await updateDoc(doc(db, 'hiringApplications', appId), { status: qualified ? 'qualified' : 'not_qualified', resultDeclaredAt: serverTimestamp(), resultDeclaredBy: 'admin' });
+    const a = state.applications.find(x => x.id === appId);
+    if (a) a.status = qualified ? 'qualified' : 'not_qualified';
     toast(qualified ? 'Marked as qualified' : 'Marked as not qualified', 'success');
     emailResult(appId);
   } catch (e) { console.error(e); toast('Could not update result', 'error'); }
@@ -1586,14 +1927,14 @@ window.overrideResult = async function(appId, qualified){
 };
 
 // Opens the admin's email client pre-filled with the outcome — works with
-// zero backend/API keys. For true one-tap automatic sending, wire this up
-// to EmailJS (emailjs.com, free tier) or a Cloudflare Worker + Resend/SendGrid
-// and replace this function's body with that API call.
-window.emailResult = function(appId){
+// zero backend/API keys.
+window.emailResult = function(appId, btnEl){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
   const role = state.roles.find(r => r.id === a.roleId);
+  const key = a.status === 'qualified' ? 'result_qualified' : 'result_not_qualified';
   const { subject, body } = buildEmail(a.status === 'qualified' ? 'qualified' : 'not_qualified', a, role);
   openMail(a.email, subject, body);
+  markAppMailSent(appId, key, btnEl, 'Result Sent');
 };
 
 // Helper to format a Firestore Timestamp / ISO string into a
@@ -1683,11 +2024,12 @@ window.sendNextStep = async function(appId){
 // Opens the admin's email client, pre-filled with the interview details,
 // addressed to the specific applicant by name and email. Works with zero
 // backend/API keys, same pattern as emailResult().
-window.emailNextStep = function(appId){
+window.emailNextStep = function(appId, btnEl){
   const a = state.applications.find(x => x.id === appId); if (!a || !a.nextStep) return;
   const role = state.roles.find(r => r.id === a.roleId);
   const { subject, body } = buildEmail('interview', a, role);
   openMail(a.email, subject, body);
+  markAppMailSent(appId, 'interview', btnEl, 'Sent');
 };
 
 // Final hiring decision — recorded after the interview. Tapping the other
@@ -2005,12 +2347,14 @@ function buildEmail(kind, a, role, extra){
 }
 
 // Decision email after the interview: offer mail if selected, regret mail if not.
-window.emailFinal = function(appId, offerOverride){
+window.emailFinal = function(appId, offerOverride, btnEl){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
   const role = state.roles.find(r => r.id === a.roleId);
   const kind = a.finalStatus === 'selected' ? 'selected' : 'not_selected';
+  const key = a.finalStatus === 'selected' ? 'offer' : 'decision_not_selected';
   const { subject, body } = buildEmail(kind, a, role, { offer: offerOverride });
   openMail(a.email, subject, body);
+  markAppMailSent(appId, key, btnEl, a.finalStatus === 'selected' ? 'Offer Mail Sent' : 'Decision Sent');
 };
 
 /* ================================================================
@@ -2125,10 +2469,10 @@ function renderHiredInner(){
       ${ended && a.hiredEndNote ? `<div class="hired-note"><strong>Admin note:</strong> ${esc(a.hiredEndNote)}</div>` : ''}
       <div class="hired-actions">
         ${!ended ? `<button class="btn ${a.offer ? 'btn-outline' : 'btn-solid-green'} btn-sm" onclick="openOfferModal('${a.id}')"><i class="fa-solid fa-gift"></i> ${a.offer ? 'Edit Offer' : 'Send Offer'}</button>` : ''}
-        ${a.offer && !ended ? `<button class="btn btn-outline btn-sm" onclick="emailFinal('${a.id}')"><i class="fa-solid fa-envelope"></i> Email Offer</button>` : ''}
-        ${st === 'completed' ? `<button class="btn btn-solid-green btn-sm" onclick="emailCompletion('${a.id}')"><i class="fa-solid fa-graduation-cap"></i> Email Completion Letter</button>` : ''}
+        ${a.offer && !ended ? `<button class="btn btn-mail-send btn-sm ${isAppMailSent(a, 'offer') ? 'sent' : ''}" data-mail-key="${a.id}:offer" onclick="emailFinal('${a.id}', null, this)"><i class="fa-solid ${isAppMailSent(a, 'offer') ? 'fa-circle-check' : 'fa-envelope'}"></i> <span>${isAppMailSent(a, 'offer') ? 'Offer Mail Sent' : 'Email Offer'}</span></button>` : ''}
+        ${st === 'completed' ? `<button class="btn btn-mail-send btn-sm ${isAppMailSent(a, 'completion') ? 'sent' : ''}" data-mail-key="${a.id}:completion" onclick="emailCompletion('${a.id}', this)"><i class="fa-solid ${isAppMailSent(a, 'completion') ? 'fa-circle-check' : 'fa-graduation-cap'}"></i> <span>${isAppMailSent(a, 'completion') ? 'Completion Sent' : 'Email Completion Letter'}</span></button>` : ''}
         ${upgradeBtn}
-        ${ended ? `<button class="btn btn-outline btn-sm" onclick="emailEnd('${a.id}')"><i class="fa-solid fa-envelope"></i> Email ${st === 'fired' ? 'Fired' : 'Deleted'} Notice</button>
+        ${ended ? `<button class="btn btn-mail-send btn-sm ${isAppMailSent(a, 'end_' + st) ? 'sent' : ''}" data-mail-key="${a.id}:end_${st}" onclick="emailEnd('${a.id}', this)"><i class="fa-solid ${isAppMailSent(a, 'end_' + st) ? 'fa-circle-check' : 'fa-envelope'}"></i> <span>${isAppMailSent(a, 'end_' + st) ? 'Notice Sent' : `Email ${st === 'fired' ? 'Fired' : 'Deleted'} Notice`}</span></button>
         <span style="flex:1;"></span>
         <button class="btn btn-green btn-sm" onclick="reinstateHired('${a.id}')"><i class="fa-solid fa-rotate-left"></i> Reinstate</button>` : ''}
         ${st === 'left' ? `<span style="flex:1;"></span><button class="btn btn-green btn-sm" onclick="rehireCandidate('${a.id}')"><i class="fa-solid fa-rotate-left"></i> Rehire</button>` : ''}
@@ -2472,7 +2816,7 @@ function renderPositions(){
           ${hasPos ? `
             <button class="btn btn-outline btn-sm" onclick="openCert('${a.id}','POSITION')" style="color:#2563EB;border-color:rgba(37,99,235,0.4);" title="Open Verified Position Certificate"><i class="fa-solid fa-up-right-from-square"></i> Open</button>
             <button class="btn btn-outline btn-sm" onclick="copyCertLink('${a.id}','POSITION')" style="color:#2563EB;border-color:rgba(37,99,235,0.4);" title="Copy Verification Link"><i class="fa-regular fa-copy"></i> Link</button>
-            <button class="btn btn-outline btn-sm" onclick="emailCert('${a.id}','POSITION')" style="color:#2563EB;border-color:rgba(37,99,235,0.4);" title="Email Certificate to Employee"><i class="fa-solid fa-envelope"></i> Email</button>
+            <button class="btn btn-mail-send btn-sm ${isAppMailSent(a, 'cert_POSITION') ? 'sent' : ''}" data-mail-key="${a.id}:cert_POSITION" onclick="emailCert('${a.id}','POSITION', this)" title="Email Certificate to Employee"><i class="fa-solid ${isAppMailSent(a, 'cert_POSITION') ? 'fa-circle-check' : 'fa-envelope'}"></i> <span>${isAppMailSent(a, 'cert_POSITION') ? 'Email Sent' : 'Email'}</span></button>
             <button class="btn btn-outline btn-sm" onclick="openGivePositionCert('${a.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
             <button class="btn btn-outline btn-sm" onclick="revokePositionCert('${a.id}')" style="color:var(--red);" title="Revoke Position Certificate"><i class="fa-solid fa-trash"></i></button>
           ` : `
@@ -2536,7 +2880,7 @@ window.copyCertLink = async function(appId, kind){
   } catch (e) { toast(CERT.verifyUrl(appId), 'info'); }
 };
 
-window.emailCert = async function(appId, kind){
+window.emailCert = async function(appId, kind, btnEl){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
   const role = state.roles.find(r => r.id === a.roleId);
   try { await syncCertDoc(appId); } catch (e) { /* sync fallback */ }
@@ -2550,6 +2894,7 @@ window.emailCert = async function(appId, kind){
   }
   const { subject, body } = buildEmail('certificate', a, role, { cert: targetCert });
   openMail(a.email, subject, body);
+  markAppMailSent(appId, 'cert_' + (kind || 'EXP'), btnEl, 'Email Sent');
 };
 
 window.toInputDateYMD = function(v){
@@ -3381,11 +3726,12 @@ window.confirmUpgrade = async function(appId){
   } catch (e) { console.error(e); toast('Could not upgrade — please try again', 'error'); btn.disabled = false; }
 };
 
-window.emailCompletion = function(appId){
+window.emailCompletion = function(appId, btnEl){
   const a = state.applications.find(x => x.id === appId); if (!a) return;
   const role = state.roles.find(r => r.id === a.roleId);
   const { subject, body } = buildEmail('completion', a, role, { eng: engagement(a, role) });
   openMail(a.email, subject, body);
+  markAppMailSent(appId, 'completion', btnEl, 'Completion Sent');
 };
 
 // Undo a fire / delete (e.g. clicked by mistake). Needs a free seat.
@@ -3445,11 +3791,1320 @@ setInterval(() => {
   _doneIds = done;
 }, 1000);
 
-window.emailEnd = function(appId){
+window.emailEnd = function(appId, btnEl){
   const a = state.applications.find(x => x.id === appId); if (!a || !a.hiredEndType) return;
   const role = state.roles.find(r => r.id === a.roleId);
   const { subject, body } = buildEmail(a.hiredEndType, a, role, { note: a.hiredEndNote });
   openMail(a.email, subject, body);
+  markAppMailSent(appId, 'end_' + a.hiredEndType, btnEl, 'Notice Sent');
+};
+
+/* ================================================================
+   UNIVERSAL WHITE -> GREEN MAIL BUTTON STATE + ROLE MAILER / OUTREACH
+================================================================ */
+function isAppMailSent(app, key){
+  if (!app || !key) return false;
+  return !!(app.mailSent && app.mailSent[key]);
+}
+
+async function markAppMailSent(appId, key, btnEl, sentLabel){
+  if (!appId || !key) return;
+  const a = state.applications.find(x => x.id === appId);
+  if (a) {
+    if (!a.mailSent) a.mailSent = {};
+    a.mailSent[key] = true;
+    a.mailSent[key + 'At'] = new Date().toISOString();
+  }
+  const applyVisual = (el) => {
+    if (!el) return;
+    el.classList.add('sent');
+    const ic = el.querySelector('i');
+    if (ic) ic.className = 'fa-solid fa-circle-check';
+    const sp = el.querySelector('span');
+    if (sp && sentLabel) sp.textContent = sentLabel;
+  };
+  applyVisual(btnEl);
+  document.querySelectorAll(`[data-mail-key="${appId}:${key}"]`).forEach(applyVisual);
+  try {
+    await updateDoc(doc(db, 'hiringApplications', appId), {
+      [`mailSent.${key}`]: true,
+      [`mailSent.${key}At`]: new Date().toISOString()
+    });
+  } catch (e) {
+    console.warn('Could not persist mailSent flag:', e);
+  }
+}
+
+const OM_MAIL_TYPES = {
+  invite_apply: { label: 'Invite to Apply', badgeCls: 'badge-accent' },
+  pending_application: { label: 'Pending Application', badgeCls: 'badge-amber' },
+  pending_test: { label: 'Pending Qualifying Test', badgeCls: 'badge-amber' },
+  pending_interview: { label: 'Pending Interview', badgeCls: 'badge-accent' },
+  pending_offer: { label: 'Pending Offer Acceptance', badgeCls: 'badge-green' },
+  role_update: { label: 'Role Opening / Follow-Up', badgeCls: 'badge-gray' },
+};
+
+const omUI = {
+  roleVis: 'open',
+  selectedRoleId: '',
+  selectedRoleIds: new Set(),
+  userTouchedSelection: false,
+  recipientQueue: [], // [{ id, name, email, phone, source, sent, sentCount }]
+};
+
+function getSelectedOmRoles(){
+  // Keep only IDs that still exist in state.roles
+  const validIds = new Set(state.roles.map(r => r.id));
+  for (const id of [...omUI.selectedRoleIds]) {
+    if (!validIds.has(id)) omUI.selectedRoleIds.delete(id);
+  }
+  const selected = state.roles.filter(r => omUI.selectedRoleIds.has(r.id));
+  omUI.selectedRoleId = selected[0] ? selected[0].id : '';
+  return selected;
+}
+
+function syncRoleSelectionControls(){
+  const selected = getSelectedOmRoles();
+  const selCount = selected.length;
+
+  // Sync Test Manager (#section-roles) header Select All + count + bulk mail button
+  const allRoles = state.roles;
+  const rolesCb = $('rolesSelectAllCb');
+  const rolesWrap = $('rolesHeaderSelectAllWrap');
+  const rolesBadge = $('rolesSelectedCountBadge');
+  const rolesBulkBtn = $('rolesBulkMailBtn');
+  const rolesBulkLbl = $('rolesBulkMailBtnLabel');
+  if (rolesCb) {
+    const allChecked = allRoles.length > 0 && allRoles.every(r => omUI.selectedRoleIds.has(r.id));
+    const someChecked = allRoles.some(r => omUI.selectedRoleIds.has(r.id));
+    rolesCb.checked = allChecked;
+    rolesCb.indeterminate = !allChecked && someChecked;
+  }
+  if (rolesWrap) rolesWrap.classList.toggle('has-sel', selCount > 0);
+  if (rolesBadge) {
+    rolesBadge.style.display = selCount > 0 ? 'inline-flex' : 'none';
+    rolesBadge.textContent = `${selCount} selected`;
+  }
+  if (rolesBulkBtn) {
+    rolesBulkBtn.style.display = selCount > 0 ? 'inline-flex' : 'none';
+    if (rolesBulkLbl) rolesBulkLbl.textContent = `Mail Selected Role${selCount > 1 ? 's' : ''} (${selCount})`;
+  }
+
+  // Sync Role Mailer (#section-outreach) header Select All + composer Select All
+  const visRoles = getFilteredOmRoles();
+  const allVisChecked = visRoles.length > 0 && visRoles.every(r => omUI.selectedRoleIds.has(r.id));
+  const someVisChecked = visRoles.some(r => omUI.selectedRoleIds.has(r.id));
+
+  ['omHeaderSelectAllCb', 'omSelectAllCb'].forEach(id => {
+    const cb = $(id);
+    if (cb) {
+      cb.checked = allVisChecked;
+      cb.indeterminate = !allVisChecked && someVisChecked;
+    }
+  });
+  ['omHeaderSelectAllWrap', 'omComposerSelectAllWrap'].forEach(id => {
+    const w = $(id);
+    if (w) w.classList.toggle('has-sel', selCount > 0);
+  });
+  const omBadge = $('omSelectedCountBadge');
+  if (omBadge) {
+    omBadge.textContent = `${selCount} selected`;
+  }
+}
+
+window.toggleRoleCheckbox = function(roleId, forceState){
+  if (!roleId) return;
+  omUI.userTouchedSelection = true;
+  const shouldSelect = typeof forceState === 'boolean' ? forceState : !omUI.selectedRoleIds.has(roleId);
+  if (shouldSelect) omUI.selectedRoleIds.add(roleId);
+  else omUI.selectedRoleIds.delete(roleId);
+  getSelectedOmRoles();
+  renderRoles();
+  renderOutreachRoleOptions();
+};
+
+window.toggleRolesManagerSelectAll = function(checked){
+  omUI.userTouchedSelection = true;
+  if (checked) {
+    state.roles.forEach(r => omUI.selectedRoleIds.add(r.id));
+  } else {
+    omUI.selectedRoleIds.clear();
+  }
+  getSelectedOmRoles();
+  renderRoles();
+  renderOutreachRoleOptions();
+};
+
+window.toggleOmSelectAll = function(checked){
+  omUI.userTouchedSelection = true;
+  const visRoles = getFilteredOmRoles();
+  if (checked) {
+    visRoles.forEach(r => omUI.selectedRoleIds.add(r.id));
+  } else {
+    visRoles.forEach(r => omUI.selectedRoleIds.delete(r.id));
+  }
+  getSelectedOmRoles();
+  renderRoles();
+  renderOutreachRoleOptions();
+};
+
+window.openBulkMailForSelectedRoles = function(){
+  const selected = getSelectedOmRoles();
+  if (!selected.length) return toast('Select at least one role first', 'warning');
+  const hasClosed = selected.some(r => isRoleClosed(r));
+  if (hasClosed && omUI.roleVis === 'open') {
+    setOmRoleVis('all');
+  }
+  goSection('outreach');
+  renderOutreachSection();
+  toast(`${selected.length} role${selected.length > 1 ? 's' : ''} loaded in Role Mailer`, 'info');
+};
+
+window.mailSingleRole = function(roleId){
+  if (!roleId) return;
+  omUI.userTouchedSelection = true;
+  omUI.selectedRoleIds.clear();
+  omUI.selectedRoleIds.add(roleId);
+  const role = state.roles.find(r => r.id === roleId);
+  if (role && isRoleClosed(role) && omUI.roleVis === 'open') {
+    setOmRoleVis('all');
+  }
+  getSelectedOmRoles();
+  renderRoles();
+  goSection('outreach');
+  renderOutreachSection();
+};
+
+window.setOmRoleVis = function(vis){
+  omUI.roleVis = vis === 'all' ? 'all' : 'open';
+  document.querySelectorAll('#omRoleVisSeg button').forEach(b => {
+    b.classList.toggle('on', b.dataset.vis === omUI.roleVis);
+  });
+  renderOutreachRoleOptions();
+};
+
+function getFilteredOmRoles(){
+  const q = ($('omRoleSearch')?.value || '').trim().toLowerCase();
+  return state.roles.filter(r => {
+    const closed = isRoleClosed(r);
+    if (omUI.roleVis === 'open' && closed) return false;
+    if (!q) return true;
+    return (r.title || '').toLowerCase().includes(q) || (r.department || '').toLowerCase().includes(q) || (r.location || '').toLowerCase().includes(q);
+  });
+}
+
+window.renderOutreachRoleOptions = function(){
+  const sel = $('omRoleSelect');
+  const chipsHost = $('omRoleChips');
+  const recFilter = $('omRecentRoleFilter');
+  if (recFilter) {
+    const prev = recFilter.value;
+    recFilter.innerHTML = '<option value="all">All Roles</option>' + state.roles.map(r => {
+      const closed = isRoleClosed(r);
+      return `<option value="${r.id}">${esc(r.title)} (${closed ? 'Closed' : 'Open'})</option>`;
+    }).join('');
+    if ([...recFilter.options].some(o => o.value === prev)) recFilter.value = prev;
+  }
+  if (!sel) return;
+  const list = getFilteredOmRoles();
+  if (!list.length) {
+    sel.innerHTML = `<option value="">${omUI.roleVis === 'open' ? 'No open roles match — switch to All Roles or clear search' : 'No roles match search'}</option>`;
+    if (chipsHost) chipsHost.innerHTML = '';
+    syncRoleSelectionControls();
+    updateOmPreview();
+    updateOmSendBtnFromHistory();
+    return;
+  }
+
+  // Default to first visible open role only before the admin interacts with checkboxes
+  if (!omUI.userTouchedSelection && omUI.selectedRoleIds.size === 0 && list[0]) {
+    omUI.selectedRoleIds.add(list[0].id);
+  }
+
+  const selectedRoles = getSelectedOmRoles();
+  const selCount = selectedRoles.length;
+
+  const bulkSummaryOption = selCount > 1
+    ? `<option value="__BULK__" selected>✅ ${selCount} Roles Selected (Bulk Recruitment Mail: ${esc(selectedRoles.map(r => r.title).join(', '))})</option>`
+    : (selCount === 0 ? `<option value="" selected>— Check one or more role cards below (or use Select All) —</option>` : '');
+
+  sel.innerHTML = bulkSummaryOption + list.map(r => {
+    const closed = isRoleClosed(r);
+    const vac = Math.max(1, Number(r.vacancy) || 1);
+    const hired = activeHiredCount(r.id);
+    const tag = closed ? '⚪ [Closed]' : '🟢 [Open]';
+    const isOnlySelected = selCount === 1 && omUI.selectedRoleIds.has(r.id);
+    return `<option value="${r.id}" ${isOnlySelected ? 'selected' : ''}>${tag} ${esc(r.title)} · ${esc(r.department || 'General')} (${hired}/${vac} filled)</option>`;
+  }).join('');
+
+  if (chipsHost) {
+    chipsHost.innerHTML = list.map(r => {
+      const closed = isRoleClosed(r);
+      const on = omUI.selectedRoleIds.has(r.id);
+      const vac = Math.max(1, Number(r.vacancy) || 1);
+      const hired = activeHiredCount(r.id);
+      return `<div class="om-role-chip ${on ? 'active' : ''}" onclick="toggleRoleCheckbox('${r.id}')">
+        <div class="om-role-chip-left">
+          <input type="checkbox" class="role-card-cb" ${on ? 'checked' : ''} onclick="event.stopPropagation(); toggleRoleCheckbox('${r.id}', this.checked)">
+          <div class="om-role-chip-meta">
+            <div class="om-role-chip-title">${esc(r.title)}</div>
+            <div class="om-role-chip-sub">${esc(r.department || 'General')} · ${hired}/${vac} filled</div>
+          </div>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;flex-shrink:0;">
+          <span class="om-role-dot ${closed ? 'closed' : ''}"></span>
+          <span>${closed ? 'Closed' : 'Open'}</span>
+        </span>
+      </div>`;
+    }).join('');
+  }
+  syncRoleSelectionControls();
+  if (typeof renderOmQueue === 'function') renderOmQueue();
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+};
+
+window.onOmRoleSelectChange = function(roleId){
+  if (!roleId || roleId === '__BULK__') return;
+  omUI.userTouchedSelection = true;
+  omUI.selectedRoleIds.clear();
+  omUI.selectedRoleIds.add(roleId);
+  getSelectedOmRoles();
+  renderRoles();
+  renderOutreachRoleOptions();
+};
+
+function getDirectoryContacts(){
+  const map = new Map();
+  state.candidates.forEach(c => {
+    const email = String(c.email || '').trim().toLowerCase();
+    const phone = String(c.phone || '').trim();
+    const key = email || phone || c.id;
+    if (!key) return;
+    map.set(key, { name: c.name || '', email: c.email || '', phone });
+  });
+  state.applications.forEach(a => {
+    const email = String(a.email || '').trim().toLowerCase();
+    const phone = String(a.phone || '').trim();
+    const key = email || phone || a.id;
+    if (!key) return;
+    const prev = map.get(key) || {};
+    map.set(key, {
+      name: a.name || prev.name || '',
+      email: a.email || prev.email || '',
+      phone: phone || prev.phone || '',
+      roleId: a.roleId || prev.roleId || '',
+      status: a.status || prev.status || ''
+    });
+  });
+  return [...map.values()];
+}
+
+window.renderOutreachDirectory = function(){
+  const pick = $('omDirectoryPick');
+  const dl = $('omCandidateDatalist');
+  const contacts = getDirectoryContacts();
+  if (pick) {
+    const cur = pick.value;
+    pick.innerHTML = '<option value="">Quick Pick Registered User / Applicant…</option>' + contacts.map((c, idx) => {
+      const label = `${c.name || 'Candidate'} — ${c.email || 'no-email'}${c.phone ? ' · 📞 ' + c.phone : ''}`;
+      return `<option value="${idx}">${esc(label)}</option>`;
+    }).join('');
+    pick.value = cur && cur < contacts.length ? cur : '';
+  }
+  if (dl) {
+    dl.innerHTML = contacts.map(c => {
+      const val = c.email || c.phone || '';
+      const label = `${c.name || 'Candidate'}${c.phone ? ' · ' + c.phone : ''}`;
+      return val ? `<option value="${esc(val)}" label="${esc(label)}"></option>` : '';
+    }).join('');
+  }
+};
+
+window.onOmDirectoryPick = function(idxStr){
+  if (idxStr === '' || idxStr === null || idxStr === undefined) return;
+  const contacts = getDirectoryContacts();
+  const c = contacts[Number(idxStr)];
+  if (!c) return;
+  if ($('omEmail')) $('omEmail').value = c.email || '';
+  if ($('omPhone')) $('omPhone').value = c.phone || '';
+  if ($('omName')) $('omName').value = c.name || '';
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+};
+
+window.onOmRecipientInput = function(val){
+  const raw = String(val || '').trim();
+  const digits = raw.replace(/\D/g, '');
+  const contacts = getDirectoryContacts();
+  // If user typed a phone number in the Gmail/Phone box, auto-lookup candidate
+  if (digits.length >= 10 && !raw.includes('@')) {
+    const found = contacts.find(c => String(c.phone || '').replace(/\D/g, '').endsWith(digits.slice(-10)));
+    if (found) {
+      if ($('omPhone') && !$('omPhone').value) $('omPhone').value = found.phone || raw;
+      if ($('omName') && !$('omName').value) $('omName').value = found.name || '';
+      if (found.email && $('omEmail')) $('omEmail').value = found.email;
+    }
+  } else if (raw.includes('@')) {
+    const found = contacts.find(c => String(c.email || '').toLowerCase() === raw.toLowerCase());
+    if (found) {
+      if ($('omPhone') && !$('omPhone').value) $('omPhone').value = found.phone || '';
+      if ($('omName') && !$('omName').value) $('omName').value = found.name || '';
+    }
+  }
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+};
+
+window.onOmPhoneInput = function(val){
+  const digits = String(val || '').replace(/\D/g, '');
+  if (digits.length >= 10) {
+    const contacts = getDirectoryContacts();
+    const found = contacts.find(c => String(c.phone || '').replace(/\D/g, '').endsWith(digits.slice(-10)));
+    if (found) {
+      if ($('omEmail') && !$('omEmail').value) $('omEmail').value = found.email || '';
+      if ($('omName') && !$('omName').value) $('omName').value = found.name || '';
+    }
+  }
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+};
+
+window.onOmMailTypeChange = function(){
+  syncOmQueueSentFlagsFromHistory();
+  renderOmQueue();
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+};
+
+window.resetOmSendBtnState = function(){
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+};
+
+/* ================================================================
+   MULTI-GMAIL / PHONE QUEUE & BULK FILE ANALYZER (CSV / JSON / CV)
+================================================================ */
+function resolveRecipientFromDirectory(rawItem){
+  const contacts = getDirectoryContacts();
+  let email = String(rawItem.email || '').trim();
+  let phone = String(rawItem.phone || '').trim();
+  let name = String(rawItem.name || '').trim();
+  const source = rawItem.source || 'Manual';
+
+  // If email field actually contains a phone number, move it to phone
+  if (email && !email.includes('@')) {
+    const d = email.replace(/\D/g, '');
+    if (d.length >= 10) {
+      if (!phone) phone = email;
+      email = '';
+    }
+  }
+
+  // Match by email in directory
+  if (email && email.includes('@')) {
+    const found = contacts.find(c => String(c.email || '').toLowerCase() === email.toLowerCase());
+    if (found) {
+      if (!name && found.name) name = found.name;
+      if (!phone && found.phone) phone = found.phone;
+    }
+  }
+
+  // Match by phone in directory
+  if (phone) {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length >= 10) {
+      const found = contacts.find(c => String(c.phone || '').replace(/\D/g, '').endsWith(digits.slice(-10)));
+      if (found) {
+        if (!email && found.email) email = found.email;
+        if (!name && found.name) name = found.name;
+        phone = found.phone || phone;
+      }
+    }
+  }
+
+  if (!name && email && email.includes('@')) {
+    const local = email.split('@')[0].replace(/[._-]+/g, ' ').replace(/\d+/g, '').trim();
+    if (local) {
+      name = local.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+  }
+
+  return { name, email, phone, source };
+}
+
+function isRecipientAlreadySentForCurrentSelection(email, phone){
+  const selectedRoles = getSelectedOmRoles();
+  if (!selectedRoles.length) return false;
+  const mailType = $('omMailType')?.value || 'invite_apply';
+  const selectedIdsKey = selectedRoles.map(r => r.id).sort().join(',');
+  const em = String(email || '').trim().toLowerCase();
+  const ph = String(phone || '').trim();
+  if (!em && !ph) return false;
+  return state.outreachLogs.some(x => {
+    const logIdsKey = Array.isArray(x.roleIds) && x.roleIds.length ? x.roleIds.slice().sort().join(',') : String(x.roleId || '');
+    return logIdsKey === selectedIdsKey &&
+      x.mailType === mailType &&
+      ((em && String(x.email || '').toLowerCase() === em) || (ph && String(x.phone || '') === ph));
+  });
+}
+
+function syncOmQueueSentFlagsFromHistory(){
+  omUI.recipientQueue.forEach(item => {
+    if (isRecipientAlreadySentForCurrentSelection(item.email, item.phone)) {
+      item.sent = true;
+    }
+  });
+}
+
+function addRecipientsToOmQueue(items, defaultSource){
+  let added = 0;
+  let updated = 0;
+  items.forEach(raw => {
+    const resolved = resolveRecipientFromDirectory({ ...raw, source: raw.source || defaultSource || 'Manual' });
+    if (!resolved.email && !resolved.phone) return;
+    const keyEmail = (resolved.email || '').toLowerCase();
+    const keyPhone = (resolved.phone || '').replace(/\D/g, '').slice(-10);
+    const existing = omUI.recipientQueue.find(q =>
+      (keyEmail && q.email && q.email.toLowerCase() === keyEmail) ||
+      (keyPhone && keyPhone.length === 10 && String(q.phone || '').replace(/\D/g, '').slice(-10) === keyPhone)
+    );
+    if (existing) {
+      if (!existing.name && resolved.name) existing.name = resolved.name;
+      if (!existing.email && resolved.email) existing.email = resolved.email;
+      if (!existing.phone && resolved.phone) existing.phone = resolved.phone;
+      updated++;
+      return;
+    }
+    const alreadySent = isRecipientAlreadySentForCurrentSelection(resolved.email, resolved.phone);
+    omUI.recipientQueue.push({
+      id: 'omq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      name: resolved.name || '',
+      email: resolved.email || '',
+      phone: resolved.phone || '',
+      source: resolved.source || 'Manual',
+      sent: alreadySent,
+      sentCount: alreadySent ? 1 : 0,
+    });
+    added++;
+  });
+  renderOmQueue();
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
+  return { added, updated };
+}
+
+function parseRawTextToRecipientObjects(rawText, sourceLabel){
+  if (!rawText || !String(rawText).trim()) return [];
+  const text = String(rawText).trim();
+  const out = [];
+
+  // 1) Try JSON parsing first if it looks like JSON
+  if ((text.startsWith('[') || text.startsWith('{'))) {
+    try {
+      const parsed = JSON.parse(text);
+      const walkJson = (node) => {
+        if (!node) return;
+        if (Array.isArray(node)) {
+          node.forEach(walkJson);
+          return;
+        }
+        if (typeof node === 'string') {
+          const sub = parseLineToRecipients(node, sourceLabel || 'JSON');
+          out.push(...sub);
+          return;
+        }
+        if (typeof node === 'object') {
+          const emailVal = node.email || node.gmail || node.mail || node.Email || node.Gmail || node.emailAddress || node.e_mail || '';
+          const phoneVal = node.phone || node.mobile || node.contact || node.phoneNumber || node.Phone || node.Mobile || node.number || '';
+          const nameVal = node.name || node.fullName || node.full_name || node.candidate || node.candidateName || node.applicant || node.Name || '';
+          if (emailVal || phoneVal) {
+            out.push({ name: String(nameVal || '').trim(), email: String(emailVal || '').trim(), phone: String(phoneVal || '').trim(), source: sourceLabel || 'JSON' });
+          } else {
+            Object.values(node).forEach(walkJson);
+          }
+        }
+      };
+      walkJson(parsed);
+      if (out.length) return out;
+    } catch (e) {
+      // Fall back to line/regex parsing below
+    }
+  }
+
+  // 2) Line-by-line CSV / TSV / multi-line text parsing
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return out;
+
+  // Check if first line is a CSV header
+  const firstCols = lines[0].split(/[,\t;|]/).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
+  const hasHeader = firstCols.some(c => ['email', 'gmail', 'e-mail', 'mail', 'phone', 'mobile', 'contact', 'name', 'candidate', 'full name'].includes(c));
+  const startIdx = hasHeader ? 1 : 0;
+
+  for (let i = startIdx; i < lines.length; i++) {
+    const rowItems = parseLineToRecipients(lines[i], sourceLabel || 'Bulk');
+    out.push(...rowItems);
+  }
+  return out;
+}
+
+function parseLineToRecipients(line, sourceLabel){
+  const results = [];
+  if (!line) return results;
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const phoneRegex = /(?:\+?91[\s.-]?)?[6-9]\d{9}\b/g;
+
+  const emails = line.match(emailRegex) || [];
+  const phones = (line.match(phoneRegex) || []).map(p => p.trim());
+
+  // If multiple emails are on the same line (e.g. comma-separated list of gmails)
+  if (emails.length > 1) {
+    emails.forEach((em, idx) => {
+      results.push({
+        name: '',
+        email: em.trim(),
+        phone: phones[idx] || '',
+        source: sourceLabel || 'Bulk'
+      });
+    });
+    return results;
+  }
+
+  if (emails.length === 1 || phones.length >= 1) {
+    const email = emails[0] || '';
+    const phone = phones[0] || '';
+    // Extract possible candidate name by stripping email, phone, and delimiters
+    let leftover = line
+      .replace(emailRegex, ' ')
+      .replace(phoneRegex, ' ')
+      .replace(/["'<>()[\]{};:|]/g, ' ')
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s && !/^(name|email|gmail|phone|mobile|candidate|sr|no|\d+)$/i.test(s))[0] || '';
+    if (leftover.length > 48) leftover = leftover.slice(0, 48).trim();
+    results.push({
+      name: leftover,
+      email,
+      phone,
+      source: sourceLabel || 'Bulk'
+    });
+  }
+  return results;
+}
+
+async function extractTextFromUploadedFile(file){
+  const name = (file.name || '').toLowerCase();
+  if (name.endsWith('.json') || name.endsWith('.csv') || name.endsWith('.tsv') || name.endsWith('.txt')) {
+    return await file.text();
+  }
+  // For PDF / DOC / DOCX CVs & Resumes: scan both UTF-8 text and Latin1 byte stream for emails, phones, and readable strings
+  const buf = await file.arrayBuffer();
+  const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(buf);
+  const latin1 = new TextDecoder('iso-8859-1', { fatal: false }).decode(buf);
+  let combined = utf8 + '\n' + latin1;
+
+  // Also decode XML text nodes if it's a DOCX zip container with uncompressed segments or readable runs
+  const emailMatches = [...new Set((combined.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []))];
+  const phoneMatches = [...new Set((combined.match(/(?:\+?91[\s.-]?)?[6-9]\d{9}\b/g) || []))];
+
+  // Derive candidate name from CV filename (e.g. "Rahul_Sharma_Resume.pdf" -> "Rahul Sharma")
+  const cleanFileName = (file.name || '')
+    .replace(/\.[^.]+$/, '')
+    .replace(/\b(cv|resume|curriculum|vitae|updated|final|new|\d+)\b/gi, ' ')
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (emailMatches.length || phoneMatches.length) {
+    return emailMatches.map((em, i) => `${i === 0 ? cleanFileName : ''}, ${em}, ${phoneMatches[i] || ''}`).join('\n') ||
+      phoneMatches.map((ph, i) => `${i === 0 ? cleanFileName : ''}, ${ph}`).join('\n');
+  }
+  return combined;
+}
+
+window.handleOmBulkFiles = async function(fileList){
+  if (!fileList || !fileList.length) return;
+  const selectedRoles = getSelectedOmRoles();
+  if (!selectedRoles.length && state.roles.length) {
+    toast('Tip: Select one or more roles above to pair with your uploaded list', 'info');
+  }
+  let totalAdded = 0;
+  let totalUpdated = 0;
+  const files = [...fileList];
+  for (const file of files) {
+    try {
+      const ext = (file.name.split('.').pop() || 'File').toUpperCase();
+      const rawText = await extractTextFromUploadedFile(file);
+      const parsed = parseRawTextToRecipientObjects(rawText, ext);
+      const { added, updated } = addRecipientsToOmQueue(parsed, ext);
+      totalAdded += added;
+      totalUpdated += updated;
+    } catch (e) {
+      console.error('File analyze error:', file.name, e);
+    }
+  }
+  const input = $('omBulkFileInput');
+  if (input) input.value = '';
+  if (totalAdded > 0 || totalUpdated > 0) {
+    toast(`Analyzed ${files.length} file(s): ${totalAdded} added${totalUpdated ? `, ${totalUpdated} updated` : ''} in Recipient Send List`, 'success');
+  } else {
+    toast('No valid Gmail addresses or 10-digit phone numbers were found in the uploaded file(s)', 'warning');
+  }
+};
+
+window.toggleOmBulkPasteBox = function(force){
+  const box = $('omBulkPasteBox');
+  if (!box) return;
+  const show = typeof force === 'boolean' ? force : box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  if (show) $('omBulkPasteInput')?.focus();
+};
+
+window.analyzePastedBulkRecipients = function(){
+  const raw = ($('omBulkPasteInput')?.value || '').trim();
+  if (!raw) return toast('Paste at least one Gmail address or phone number first', 'warning');
+  const parsed = parseRawTextToRecipientObjects(raw, 'Pasted');
+  if (!parsed.length) return toast('Could not find any valid Gmail or 10-digit phone number in the pasted text', 'warning');
+  const { added, updated } = addRecipientsToOmQueue(parsed, 'Pasted');
+  if ($('omBulkPasteInput')) $('omBulkPasteInput').value = '';
+  toggleOmBulkPasteBox(false);
+  toast(`Added ${added} recipient${added === 1 ? '' : 's'}${updated ? ` (${updated} updated)` : ''} to the send list`, 'success');
+};
+
+window.addDirectoryCandidatesToQueue = function(){
+  const contacts = getDirectoryContacts().filter(c => c.email || c.phone);
+  if (!contacts.length) return toast('No registered users or applicants found yet', 'warning');
+  const { added, updated } = addRecipientsToOmQueue(contacts.map(c => ({ ...c, source: 'Directory' })), 'Directory');
+  toast(`Loaded ${added} registered candidate${added === 1 ? '' : 's'} into the send list`, 'success');
+};
+
+window.addInputRecipientsToQueue = function(){
+  const rawEmailBox = ($('omEmail')?.value || '').trim();
+  const rawPhone = ($('omPhone')?.value || '').trim();
+  const rawName = ($('omName')?.value || '').trim();
+  if (!rawEmailBox && !rawPhone) {
+    return toast('Enter one or more Gmail addresses or phone numbers first', 'warning');
+  }
+
+  let items = [];
+  // Check if the user entered multiple comma/space/newline-separated Gmails or phones in #omEmail
+  if (rawEmailBox.includes(',') || rawEmailBox.includes(';') || rawEmailBox.includes('\n') || (rawEmailBox.match(/@/g) || []).length > 1) {
+    items = parseRawTextToRecipientObjects(rawEmailBox, 'Manual');
+  } else {
+    items = [{ name: rawName, email: rawEmailBox, phone: rawPhone, source: 'Manual' }];
+  }
+
+  const { added, updated } = addRecipientsToOmQueue(items, 'Manual');
+  if (!added && !updated) {
+    return toast('Please enter a valid Gmail address or registered 10-digit phone number', 'warning');
+  }
+  if ($('omEmail')) $('omEmail').value = '';
+  if ($('omPhone')) $('omPhone').value = '';
+  if ($('omName')) $('omName').value = '';
+  toast(`${added ? `${added} recipient${added > 1 ? 's' : ''} added to Send List` : 'Recipient updated in Send List'}`, 'success');
+};
+
+window.updateOmQueueItemName = function(qId, val){
+  const item = omUI.recipientQueue.find(x => x.id === qId);
+  if (item) item.name = String(val || '').trim();
+};
+
+window.removeOmQueueItem = function(qId){
+  omUI.recipientQueue = omUI.recipientQueue.filter(x => x.id !== qId);
+  renderOmQueue();
+  updateOmSendBtnFromHistory();
+};
+
+window.clearSentFromOmQueue = function(){
+  omUI.recipientQueue = omUI.recipientQueue.filter(x => !x.sent);
+  renderOmQueue();
+  updateOmSendBtnFromHistory();
+};
+
+window.clearAllOmQueue = function(){
+  if (!omUI.recipientQueue.length) return;
+  omUI.recipientQueue = [];
+  renderOmQueue();
+  updateOmSendBtnFromHistory();
+};
+
+window.renderOmQueue = function(){
+  const panel = $('omQueuePanel');
+  const listHost = $('omQueueList');
+  const progBadge = $('omQueueProgressBadge');
+  const nextBtn = $('omSendNextQueueBtn');
+  const nextLbl = $('omSendNextQueueBtnLabel');
+  if (!panel || !listHost) return;
+
+  syncOmQueueSentFlagsFromHistory();
+  const total = omUI.recipientQueue.length;
+  if (!total) {
+    panel.style.display = 'none';
+    listHost.innerHTML = '';
+    return;
+  }
+  panel.style.display = 'block';
+  const sentCount = omUI.recipientQueue.filter(x => x.sent).length;
+  const pendingCount = total - sentCount;
+
+  if (progBadge) {
+    progBadge.textContent = `${sentCount} / ${total} Sent ✓`;
+    progBadge.className = sentCount === total ? 'badge badge-green' : 'badge badge-accent';
+  }
+  if (nextBtn) {
+    if (pendingCount === 0) {
+      nextBtn.classList.add('sent');
+      if (nextLbl) nextLbl.textContent = `All ${total} Sent ✓`;
+    } else {
+      nextBtn.classList.remove('sent');
+      if (nextLbl) nextLbl.textContent = `Send Next Pending (${pendingCount} left)`;
+    }
+  }
+
+  const selectedRoles = getSelectedOmRoles();
+  const roleLabel = selectedRoles.length > 1
+    ? `${selectedRoles.length} Roles (${selectedRoles.slice(0, 2).map(r => r.title).join(', ')}${selectedRoles.length > 2 ? '…' : ''})`
+    : (selectedRoles[0]?.title || 'Select Role');
+
+  listHost.innerHTML = omUI.recipientQueue.map((item, idx) => {
+    const isSent = !!item.sent;
+    const hasEmail = !!(item.email && item.email.includes('@'));
+    return `<div class="om-q-row ${isSent ? 'sent' : ''}" id="omq-row-${esc(item.id)}">
+      <div class="om-q-left">
+        <span class="om-q-idx">${isSent ? '<i class="fa-solid fa-check"></i>' : `#${idx + 1}`}</span>
+        <input type="text" class="om-q-name-input" value="${esc(item.name || '')}" placeholder="Candidate Name" oninput="updateOmQueueItemName('${item.id}', this.value)">
+        <span style="font-size:12.5px;font-weight:800;color:${hasEmail ? 'var(--text)' : 'var(--red)'};">
+          <i class="fa-regular fa-envelope" style="margin-right:4px;color:var(--text3);"></i>${esc(item.email || 'No Gmail found')}
+        </span>
+        ${item.phone ? `<span class="badge badge-gray"><i class="fa-solid fa-phone" style="margin-right:4px;font-size:9px;"></i>${esc(item.phone)}</span>` : ''}
+        <span class="badge badge-gray" style="font-size:9.5px;">${esc(item.source || 'List')}</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:600;">→ ${esc(roleLabel)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="btn btn-mail-send ${isSent ? 'sent' : ''} btn-sm" onclick="sendQueueRecipient('${item.id}', this)" title="${isSent ? 'Already sent — tap to send again' : 'Send mail to this recipient'}">
+          <i class="fa-solid ${isSent ? 'fa-circle-check' : 'fa-paper-plane'}"></i>
+          <span>${isSent ? 'Sent ✓' : 'Send Mail'}</span>
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="removeOmQueueItem('${item.id}')" title="Remove from list" style="padding:6px 9px;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+async function dispatchOutreachMailToRecipient(recObj, selectedRoles, mailType, customNote){
+  const primaryRole = selectedRoles[0];
+  let email = String(recObj.email || '').trim();
+  let phone = String(recObj.phone || '').trim();
+  let name = String(recObj.name || '').trim();
+
+  const resolved = resolveRecipientFromDirectory({ name, email, phone });
+  email = resolved.email || email;
+  phone = resolved.phone || phone;
+  name = resolved.name || name;
+
+  if (!email || !email.includes('@')) {
+    toast(`Missing valid Gmail address for ${name || phone || 'recipient'}`, 'warning');
+    return false;
+  }
+
+  const { subject, body } = buildOutreachEmail(mailType, selectedRoles, { name, email, phone, customNote });
+  openMail(email, subject, body);
+
+  const nowMs = Date.now();
+  const roleIds = selectedRoles.map(r => r.id);
+  const roleTitles = selectedRoles.map(r => r.title || 'Role');
+  const payload = {
+    kind: 'hiring_mail_log',
+    name: name || email.split('@')[0] || 'Candidate',
+    email,
+    phone: phone || '',
+    roleId: primaryRole.id,
+    roleIds,
+    roleCount: selectedRoles.length,
+    roleTitle: roleTitles.join(', '),
+    department: selectedRoles.map(r => r.department || '').filter(Boolean).join(', '),
+    mailType,
+    mailTypeLabel: (OM_MAIL_TYPES[mailType] && OM_MAIL_TYPES[mailType].label) || mailType,
+    customNote: customNote || '',
+    subject,
+    message: body,
+    status: 'sent',
+    sentBy: (CURRENT_USER && CURRENT_USER.email) || 'admin',
+    sentMs: nowMs,
+    sentAt: serverTimestamp(),
+    createdAt: serverTimestamp(),
+    resendCount: 1,
+  };
+
+  try {
+    await addDoc(collection(db, 'careerInquiries'), payload);
+    toast(`Mail opened & ticked green (${email})`, 'success');
+  } catch (e) {
+    console.error('Could not save outreach log:', e);
+    toast('Mail opened (could not save log to Firestore)', 'warning');
+  }
+  return true;
+}
+
+window.sendQueueRecipient = async function(qId, btnEl){
+  const selectedRoles = getSelectedOmRoles();
+  if (!selectedRoles.length) return toast('Please check at least one role card first', 'warning');
+  const item = omUI.recipientQueue.find(x => x.id === qId);
+  if (!item) return;
+
+  const customNote = ($('omCustomNote')?.value || '').trim();
+  const mailType = $('omMailType')?.value || 'invite_apply';
+
+  const ok = await dispatchOutreachMailToRecipient(item, selectedRoles, mailType, customNote);
+  if (!ok) return;
+
+  item.sent = true;
+  item.sentCount = (Number(item.sentCount) || 0) + 1;
+  if (btnEl) {
+    btnEl.classList.add('sent');
+    btnEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Sent ✓</span>';
+  }
+  renderOmQueue();
+  updateOmSendBtnFromHistory();
+};
+
+window.sendNextPendingInQueue = async function(){
+  const selectedRoles = getSelectedOmRoles();
+  if (!selectedRoles.length) return toast('Please check at least one role card first', 'warning');
+  const nextItem = omUI.recipientQueue.find(x => !x.sent);
+  if (!nextItem) {
+    return toast('All recipients in the list have already been sent!', 'info');
+  }
+  await sendQueueRecipient(nextItem.id);
+};
+
+function updateOmSendBtnFromHistory(){
+  const btn = $('omSendBtn');
+  if (!btn) return;
+  const email = ($('omEmail')?.value || '').trim().toLowerCase();
+  const phone = ($('omPhone')?.value || '').trim();
+  const selectedRoles = getSelectedOmRoles();
+  const mailType = $('omMailType')?.value || 'invite_apply';
+  if (!selectedRoles.length || (!email && !phone)) {
+    btn.classList.remove('sent');
+    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>${selectedRoles.length > 1 ? `Send Mail (${selectedRoles.length} Roles)` : 'Send Mail'}</span>`;
+    return;
+  }
+  const selectedIdsKey = selectedRoles.map(r => r.id).sort().join(',');
+  const already = state.outreachLogs.some(x => {
+    const logIdsKey = Array.isArray(x.roleIds) && x.roleIds.length ? x.roleIds.slice().sort().join(',') : String(x.roleId || '');
+    return logIdsKey === selectedIdsKey &&
+      x.mailType === mailType &&
+      ((email && String(x.email || '').toLowerCase() === email) || (phone && String(x.phone || '') === phone));
+  });
+  if (already) {
+    btn.classList.add('sent');
+    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Sent ✓${selectedRoles.length > 1 ? ` (${selectedRoles.length})` : ''}</span>`;
+  } else {
+    btn.classList.remove('sent');
+    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>${selectedRoles.length > 1 ? `Send Mail (${selectedRoles.length} Roles)` : 'Send Mail'}</span>`;
+  }
+}
+
+function buildOutreachEmail(mailType, rolesOrRole, rec){
+  rec = rec || {};
+  const roles = Array.isArray(rolesOrRole) ? rolesOrRole.filter(Boolean) : (rolesOrRole ? [rolesOrRole] : []);
+  const greet = `Dear ${(rec.name || '').trim() || 'Candidate'},`;
+  const sign = mailSign();
+  const note = (rec.customNote || '').trim();
+
+  if (roles.length > 1) {
+    const titlesShort = roles.slice(0, 2).map(r => r.title || 'Role').join(', ') + (roles.length > 2 ? ` +${roles.length - 2} more` : '');
+    const roleLines = [];
+    roles.forEach((r, idx) => {
+      const rTitle = r.title || 'Open Position';
+      const rDept = r.department || 'Core Team';
+      const rEmp = EMP_LABELS[r.employmentType || 'FULL_TIME'] || 'Full-time';
+      const rLoc = r.location || 'Remote';
+      const rLink = r.id ? `${PORTAL_URL}?role=${encodeURIComponent(r.id)}` : PORTAL_URL;
+      roleLines.push(
+        `  ${idx + 1}. ${rTitle} (${rDept})`,
+        `     • Type & Location : ${rEmp}${r.employmentType === 'INTERN' ? ` (${DEFAULT_INTERN_MONTHS} months)` : ''} · ${rLoc}`,
+        `     • Direct Link     : ${rLink}`
+      );
+    });
+
+    const L = [];
+    let subject = '';
+    if (mailType === 'invite_apply') {
+      subject = `Invitation to Apply — ${roles.length} Open Roles (${titlesShort}) | Study Grid Prep`;
+      L.push(greet, '',
+        `We are pleased to invite you to explore and apply for the following ${roles.length} open positions at Study Grid Prep:`, '',
+        'Selected Roles for You',
+        '----------------------',
+        ...roleLines);
+      if (note) L.push('', 'Note from our team', '------------------', note);
+      L.push('',
+        'How to apply:',
+        '  1. Click the direct link next to your preferred role above (or visit ' + PORTAL_URL + ').',
+        '  2. Sign in with your Google account and complete the short application form.',
+        '  3. Start and submit your online qualifying assessment on the portal.', '',
+        'We look forward to reviewing your application.', '', sign);
+    } else if (mailType === 'pending_application') {
+      subject = `Action Required: Complete Your Pending Application (${titlesShort}) | Study Grid Prep`;
+      L.push(greet, '',
+        `We noticed that you registered on the Study Grid Prep Careers Portal, or were shortlisted for the following ${roles.length} positions, and your application submission is currently pending:`, '',
+        'Pending Roles',
+        '-------------',
+        ...roleLines);
+      if (note) L.push('', 'Additional note', '---------------', note);
+      L.push('',
+        'Next steps to complete your application:',
+        `  1. Open your Careers portal (${PORTAL_URL}) or use the direct links above.`,
+        '  2. Submit your application details for your chosen role.',
+        '  3. Take the qualifying test to move forward to the interview round.', '',
+        'Please complete this step soon while positions remain open.', '', sign);
+    } else if (mailType === 'pending_test') {
+      subject = `Reminder: Complete Your Qualifying Assessment (${titlesShort}) | Study Grid Prep`;
+      L.push(greet, '',
+        `Thank you for applying at Study Grid Prep. Your application for the following role(s) is awaiting completion of the online qualifying assessment:`, '',
+        'Assessment Roles',
+        '----------------',
+        ...roleLines);
+      if (note) L.push('', 'Important note', '--------------', note);
+      L.push('',
+        'How to start your test:',
+        `  1. Visit your Careers dashboard (${PORTAL_URL}) or click the direct role link above.`,
+        '  2. Locate your role card and tap "Start Test".',
+        '  3. Ensure a stable internet connection and submit your answers before the timer ends.', '',
+        'Best of luck with your assessment.', '', sign);
+    } else if (mailType === 'pending_interview') {
+      subject = `Reminder: Upcoming Interview / Next Steps (${titlesShort}) | Study Grid Prep`;
+      L.push(greet, '',
+        `This is a friendly reminder regarding the next stage of your application for the following role(s) at Study Grid Prep:`, '',
+        ...roleLines, '');
+      if (note) L.push('Interview / Next Step Note', '--------------------------', note, '');
+      L.push('What to check now:',
+        `  1. Sign in to your Careers dashboard: ${PORTAL_URL}`,
+        '  2. Open your application status card to view your interview topic, date, time, and Google Meet link.',
+        '  3. Join the meeting 5 minutes early and keep your supporting documents ready for verification.', '',
+        'We look forward to speaking with you.', '', sign);
+    } else if (mailType === 'pending_offer') {
+      subject = `Reminder: Offer of Engagement Awaiting Your Acceptance (${titlesShort}) | Study Grid Prep 🎉`;
+      L.push(greet, '',
+        `Congratulations again on being selected at Study Grid Prep! Please review and confirm your official offer of engagement on the portal:`, '',
+        ...roleLines, '');
+      if (note) L.push('Note from the team', '------------------', note, '');
+      L.push('How to accept your offer:',
+        `  1. Open your Careers dashboard: ${PORTAL_URL}`,
+        '  2. Tap "View Offer" on your selected role card.',
+        '  3. Review the engagement terms, check the confirmation box, and tap "Accept Offer".', '',
+        'Welcome aboard — we are excited to have you on the team.', '', sign);
+    } else {
+      subject = `Update Regarding ${roles.length} Open Roles (${titlesShort}) | Study Grid Prep`;
+      L.push(greet, '',
+        `We are reaching out from the Study Grid Prep Hiring Team with an update regarding the following ${roles.length} roles:`, '',
+        'Role details',
+        '------------',
+        ...roleLines);
+      if (note) L.push('', 'Message from our team', '---------------------', note);
+      L.push('',
+        `View full details and take action on our Careers portal: ${PORTAL_URL}`, '',
+        'Feel free to reply to this email if you have any questions.', '', sign);
+    }
+    return { subject, body: L.join('\n') };
+  }
+
+  const role = roles[0] || null;
+  const title = (role && role.title) || 'Open Position';
+  const dept = (role && role.department) || 'Core Team';
+  const emp = EMP_LABELS[(role && role.employmentType) || 'FULL_TIME'] || 'Full-time';
+  const loc = (role && role.location) || 'Remote';
+  const dur = (role && role.testDurationMinutes) ? `${role.testDurationMinutes} minutes online assessment` : 'Online qualifying assessment';
+  const directApplyUrl = role && role.id
+    ? `${PORTAL_URL}?role=${encodeURIComponent(role.id)}`
+    : PORTAL_URL;
+  const L = [];
+  let subject = '';
+
+  if (mailType === 'invite_apply') {
+    subject = `Invitation to Apply — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `We are pleased to invite you to apply for the ${title} opening (${dept}) at Study Grid Prep.`, '',
+      'Role details',
+      '------------',
+      `Role            : ${title}`,
+      `Department      : ${dept}`,
+      `Employment type : ${emp}${(role && role.employmentType === 'INTERN') ? ` (${DEFAULT_INTERN_MONTHS} months)` : ''}`,
+      `Location        : ${loc}`,
+      `Selection stage : ${dur}`);
+    if (role && role.validThrough) {
+      L.push(`Apply before    : ${new Date(role.validThrough).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}`);
+    }
+    if (note) L.push('', 'Note from our team', '------------------', note);
+    L.push('',
+      'How to apply:',
+      `  1. Open the direct role application link: ${directApplyUrl}`,
+      '  2. Sign in with your Google account and complete the short application form.',
+      '  3. Start and submit your online qualifying assessment on the portal.', '',
+      'We look forward to reviewing your application.', '', sign);
+  } else if (mailType === 'pending_application') {
+    subject = `Action Required: Complete Your Pending Application for ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `We noticed that you registered on the Study Grid Prep Careers Portal, or were shortlisted to apply for the ${title} position (${dept}), but your application submission is still pending.`, '',
+      'Role summary',
+      '------------',
+      `Role            : ${title}`,
+      `Department      : ${dept}`,
+      `Employment type : ${emp}`,
+      `Location        : ${loc}`);
+    if (note) L.push('', 'Additional note', '---------------', note);
+    L.push('',
+      'Next steps to complete your application:',
+      `  1. Open your Careers portal: ${directApplyUrl}`,
+      `  2. Select "${title}" and submit your application details.`,
+      '  3. Take the qualifying test to move forward to the interview round.', '',
+      'Please complete this step soon while positions remain open.', '', sign);
+  } else if (mailType === 'pending_test') {
+    subject = `Reminder: Complete Your Qualifying Assessment — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `Thank you for applying for the ${title} position at Study Grid Prep. Your application is currently awaiting completion of the online qualifying assessment.`, '',
+      'Assessment details',
+      '------------------',
+      `Role            : ${title} (${dept})`,
+      `Test duration   : ${role && role.testDurationMinutes ? role.testDurationMinutes + ' minutes' : '20 minutes'}`,
+      `Direct portal   : ${directApplyUrl}`);
+    if (note) L.push('', 'Important note', '--------------', note);
+    L.push('',
+      'How to start your test:',
+      `  1. Visit your Careers dashboard: ${directApplyUrl}`,
+      `  2. Locate the "${title}" card and tap "Start Test".`,
+      '  3. Ensure a stable internet connection and submit your answers before the timer ends.', '',
+      'Best of luck with your assessment.', '', sign);
+  } else if (mailType === 'pending_interview') {
+    subject = `Reminder: Upcoming Interview / Next Step — ${title} | Study Grid Prep`;
+    L.push(greet, '',
+      `This is a friendly reminder regarding the next stage of your application for the ${title} position (${dept}) at Study Grid Prep.`, '');
+    if (note) L.push('Interview / Next Step Note', '--------------------------', note, '');
+    L.push('What to check now:',
+      `  1. Sign in to your Careers dashboard: ${PORTAL_URL}`,
+      '  2. Open your application status card to view your interview topic, date, time, and Google Meet link.',
+      '  3. Join the meeting 5 minutes early and keep your supporting documents ready for verification.', '',
+      'We look forward to speaking with you.', '', sign);
+  } else if (mailType === 'pending_offer') {
+    subject = `Reminder: Offer of Engagement Awaiting Your Acceptance — ${title} | Study Grid Prep 🎉`;
+    L.push(greet, '',
+      `Congratulations again on being selected for the ${title} position (${dept}) at Study Grid Prep! We noticed that your official offer of engagement is awaiting your confirmation on the portal.`, '');
+    if (note) L.push('Note from the team', '------------------', note, '');
+    L.push('How to accept your offer:',
+      `  1. Open your Careers dashboard: ${PORTAL_URL}`,
+      `  2. Tap "View Offer" on the ${title} card.`,
+      '  3. Review the engagement terms, check the confirmation box, and tap "Accept Offer".', '',
+      'Welcome aboard — we are excited to have you on the team.', '', sign);
+  } else {
+    subject = `Update Regarding ${title} Opening | Study Grid Prep`;
+    L.push(greet, '',
+      `We are reaching out from the Study Grid Prep Hiring Team with an update regarding the ${title} role (${dept}).`, '',
+      'Role details',
+      '------------',
+      `Role            : ${title}`,
+      `Department      : ${dept}`,
+      `Employment type : ${emp}`,
+      `Location        : ${loc}`);
+    if (note) L.push('', 'Message from our team', '---------------------', note);
+    L.push('',
+      `View full details and take action on our Careers portal: ${directApplyUrl}`, '',
+      'Feel free to reply to this email if you have any questions.', '', sign);
+  }
+
+  return { subject, body: L.join('\n') };
+}
+
+window.updateOmPreview = function(){
+  const subjEl = $('omPreviewSubjText');
+  const bodyEl = $('omPreviewBodyText');
+  if (!subjEl || !bodyEl) return;
+  const selectedRoles = getSelectedOmRoles();
+  if (!selectedRoles.length) {
+    subjEl.textContent = 'No role selected';
+    bodyEl.textContent = 'Check one or more role cards above (or click "Select All") to preview the company recruitment email.';
+    return;
+  }
+  const mailType = $('omMailType')?.value || 'invite_apply';
+  const nextQueued = omUI.recipientQueue.find(x => !x.sent) || omUI.recipientQueue[0] || null;
+  const rec = {
+    name: ($('omName')?.value || '').trim() || (nextQueued && nextQueued.name) || '',
+    email: ($('omEmail')?.value || '').trim() || (nextQueued && nextQueued.email) || '',
+    phone: ($('omPhone')?.value || '').trim() || (nextQueued && nextQueued.phone) || '',
+    customNote: ($('omCustomNote')?.value || '').trim(),
+  };
+  const { subject, body } = buildOutreachEmail(mailType, selectedRoles, rec);
+  subjEl.textContent = subject;
+  bodyEl.textContent = body;
+};
+
+window.sendOutreachMail = async function(){
+  const selectedRoles = getSelectedOmRoles();
+  if (!selectedRoles.length) return toast('Please check at least one role card first', 'warning');
+
+  const rawEmail = ($('omEmail')?.value || '').trim();
+  const rawPhone = ($('omPhone')?.value || '').trim();
+  const rawName = ($('omName')?.value || '').trim();
+  const customNote = ($('omCustomNote')?.value || '').trim();
+  const mailType = $('omMailType')?.value || 'invite_apply';
+
+  // If the admin typed multiple comma/semicolon-separated Gmails in the input box and clicked Send Mail directly:
+  if (rawEmail.includes(',') || rawEmail.includes(';') || (rawEmail.match(/@/g) || []).length > 1) {
+    const parsed = parseRawTextToRecipientObjects(rawEmail, 'Manual');
+    addRecipientsToOmQueue(parsed, 'Manual');
+    if ($('omEmail')) $('omEmail').value = '';
+    if ($('omPhone')) $('omPhone').value = '';
+    if ($('omName')) $('omName').value = '';
+    await sendNextPendingInQueue();
+    return;
+  }
+
+  // If input fields are empty but there are pending recipients in the queue, send the next pending recipient!
+  if (!rawEmail && !rawPhone && omUI.recipientQueue.length > 0) {
+    await sendNextPendingInQueue();
+    return;
+  }
+
+  const ok = await dispatchOutreachMailToRecipient({ name: rawName, email: rawEmail, phone: rawPhone }, selectedRoles, mailType, customNote);
+  if (!ok) return;
+
+  const btn = $('omSendBtn');
+  if (btn) {
+    btn.classList.add('sent');
+    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Sent ✓${selectedRoles.length > 1 ? ` (${selectedRoles.length})` : ''}</span>`;
+  }
+  renderOmQueue();
+};
+
+window.resendOutreachMail = async function(logId, btnEl){
+  const item = state.outreachLogs.find(x => x.id === logId);
+  if (!item) return;
+  const roles = (Array.isArray(item.roleIds) && item.roleIds.length)
+    ? item.roleIds.map(id => state.roles.find(r => r.id === id)).filter(Boolean)
+    : [state.roles.find(r => r.id === item.roleId) || { id: item.roleId, title: item.roleTitle, department: item.department }];
+  const { subject, body } = (item.subject && item.message)
+    ? { subject: item.subject, body: item.message }
+    : buildOutreachEmail(item.mailType || 'invite_apply', roles, { name: item.name, email: item.email, phone: item.phone, customNote: item.customNote });
+
+  openMail(item.email, subject, body);
+
+  if (btnEl) {
+    btnEl.classList.add('sent');
+    btnEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Sent Again</span>';
+  }
+
+  const nextCount = (Number(item.resendCount) || 1) + 1;
+  const nowMs = Date.now();
+  item.resendCount = nextCount;
+  item.sentMs = nowMs;
+  try {
+    await updateDoc(doc(db, 'careerInquiries', logId), {
+      sentAt: serverTimestamp(),
+      sentMs: nowMs,
+      resendCount: nextCount,
+      sentBy: (CURRENT_USER && CURRENT_USER.email) || item.sentBy || 'admin',
+    });
+    toast(`Resent mail to ${item.email}`, 'success');
+  } catch (e) {
+    console.warn('Could not update resend timestamp:', e);
+  }
+};
+
+window.deleteOutreachLog = async function(logId){
+  if (!confirm('Remove this sent mail entry from Recents?')) return;
+  try {
+    await deleteDoc(doc(db, 'careerInquiries', logId));
+    toast('Removed from Recents', 'info');
+  } catch (e) {
+    console.error(e);
+    toast('Could not delete log', 'error');
+  }
+};
+
+window.renderOutreachRecents = function(){
+  const host = $('omRecentsList');
+  const countEl = $('omRecentsCount');
+  const pillEl = $('omRecentsPill');
+  const navBadge = $('outreachBadge');
+  const total = state.outreachLogs.length;
+
+  if (pillEl) pillEl.textContent = `${total} sent`;
+  if (navBadge) {
+    navBadge.style.display = total > 0 ? 'inline-block' : 'none';
+    navBadge.textContent = total;
+  }
+  if (!host) return;
+
+  const q = ($('omRecentSearch')?.value || '').trim().toLowerCase();
+  const roleF = $('omRecentRoleFilter')?.value || 'all';
+  const typeF = $('omRecentTypeFilter')?.value || 'all';
+
+  const list = state.outreachLogs.filter(item => {
+    if (roleF !== 'all') {
+      const matchSingle = item.roleId === roleF;
+      const matchMulti = Array.isArray(item.roleIds) && item.roleIds.includes(roleF);
+      if (!matchSingle && !matchMulti) return false;
+    }
+    if (typeF !== 'all' && item.mailType !== typeF) return false;
+    if (!q) return true;
+    const hay = `${item.name || ''} ${item.email || ''} ${item.phone || ''} ${item.roleTitle || ''} ${item.department || ''} ${item.mailTypeLabel || ''}`.toLowerCase();
+    return hay.includes(q);
+  });
+
+  if (countEl) countEl.textContent = `Showing ${list.length} of ${total} sent mail${total === 1 ? '' : 's'}`;
+
+  if (!list.length) {
+    host.innerHTML = `<div class="empty-state"><i class="fa-solid fa-paper-plane"></i>${total ? 'No sent mails match this search/filter.' : 'No role outreach mails sent yet.'}</div>`;
+    return;
+  }
+
+  host.innerHTML = list.map(item => {
+    const role = state.roles.find(r => r.id === item.roleId);
+    const closed = role ? isRoleClosed(role) : false;
+    const isBulk = (Array.isArray(item.roleIds) && item.roleIds.length > 1) || (Number(item.roleCount) > 1);
+    const tMeta = OM_MAIL_TYPES[item.mailType] || { label: item.mailTypeLabel || 'Role Mail', badgeCls: 'badge-accent' };
+    const when = fmtDate(item.sentAt || item.sentMs || item.createdAt);
+    const count = Number(item.resendCount) || 1;
+    const roleDisplay = isBulk ? (item.roleTitle || `${item.roleIds.length} Roles`) : ((role && role.title) || item.roleTitle || 'Role');
+    return `<div class="tx-row" style="align-items:center;">
+      <div class="tx-row-info">
+        <div class="tx-row-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>${esc(item.email || '—')}</span>
+          ${item.name && item.name !== item.email ? `<span style="color:var(--text2);font-weight:600;font-size:12px;">(${esc(item.name)})</span>` : ''}
+          ${item.phone ? `<span class="badge badge-gray"><i class="fa-solid fa-phone" style="margin-right:4px;font-size:9px;"></i>${esc(item.phone)}</span>` : ''}
+          <span style="color:var(--text3);font-weight:500;">→ ${esc(roleDisplay)}</span>
+          ${isBulk ? `<span class="badge badge-accent">${Array.isArray(item.roleIds) ? item.roleIds.length : item.roleCount} Roles</span>` : `<span class="badge ${closed ? 'badge-gray' : 'badge-green'}">${closed ? 'Closed' : 'Open'}</span>`}
+          <span class="badge ${tMeta.badgeCls}">${esc(tMeta.label)}</span>
+        </div>
+        <div class="tx-row-sub" style="margin-top:4px;">
+          <i class="fa-regular fa-clock" style="margin-right:4px;"></i>Sent on <strong>${esc(when)}</strong>
+          ${count > 1 ? ` · <span style="color:var(--green);font-weight:700;">Sent ${count}×</span>` : ''}
+          ${item.sentBy ? ` · by ${esc(item.sentBy)}` : ''}
+          ${item.customNote ? ` · Note: "${esc(item.customNote)}"` : ''}
+        </div>
+      </div>
+      <div class="tx-row-actions">
+        <button type="button" class="btn btn-mail-send sent btn-sm" onclick="resendOutreachMail('${item.id}', this)" title="Tap to send this email again">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Sent · Send Again</span>
+        </button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="deleteOutreachLog('${item.id}')" title="Remove from Recents">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window.renderOutreachSection = function(){
+  renderOutreachRoleOptions();
+  renderOutreachDirectory();
+  renderOmQueue();
+  renderOutreachRecents();
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
 };
 
 /* ================================================================
