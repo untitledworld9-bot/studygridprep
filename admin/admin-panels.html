@@ -8,19 +8,19 @@
   <link rel="manifest" href="/admin/manifestadmin.json">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="icon" href="/icon-192.png">
-  <meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0D1120" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F4F6FB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0B0F19" media="(prefers-color-scheme: dark)">
 
   <!-- Instant Theme Resolution (Zero FOUC) -->
   <script>
     (function(){
       var saved = localStorage.getItem("theme") || localStorage.getItem("sgp-theme");
       var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var theme = saved ? saved : (systemDark ? "dark" : "light");
+      var theme = (saved && saved !== "system") ? saved : (systemDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
       document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){
         m.removeAttribute("media");
-        m.content = theme === "dark" ? "#0D1120" : "#F0F2F8";
+        m.content = theme === "dark" ? "#0B0F19" : "#F4F6FB";
       });
     })();
   </script>
@@ -28,72 +28,80 @@
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 
   <style>
     /* ============================================================
-       STUDY GRID PREP — SIGNATURE DESIGN SYSTEM & TOKENS
+       STUDY GRID PREP — EXECUTIVE ADMIN HUB DESIGN SYSTEM
     ============================================================ */
     :root {
-      --bg: #F0F2F8;
+      --bg: #F4F6FB;
       --surface: #FFFFFF;
-      --surface2: #F4F6FB;
+      --surface2: #EEF2F9;
+      --surface3: #E4EAF5;
       --card: #FFFFFF;
-      --card-hover: #F8FAFC;
-      --border: #E2E8F2;
-      --border-hover: rgba(91, 91, 246, 0.4);
+      --card-hover: #FBFDFF;
+      --border: #E2E8F0;
+      --border-strong: #CBD5E1;
+      --border-hover: rgba(79, 70, 229, 0.45);
       --text: #0F172A;
-      --text2: #5A6785;
-      --text3: #94A3B8;
-      --accent: #5B5BF6;
+      --text2: #475569;
+      --text3: #64748B;
+      --accent: #4F46E5;
       --accent2: #7C3AED;
-      --accent-glow: rgba(91, 91, 246, 0.16);
+      --accent-soft: rgba(79, 70, 229, 0.10);
+      --accent-glow: rgba(79, 70, 229, 0.18);
       --green: #10B981;
-      --green-glow: rgba(16, 185, 129, 0.16);
+      --green-soft: rgba(16, 185, 129, 0.12);
       --amber: #F59E0B;
-      --amber-glow: rgba(245, 158, 11, 0.16);
+      --amber-soft: rgba(245, 158, 11, 0.12);
       --red: #EF4444;
-      --red-glow: rgba(239, 68, 68, 0.16);
+      --red-soft: rgba(239, 68, 68, 0.10);
       --cyan: #06B6D4;
-      --cyan-glow: rgba(6, 182, 212, 0.16);
-      --header-bg: rgba(240, 242, 248, 0.94);
-      --nav-bg: rgba(248, 249, 253, 0.98);
+      --cyan-soft: rgba(6, 182, 212, 0.12);
+      --header-bg: rgba(255, 255, 255, 0.88);
+      --dock-bg: rgba(255, 255, 255, 0.94);
+      --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
       --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
-      --shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
-      --shadow-lg: 0 16px 36px rgba(91, 91, 246, 0.14);
-      --r: 20px;
-      --t: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 16px 36px rgba(79, 70, 229, 0.12);
+      --r: 18px;
+      --t: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     [data-theme="dark"] {
-      --bg: #0D1120;
-      --surface: #151E32;
-      --surface2: #1A2440;
-      --card: #141B30;
-      --card-hover: #1A2442;
+      --bg: #0B0F19;
+      --surface: #111827;
+      --surface2: #1A2337;
+      --surface3: #243049;
+      --card: #111827;
+      --card-hover: #162033;
       --border: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(124, 92, 252, 0.5);
-      --text: #E8F0FE;
-      --text2: #8B9EC8;
-      --text3: #3D5080;
-      --accent: #7C5CFC;
-      --accent2: #9333EA;
-      --accent-glow: rgba(124, 92, 252, 0.25);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --border-hover: rgba(124, 92, 252, 0.55);
+      --text: #F8FAFC;
+      --text2: #94A3B8;
+      --text3: #64748B;
+      --accent: #6366F1;
+      --accent2: #8B5CF6;
+      --accent-soft: rgba(99, 102, 241, 0.15);
+      --accent-glow: rgba(99, 102, 241, 0.28);
       --green: #10B981;
-      --green-glow: rgba(16, 185, 129, 0.22);
+      --green-soft: rgba(16, 185, 129, 0.16);
       --amber: #F59E0B;
-      --amber-glow: rgba(245, 158, 11, 0.22);
+      --amber-soft: rgba(245, 158, 11, 0.16);
       --red: #F43F5E;
-      --red-glow: rgba(244, 63, 94, 0.25);
+      --red-soft: rgba(244, 63, 94, 0.16);
       --cyan: #22D3EE;
-      --cyan-glow: rgba(34, 211, 238, 0.22);
-      --header-bg: rgba(13, 17, 32, 0.94);
-      --nav-bg: rgba(13, 17, 32, 0.98);
-      --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
-      --shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
-      --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+      --cyan-soft: rgba(34, 211, 238, 0.16);
+      --header-bg: rgba(11, 15, 25, 0.88);
+      --dock-bg: rgba(17, 24, 39, 0.94);
+      --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+      --shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 18px 42px rgba(0, 0, 0, 0.65);
     }
 
     /* ── BASE & TYPOGRAPHY RESET ── */
@@ -105,10 +113,10 @@
     }
 
     body, button, input, select, textarea {
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    /* ── FONT AWESOME OVERRIDE PROTECTION (CRITICAL FOR ICON VISIBILITY) ── */
+    /* ── FONT AWESOME OVERRIDE PROTECTION ── */
     .fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
       font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
       font-style: normal !important;
@@ -118,12 +126,8 @@
       -webkit-font-smoothing: antialiased !important;
       display: inline-block !important;
     }
-    .fa-solid, .fas {
-      font-weight: 900 !important;
-    }
-    .fa-regular, .far {
-      font-weight: 400 !important;
-    }
+    .fa-solid, .fas { font-weight: 900 !important; }
+    .fa-regular, .far { font-weight: 400 !important; }
     .fa-brands, .fab {
       font-family: "Font Awesome 6 Brands" !important;
       font-weight: 400 !important;
@@ -148,68 +152,27 @@
       -webkit-user-select: none;
     }
 
-    /* ── AMBIENT BACKGROUND GLOW ── */
+    /* ── SUBTLE AMBIENT SURFACE GLOW ── */
     .ambient-bg {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 0;
       background:
-        radial-gradient(circle at 15% 15%, var(--accent-glow) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, var(--green-glow) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.04) 0%, transparent 60%);
-      opacity: 0.9;
+        radial-gradient(circle at 12% 10%, var(--accent-soft) 0%, transparent 42%),
+        radial-gradient(circle at 88% 85%, var(--green-soft) 0%, transparent 38%);
+      opacity: 0.85;
     }
 
-    /* ── CORE ENTRY ANIMATIONS (MATCHING MAIN LANDING PAGE) ── */
+    /* ── CORE ENTRY ANIMATIONS ── */
     @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(24px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes heroReveal {
-      from {
-        opacity: 0;
-        transform: translateY(26px) scale(0.985);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    @keyframes headerSlideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-16px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Scroll reveal utility matching landing page */
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: opacity, transform;
-    }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
+      from { opacity: 0; transform: translateY(14px) scale(0.99); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     /* ── PAGE TRANSITION VEIL ── */
@@ -220,14 +183,16 @@
       z-index: 99999;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     #pageTransition.leaving {
       opacity: 1;
       pointer-events: all;
     }
 
-    /* ── 100% RELIABLE STICKY APP HEADER ── */
+    /* ============================================================
+       STICKY NATIVE APP HEADER (100% MOBILE & DESKTOP SAFE)
+    ============================================================ */
     .app-header {
       position: -webkit-sticky;
       position: sticky;
@@ -235,109 +200,104 @@
       z-index: 1000;
       width: 100%;
       background: var(--header-bg);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      padding: max(14px, env(safe-area-inset-top, 14px)) 20px 14px;
-      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: var(--shadow-sm);
-      animation: headerSlideDown 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+      padding: max(10px, env(safe-area-inset-top, 10px)) 20px 10px;
+      transition: background 0.25s ease, border-color 0.25s ease;
     }
 
     .header-inner {
-      max-width: 1200px;
+      max-width: 1240px;
+      width: 100%;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
     }
 
     .brand-section {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
       text-decoration: none;
       color: inherit;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .brand-logo-badge {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       display: flex;
       align-items: center;
       justify-content: center;
       color: #FFFFFF;
-      font-size: 20px;
-      box-shadow: 0 4px 14px rgba(91, 91, 246, 0.35);
+      font-size: 17px;
+      box-shadow: 0 4px 12px var(--accent-glow);
       flex-shrink: 0;
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform var(--t);
     }
     .brand-section:hover .brand-logo-badge {
-      transform: scale(1.06) rotate(-3deg);
-    }
-    .brand-section:active .brand-logo-badge {
-      transform: scale(0.94);
+      transform: scale(1.04);
     }
 
+    .brand-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
     .brand-text h1 {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 800;
       letter-spacing: -0.3px;
       color: var(--text);
       line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .brand-text .badge-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent);
-      background: rgba(91, 91, 246, 0.10);
-      padding: 3px 9px;
-      border-radius: 99px;
-      margin-top: 2px;
-      border: 1px solid rgba(91, 91, 246, 0.22);
-    }
-    .brand-text .badge-pill .pulse-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10B981;
-      box-shadow: 0 0 8px #10B981;
-      animation: pulseGreen 1.8s infinite;
-    }
-    @keyframes pulseGreen {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.35); opacity: 0.55; }
+    .brand-subtitle {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
-    /* Back to Student App Button */
-    .back-app-btn {
+    /* Action Buttons in Header */
+    .back-app-btn,
+    .admin-logout-btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 7px;
-      padding: 9px 15px;
-      border-radius: 12px;
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 11px;
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
       transition: all var(--t);
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-xs);
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .back-app-btn i {
       font-size: 13px;
@@ -349,162 +309,242 @@
       border-color: var(--border-hover);
       transform: translateY(-1px);
     }
-    .back-app-btn:hover i {
-      transform: translateX(-3px);
-    }
-    .back-app-btn:active {
+    .back-app-btn:active,
+    .admin-logout-btn:active {
       transform: scale(0.95);
     }
 
-    /* Theme Toggle Button */
+    .admin-logout-btn {
+      color: var(--red);
+    }
+    .admin-logout-btn i {
+      font-size: 13px;
+      color: var(--red);
+    }
+    .admin-logout-btn:hover {
+      background: var(--red-soft);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    /* Theme Toggle Button — Always Visible on Laptop, Tablet & Phone */
     .theme-toggle-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      border-radius: 11px;
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--accent);
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
       outline: none;
       transition: all var(--t);
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-xs);
       flex-shrink: 0;
     }
     .theme-toggle-btn:hover {
       background: var(--surface2);
-      transform: scale(1.06);
       border-color: var(--border-hover);
+      transform: translateY(-1px);
     }
     .theme-toggle-btn:active {
       transform: scale(0.92);
     }
 
-    /* ── PULL TO REFRESH & TOAST (EDTECH APP STYLE) ── */
+    /* ── PULL TO REFRESH & TOAST ── */
     .admin-pull-indicator {
-      height: 0; overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px; font-size: 12.5px; font-weight: 700;
+      height: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
       color: var(--accent);
       transition: height 0.18s ease;
-      margin-bottom: 8px;
     }
-    .admin-pull-indicator.active { height: 44px; }
+    .admin-pull-indicator.active { height: 42px; margin-bottom: 8px; }
     .admin-pull-indicator.release i { transform: rotate(180deg); }
-    .admin-toast-pill {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-      background: rgba(13, 17, 32, 0.94); backdrop-filter: blur(12px);
-      border: 1px solid rgba(91, 91, 246, 0.35);
-      color: #FFFFFF; font-size: 13px; font-weight: 700;
-      padding: 10px 20px; border-radius: 99px;
-      display: flex; align-items: center; gap: 9px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(91, 91, 246, 0.25);
-      z-index: 10000; animation: fadeUp 0.25s ease both;
-    }
 
-    /* ── MAIN CONTAINER & OPENING STAGGER ANIMATIONS ── */
+    .admin-toast-pill {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom, 24px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-lg);
+      z-index: 10000;
+      animation: fadeUp 0.22s ease both;
+      white-space: nowrap;
+    }
+    .admin-toast-pill i { color: var(--green); }
+
+    /* ============================================================
+       MAIN WORKSPACE CONTAINER
+    ============================================================ */
     .main-container {
       position: relative;
       z-index: 1;
-      max-width: 1200px;
+      max-width: 1240px;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 20px 60px;
+      padding: 22px 20px 64px;
       flex: 1;
     }
 
-    /* ── HERO BANNER & SEARCH STRIP ── */
+    /* ── COMMAND HEADER & SEARCH BAR ── */
     .hero-strip {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 24px 28px;
-      margin-bottom: 22px;
-      box-shadow: var(--shadow);
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      gap: 16px;
       position: relative;
       overflow: hidden;
-      animation: heroReveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+      animation: heroReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
-    .hero-strip::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; height: 3.5px;
-      background: linear-gradient(90deg, #5B5BF6, #7C3AED, #10B981, #F59E0B);
+    .hero-left {
+      min-width: 0;
+      flex: 1 1 280px;
     }
-
-    .hero-left h2 {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--text);
+    .hero-kicker {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.2px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-left h2 {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: var(--text);
+      line-height: 1.25;
     }
     .hero-left p {
       color: var(--text2);
-      font-size: 13.5px;
+      font-size: 13px;
       margin-top: 4px;
       font-weight: 500;
+      line-height: 1.45;
     }
 
-    /* Quick Search Bar */
+    /* Search Input Box */
     .search-box-wrap {
       position: relative;
       min-width: 260px;
       max-width: 360px;
       width: 100%;
+      flex: 0 1 340px;
     }
-    .search-box-wrap i {
+    .search-box-wrap .search-icon {
       position: absolute;
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text3);
-      font-size: 14px;
+      font-size: 13.5px;
       pointer-events: none;
+      transition: color var(--t);
     }
     .search-input {
       width: 100%;
-      padding: 12px 14px 12px 40px;
-      border-radius: 14px;
+      height: 44px;
+      padding: 0 38px 0 38px;
+      border-radius: 12px;
       background: var(--surface2);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       color: var(--text);
       font-size: 13.5px;
       font-weight: 500;
       outline: none;
       transition: all var(--t);
     }
+    .search-input::placeholder {
+      color: var(--text3);
+    }
     .search-input:focus {
       background: var(--surface);
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .search-box-wrap:focus-within .search-icon {
+      color: var(--accent);
+    }
+    .search-clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text3);
+      font-size: 13px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--t), background var(--t);
+    }
+    .search-clear-btn.visible {
+      display: inline-flex;
+    }
+    .search-clear-btn:hover {
+      background: var(--surface3);
+      color: var(--text);
     }
 
-    /* Quick Filter Chips */
+    /* ── SEGMENTED FILTER BAR ── */
+    .filter-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
     .filter-chips {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding-bottom: 4px;
-      margin-bottom: 22px;
+      padding-bottom: 2px;
       scrollbar-width: none;
-      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+      width: 100%;
     }
     .filter-chips::-webkit-scrollbar { display: none; }
+
     .filter-btn {
-      padding: 8px 16px;
-      border-radius: 99px;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 10px;
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text2);
@@ -512,105 +552,121 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
+      flex-shrink: 0;
       transition: all var(--t);
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-xs);
     }
     .filter-btn i {
       font-size: 12px;
+      opacity: 0.85;
     }
-    .filter-btn.active, .filter-btn:hover {
+    .filter-btn .filter-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0.75;
+      font-variant-numeric: tabular-nums;
+    }
+    .filter-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: var(--surface2);
+    }
+    .filter-btn.active {
       background: var(--accent);
       color: #FFFFFF;
       border-color: var(--accent);
-      box-shadow: 0 4px 14px var(--accent-glow);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .filter-btn.active .filter-count {
+      opacity: 0.95;
     }
     .filter-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
     }
 
-    /* ── MODULE CARDS GRID WITH STAGGERED OPENING ANIMATION ── */
+    /* ============================================================
+       MODULE CARDS GRID (DESKTOP 3-COL, TABLET 2-COL, MOBILE 1-COL)
+    ============================================================ */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
     }
 
-    /* Base Module Card */
     .module-card {
       background: var(--card);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       text-decoration: none;
       color: inherit;
       position: relative;
       overflow: hidden;
       cursor: pointer;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-sm);
       transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
-      animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
-    /* Staggered Animation Delays matching landing page feel */
-    .module-card:nth-child(1) { animation-delay: 0.20s; }
-    .module-card:nth-child(2) { animation-delay: 0.26s; }
-    .module-card:nth-child(3) { animation-delay: 0.32s; }
-    .module-card:nth-child(4) { animation-delay: 0.38s; }
-    .module-card:nth-child(5) { animation-delay: 0.44s; }
-    .module-card:nth-child(6) { animation-delay: 0.50s; }
-    .module-card:nth-child(7) { animation-delay: 0.56s; }
+    .module-card:nth-child(1) { animation-delay: 0.04s; }
+    .module-card:nth-child(2) { animation-delay: 0.08s; }
+    .module-card:nth-child(3) { animation-delay: 0.12s; }
+    .module-card:nth-child(4) { animation-delay: 0.16s; }
+    .module-card:nth-child(5) { animation-delay: 0.20s; }
+    .module-card:nth-child(6) { animation-delay: 0.24s; }
+    .module-card:nth-child(7) { animation-delay: 0.28s; }
 
     .module-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-3px);
       box-shadow: var(--shadow-lg);
       border-color: var(--border-hover);
       background: var(--card-hover);
     }
     .module-card:active {
-      transform: scale(0.975);
+      transform: scale(0.985);
     }
 
     /* Card Top Row */
     .card-top {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
 
     .module-icon-wrap {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
+      width: 48px;
+      height: 48px;
+      border-radius: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 20px;
       flex-shrink: 0;
-      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform var(--t);
     }
     .module-card:hover .module-icon-wrap {
-      transform: scale(1.12) rotate(-4deg);
+      transform: scale(1.06);
     }
 
+    /* Clean Unboxed Metadata Label */
     .module-badge {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      padding: 4px 11px;
-      border-radius: 99px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: var(--text3);
     }
 
-    /* Card Details */
+    /* Card Content */
     .module-info h3 {
-      font-size: 18.5px;
+      font-size: 17px;
       font-weight: 800;
       color: var(--text);
       letter-spacing: -0.3px;
@@ -620,33 +676,35 @@
       font-size: 13px;
       color: var(--text2);
       margin-top: 5px;
-      line-height: 1.55;
+      line-height: 1.5;
       font-weight: 400;
     }
 
-    /* Feature Tags */
+    /* Clean Capability Row */
     .feature-tags {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: 6px;
       margin-top: 2px;
     }
     .feature-tags span {
       font-size: 11px;
       font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 8px;
+      padding: 3px 9px;
+      border-radius: 7px;
       background: var(--surface2);
-      border: 1px solid var(--border);
       color: var(--text2);
+      white-space: nowrap;
     }
 
     /* Action CTA Button on Card */
     .card-cta-btn {
       margin-top: auto;
-      padding: 12px 18px;
-      border-radius: 14px;
-      font-size: 13.5px;
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 11px;
+      font-size: 13px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -655,223 +713,308 @@
       cursor: pointer;
       color: #FFFFFF;
       transition: all var(--t);
-      box-shadow: var(--shadow-sm);
     }
     .card-cta-btn i {
-      font-size: 14px;
-      transition: transform 0.22s ease;
+      font-size: 13px;
+      transition: transform 0.2s ease;
     }
     .module-card:hover .card-cta-btn i {
-      transform: translateX(5px);
+      transform: translateX(4px);
     }
 
-    /* ── COLOR THEMES PER MODULE (VIBRANT & VISIBLE ICONS) ── */
-    /* 1. Sub Admin (Indigo/Purple) */
+    /* ── COLOR THEMES PER MODULE ── */
+    /* 1. Sub Admin (Indigo) */
     .card-theme-subadmin .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(91, 91, 246, 0.16), rgba(124, 58, 237, 0.16));
-      color: #5B5BF6;
-      border: 1.5px solid rgba(91, 91, 246, 0.35);
-      box-shadow: 0 4px 14px rgba(91, 91, 246, 0.15);
+      background: rgba(79, 70, 229, 0.12);
+      color: #4F46E5;
+      border: 1px solid rgba(79, 70, 229, 0.25);
     }
-    .card-theme-subadmin .module-badge {
-      background: rgba(91, 91, 246, 0.12);
-      color: #5B5BF6;
-      border: 1px solid rgba(91, 91, 246, 0.3);
-    }
-    .card-theme-subadmin .card-cta-btn {
-      background: linear-gradient(135deg, #5B5BF6, #7C3AED);
-    }
+    [data-theme="dark"] .card-theme-subadmin .module-icon-wrap { color: #818CF8; }
+    .card-theme-subadmin .module-badge { color: #6366F1; }
+    .card-theme-subadmin .card-cta-btn { background: linear-gradient(135deg, #4F46E5, #6366F1); }
 
-    /* 2. Content Hub (Emerald Green) */
+    /* 2. Content Hub (Emerald) */
     .card-theme-content .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.16));
-      color: #10B981;
-      border: 1.5px solid rgba(16, 185, 129, 0.35);
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
-    }
-    .card-theme-content .module-badge {
       background: rgba(16, 185, 129, 0.12);
       color: #10B981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.25);
     }
-    .card-theme-content .card-cta-btn {
-      background: linear-gradient(135deg, #10B981, #059669);
-    }
+    .card-theme-content .module-badge { color: #10B981; }
+    .card-theme-content .card-cta-btn { background: linear-gradient(135deg, #10B981, #059669); }
 
-    /* 3. Media Studio (Cyan/Sky) */
+    /* 3. Media Studio (Cyan) */
     .card-theme-media .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.16), rgba(2, 132, 199, 0.16));
-      color: #06B6D4;
-      border: 1.5px solid rgba(6, 182, 212, 0.35);
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.15);
-    }
-    .card-theme-media .module-badge {
       background: rgba(6, 182, 212, 0.12);
-      color: #06B6D4;
-      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #0891B2;
+      border: 1px solid rgba(6, 182, 212, 0.25);
     }
-    .card-theme-media .card-cta-btn {
-      background: linear-gradient(135deg, #06B6D4, #0284C7);
-    }
+    [data-theme="dark"] .card-theme-media .module-icon-wrap { color: #22D3EE; }
+    .card-theme-media .module-badge { color: #06B6D4; }
+    .card-theme-media .card-cta-btn { background: linear-gradient(135deg, #0891B2, #0284C7); }
 
-    /* 4. Mock Admin (Amber/Gold) */
+    /* 4. Mock Admin (Amber) */
     .card-theme-mock .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(217, 119, 6, 0.16));
-      color: #F59E0B;
-      border: 1.5px solid rgba(245, 158, 11, 0.35);
-      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);
-    }
-    .card-theme-mock .module-badge {
       background: rgba(245, 158, 11, 0.12);
-      color: #F59E0B;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #D97706;
+      border: 1px solid rgba(245, 158, 11, 0.25);
     }
-    .card-theme-mock .card-cta-btn {
-      background: linear-gradient(135deg, #F59E0B, #D97706);
-    }
+    [data-theme="dark"] .card-theme-mock .module-icon-wrap { color: #FBBF24; }
+    .card-theme-mock .module-badge { color: #F59E0B; }
+    .card-theme-mock .card-cta-btn { background: linear-gradient(135deg, #F59E0B, #D97706); }
 
-    /* 5. SGP Main / Master Control (Rose/Red) */
+    /* 5. SGP Main / Master Control (Rose) */
     .card-theme-sgpmain .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(185, 28, 28, 0.16));
-      color: #EF4444;
-      border: 1.5px solid rgba(239, 68, 68, 0.35);
-      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
-    }
-    .card-theme-sgpmain .module-badge {
       background: rgba(239, 68, 68, 0.12);
       color: #EF4444;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.25);
     }
-    .card-theme-sgpmain .card-cta-btn {
-      background: linear-gradient(135deg, #EF4444, #B91C1C);
-    }
+    .card-theme-sgpmain .module-badge { color: #EF4444; }
+    .card-theme-sgpmain .card-cta-btn { background: linear-gradient(135deg, #EF4444, #DC2626); }
 
-    /* 6. Hiring Admin (Purple/Violet) */
+    /* 6. Hiring Admin (Violet) */
     .card-theme-hiring .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(109, 40, 217, 0.16));
-      color: #7C3AED;
-      border: 1.5px solid rgba(124, 58, 237, 0.35);
-      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15);
-    }
-    .card-theme-hiring .module-badge {
       background: rgba(124, 58, 237, 0.12);
       color: #7C3AED;
-      border: 1px solid rgba(124, 58, 237, 0.3);
+      border: 1px solid rgba(124, 58, 237, 0.25);
     }
-    .card-theme-hiring .card-cta-btn {
-      background: linear-gradient(135deg, #7C3AED, #6D28D9);
-    }
+    [data-theme="dark"] .card-theme-hiring .module-icon-wrap { color: #A78BFA; }
+    .card-theme-hiring .module-badge { color: #8B5CF6; }
+    .card-theme-hiring .card-cta-btn { background: linear-gradient(135deg, #7C3AED, #6D28D9); }
 
-    /* 7. Game Admin (Orange/Fire) */
+    /* 7. Game Admin (Orange) */
     .card-theme-game .module-icon-wrap {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.16), rgba(194, 65, 12, 0.16));
-      color: #F97316;
-      border: 1.5px solid rgba(249, 115, 22, 0.35);
-      box-shadow: 0 4px 14px rgba(249, 115, 22, 0.15);
-    }
-    .card-theme-game .module-badge {
       background: rgba(249, 115, 22, 0.12);
-      color: #F97316;
-      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #EA580C;
+      border: 1px solid rgba(249, 115, 22, 0.25);
     }
-    .card-theme-game .card-cta-btn {
-      background: linear-gradient(135deg, #F97316, #C2410C);
+    [data-theme="dark"] .card-theme-game .module-icon-wrap { color: #FB923C; }
+    .card-theme-game .module-badge { color: #F97316; }
+    .card-theme-game .card-cta-btn { background: linear-gradient(135deg, #F97316, #EA580C); }
+
+    /* ── EMPTY SEARCH STATE ── */
+    .empty-modules-state {
+      display: none;
+      background: var(--card);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--r);
+      padding: 40px 20px;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .empty-modules-state.visible {
+      display: block;
+    }
+    .empty-modules-state i {
+      font-size: 28px;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .empty-modules-state h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .empty-modules-state p {
+      font-size: 13px;
+      color: var(--text2);
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+    .reset-filter-btn {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #FFFFFF;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
     }
 
-    /* ── QUICK METRICS & STATUS FOOTER ── */
+    /* ── SYSTEM SUMMARY STRIP ── */
     .metrics-bar {
-      margin-top: 32px;
+      margin-top: 26px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      flex-wrap: wrap;
+      padding: 16px 22px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
-      box-shadow: var(--shadow-sm);
-      animation: heroEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+      box-shadow: var(--shadow-xs);
     }
     .metric-item {
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
     }
     .metric-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       background: var(--surface2);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--accent);
-      font-size: 16px;
+      font-size: 15px;
+      flex-shrink: 0;
     }
     .metric-info {
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
     .metric-val {
-      font-size: 14.5px;
-      font-weight: 800;
+      font-size: 13.5px;
+      font-weight: 700;
       color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-variant-numeric: tabular-nums;
     }
     .metric-lbl {
       font-size: 11.5px;
       color: var(--text3);
       font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* ── RESPONSIVE (LAPTOP, TABLET & PHONE) ── */
-    @media (min-width: 1025px) {
+    /* ============================================================
+       RESPONSIVE BREAKPOINTS (TABLET & MOBILE APP OPTIMIZATION)
+    ============================================================ */
+    @media (max-width: 1024px) {
       .cards-grid {
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 20px;
-      }
-    }
-
-    /* Tablet (641px - 1024px) */
-    @media (min-width: 641px) and (max-width: 1024px) {
-      .app-header {
-        padding: max(14px, env(safe-area-inset-top, 14px)) 20px 14px;
-      }
-      .cards-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 16px;
       }
-      .main-container { padding: 22px 20px 54px; }
-      .hero-strip { padding: 22px 20px; }
     }
 
-    /* Phone (<= 640px) */
     @media (max-width: 640px) {
       .app-header {
-        padding: max(12px, env(safe-area-inset-top, 12px)) 14px 12px;
+        padding: max(10px, env(safe-area-inset-top, 10px)) 12px 10px;
       }
-      .brand-text h1 { font-size: 15px; }
-      .brand-logo-badge { width: 38px; height: 38px; font-size: 17px; }
-      .back-app-btn { padding: 7px 11px; font-size: 12px; min-height: 38px; }
-      .theme-toggle-btn { width: 38px; height: 38px; font-size: 14px; }
-      .hero-strip {
-        padding: 18px 14px; gap: 14px;
-        flex-direction: column; align-items: stretch;
+      .header-inner {
+        gap: 8px;
       }
-      .hero-left h2 { font-size: 18px; }
-      .search-box-wrap { max-width: 100%; min-width: 100%; }
-      .search-input {
-        font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+      .brand-section {
+        gap: 9px;
       }
-      .cards-grid { grid-template-columns: 1fr; gap: 14px; }
+      .brand-logo-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 15px;
+      }
+      .brand-text h1 {
+        font-size: 14.5px;
+      }
+      .brand-subtitle {
+        font-size: 10.5px;
+      }
+      .header-actions {
+        gap: 6px;
+      }
+      /* Compact 38x38 icon buttons on mobile so Lock, Refresh, App & Theme Icon ALL fit comfortably */
+      .back-app-btn,
+      .admin-logout-btn,
+      .theme-toggle-btn {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        padding: 0;
+        border-radius: 10px;
+        justify-content: center;
+      }
+      .header-actions .btn-label {
+        display: none;
+      }
+
       .main-container {
-        padding: 16px 14px;
-        padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+        padding: 14px 12px max(28px, env(safe-area-inset-bottom, 28px));
       }
-      .module-card { padding: 20px 18px; }
-      .card-cta-btn { min-height: 44px; }
-      .metrics-bar { grid-template-columns: 1fr; gap: 12px; }
+      .hero-strip {
+        padding: 16px 15px;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .hero-left {
+        flex: none;
+      }
+      .hero-left h2 {
+        font-size: 18px;
+      }
+      .hero-left p {
+        font-size: 12.5px;
+      }
+      .search-box-wrap {
+        max-width: 100%;
+        min-width: 100%;
+        flex: none;
+      }
+      .search-input {
+        height: 44px;
+        font-size: 16px !important; /* Prevents iOS auto-zoom on focus */
+      }
+      .filter-toolbar {
+        margin-bottom: 14px;
+      }
+      .filter-btn {
+        height: 36px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .module-card {
+        padding: 16px;
+        gap: 12px;
+      }
+      .module-icon-wrap {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+      }
+      .module-info h3 {
+        font-size: 16px;
+      }
+      .module-info p {
+        font-size: 12.5px;
+      }
+      .card-cta-btn {
+        height: 44px;
+        font-size: 13px;
+      }
+      .metrics-bar {
+        grid-template-columns: 1fr;
+        padding: 14px 16px;
+        gap: 12px;
+        margin-top: 18px;
+      }
+    }
+
+    /* Extra narrow phones (<= 360px) */
+    @media (max-width: 360px) {
+      .brand-subtitle { display: none; }
+      .back-app-btn,
+      .admin-logout-btn,
+      .theme-toggle-btn {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+        min-height: 35px;
+      }
     }
 
     /* ============================================================
@@ -883,7 +1026,7 @@
     }
     body.admin-locked .app-header,
     body.admin-locked .main-container {
-      filter: blur(14px) brightness(0.7);
+      filter: blur(14px) brightness(0.75);
       pointer-events: none !important;
       user-select: none !important;
       transition: filter 0.3s ease;
@@ -895,14 +1038,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      background: rgba(13, 17, 32, 0.76);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      transition: opacity 0.3s ease, visibility 0.3s ease;
+      padding: 16px;
+      background: rgba(11, 15, 25, 0.78);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      transition: opacity 0.25s ease, visibility 0.25s ease;
     }
     [data-theme="light"] .admin-guard-overlay {
-      background: rgba(240, 242, 248, 0.88);
+      background: rgba(244, 246, 251, 0.88);
     }
     .admin-guard-overlay.hidden {
       opacity: 0;
@@ -911,59 +1054,67 @@
     }
     .admin-guard-card {
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 26px;
-      padding: 34px 28px 28px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38), 0 0 0 1px var(--border);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 30px 24px 24px;
+      box-shadow: var(--shadow-lg);
       text-align: center;
       position: relative;
       overflow: hidden;
-      animation: heroReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: heroReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
-    .admin-guard-card::before {
-      content: "";
+    .guard-theme-btn {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--cyan));
+      top: 14px;
+      right: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all var(--t);
+    }
+    .guard-theme-btn:hover {
+      border-color: var(--border-hover);
     }
     .admin-guard-shield {
-      width: 68px;
-      height: 68px;
-      border-radius: 20px;
-      margin: 0 auto 16px;
-      background: linear-gradient(135deg, rgba(124, 92, 252, 0.16), rgba(91, 91, 246, 0.28));
-      border: 1.5px solid var(--border-hover);
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      margin: 0 auto 14px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border-hover);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
+      font-size: 24px;
       color: var(--accent);
-      box-shadow: 0 8px 24px var(--accent-glow);
-      position: relative;
     }
     .admin-guard-title {
-      font-size: 21px;
+      font-size: 19px;
       font-weight: 800;
       color: var(--text);
-      letter-spacing: -0.4px;
-      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+      margin-bottom: 5px;
     }
     .admin-guard-subtitle {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text2);
       line-height: 1.5;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
     .admin-guard-form {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin-top: 6px;
+      gap: 12px;
     }
     .admin-input-wrap {
       position: relative;
@@ -972,46 +1123,46 @@
     }
     .admin-input-icon {
       position: absolute;
-      left: 16px;
-      font-size: 15px;
+      left: 15px;
+      font-size: 14px;
       color: var(--text3);
       pointer-events: none;
       transition: color var(--t);
     }
     .admin-guard-input {
       width: 100%;
-      height: 52px;
-      padding: 0 48px;
-      border-radius: 14px;
+      height: 50px;
+      padding: 0 44px;
+      border-radius: 12px;
       background: var(--surface2);
       border: 1.5px solid var(--border);
       color: var(--text);
       font-size: 20px;
       font-weight: 700;
-      letter-spacing: 0.35em;
+      letter-spacing: 0.3em;
       text-align: center;
       outline: none;
       transition: border-color var(--t), box-shadow var(--t), background var(--t);
-      font-family: inherit;
+      font-family: 'JetBrains Mono', monospace;
     }
     .admin-guard-input:focus {
       border-color: var(--accent);
       background: var(--surface);
-      box-shadow: 0 0 0 3.5px var(--accent-glow);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
-    .admin-guard-input:focus + .admin-input-icon,
     .admin-input-wrap:focus-within .admin-input-icon {
       color: var(--accent);
     }
     .admin-toggle-pwd-btn {
       position: absolute;
-      right: 14px;
+      right: 10px;
       background: transparent;
       border: none;
       color: var(--text3);
-      font-size: 15px;
+      font-size: 14px;
       cursor: pointer;
-      padding: 8px;
+      width: 34px;
+      height: 34px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1022,8 +1173,8 @@
       color: var(--text);
     }
     .admin-guard-error {
-      min-height: 20px;
-      font-size: 12.5px;
+      min-height: 18px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--red);
       display: flex;
@@ -1031,7 +1182,7 @@
       justify-content: center;
       gap: 6px;
       opacity: 0;
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       transition: all 0.2s ease;
     }
     .admin-guard-error.visible {
@@ -1039,37 +1190,36 @@
       transform: translateY(0);
     }
     .admin-guard-btn {
-      height: 50px;
-      border-radius: 14px;
+      height: 48px;
+      border-radius: 12px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       color: #FFFFFF;
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 700;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
-      box-shadow: 0 8px 22px var(--accent-glow);
-      transition: transform var(--t), box-shadow var(--t), opacity var(--t);
+      gap: 8px;
+      box-shadow: 0 6px 18px var(--accent-glow);
+      transition: transform var(--t), opacity var(--t);
     }
     .admin-guard-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px var(--accent-glow);
-      opacity: 0.95;
+      transform: translateY(-1px);
+      opacity: 0.96;
     }
     .admin-guard-btn:active {
       transform: scale(0.98);
     }
     .admin-guard-footer {
-      margin-top: 18px;
+      margin-top: 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding-top: 14px;
       border-top: 1px solid var(--border);
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text3);
     }
     .admin-guard-back-link {
@@ -1085,7 +1235,7 @@
       color: var(--accent);
     }
     .shake-animation {
-      animation: guardShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      animation: guardShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     }
     @keyframes guardShake {
       10%, 90% { transform: translate3d(-2px, 0, 0); }
@@ -1093,27 +1243,6 @@
       30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
       40%, 60% { transform: translate3d(6px, 0, 0); }
     }
-    .admin-logout-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 9px 13px;
-      border-radius: 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--red);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all var(--t);
-      box-shadow: var(--shadow-sm);
-    }
-    .admin-logout-btn:hover {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: var(--red);
-    }
-
   </style>
 </head>
 <body>
@@ -1123,11 +1252,15 @@
   ============================================================ -->
   <div id="adminGuardOverlay" class="admin-guard-overlay">
     <div class="admin-guard-card" id="adminGuardCard">
+      <button type="button" class="guard-theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Light / Dark Mode">
+        <i class="fa-solid fa-moon" id="guardThemeIcon"></i>
+      </button>
+
       <div class="admin-guard-shield">
         <i class="fa-solid fa-lock" id="guardShieldIcon"></i>
       </div>
       <h2 class="admin-guard-title">Admin Security Check</h2>
-      <p class="admin-guard-subtitle">Enter your 4-digit admin access code to unlock the control panels.</p>
+      <p class="admin-guard-subtitle">Enter your admin access code to unlock the Study Grid Prep control panels.</p>
       
       <form class="admin-guard-form" id="adminGuardForm" onsubmit="handleAdminGuardSubmit(event)">
         <div class="admin-input-wrap">
@@ -1164,46 +1297,44 @@
           <i class="fa-solid fa-arrow-left"></i>
           <span>Return to Student App</span>
         </a>
-        <span>SGP Protection</span>
+        <span>SGP Access Control</span>
       </div>
     </div>
   </div>
 
-
   <!-- Ambient Glow -->
   <div class="ambient-bg"></div>
 
-  <!-- Page Transition Veil (App Style Navigation) -->
+  <!-- Page Transition Veil -->
   <div id="pageTransition"></div>
 
-  <!-- Native Sticky Header -->
+  <!-- Sticky Native App Header -->
   <header class="app-header">
     <div class="header-inner">
-      <div class="brand-section">
+      <a href="/admin/admin-panels.html" class="brand-section" aria-label="Study Grid Prep Admin Hub">
         <div class="brand-logo-badge">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div class="brand-text">
           <h1>Study Grid Prep</h1>
-          <div class="badge-pill">
-            <span class="pulse-dot"></span> Admin Hub
-          </div>
+          <span class="brand-subtitle">Admin Control Hub</span>
         </div>
-      </div>
+      </a>
 
       <div class="header-actions">
-        <button id="adminLockBtn" class="admin-logout-btn" onclick="lockAdminHub()" title="Lock Admin Panels">
+        <button id="adminLockBtn" class="admin-logout-btn" onclick="lockAdminHub()" title="Lock Admin Hub" aria-label="Lock Admin Hub">
           <i class="fa-solid fa-lock"></i>
-          <span>Lock</span>
-        </button>
-        <button id="adminRefreshBtn" class="back-app-btn" onclick="refreshAdminPanelsHub()" title="Refresh Hub" style="padding:9px 13px;">
-          <i class="fa-solid fa-arrows-rotate" id="adminRefreshIcon"></i>
-          <span>Refresh</span>
+          <span class="btn-label">Lock</span>
         </button>
 
-        <a href="/dashboard-home.html" class="back-app-btn" onclick="navigateWithVeil(event, '/dashboard-home.html')" title="Back to Student App">
+        <button id="adminRefreshBtn" class="back-app-btn" onclick="refreshAdminPanelsHub()" title="Refresh Hub" aria-label="Refresh Hub">
+          <i class="fa-solid fa-arrows-rotate" id="adminRefreshIcon"></i>
+          <span class="btn-label">Refresh</span>
+        </button>
+
+        <a href="/dashboard-home.html" class="back-app-btn" onclick="navigateWithVeil(event, '/dashboard-home.html')" title="Back to Student App" aria-label="Back to Student App">
           <i class="fa-solid fa-arrow-left"></i>
-          <span>App</span>
+          <span class="btn-label">App</span>
         </a>
 
         <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Light / Dark Mode">
@@ -1213,37 +1344,60 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Main Workspace -->
   <main class="main-container" id="mainPanelsContainer">
 
-    <!-- Pull-To-Refresh Visual Indicator (EdTech App Experience) -->
+    <!-- Pull-To-Refresh Visual Indicator -->
     <div id="adminPullRefresh" class="admin-pull-indicator">
       <i class="fa-solid fa-arrow-down" id="adminPullIcon"></i>
       <span id="adminPullText">Pull to refresh</span>
     </div>
 
-    <!-- Hero Search & Action Strip -->
+    <!-- Command Header & Instant Search -->
     <section class="hero-strip">
       <div class="hero-left">
-        <h2>
-          <span>Admin Control Suite</span>
-          <i class="fa-solid fa-wand-magic-sparkles" style="color:#F59E0B; font-size:16px;"></i>
-        </h2>
-        <p>Unified management console for questions, media, users & exams</p>
+        <div class="hero-kicker">
+          <span>Enterprise Operations</span>
+          <span aria-hidden="true">·</span>
+          <span id="visibleModulesCount">7 Consoles Active</span>
+        </div>
+        <h2>Admin Control Suite</h2>
+        <p>Centralized workspace for mock exams, study content, hiring pipeline, media assets & user access.</p>
       </div>
 
       <div class="search-box-wrap">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="moduleSearch" class="search-input" placeholder="Search admin panels...">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="moduleSearch" class="search-input" placeholder="Search panels, tools or tags..." autocomplete="off">
+        <button type="button" id="clearSearchBtn" class="search-clear-btn" aria-label="Clear search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
     </section>
 
-    <!-- Quick Filter Chips -->
-    <div class="filter-chips">
-      <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-table-cells-large"></i> All Panels</button>
-      <button class="filter-btn" data-filter="exam"><i class="fa-solid fa-graduation-cap"></i> Exams & Mocks</button>
-      <button class="filter-btn" data-filter="content"><i class="fa-solid fa-layer-group"></i> Content & Media</button>
-      <button class="filter-btn" data-filter="system"><i class="fa-solid fa-gear"></i> System & Access</button>
+    <!-- Segmented Filter Bar -->
+    <div class="filter-toolbar">
+      <div class="filter-chips" role="tablist" aria-label="Filter admin modules">
+        <button class="filter-btn active" data-filter="all" role="tab">
+          <i class="fa-solid fa-table-cells-large"></i>
+          <span>All Panels</span>
+          <span class="filter-count">7</span>
+        </button>
+        <button class="filter-btn" data-filter="exam" role="tab">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Exams & Hiring</span>
+          <span class="filter-count">2</span>
+        </button>
+        <button class="filter-btn" data-filter="content" role="tab">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Content & Media</span>
+          <span class="filter-count">3</span>
+        </button>
+        <button class="filter-btn" data-filter="system" role="tab">
+          <i class="fa-solid fa-sliders"></i>
+          <span>System & Users</span>
+          <span class="filter-count">2</span>
+        </button>
+      </div>
     </div>
 
     <!-- Admin Modules Cards Grid -->
@@ -1255,11 +1409,11 @@
           <div class="module-icon-wrap">
             <i class="fa-solid fa-users-gear"></i>
           </div>
-          <span class="module-badge">User Hub</span>
+          <span class="module-badge">User Operations</span>
         </div>
         <div class="module-info">
           <h3>Sub Admin Panel</h3>
-          <p>Manage registered students, live announcements, reports & activity analytics.</p>
+          <p>Manage registered students, live announcements, community moderation & activity analytics.</p>
         </div>
         <div class="feature-tags">
           <span>Users</span>
@@ -1279,20 +1433,20 @@
           <div class="module-icon-wrap">
             <i class="fa-solid fa-layer-group"></i>
           </div>
-          <span class="module-badge">Content</span>
+          <span class="module-badge">Editorial & Notes</span>
         </div>
         <div class="module-info">
           <h3>Content Hub Studio</h3>
-          <p>Curate study notes, formula sheets, chapter resources & previous year papers.</p>
+          <p>Curate study notes, formula sheets, college profiles, chapter resources & previous year papers.</p>
         </div>
         <div class="feature-tags">
           <span>Notes</span>
-          <span>PYQs</span>
+          <span>Colleges</span>
           <span>PDF Library</span>
           <span>Taxonomy</span>
         </div>
         <div class="card-cta-btn">
-          <span>Open Studio</span>
+          <span>Open Content Studio</span>
           <i class="fa-solid fa-arrow-right"></i>
         </div>
       </a>
@@ -1303,11 +1457,11 @@
           <div class="module-icon-wrap">
             <i class="fa-solid fa-photo-film"></i>
           </div>
-          <span class="module-badge">Assets</span>
+          <span class="module-badge">Cloud Assets</span>
         </div>
         <div class="module-info">
           <h3>Media & Banner Studio</h3>
-          <p>Upload dynamic banners, exam promo posters, icons and video asset links.</p>
+          <p>Upload dynamic hero banners, exam promo posters, icons and video asset links.</p>
         </div>
         <div class="feature-tags">
           <span>Hero Banners</span>
@@ -1326,7 +1480,7 @@
           <div class="module-icon-wrap">
             <i class="fa-solid fa-graduation-cap"></i>
           </div>
-          <span class="module-badge">Exams</span>
+          <span class="module-badge">Assessment Engine</span>
         </div>
         <div class="module-info">
           <h3>Mock Test Engine Admin</h3>
@@ -1374,19 +1528,19 @@
           <div class="module-icon-wrap">
             <i class="fa-solid fa-briefcase"></i>
           </div>
-          <span class="module-badge">Careers</span>
+          <span class="module-badge">Talent & Careers</span>
         </div>
         <div class="module-info">
           <h3>Hiring & Educator Portal</h3>
-          <p>Review candidate applications, manage subject hiring tests & recruiter pipeline.</p>
+          <p>Review candidate applications, manage qualifying hiring tests, offers & recruitment outreach.</p>
         </div>
         <div class="feature-tags">
           <span>Applicants</span>
-          <span>Skills Test</span>
-          <span>Educator Review</span>
+          <span>Qualifying Test</span>
+          <span>Outreach Mailer</span>
         </div>
         <div class="card-cta-btn">
-          <span>Review Applicants</span>
+          <span>Open Hiring Admin</span>
           <i class="fa-solid fa-arrow-right"></i>
         </div>
       </a>
@@ -1397,7 +1551,7 @@
           <div class="module-icon-wrap">
             <i class="fa-solid fa-gamepad"></i>
           </div>
-          <span class="module-badge">Arena</span>
+          <span class="module-badge">Interactive Arena</span>
         </div>
         <div class="module-info">
           <h3>Game & Quiz Arena Admin</h3>
@@ -1416,27 +1570,35 @@
 
     </div>
 
-    <!-- Quick Status Bar -->
+    <!-- Empty Search State -->
+    <div class="empty-modules-state" id="emptyModulesState">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <h3>No matching admin panels</h3>
+      <p>Try searching for another keyword or reset the active category filter.</p>
+      <button type="button" class="reset-filter-btn" onclick="resetModuleFilters()">Reset Filters</button>
+    </div>
+
+    <!-- Quick System Overview Bar -->
     <div class="metrics-bar">
       <div class="metric-item">
-        <div class="metric-icon"><i class="fa-solid fa-server"></i></div>
+        <div class="metric-icon"><i class="fa-solid fa-database"></i></div>
         <div class="metric-info">
           <span class="metric-val">Firebase Firestore</span>
-          <span class="metric-lbl">Database Status: Online</span>
+          <span class="metric-lbl">Real-time database connected</span>
         </div>
       </div>
       <div class="metric-item">
-        <div class="metric-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="metric-icon"><i class="fa-solid fa-user-shield"></i></div>
         <div class="metric-info">
-          <span class="metric-val">RBAC Security</span>
-          <span class="metric-lbl">Auth Role: Authenticated</span>
+          <span class="metric-val">Role-Based Access</span>
+          <span class="metric-lbl">Passcode & session guard active</span>
         </div>
       </div>
       <div class="metric-item">
-        <div class="metric-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="metric-icon"><i class="fa-solid fa-cubes"></i></div>
         <div class="metric-info">
-          <span class="metric-val">7 Modules Ready</span>
-          <span class="metric-lbl">Version 2.4.0 (PWA)</span>
+          <span class="metric-val">7 Admin Modules</span>
+          <span class="metric-lbl">Desktop & mobile PWA ready</span>
         </div>
       </div>
     </div>
@@ -1445,7 +1607,6 @@
 
   <!-- APP-STYLE SCRIPTS: THEME, VEIL TRANSITION & SEARCH -->
   <script>
-
     // ── 0. ADMIN PASSCODE GUARD (SECURE HASH VERIFICATION) ──
     const SGP_ADMIN_HASH = "91cf42608863db6dc767f5b8e3d6e2f8656016d53b6aaf68e833373587c73bd2";
     const SGP_GUARD_SESSION_KEY = "sgp_admin_panel_auth";
@@ -1496,7 +1657,6 @@
       const enteredHash = await hashAdminInput(entered);
 
       if (enteredHash === SGP_ADMIN_HASH) {
-        // Unlock Success
         sessionStorage.setItem(SGP_GUARD_SESSION_KEY, "authorized");
         if (errEl) errEl.classList.remove("visible");
         if (shieldIcon) {
@@ -1504,7 +1664,6 @@
           shieldIcon.style.color = "var(--green)";
         }
         
-        // Success feedback vibration
         if (navigator.vibrate) try { navigator.vibrate([30, 40, 30]); } catch(err){}
         
         setTimeout(function() {
@@ -1516,14 +1675,13 @@
             shieldIcon.style.color = "";
           }
           passInput.value = "";
-        }, 300);
+        }, 280);
       } else {
-        // Invalid passcode
         if (errText) errText.textContent = entered ? "Incorrect passcode (Try again)" : "Please enter passcode";
         if (errEl) errEl.classList.add("visible");
         if (card) {
           card.classList.remove("shake-animation");
-          void card.offsetWidth; // trigger reflow
+          void card.offsetWidth;
           card.classList.add("shake-animation");
         }
         if (navigator.vibrate) try { navigator.vibrate(100); } catch(err){}
@@ -1562,7 +1720,6 @@
       }, 100);
     }
 
-    // Run guard check immediately
     initAdminGuard();
 
     // ── 1. App-Style Page Navigation Veil ──
@@ -1572,10 +1729,9 @@
       if (veil) veil.classList.add('leaving');
       setTimeout(() => {
         window.location.href = url;
-      }, 180);
+      }, 160);
     }
 
-    // Clear veil on browser Back/Forward (bfcache restore)
     window.addEventListener('pageshow', () => {
       const veil = document.getElementById('pageTransition');
       if (veil) veil.classList.remove('leaving');
@@ -1584,7 +1740,7 @@
     // ── 2. Theme Management & Meta Sync ──
     function syncThemeColorMeta(theme) {
       const isDark = theme === "dark";
-      const color = isDark ? "#0D1120" : "#F0F2F8";
+      const color = isDark ? "#0B0F19" : "#F4F6FB";
       document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.remove());
       const meta = document.createElement("meta");
       meta.name = "theme-color";
@@ -1593,16 +1749,21 @@
     }
 
     function updateThemeIcon() {
-      const icon = document.getElementById('themeIcon');
-      if (!icon) return;
       const current = document.documentElement.getAttribute('data-theme');
-      if (current === 'light') {
-        icon.className = 'fa-solid fa-sun';
-        icon.style.color = '#F59E0B';
-      } else {
-        icon.className = 'fa-solid fa-moon';
-        icon.style.color = 'var(--accent)';
-      }
+      const icons = [
+        document.getElementById('themeIcon'),
+        document.getElementById('guardThemeIcon')
+      ];
+      icons.forEach(icon => {
+        if (!icon) return;
+        if (current === 'light') {
+          icon.className = 'fa-solid fa-sun';
+          icon.style.color = '#F59E0B';
+        } else {
+          icon.className = 'fa-solid fa-moon';
+          icon.style.color = 'var(--accent)';
+        }
+      });
     }
 
     function toggleTheme() {
@@ -1617,20 +1778,26 @@
 
     document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
 
-    // Initial theme sync
     const initialTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     syncThemeColorMeta(initialTheme);
     updateThemeIcon();
 
     // ── 3. Search & Filter Cards ──
     const searchInput = document.getElementById('moduleSearch');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
     const cards = document.querySelectorAll('.module-card');
     const filterBtns = document.querySelectorAll('.filter-btn');
+    const emptyState = document.getElementById('emptyModulesState');
+    const visibleCountEl = document.getElementById('visibleModulesCount');
 
     let activeFilter = 'all';
 
     function filterModules() {
-      const q = (searchInput.value || '').trim().toLowerCase();
+      const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+      if (clearSearchBtn) {
+        clearSearchBtn.classList.toggle('visible', q.length > 0);
+      }
+
       let visibleIdx = 0;
       cards.forEach(card => {
         const text = card.textContent.toLowerCase();
@@ -1641,17 +1808,40 @@
         if (matchesQuery && matchesFilter) {
           card.style.display = 'flex';
           card.style.animation = 'none';
-          void card.offsetHeight; // trigger reflow
-          card.style.animation = `fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${visibleIdx * 0.05}s both`;
+          void card.offsetHeight;
+          card.style.animation = `fadeUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) ${visibleIdx * 0.04}s both`;
           visibleIdx++;
         } else {
           card.style.display = 'none';
         }
       });
+
+      if (emptyState) {
+        emptyState.classList.toggle('visible', visibleIdx === 0);
+      }
+      if (visibleCountEl) {
+        visibleCountEl.textContent = visibleIdx === 1 ? '1 Console Active' : `${visibleIdx} Consoles Active`;
+      }
     }
+
+    window.resetModuleFilters = function() {
+      if (searchInput) searchInput.value = '';
+      activeFilter = 'all';
+      filterBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-filter') === 'all'));
+      filterModules();
+    };
 
     if (searchInput) {
       searchInput.addEventListener('input', filterModules);
+    }
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = '';
+          searchInput.focus();
+        }
+        filterModules();
+      });
     }
 
     filterBtns.forEach(btn => {
@@ -1663,7 +1853,7 @@
       });
     });
 
-    // ── 4. Refresh & Pull-To-Refresh (EdTech App Experience) ──
+    // ── 4. Refresh & Pull-To-Refresh ──
     window.refreshAdminPanelsHub = async function() {
       const icon = document.getElementById("adminRefreshIcon");
       if (icon) icon.classList.add("fa-spin");
@@ -1671,18 +1861,17 @@
         filterModules();
         const pill = document.createElement("div");
         pill.className = "admin-toast-pill";
-        pill.innerHTML = '<i class="fa-solid fa-check"></i> Admin Hub refreshed';
+        pill.innerHTML = '<i class="fa-solid fa-circle-check"></i> Admin Hub refreshed';
         document.body.appendChild(pill);
         setTimeout(() => pill.remove(), 2000);
       } catch(e) {
         console.warn("[AdminHub Refresh]", e);
       } finally {
-        setTimeout(() => { if (icon) icon.classList.remove("fa-spin"); }, 600);
+        setTimeout(() => { if (icon) icon.classList.remove("fa-spin"); }, 500);
       }
     };
 
     (function setupPullToRefresh(){
-      const container = document.getElementById("mainPanelsContainer") || document.body;
       const indicator = document.getElementById("adminPullRefresh");
       const pullIcon = document.getElementById("adminPullIcon");
       const pullText = document.getElementById("adminPullText");

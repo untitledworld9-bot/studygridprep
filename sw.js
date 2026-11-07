@@ -139,7 +139,7 @@ self.addEventListener("push", function(event) {
 });
 
 // ─────────────────────────────────────────────────────────────
-const CACHE = "sgp-cache-v27";
+const CACHE = "sgp-cache-v28";
 
 // ✅ FIX: notification icon was showing as a generic grey letter-avatar
 // instead of the app logo. Android/Chrome fetches notification icons
