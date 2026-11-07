@@ -519,9 +519,16 @@ function isListed(role){
 }
 
 function isRoleExpired(role){
-  if (!role || !role.validThrough) return false;
-  const d = new Date(role.validThrough);
-  return !isNaN(d.getTime()) && Date.now() > d.getTime();
+  if (!role) return false;
+  if (role.validThrough) {
+    const d = new Date(role.validThrough);
+    if (!isNaN(d.getTime()) && Date.now() > d.getTime()) return true;
+  }
+  if (role.resultRevealAt) {
+    const r = role.resultRevealAt.toDate ? role.resultRevealAt.toDate() : new Date(role.resultRevealAt);
+    if (!isNaN(r.getTime()) && Date.now() >= r.getTime()) return true;
+  }
+  return false;
 }
 
 function cardHtml(role){

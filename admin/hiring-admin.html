@@ -134,22 +134,29 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 .section-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
 .section-title{ font-size:22px; font-weight:800; } .section-sub{ font-size:12.5px; color:var(--text2); margin-top:3px; }
 
-.cards-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:26px; }
+.cards-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin-bottom:22px; }
 .stat-card{
   background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg);
-  padding:22px; box-shadow:0 4px 20px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+  padding:18px 20px; box-shadow:0 4px 20px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
   transition:transform .24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .24s cubic-bezier(0.16, 1, 0.3, 1), border-color .24s ease;
-  position:relative; overflow:hidden; cursor:default;
+  position:relative; overflow:hidden; cursor:default; display:flex; flex-direction:column; justify-content:space-between;
 }
+.stat-card.clickable{ cursor:pointer; }
 [data-theme="light"] .stat-card{ box-shadow:0 4px 18px rgba(15,23,42,0.06), inset 0 1px 0 #ffffff; }
 .stat-card:hover{ border-color:rgba(91,91,246,0.35); transform:translateY(-3px); box-shadow:0 16px 36px rgba(0,0,0,0.4); }
 [data-theme="light"] .stat-card:hover{ box-shadow:0 14px 32px rgba(15,23,42,0.12); }
-.stat-icon{ width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:14px; background:rgba(91,91,246,0.1); color:var(--accent); }
+.stat-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.stat-icon{ width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:12px; background:rgba(91,91,246,0.1); color:var(--accent); flex-shrink:0; }
+.stat-head .stat-icon{ margin-bottom:0; }
+.stat-tag{ font-size:10px; font-weight:700; padding:3px 8px; border-radius:99px; background:var(--input); color:var(--text3); border:1px solid var(--border); letter-spacing:.03em; white-space:nowrap; }
 .stat-card.green .stat-icon{ background:rgba(22,163,74,0.1); color:var(--green); }
 .stat-card.amber .stat-icon{ background:rgba(245,158,11,0.1); color:var(--amber); }
 .stat-card.red .stat-icon{ background:rgba(239,68,68,0.1); color:var(--red); }
-.stat-label{ font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; font-weight:700; }
-.stat-value{ font-size:32px; font-weight:800; margin-top:6px; font-variant-numeric:tabular-nums; letter-spacing:-0.03em; }
+.stat-label{ font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; font-weight:700; }
+.stat-value{ font-size:30px; font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; letter-spacing:-0.03em; line-height:1.15; }
+.stat-sub{ font-size:11.5px; color:var(--text2); margin-top:10px; padding-top:9px; border-top:1px solid var(--border); font-weight:600; line-height:1.35; }
+.dash-panels-grid{ display:grid; grid-template-columns:1.05fr 1fr; gap:18px; align-items:start; }
+@media (max-width: 1080px){ .dash-panels-grid{ grid-template-columns:1fr; } }
 
 .form-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; margin-bottom:22px; box-shadow:0 4px 20px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05); }
 [data-theme="light"] .form-panel{ box-shadow:0 4px 18px rgba(15,23,42,0.06), inset 0 1px 0 #ffffff; }
@@ -581,22 +588,93 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
   <!-- DASHBOARD -->
   <section class="section active" id="section-dashboard">
     <div class="section-header">
-      <div><div class="section-title">Dashboard</div><div class="section-sub">Hiring portal at a glance</div></div>
+      <div><div class="section-title">Dashboard</div><div class="section-sub">Live company hiring &amp; team overview</div></div>
       <button class="admin-refresh-btn" onclick="refreshHiringData()" title="Refresh Hiring Data">
         <i class="fa-solid fa-arrows-rotate" id="adminRefreshIcon"></i>
         <span>Refresh</span>
       </button>
     </div>
     <div class="cards-grid">
-      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-briefcase"></i></div><div class="stat-label">Open Roles</div><div class="stat-value" id="statOpenRoles">0</div></div>
-      <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-file-lines"></i></div><div class="stat-label">Total Applicants</div><div class="stat-value" id="statApplicants">0</div></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-clock"></i></div><div class="stat-label">Tests Pending Review</div><div class="stat-value" id="statPending">0</div></div>
-      <div class="stat-card green"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><div class="stat-label">Qualified</div><div class="stat-value" id="statQualified">0</div></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div class="stat-label">Registered Users</div><div class="stat-value" id="statCandidates">0</div></div>
+      <div class="stat-card green clickable" onclick="goSection('roles')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-briefcase"></i></div><span class="stat-tag" id="statOpenRolesTag">Live</span></div>
+          <div class="stat-label">Open Roles</div>
+          <div class="stat-value" id="statOpenRoles">0</div>
+        </div>
+        <div class="stat-sub" id="statOpenRolesSub">0 open seats · 0 total roles</div>
+      </div>
+      <div class="stat-card clickable" onclick="goSection('roles')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-lock"></i></div><span class="stat-tag" id="statClosedRolesTag">Inactive</span></div>
+          <div class="stat-label">Closed Roles</div>
+          <div class="stat-value" id="statClosedRoles">0</div>
+        </div>
+        <div class="stat-sub" id="statClosedRolesSub">0 filled · 0 unfilled / expired</div>
+      </div>
+      <div class="stat-card amber clickable" onclick="goSection('applicants')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-file-lines"></i></div><span class="stat-tag" id="statApplicantsTag">Submissions</span></div>
+          <div class="stat-label">Total Applications</div>
+          <div class="stat-value" id="statApplicants">0</div>
+        </div>
+        <div class="stat-sub" id="statApplicantsSub">From 0 unique applicants</div>
+      </div>
+      <div class="stat-card clickable" onclick="goSection('results')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-clock"></i></div><span class="stat-tag" id="statPendingTag">Assessment</span></div>
+          <div class="stat-label">Tests Pending Review</div>
+          <div class="stat-value" id="statPending">0</div>
+        </div>
+        <div class="stat-sub" id="statPendingSub">0 awaiting test · 0 not cleared</div>
+      </div>
+      <div class="stat-card green clickable" onclick="goSection('results')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><span class="stat-tag" id="statQualifiedTag">Passed Test</span></div>
+          <div class="stat-label">Qualified</div>
+          <div class="stat-value" id="statQualified">0</div>
+        </div>
+        <div class="stat-sub" id="statQualifiedSub">0 interview set · 0 decision pending</div>
+      </div>
+      <div class="stat-card green clickable" onclick="goSection('hired')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-user-check"></i></div><span class="stat-tag" id="statHiredTag">On Team</span></div>
+          <div class="stat-label">Active Hired</div>
+          <div class="stat-value" id="statHired">0</div>
+        </div>
+        <div class="stat-sub" id="statHiredSub">0 joined · 0 offer pending</div>
+      </div>
+      <div class="stat-card clickable" onclick="goCert('all')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-award"></i></div><span class="stat-tag" id="statCertsTag">Credentials</span></div>
+          <div class="stat-label">Certificates Ready</div>
+          <div class="stat-value" id="statCerts">0</div>
+        </div>
+        <div class="stat-sub" id="statCertsSub">0 pending queue · 0 downloaded</div>
+      </div>
+      <div class="stat-card clickable" onclick="goSection('candidates')">
+        <div>
+          <div class="stat-head"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><span class="stat-tag" id="statCandidatesTag">Accounts</span></div>
+          <div class="stat-label">Registered Users</div>
+          <div class="stat-value" id="statCandidates">0</div>
+        </div>
+        <div class="stat-sub" id="statCandidatesSub">0 applied · 0 not applied yet</div>
+      </div>
     </div>
-    <div class="form-panel">
-      <div class="form-panel-title"><i class="fa-solid fa-list-check"></i> Recent Applications</div>
-      <div id="dashRecentList"><div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div></div>
+    <div class="dash-panels-grid">
+      <div class="form-panel">
+        <div class="form-panel-title" style="justify-content:space-between;">
+          <span><i class="fa-solid fa-briefcase"></i> Role Status &amp; Vacancy Breakdown</span>
+          <button class="btn btn-outline btn-sm" onclick="goSection('roles')" style="padding:5px 10px;font-size:11px;">Manage Roles</button>
+        </div>
+        <div id="dashRolesList"><div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet.</div></div>
+      </div>
+      <div class="form-panel">
+        <div class="form-panel-title" style="justify-content:space-between;">
+          <span><i class="fa-solid fa-list-check"></i> Recent Applications</span>
+          <button class="btn btn-outline btn-sm" onclick="goSection('applicants')" style="padding:5px 10px;font-size:11px;">View All</button>
+        </div>
+        <div id="dashRecentList"><div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div></div>
+      </div>
     </div>
   </section>
 
@@ -1205,22 +1283,125 @@ function populateRoleFilters(){
    DASHBOARD
 ================================================================ */
 function renderDashboard(){
-  const openRoles = state.roles.filter(r => r.status === 'open').length;
+  const openRolesList = state.roles.filter(r => !isRoleClosed(r));
+  const closedRolesList = state.roles.filter(r => isRoleClosed(r));
+  const openRoles = openRolesList.length;
+  const closedRoles = closedRolesList.length;
+  const filledRoles = closedRolesList.filter(r => isRoleFilled(r)).length;
+  const unfilledClosedRoles = Math.max(0, closedRoles - filledRoles);
+  const openSeatsLeft = openRolesList.reduce((sum, r) => {
+    const vac = Math.max(1, Number(r.vacancy) || 1);
+    return sum + Math.max(0, vac - activeHiredCount(r.id));
+  }, 0);
+
   const totalApplicants = state.applications.length;
+  const uniqueApplicantKeys = new Set(
+    state.applications
+      .map(a => (a.uid || (a.email || '').trim().toLowerCase()))
+      .filter(Boolean)
+  );
+  const uniqueApplicants = uniqueApplicantKeys.size;
+
   const pending = state.applications.filter(a => a.status === 'test_completed').length;
-  const qualified = state.applications.filter(a => a.status === 'qualified').length;
-  $('statOpenRoles').textContent = openRoles;
-  $('statApplicants').textContent = totalApplicants;
-  $('statPending').textContent = pending;
-  $('statQualified').textContent = qualified;
-  $('statCandidates').textContent = state.candidates.length;
+  const appliedAwaitingTest = state.applications.filter(a => a.status === 'applied').length;
+  const notCleared = state.applications.filter(a => a.status === 'not_qualified' || a.status === 'not_eligible').length;
+
+  const qualifiedApps = state.applications.filter(a => a.status === 'qualified');
+  const qualified = qualifiedApps.length;
+  const interviewSet = qualifiedApps.filter(a => a.nextStep && (a.nextStep.dateTime || a.nextStep.meetLink) && !a.finalStatus).length;
+  const decisionPending = qualifiedApps.filter(a => !a.finalStatus).length;
+
+  const allSelected = state.applications.filter(a => a.finalStatus === 'selected');
+  const activeHired = allSelected.filter(a => ['selected', 'offered', 'accepted'].includes(hiredStateOf(a))).length;
+  const joinedCount = allSelected.filter(a => hiredStateOf(a) === 'accepted').length;
+  const offerPendingCount = allSelected.filter(a => ['selected', 'offered'].includes(hiredStateOf(a))).length;
+  const completedCount = allSelected.filter(a => hiredStateOf(a) === 'completed').length;
+
+  const cRows = typeof certRows === 'function' ? certRows() : [];
+  const certReady = cRows.filter(r => r.grp === 'issued').length + cRows.filter(r => r.ach).length;
+  const certPending = cRows.filter(r => r.isPending).length;
+  const certDownloaded = cRows.filter(r => r.a && r.a.certDownloadAt).length;
+
+  const totalCandidates = state.candidates.length;
+  const appliedCandCount = state.candidates.filter(c =>
+    uniqueApplicantKeys.has(c.id) || (c.email && uniqueApplicantKeys.has(c.email.trim().toLowerCase()))
+  ).length;
+  const notAppliedCandCount = Math.max(0, totalCandidates - appliedCandCount);
+
+  if ($('statOpenRoles')) $('statOpenRoles').textContent = openRoles;
+  if ($('statOpenRolesTag')) $('statOpenRolesTag').textContent = openRoles > 0 ? 'Accepting' : 'None Open';
+  if ($('statOpenRolesSub')) $('statOpenRolesSub').textContent = `${openSeatsLeft} open seat${openSeatsLeft === 1 ? '' : 's'} · ${state.roles.length} total role${state.roles.length === 1 ? '' : 's'}`;
+
+  if ($('statClosedRoles')) $('statClosedRoles').textContent = closedRoles;
+  if ($('statClosedRolesTag')) $('statClosedRolesTag').textContent = filledRoles > 0 ? `${filledRoles} Filled` : 'Closed';
+  if ($('statClosedRolesSub')) $('statClosedRolesSub').textContent = `${filledRoles} vacancy filled · ${unfilledClosedRoles} unfilled / closed`;
+
+  if ($('statApplicants')) $('statApplicants').textContent = totalApplicants;
+  if ($('statApplicantsTag')) $('statApplicantsTag').textContent = `${uniqueApplicants} Unique`;
+  if ($('statApplicantsSub')) $('statApplicantsSub').textContent = `By ${uniqueApplicants} unique applicant${uniqueApplicants === 1 ? '' : 's'}`;
+
+  if ($('statPending')) $('statPending').textContent = pending;
+  if ($('statPendingTag')) $('statPendingTag').textContent = pending > 0 ? 'Needs Review' : 'Up to Date';
+  if ($('statPendingSub')) $('statPendingSub').textContent = `${appliedAwaitingTest} awaiting test · ${notCleared} not cleared`;
+
+  if ($('statQualified')) $('statQualified').textContent = qualified;
+  if ($('statQualifiedTag')) $('statQualifiedTag').textContent = totalApplicants ? `${Math.round((qualified / totalApplicants) * 100)}% Pass` : 'Passed Test';
+  if ($('statQualifiedSub')) $('statQualifiedSub').textContent = `${interviewSet} interview set · ${decisionPending} decision pending`;
+
+  if ($('statHired')) $('statHired').textContent = activeHired;
+  if ($('statHiredTag')) $('statHiredTag').textContent = `${joinedCount} Joined`;
+  if ($('statHiredSub')) $('statHiredSub').textContent = `${joinedCount} accepted · ${offerPendingCount} offer pending${completedCount ? ` · ${completedCount} completed` : ''}`;
+
+  if ($('statCerts')) $('statCerts').textContent = certReady;
+  if ($('statCertsTag')) $('statCertsTag').textContent = certPending > 0 ? `${certPending} Queue` : 'Issued';
+  if ($('statCertsSub')) $('statCertsSub').textContent = `${certPending} pending queue · ${certDownloaded} downloaded`;
+
+  if ($('statCandidates')) $('statCandidates').textContent = totalCandidates;
+  if ($('statCandidatesTag')) $('statCandidatesTag').textContent = `${appliedCandCount} Applied`;
+  if ($('statCandidatesSub')) $('statCandidatesSub').textContent = `${appliedCandCount} applied · ${notAppliedCandCount} not applied yet`;
+
   $('resultsBadge').style.display = pending > 0 ? 'inline-block' : 'none';
   $('resultsBadge').textContent = pending;
+
+  const rolesHost = $('dashRolesList');
+  if (rolesHost) {
+    const sortedRoles = [...state.roles].sort((a, b) => {
+      const ca = isRoleClosed(a) ? 1 : 0;
+      const cb = isRoleClosed(b) ? 1 : 0;
+      if (ca !== cb) return ca - cb;
+      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+    });
+    rolesHost.innerHTML = sortedRoles.length ? sortedRoles.map(r => {
+      const closed = isRoleClosed(r);
+      const filled = isRoleFilled(r);
+      const expired = isRoleExpired(r);
+      const vac = Math.max(1, Number(r.vacancy) || 1);
+      const hiredNow = activeHiredCount(r.id);
+      const rApps = state.applications.filter(a => a.roleId === r.id);
+      const rQual = rApps.filter(a => a.status === 'qualified').length;
+      let badgeHtml = '<span class="badge badge-green">Open</span>';
+      if (closed) {
+        if (filled) badgeHtml = '<span class="badge badge-green role-filled"><i class="fa-solid fa-circle-check"></i> Closed · Filled</span>';
+        else if (expired) badgeHtml = '<span class="badge badge-amber">Closed · Unfilled (Expired)</span>';
+        else badgeHtml = '<span class="badge badge-gray">Closed · Unfilled</span>';
+      }
+      return `<div class="tx-row">
+        <div class="tx-row-info">
+          <div class="tx-row-title">${esc(r.title)} <span style="color:var(--text3);font-weight:500;">· ${esc(r.department || 'General')}</span></div>
+          <div class="tx-row-sub"><strong style="color:${filled ? 'var(--green)' : 'var(--text2)'};">${hiredNow}/${vac} hired</strong> · ${rApps.length} application${rApps.length === 1 ? '' : 's'} · ${rQual} qualified</div>
+        </div>
+        ${badgeHtml}
+      </div>`;
+    }).join('') : '<div class="empty-state"><i class="fa-solid fa-briefcase"></i>No roles created yet.</div>';
+  }
 
   const recent = [...state.applications].sort((x,y) => (y.appliedAt?.seconds||0) - (x.appliedAt?.seconds||0)).slice(0,8);
   $('dashRecentList').innerHTML = recent.length ? recent.map(a => {
     const role = state.roles.find(r => r.id === a.roleId);
-    return `<div class="tx-row"><div class="tx-row-info"><div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div><div class="tx-row-sub">${esc(a.email)} · Applied ${fmtDate(a.appliedAt)}</div></div>${statusBadge(a.status)}</div>`;
+    const badge = a.finalStatus === 'selected'
+      ? hiredBadge(hiredStateOf(a))
+      : (a.finalStatus === 'not_selected' ? '<span class="badge badge-red">Not Selected</span>' : statusBadge(a.status));
+    return `<div class="tx-row"><div class="tx-row-info"><div class="tx-row-title">${esc(a.name)} <span style="color:var(--text3);font-weight:500;">→ ${esc(role?.title || 'Unknown role')}</span></div><div class="tx-row-sub">${esc(a.email)} · Applied ${fmtDate(a.appliedAt)}</div></div>${badge}</div>`;
   }).join('') : '<div class="empty-state"><i class="fa-solid fa-inbox"></i>No applications yet.</div>';
 }
 
@@ -1244,9 +1425,16 @@ function statusBadge(status){
 // / hiring-portal.html so the admin list never shows "Open" for a role
 // candidates can no longer see as open.
 function isRoleExpired(role){
-  if (!role || !role.validThrough) return false;
-  const d = new Date(role.validThrough);
-  return !isNaN(d.getTime()) && Date.now() > d.getTime();
+  if (!role) return false;
+  if (role.validThrough) {
+    const d = new Date(role.validThrough);
+    if (!isNaN(d.getTime()) && Date.now() > d.getTime()) return true;
+  }
+  if (role.resultRevealAt) {
+    const r = role.resultRevealAt.toDate ? role.resultRevealAt.toDate() : new Date(role.resultRevealAt);
+    if (!isNaN(r.getTime()) && Date.now() >= r.getTime()) return true;
+  }
+  return false;
 }
 function isRoleFilled(role){
   if (!role) return false;
@@ -1261,6 +1449,7 @@ function isRoleClosed(role){
 const _roleSyncInFlight = new Set();
 async function syncRoleVacancyState(roleId){
   if (!roleId || _roleSyncInFlight.has(roleId)) return;
+  if (!_rolesReady || !_appsReady) return;
   const role = state.roles.find(r => r.id === roleId);
   if (!role) return;
   const vac = Math.max(1, Number(role.vacancy) || 1);
@@ -1268,12 +1457,21 @@ async function syncRoleVacancyState(roleId){
   const patch = {};
   if (role.filledCount !== hiredNow) patch.filledCount = hiredNow;
   if (hiredNow >= vac) {
-    if (role.status === 'open' || !role.autoClosedByFill) {
+    if (role.status === 'open') {
       patch.status = 'closed';
       patch.autoClosedByFill = true;
     }
-  } else if (role.autoClosedByFill && !isRoleExpired(role)) {
-    patch.status = 'open';
+  } else if (role.status === 'open' && isRoleExpired(role)) {
+    const rev = role.resultRevealAt ? (role.resultRevealAt.toDate ? role.resultRevealAt.toDate() : new Date(role.resultRevealAt)) : null;
+    const revPassed = !rev || isNaN(rev.getTime()) || Date.now() >= rev.getTime();
+    if (revPassed) {
+      patch.status = 'closed';
+      patch.autoClosedByFill = false;
+    }
+  } else if (role.autoClosedByFill) {
+    if (!role.manuallyClosed && !isRoleExpired(role)) {
+      patch.status = 'open';
+    }
     patch.autoClosedByFill = false;
   }
   if (!Object.keys(patch).length) return;
@@ -1334,7 +1532,7 @@ window.toggleRoleStatus = async function(id){
   const closed = isRoleClosed(role);
   if (!closed) {
     // Simple manual close
-    try { await updateDoc(doc(db, 'hiringRoles', id), { status: 'closed', autoClosedByFill: false }); toast('Role closed', 'success'); }
+    try { await updateDoc(doc(db, 'hiringRoles', id), { status: 'closed', autoClosedByFill: false, manuallyClosed: true }); toast('Role closed', 'success'); }
     catch(e){ console.error(e); toast('Could not update status', 'error'); }
     return;
   }
@@ -1347,7 +1545,7 @@ window.toggleRoleStatus = async function(id){
   }
   if (!isRoleExpired(role)) {
     try {
-      await updateDoc(doc(db, 'hiringRoles', id), { status: 'open', autoClosedByFill: false, filledCount: hiredNow });
+      await updateDoc(doc(db, 'hiringRoles', id), { status: 'open', autoClosedByFill: false, manuallyClosed: false, filledCount: hiredNow });
       toast('Role reopened', 'success');
     } catch (e) { console.error(e); toast('Could not reopen role', 'error'); }
     return;
@@ -1470,13 +1668,15 @@ window.saveRole = async function(){
     validThrough: validThroughVal ? new Date(validThroughVal + 'T23:59:59').toISOString() : '',
   };
   const reopenBox = $('rfReopen');
-  const deadlineExpired = !!(validThroughVal && new Date(validThroughVal + 'T23:59:59').getTime() <= Date.now());
+  const revealExpired = !!(revealVal && new Date(revealVal).getTime() <= Date.now());
+  const deadlineExpired = !!(validThroughVal && new Date(validThroughVal + 'T23:59:59').getTime() <= Date.now()) || revealExpired;
   if (reopenBox && reopenBox.checked) {
     if (deadlineExpired) {
-      return toast('Pick a future registration deadline before reopening', 'warning');
+      return toast('Pick a future registration deadline and result reveal date before reopening', 'warning');
     }
     payload.status = 'open';
     payload.autoClosedByFill = false;
+    payload.manuallyClosed = false;
   }
   try {
     if (state.editingRoleId) {
@@ -1486,16 +1686,17 @@ window.saveRole = async function(){
       if (hiredNow >= newVacancy) {
         payload.status = 'closed';
         payload.autoClosedByFill = true;
-      } else if (existingRole && (existingRole.autoClosedByFill || newVacancy > (Number(existingRole.vacancy) || 1))) {
+      } else if (existingRole && existingRole.autoClosedByFill && newVacancy > hiredNow) {
         if (!deadlineExpired) {
           payload.status = 'open';
           payload.autoClosedByFill = false;
+          payload.manuallyClosed = false;
         }
       }
       await updateDoc(doc(db, 'hiringRoles', state.editingRoleId), payload);
       toast(payload.status === 'open' ? 'Role updated and opened for applicants' : (payload.autoClosedByFill ? 'Role updated (closed — all positions filled)' : 'Role updated'), 'success');
     } else {
-      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', autoClosedByFill: false, filledCount: 0, questions:[], createdAt: serverTimestamp(), datePosted: serverTimestamp() });
+      await setDoc(doc(collection(db, 'hiringRoles')), { ...payload, status:'open', autoClosedByFill: false, manuallyClosed: false, filledCount: 0, questions:[], createdAt: serverTimestamp(), datePosted: serverTimestamp() });
       toast('Role created', 'success');
     }
     closeModal();

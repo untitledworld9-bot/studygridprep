@@ -1239,7 +1239,7 @@ function loadRoles(){
   // browsable grid) stays restricted to status=='open' roles only.
   onSnapshot(collection(db, 'hiringRoles'), snap => {
     STATE.allRoles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    STATE.roles = STATE.allRoles.filter(r => r.status === 'open');
+    STATE.roles = STATE.allRoles.filter(r => !isRoleClosed(r));
     renderHero();
     renderDeptFilters();
     renderRolesGrid();
@@ -1261,9 +1261,16 @@ function loadRoles(){
 // to flip it closed, we auto-detect this and show it as Closed (red) —
 // it stays visible/searchable, it just can't be freshly applied to.
 function isRoleExpired(role){
-  if (!role || !role.validThrough) return false;
-  const d = new Date(role.validThrough);
-  return !isNaN(d.getTime()) && Date.now() > d.getTime();
+  if (!role) return false;
+  if (role.validThrough) {
+    const d = new Date(role.validThrough);
+    if (!isNaN(d.getTime()) && Date.now() > d.getTime()) return true;
+  }
+  if (role.resultRevealAt) {
+    const r = role.resultRevealAt.toDate ? role.resultRevealAt.toDate() : new Date(role.resultRevealAt);
+    if (!isNaN(r.getTime()) && Date.now() >= r.getTime()) return true;
+  }
+  return false;
 }
 // Covers BOTH ways a role can be closed: the admin manually flipped its
 // status, or its listed deadline has quietly passed.
