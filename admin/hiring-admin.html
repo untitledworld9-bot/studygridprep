@@ -501,9 +501,73 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 }
 .om-q-name-input{
   background:var(--card); border:1px solid var(--border); border-radius:7px;
-  padding:4px 8px; font-size:12px; font-weight:700; color:var(--text); width:145px;
+  padding:5px 9px; font-size:12px; font-weight:700; color:var(--text); width:145px;
 }
 .om-q-name-input:focus{ border-color:var(--accent); outline:none; }
+.om-q-channel-select{
+  background:var(--card); border:1.5px solid var(--border); border-radius:8px;
+  padding:5px 9px; font-size:11.5px; font-weight:800; color:var(--text); cursor:pointer;
+  transition:var(--t);
+}
+.om-q-channel-select.is-phone{
+  border-color:rgba(22,163,74,0.45); color:var(--green); background:rgba(22,163,74,0.06);
+}
+.om-q-channel-select:focus{ border-color:var(--accent); outline:none; }
+.om-q-contact-input{
+  background:var(--card); border:1px solid var(--border); border-radius:7px;
+  padding:5px 9px; font-size:12px; font-weight:700; color:var(--text); min-width:185px; flex:1; max-width:260px;
+}
+.om-q-contact-input:focus{ border-color:var(--accent); outline:none; }
+.om-quick-bar{
+  margin-top:12px; padding:11px 13px; border-radius:12px;
+  background:var(--input); border:1px solid var(--border);
+}
+.om-quick-row{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.om-quick-search-wrap{
+  position:relative; flex:1; min-width:230px; display:flex; align-items:center;
+}
+.om-quick-search-wrap i.fa-magnifying-glass{
+  position:absolute; left:12px; color:var(--text3); font-size:12.5px; pointer-events:none;
+}
+.om-quick-search-input{
+  padding-left:34px !important; padding-right:30px !important;
+}
+.om-quick-clear{
+  position:absolute; right:8px; background:none; border:none; color:var(--text3);
+  cursor:pointer; font-size:12px; padding:4px; display:none;
+}
+.om-quick-clear:hover{ color:var(--text); }
+.om-quick-results{
+  display:none; flex-wrap:wrap; gap:7px; margin-top:9px; padding-top:9px;
+  border-top:1px dashed var(--border); max-height:135px; overflow-y:auto;
+}
+.om-quick-chip{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 10px;
+  border-radius:9px; background:var(--card); border:1px solid var(--border);
+  font-size:11.5px; font-weight:700; color:var(--text); cursor:pointer; transition:var(--t);
+}
+.om-quick-chip:hover{ border-color:var(--accent); background:rgba(91,91,246,0.06); }
+.om-quick-chip-add{
+  padding:2px 7px; border-radius:6px; background:rgba(91,91,246,0.12); color:var(--accent);
+  font-size:10px; font-weight:800; border:none; cursor:pointer;
+}
+.om-quick-chip-add:hover{ background:var(--accent); color:#fff; }
+.om-channel-pill-group{
+  display:inline-flex; background:var(--input); border:1px solid var(--border);
+  border-radius:8px; padding:2px; gap:2px;
+}
+.om-channel-pill-group button{
+  border:none; background:none; padding:3px 9px; border-radius:6px;
+  font-size:10.5px; font-weight:800; color:var(--text2); cursor:pointer; transition:var(--t);
+}
+.om-channel-pill-group button.on{
+  background:var(--accent); color:#fff;
+}
+.om-channel-pill-group button.on.phone-mode{
+  background:var(--green); color:#fff;
+}
 </style>
 </head>
 <body>
@@ -866,31 +930,56 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
 
       <!-- Step 1: Role Search + Role Select -->
       <div class="select-row" style="margin-bottom:8px;">
-        <input class="form-input" id="omRoleSearch" style="max-width:260px;" placeholder="Search role by title or department…" oninput="renderOutreachRoleOptions()">
+        <input class="form-input" id="omRoleSearch" style="max-width:280px;" placeholder="Search role by title or department…" oninput="renderOutreachRoleOptions()">
         <select class="form-select" id="omRoleSelect" style="flex:1;min-width:240px;" onchange="onOmRoleSelectChange(this.value)"></select>
-        <select class="form-select" id="omDirectoryPick" style="max-width:300px;" onchange="onOmDirectoryPick(this.value)">
-          <option value="">Quick Pick Registered User / Applicant…</option>
-        </select>
       </div>
       <div class="om-role-chips" id="omRoleChips"></div>
 
-      <!-- Step 2: Gmail / Phone / Name + Mail Type + Right-Side Add Queue & White->Green Send Button -->
+      <!-- Quick Pick Bar with Instant Search Bar + Candidate Dropdown + 1-Tap Search Chips -->
+      <div class="om-quick-bar">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
+          <span class="form-label" style="margin-bottom:0;display:inline-flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-bolt" style="color:var(--accent);"></i>
+            Quick Pick Candidate (Search &amp; Select Registered User / Applicant)
+          </span>
+          <span id="omQuickMatchCount" style="font-size:11px;font-weight:700;color:var(--text3);">0 candidates</span>
+        </div>
+        <div class="om-quick-row">
+          <div class="om-quick-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input class="form-input om-quick-search-input" id="omQuickSearch" placeholder="Instant search Quick Pick by name, Gmail, or phone number…" oninput="renderOutreachDirectory()">
+            <button type="button" class="om-quick-clear" id="omQuickClearBtn" onclick="clearOmQuickSearch()" title="Clear search"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <select class="form-select" id="omDirectoryPick" style="flex:1;min-width:260px;" onchange="onOmDirectoryPick(this.value)">
+            <option value="">Quick Pick Registered User / Applicant…</option>
+          </select>
+        </div>
+        <div class="om-quick-results" id="omQuickResults"></div>
+      </div>
+
+      <!-- Step 2: Candidate Name + Gmail (Default) / Phone No. Details + Mail Type + Right-Side Add Queue & Send Mail / Send Message Button -->
       <div class="om-send-bar">
-        <div class="form-group" style="margin-bottom:0;">
-          <label class="form-label">Recipient Gmail(s) or Phone (single or comma-separated)</label>
-          <input class="form-input" id="omEmail" list="omCandidateDatalist" placeholder="candidate@gmail.com, second@gmail.com or phone…" oninput="onOmRecipientInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
-          <datalist id="omCandidateDatalist"></datalist>
-        </div>
-        <div class="form-group" style="margin-bottom:0;">
-          <label class="form-label">Phone Number (optional)</label>
-          <input class="form-input" id="omPhone" placeholder="e.g. 9876543210" oninput="onOmPhoneInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
-        </div>
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">Candidate Name</label>
           <input class="form-input" id="omName" placeholder="Candidate Name (optional)" oninput="resetOmSendBtnState()" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
         </div>
         <div class="form-group" style="margin-bottom:0;">
-          <label class="form-label">Mail Type</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+            <label class="form-label" id="omPrimaryContactLabel" style="margin-bottom:0;">Gmail (Default) / Phone No.</label>
+            <div class="om-channel-pill-group" id="omComposeChannelSeg" title="Default is Gmail (Send Mail). Switch to Phone No. to Send Message on WhatsApp.">
+              <button type="button" data-ch="mail" class="on" onclick="setOmComposeChannel('mail')"><i class="fa-solid fa-envelope"></i> Gmail</button>
+              <button type="button" data-ch="phone" onclick="setOmComposeChannel('phone')"><i class="fa-brands fa-whatsapp"></i> Phone No.</button>
+            </div>
+          </div>
+          <input class="form-input" id="omEmail" list="omCandidateDatalist" placeholder="candidate@gmail.com (or comma-separated Gmails)…" oninput="onOmRecipientInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
+          <datalist id="omCandidateDatalist"></datalist>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" id="omPhoneBoxLabel">Phone No. (WhatsApp / Optional)</label>
+          <input class="form-input" id="omPhone" placeholder="e.g. 9876543210" oninput="onOmPhoneInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();addInputRecipientsToQueue();}">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Type</label>
           <select class="form-select" id="omMailType" onchange="onOmMailTypeChange()">
             <option value="invite_apply">🚀 Invite to Apply for Role</option>
             <option value="pending_application">📝 Pending Application — Complete Apply</option>
@@ -946,15 +1035,19 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
         </div>
       </div>
 
-      <!-- Recipient Queue Panel (Send one-by-one with white->green tick) -->
+      <!-- Recipient Queue Panel (Send one-by-one with white->green tick, supports Gmail Send Mail & Phone Send Message) -->
       <div class="om-queue-panel" id="omQueuePanel" style="display:none;">
         <div class="om-queue-head">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <span style="font-size:13px;font-weight:800;color:var(--text);"><i class="fa-solid fa-list-check" style="color:var(--accent);margin-right:6px;"></i>Recipient Send List</span>
             <span class="badge badge-green" id="omQueueProgressBadge">0 / 0 Sent ✓</span>
-            <span style="font-size:11px;color:var(--text3);">Tap <strong>Send</strong> on each row one-by-one — turns <strong style="color:var(--green);">Green ✓</strong> once sent</span>
+            <span style="font-size:11px;color:var(--text3);">Select <strong>Gmail</strong> (Send Mail) or <strong>Phone No.</strong> (Send Message on WhatsApp) next to any name</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div class="om-channel-pill-group" title="Switch all rows in list to Gmail (Mail) or Phone No. (WhatsApp Message)">
+              <button type="button" id="omQueueAllMailBtn" class="on" onclick="setAllOmQueueChannel('mail')"><i class="fa-solid fa-envelope"></i> All Gmail</button>
+              <button type="button" id="omQueueAllPhoneBtn" onclick="setAllOmQueueChannel('phone')"><i class="fa-brands fa-whatsapp"></i> All Phone No.</button>
+            </div>
             <button type="button" class="btn btn-mail-send btn-sm" id="omSendNextQueueBtn" onclick="sendNextPendingInQueue()">
               <i class="fa-solid fa-paper-plane"></i>
               <span id="omSendNextQueueBtnLabel">Send Next Pending</span>
@@ -967,13 +1060,13 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
       </div>
 
       <div class="form-group" style="margin-top:12px;margin-bottom:0;">
-        <label class="form-label">Custom Note in Email (optional)</label>
-        <input class="form-input" id="omCustomNote" placeholder="Optional extra line to include in the company email…" oninput="updateOmPreview()">
+        <label class="form-label">Custom Note in Mail / Message (optional)</label>
+        <input class="form-input" id="omCustomNote" placeholder="Optional extra line to include in the company email or WhatsApp message…" oninput="updateOmPreview()">
       </div>
 
       <div class="om-preview-card" id="omPreviewCard">
         <div class="om-preview-subj">
-          <span class="badge badge-accent"><i class="fa-solid fa-eye" style="margin-right:4px;"></i>Mail Preview</span>
+          <span class="badge badge-accent" id="omPreviewModeBadge"><i class="fa-solid fa-eye" style="margin-right:4px;"></i>Mail Preview</span>
           <span id="omPreviewSubjText">—</span>
         </div>
         <div class="om-preview-body" id="omPreviewBodyText">Select an open role above to preview the company email.</div>
@@ -983,7 +1076,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
     <!-- Recents Panel -->
     <div class="form-panel">
       <div class="form-panel-title" style="justify-content:space-between;margin-bottom:14px;">
-        <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--green);"></i> Recents — Sent Role Mails <span class="pill" id="omRecentsPill">0 sent</span></span>
+        <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--green);"></i> Recents — Sent Mails &amp; Messages <span class="pill" id="omRecentsPill">0 sent</span></span>
       </div>
       <div class="select-row" style="margin-bottom:12px;">
         <input class="form-input" id="omRecentSearch" style="flex:1;min-width:200px;" placeholder="Search Recents by Gmail, phone number, candidate name, or role…" oninput="renderOutreachRecents()">
@@ -991,7 +1084,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
           <option value="all">All Roles</option>
         </select>
         <select class="form-select" id="omRecentTypeFilter" style="max-width:240px;" onchange="renderOutreachRecents()">
-          <option value="all">All Mail Types</option>
+          <option value="all">All Types</option>
           <option value="invite_apply">Invite to Apply for Role</option>
           <option value="pending_application">Pending Application</option>
           <option value="pending_test">Pending Qualifying Test</option>
@@ -1001,7 +1094,7 @@ html, body{ transition:background-color .2s ease, color .2s ease; }
         </select>
       </div>
       <div id="omRecentsCount" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
-      <div id="omRecentsList"><div class="empty-state"><i class="fa-solid fa-paper-plane"></i>No role outreach mails sent yet.</div></div>
+      <div id="omRecentsList"><div class="empty-state"><i class="fa-solid fa-paper-plane"></i>No role outreach mails or messages sent yet.</div></div>
     </div>
   </section>
 
@@ -2378,10 +2471,32 @@ window.openMail = function(to, subject, body){
     window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   } else {
     const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    window.open(gmailUrl, '_blank', 'noopener');
+    const a = document.createElement('a');
+    a.href = gmailUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 };
 const openMail = window.openMail;
+
+window.openWhatsAppMessage = function(phone, text){
+  let digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  if (digits.length === 10) digits = '91' + digits;
+  const msg = String(text || '');
+  const waUrl = `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
+  const a = document.createElement('a');
+  a.href = waUrl;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+const openWhatsAppMessage = window.openWhatsAppMessage;
 function fmtPlain(v){
   if (!v) return 'To be announced';
   const d = v?.toDate ? v.toDate() : new Date(v);
@@ -4050,7 +4165,41 @@ const omUI = {
   selectedRoleId: '',
   selectedRoleIds: new Set(),
   userTouchedSelection: false,
-  recipientQueue: [], // [{ id, name, email, phone, source, sent, sentCount }]
+  composeChannel: 'mail', // 'mail' (default Gmail -> Send Mail) | 'phone' (Phone No. -> Send Message on WhatsApp)
+  recipientQueue: [], // [{ id, name, email, phone, channel, source, sent, sentCount }]
+};
+
+window.setOmComposeChannel = function(ch){
+  omUI.composeChannel = ch === 'phone' ? 'phone' : 'mail';
+  const seg = $('omComposeChannelSeg');
+  if (seg) {
+    seg.querySelectorAll('button').forEach(b => {
+      const isMatch = b.dataset.ch === omUI.composeChannel;
+      b.classList.toggle('on', isMatch);
+      b.classList.toggle('phone-mode', isMatch && omUI.composeChannel === 'phone');
+    });
+  }
+  const primaryLbl = $('omPrimaryContactLabel');
+  if (primaryLbl) {
+    primaryLbl.innerHTML = omUI.composeChannel === 'phone'
+      ? 'Gmail / <span style="color:#22c55e;">Phone No. (Active)</span>'
+      : '<span style="color:var(--accent);">Gmail (Default)</span> / Phone No.';
+  }
+  const phoneLbl = $('omPhoneBoxLabel');
+  if (phoneLbl) {
+    phoneLbl.innerHTML = omUI.composeChannel === 'phone'
+      ? '<i class="fa-brands fa-whatsapp" style="color:#22c55e;margin-right:4px;"></i>Phone No. (WhatsApp Message Active)'
+      : 'Phone No. (WhatsApp / Optional)';
+  }
+  const previewBadge = $('omPreviewModeBadge');
+  if (previewBadge) {
+    previewBadge.innerHTML = omUI.composeChannel === 'phone'
+      ? '<i class="fa-brands fa-whatsapp" style="margin-right:4px;"></i>WhatsApp Message Preview'
+      : '<i class="fa-solid fa-eye" style="margin-right:4px;"></i>Mail Preview';
+    previewBadge.className = omUI.composeChannel === 'phone' ? 'badge badge-green' : 'badge badge-accent';
+  }
+  updateOmPreview();
+  updateOmSendBtnFromHistory();
 };
 
 function getSelectedOmRoles(){
@@ -4304,15 +4453,72 @@ function getDirectoryContacts(){
 window.renderOutreachDirectory = function(){
   const pick = $('omDirectoryPick');
   const dl = $('omCandidateDatalist');
+  const searchInput = $('omQuickSearch');
+  const clearBtn = $('omQuickClearBtn');
+  const countEl = $('omQuickMatchCount');
+  const resultsEl = $('omQuickResults');
+
   const contacts = getDirectoryContacts();
+  const q = (searchInput?.value || '').trim().toLowerCase();
+
+  if (clearBtn) {
+    clearBtn.style.display = q ? 'inline-flex' : 'none';
+  }
+
+  const indexedContacts = contacts.map((c, idx) => ({ ...c, idx }));
+  const filtered = q
+    ? indexedContacts.filter(c =>
+        String(c.name || '').toLowerCase().includes(q) ||
+        String(c.email || '').toLowerCase().includes(q) ||
+        String(c.phone || '').toLowerCase().includes(q)
+      )
+    : indexedContacts;
+
+  if (countEl) {
+    countEl.textContent = q
+      ? `${filtered.length} of ${contacts.length} candidate${contacts.length === 1 ? '' : 's'} matched`
+      : `${contacts.length} registered candidate${contacts.length === 1 ? '' : 's'}`;
+  }
+
   if (pick) {
     const cur = pick.value;
-    pick.innerHTML = '<option value="">Quick Pick Registered User / Applicant…</option>' + contacts.map((c, idx) => {
+    const topLabel = q
+      ? (filtered.length
+          ? `Found ${filtered.length} matching candidate${filtered.length === 1 ? '' : 's'} — Select to auto-fill…`
+          : `No candidate matches "${q}"`)
+      : 'Quick Pick Registered User / Applicant (or search on the left)…';
+    pick.innerHTML = `<option value="">${esc(topLabel)}</option>` + filtered.map(c => {
       const label = `${c.name || 'Candidate'} — ${c.email || 'no-email'}${c.phone ? ' · 📞 ' + c.phone : ''}`;
-      return `<option value="${idx}">${esc(label)}</option>`;
+      return `<option value="${c.idx}">${esc(label)}</option>`;
     }).join('');
-    pick.value = cur && cur < contacts.length ? cur : '';
+    if (cur !== '' && filtered.some(c => String(c.idx) === String(cur))) {
+      pick.value = cur;
+    } else {
+      pick.value = '';
+    }
   }
+
+  if (resultsEl) {
+    const chipItems = q ? filtered.slice(0, 14) : indexedContacts.slice(0, 8);
+    if (!chipItems.length) {
+      resultsEl.innerHTML = q
+        ? `<span style="font-size:11.5px;color:var(--text3);padding:4px 2px;">No registered user or applicant matches "<strong>${esc(q)}</strong>". You can still type their Gmail or Phone No. directly below.</span>`
+        : '';
+    } else {
+      resultsEl.innerHTML = chipItems.map(c => {
+        const subText = c.email && c.phone
+          ? `${c.email} · 📞 ${c.phone}`
+          : (c.email || (c.phone ? `📞 ${c.phone}` : 'No contact'));
+        return `<div class="om-quick-chip" onclick="quickPickCandidate(${c.idx}, false)" title="Click to fill candidate details in composer">
+          <i class="fa-solid fa-user" style="color:var(--accent);font-size:10px;"></i>
+          <span class="om-quick-chip-name">${esc(c.name || 'Candidate')}</span>
+          <span class="om-quick-chip-sub">${esc(subText)}</span>
+          <span class="om-quick-chip-add" onclick="event.stopPropagation(); quickPickCandidate(${c.idx}, true)" title="Add directly to Recipient Send List">+ List</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
   if (dl) {
     dl.innerHTML = contacts.map(c => {
       const val = c.email || c.phone || '';
@@ -4322,16 +4528,42 @@ window.renderOutreachDirectory = function(){
   }
 };
 
-window.onOmDirectoryPick = function(idxStr){
-  if (idxStr === '' || idxStr === null || idxStr === undefined) return;
+window.clearOmQuickSearch = function(){
+  const searchInput = $('omQuickSearch');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  renderOutreachDirectory();
+};
+
+window.quickPickCandidate = function(idx, addToQueue){
   const contacts = getDirectoryContacts();
-  const c = contacts[Number(idxStr)];
+  const c = contacts[Number(idx)];
   if (!c) return;
+  if (addToQueue) {
+    const { added, updated } = addRecipientsToOmQueue([{ name: c.name || '', email: c.email || '', phone: c.phone || '', source: 'Quick Pick' }], 'Quick Pick');
+    toast(`${c.name || c.email || c.phone} ${added ? 'added to' : 'updated in'} Recipient Send List`, 'success');
+    return;
+  }
   if ($('omEmail')) $('omEmail').value = c.email || '';
   if ($('omPhone')) $('omPhone').value = c.phone || '';
   if ($('omName')) $('omName').value = c.name || '';
-  updateOmPreview();
-  updateOmSendBtnFromHistory();
+  if ($('omDirectoryPick')) $('omDirectoryPick').value = String(idx);
+  // Default to Gmail ('mail') whenever email exists; switch to 'phone' only if candidate has phone without email
+  if (c.email && c.email.includes('@')) {
+    setOmComposeChannel('mail');
+  } else if (c.phone) {
+    setOmComposeChannel('phone');
+  } else {
+    updateOmPreview();
+    updateOmSendBtnFromHistory();
+  }
+};
+
+window.onOmDirectoryPick = function(idxStr){
+  if (idxStr === '' || idxStr === null || idxStr === undefined) return;
+  quickPickCandidate(Number(idxStr), false);
 };
 
 window.onOmRecipientInput = function(val){
@@ -4345,6 +4577,8 @@ window.onOmRecipientInput = function(val){
       if ($('omPhone') && !$('omPhone').value) $('omPhone').value = found.phone || raw;
       if ($('omName') && !$('omName').value) $('omName').value = found.name || '';
       if (found.email && $('omEmail')) $('omEmail').value = found.email;
+    } else if ($('omPhone') && !$('omPhone').value) {
+      $('omPhone').value = raw;
     }
   } else if (raw.includes('@')) {
     const found = contacts.find(c => String(c.email || '').toLowerCase() === raw.toLowerCase());
@@ -4358,7 +4592,8 @@ window.onOmRecipientInput = function(val){
 };
 
 window.onOmPhoneInput = function(val){
-  const digits = String(val || '').replace(/\D/g, '');
+  const raw = String(val || '').trim();
+  const digits = raw.replace(/\D/g, '');
   if (digits.length >= 10) {
     const contacts = getDirectoryContacts();
     const found = contacts.find(c => String(c.phone || '').replace(/\D/g, '').endsWith(digits.slice(-10)));
@@ -4434,25 +4669,31 @@ function resolveRecipientFromDirectory(rawItem){
   return { name, email, phone, source };
 }
 
-function isRecipientAlreadySentForCurrentSelection(email, phone){
+function isRecipientAlreadySentForCurrentSelection(email, phone, channel){
   const selectedRoles = getSelectedOmRoles();
   if (!selectedRoles.length) return false;
   const mailType = $('omMailType')?.value || 'invite_apply';
   const selectedIdsKey = selectedRoles.map(r => r.id).sort().join(',');
   const em = String(email || '').trim().toLowerCase();
-  const ph = String(phone || '').trim();
+  const ph = String(phone || '').replace(/\D/g, '').slice(-10);
   if (!em && !ph) return false;
   return state.outreachLogs.some(x => {
     const logIdsKey = Array.isArray(x.roleIds) && x.roleIds.length ? x.roleIds.slice().sort().join(',') : String(x.roleId || '');
-    return logIdsKey === selectedIdsKey &&
-      x.mailType === mailType &&
-      ((em && String(x.email || '').toLowerCase() === em) || (ph && String(x.phone || '') === ph));
+    if (logIdsKey !== selectedIdsKey || x.mailType !== mailType) return false;
+    if (channel) {
+      const logCh = x.channel || (x.email ? 'mail' : 'phone');
+      if (logCh !== channel) return false;
+    }
+    const logEm = String(x.email || '').trim().toLowerCase();
+    const logPh = String(x.phone || '').replace(/\D/g, '').slice(-10);
+    return (em && logEm === em) || (ph && ph.length === 10 && logPh === ph);
   });
 }
 
 function syncOmQueueSentFlagsFromHistory(){
   omUI.recipientQueue.forEach(item => {
-    if (isRecipientAlreadySentForCurrentSelection(item.email, item.phone)) {
+    const ch = item.channel || (item.email ? 'mail' : 'phone');
+    if (isRecipientAlreadySentForCurrentSelection(item.email, item.phone, ch)) {
       item.sent = true;
     }
   });
@@ -4474,15 +4715,21 @@ function addRecipientsToOmQueue(items, defaultSource){
       if (!existing.name && resolved.name) existing.name = resolved.name;
       if (!existing.email && resolved.email) existing.email = resolved.email;
       if (!existing.phone && resolved.phone) existing.phone = resolved.phone;
+      if (raw.channel) existing.channel = raw.channel;
       updated++;
       return;
     }
-    const alreadySent = isRecipientAlreadySentForCurrentSelection(resolved.email, resolved.phone);
+    // Default is always 'mail' (Gmail) when email is available, otherwise 'phone'
+    const defaultChannel = raw.channel
+      ? (raw.channel === 'phone' ? 'phone' : 'mail')
+      : ((resolved.email && resolved.email.includes('@')) ? 'mail' : (resolved.phone ? 'phone' : 'mail'));
+    const alreadySent = isRecipientAlreadySentForCurrentSelection(resolved.email, resolved.phone, defaultChannel);
     omUI.recipientQueue.push({
       id: 'omq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       name: resolved.name || '',
       email: resolved.email || '',
       phone: resolved.phone || '',
+      channel: defaultChannel,
       source: resolved.source || 'Manual',
       sent: alreadySent,
       sentCount: alreadySent ? 1 : 0,
@@ -4692,7 +4939,13 @@ window.addInputRecipientsToQueue = function(){
   if (rawEmailBox.includes(',') || rawEmailBox.includes(';') || rawEmailBox.includes('\n') || (rawEmailBox.match(/@/g) || []).length > 1) {
     items = parseRawTextToRecipientObjects(rawEmailBox, 'Manual');
   } else {
-    items = [{ name: rawName, email: rawEmailBox, phone: rawPhone, source: 'Manual' }];
+    items = [{
+      name: rawName,
+      email: rawEmailBox,
+      phone: rawPhone,
+      channel: omUI.composeChannel === 'phone' ? 'phone' : undefined,
+      source: 'Manual'
+    }];
   }
 
   const { added, updated } = addRecipientsToOmQueue(items, 'Manual');
@@ -4708,6 +4961,49 @@ window.addInputRecipientsToQueue = function(){
 window.updateOmQueueItemName = function(qId, val){
   const item = omUI.recipientQueue.find(x => x.id === qId);
   if (item) item.name = String(val || '').trim();
+};
+
+window.setOmQueueItemChannel = function(qId, ch){
+  const item = omUI.recipientQueue.find(x => x.id === qId);
+  if (!item) return;
+  item.channel = ch === 'phone' ? 'phone' : 'mail';
+  item.sent = isRecipientAlreadySentForCurrentSelection(item.email, item.phone, item.channel);
+  renderOmQueue();
+  updateOmPreview();
+};
+
+window.updateOmQueueItemContact = function(qId, val){
+  const item = omUI.recipientQueue.find(x => x.id === qId);
+  if (!item) return;
+  const v = String(val || '').trim();
+  const ch = item.channel === 'phone' ? 'phone' : 'mail';
+  if (ch === 'phone') {
+    item.phone = v;
+  } else {
+    item.email = v;
+  }
+  // Auto-resolve companion details from directory if available
+  const resolved = resolveRecipientFromDirectory({ name: item.name, email: item.email, phone: item.phone });
+  if (!item.name && resolved.name) item.name = resolved.name;
+  if (ch === 'phone' && !item.email && resolved.email) item.email = resolved.email;
+  if (ch === 'mail' && !item.phone && resolved.phone) item.phone = resolved.phone;
+};
+
+window.setAllOmQueueChannel = function(ch){
+  const mode = ch === 'phone' ? 'phone' : 'mail';
+  omUI.recipientQueue.forEach(item => {
+    item.channel = mode;
+    item.sent = isRecipientAlreadySentForCurrentSelection(item.email, item.phone, mode);
+  });
+  const mailBtn = $('omQueueAllMailBtn');
+  const phoneBtn = $('omQueueAllPhoneBtn');
+  if (mailBtn) mailBtn.classList.toggle('on', mode === 'mail');
+  if (phoneBtn) {
+    phoneBtn.classList.toggle('on', mode === 'phone');
+    phoneBtn.classList.toggle('phone-mode', mode === 'phone');
+  }
+  renderOmQueue();
+  updateOmPreview();
 };
 
 window.removeOmQueueItem = function(qId){
@@ -4747,6 +5043,19 @@ window.renderOmQueue = function(){
   panel.style.display = 'block';
   const sentCount = omUI.recipientQueue.filter(x => x.sent).length;
   const pendingCount = total - sentCount;
+  const nextPending = omUI.recipientQueue.find(x => !x.sent);
+  const nextCh = nextPending ? (nextPending.channel || (nextPending.email ? 'mail' : 'phone')) : 'mail';
+
+  // Sync All Gmail / All Phone No. header buttons
+  const allPhone = total > 0 && omUI.recipientQueue.every(x => (x.channel || (x.email ? 'mail' : 'phone')) === 'phone');
+  const allMail = total > 0 && omUI.recipientQueue.every(x => (x.channel || (x.email ? 'mail' : 'phone')) === 'mail');
+  const mailBtn = $('omQueueAllMailBtn');
+  const phoneBtn = $('omQueueAllPhoneBtn');
+  if (mailBtn) mailBtn.classList.toggle('on', allMail);
+  if (phoneBtn) {
+    phoneBtn.classList.toggle('on', allPhone);
+    phoneBtn.classList.toggle('phone-mode', allPhone);
+  }
 
   if (progBadge) {
     progBadge.textContent = `${sentCount} / ${total} Sent ✓`;
@@ -4755,10 +5064,12 @@ window.renderOmQueue = function(){
   if (nextBtn) {
     if (pendingCount === 0) {
       nextBtn.classList.add('sent');
-      if (nextLbl) nextLbl.textContent = `All ${total} Sent ✓`;
+      nextBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span id="omSendNextQueueBtnLabel">All ${total} Sent ✓</span>`;
     } else {
       nextBtn.classList.remove('sent');
-      if (nextLbl) nextLbl.textContent = `Send Next Pending (${pendingCount} left)`;
+      const iconCls = nextCh === 'phone' ? 'fa-brands fa-whatsapp' : 'fa-solid fa-paper-plane';
+      const actionWord = nextCh === 'phone' ? 'Send Next Message' : 'Send Next Mail';
+      nextBtn.innerHTML = `<i class="${iconCls}"></i><span id="omSendNextQueueBtnLabel">${actionWord} (${pendingCount} left)</span>`;
     }
   }
 
@@ -4769,22 +5080,41 @@ window.renderOmQueue = function(){
 
   listHost.innerHTML = omUI.recipientQueue.map((item, idx) => {
     const isSent = !!item.sent;
-    const hasEmail = !!(item.email && item.email.includes('@'));
+    const ch = item.channel || (item.email ? 'mail' : 'phone');
+    const isPhoneMode = ch === 'phone';
+    const contactVal = isPhoneMode ? (item.phone || '') : (item.email || '');
+    const contactPlaceholder = isPhoneMode ? 'Enter 10-digit Phone No. (WhatsApp)' : 'Enter Gmail address (e.g. name@gmail.com)';
+    const otherBadge = isPhoneMode
+      ? (item.email ? `<span class="badge badge-gray" style="cursor:pointer;" onclick="setOmQueueItemChannel('${item.id}','mail')" title="Click to switch this row to Gmail (Send Mail)"><i class="fa-regular fa-envelope" style="margin-right:4px;font-size:9px;"></i>${esc(item.email)}</span>` : '')
+      : (item.phone ? `<span class="badge badge-gray" style="cursor:pointer;" onclick="setOmQueueItemChannel('${item.id}','phone')" title="Click to switch this row to Phone No. (Send Message on WhatsApp)"><i class="fa-brands fa-whatsapp" style="margin-right:4px;font-size:10px;color:#22c55e;"></i>${esc(item.phone)}</span>` : '');
+
+    const btnIcon = isSent
+      ? 'fa-solid fa-circle-check'
+      : (isPhoneMode ? 'fa-brands fa-whatsapp' : 'fa-solid fa-paper-plane');
+    const btnText = isSent
+      ? (isPhoneMode ? 'Message Sent ✓' : 'Mail Sent ✓')
+      : (isPhoneMode ? 'Send Message' : 'Send Mail');
+    const btnTitle = isSent
+      ? `Already sent — tap to ${isPhoneMode ? 'send WhatsApp message' : 'send mail'} again`
+      : (isPhoneMode ? 'Open WhatsApp & send message to this phone number' : 'Open Gmail & send mail to this recipient');
+
     return `<div class="om-q-row ${isSent ? 'sent' : ''}" id="omq-row-${esc(item.id)}">
       <div class="om-q-left">
         <span class="om-q-idx">${isSent ? '<i class="fa-solid fa-check"></i>' : `#${idx + 1}`}</span>
         <input type="text" class="om-q-name-input" value="${esc(item.name || '')}" placeholder="Candidate Name" oninput="updateOmQueueItemName('${item.id}', this.value)">
-        <span style="font-size:12.5px;font-weight:800;color:${hasEmail ? 'var(--text)' : 'var(--red)'};">
-          <i class="fa-regular fa-envelope" style="margin-right:4px;color:var(--text3);"></i>${esc(item.email || 'No Gmail found')}
-        </span>
-        ${item.phone ? `<span class="badge badge-gray"><i class="fa-solid fa-phone" style="margin-right:4px;font-size:9px;"></i>${esc(item.phone)}</span>` : ''}
+        <select class="om-q-channel-select ${isPhoneMode ? 'is-phone' : ''}" onchange="setOmQueueItemChannel('${item.id}', this.value)" title="Choose Gmail (Send Mail) or Phone No. (Send WhatsApp Message)">
+          <option value="mail" ${!isPhoneMode ? 'selected' : ''}>✉️ Gmail (Mail)</option>
+          <option value="phone" ${isPhoneMode ? 'selected' : ''}>💬 Phone No. (WhatsApp)</option>
+        </select>
+        <input type="text" class="om-q-contact-input" value="${esc(contactVal)}" placeholder="${esc(contactPlaceholder)}" oninput="updateOmQueueItemContact('${item.id}', this.value)">
+        ${otherBadge}
         <span class="badge badge-gray" style="font-size:9.5px;">${esc(item.source || 'List')}</span>
         <span style="font-size:11px;color:var(--text3);font-weight:600;">→ ${esc(roleLabel)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button type="button" class="btn btn-mail-send ${isSent ? 'sent' : ''} btn-sm" onclick="sendQueueRecipient('${item.id}', this)" title="${isSent ? 'Already sent — tap to send again' : 'Send mail to this recipient'}">
-          <i class="fa-solid ${isSent ? 'fa-circle-check' : 'fa-paper-plane'}"></i>
-          <span>${isSent ? 'Sent ✓' : 'Send Mail'}</span>
+        <button type="button" class="btn btn-mail-send ${isSent ? 'sent' : ''} btn-sm" onclick="sendQueueRecipient('${item.id}', this)" title="${esc(btnTitle)}">
+          <i class="${btnIcon}"></i>
+          <span>${btnText}</span>
         </button>
         <button type="button" class="btn btn-outline btn-sm" onclick="removeOmQueueItem('${item.id}')" title="Remove from list" style="padding:6px 9px;">
           <i class="fa-solid fa-xmark"></i>
@@ -4794,32 +5124,44 @@ window.renderOmQueue = function(){
   }).join('');
 };
 
-async function dispatchOutreachMailToRecipient(recObj, selectedRoles, mailType, customNote){
+async function dispatchOutreachMailToRecipient(recObj, selectedRoles, mailType, customNote, channelOverride){
   const primaryRole = selectedRoles[0];
   let email = String(recObj.email || '').trim();
   let phone = String(recObj.phone || '').trim();
   let name = String(recObj.name || '').trim();
+  const channel = (channelOverride || recObj.channel || 'mail') === 'phone' ? 'phone' : 'mail';
 
   const resolved = resolveRecipientFromDirectory({ name, email, phone });
   email = resolved.email || email;
   phone = resolved.phone || phone;
   name = resolved.name || name;
 
-  if (!email || !email.includes('@')) {
-    toast(`Missing valid Gmail address for ${name || phone || 'recipient'}`, 'warning');
-    return false;
-  }
-
   const { subject, body } = buildOutreachEmail(mailType, selectedRoles, { name, email, phone, customNote });
-  openMail(email, subject, body);
+
+  if (channel === 'phone') {
+    const cleanDigits = phone.replace(/\D/g, '');
+    if (cleanDigits.length < 10) {
+      toast(`Missing valid 10-digit Phone No. for ${name || email || 'recipient'} — enter Phone No. to Send Message`, 'warning');
+      return false;
+    }
+    const waText = `*${subject}*\n\n${body}`;
+    openWhatsAppMessage(phone, waText);
+  } else {
+    if (!email || !email.includes('@')) {
+      toast(`Missing valid Gmail address for ${name || phone || 'recipient'} — enter Gmail or switch to Phone No.`, 'warning');
+      return false;
+    }
+    openMail(email, subject, body);
+  }
 
   const nowMs = Date.now();
   const roleIds = selectedRoles.map(r => r.id);
   const roleTitles = selectedRoles.map(r => r.title || 'Role');
   const payload = {
     kind: 'hiring_mail_log',
-    name: name || email.split('@')[0] || 'Candidate',
-    email,
+    channel,
+    name: name || (email ? email.split('@')[0] : phone) || 'Candidate',
+    email: email || '',
     phone: phone || '',
     roleId: primaryRole.id,
     roleIds,
@@ -4841,10 +5183,14 @@ async function dispatchOutreachMailToRecipient(recObj, selectedRoles, mailType, 
 
   try {
     await addDoc(collection(db, 'careerInquiries'), payload);
-    toast(`Mail opened & ticked green (${email})`, 'success');
+    if (channel === 'phone') {
+      toast(`WhatsApp message opened & ticked green (${phone})`, 'success');
+    } else {
+      toast(`Mail opened & ticked green (${email})`, 'success');
+    }
   } catch (e) {
     console.error('Could not save outreach log:', e);
-    toast('Mail opened (could not save log to Firestore)', 'warning');
+    toast(`${channel === 'phone' ? 'WhatsApp' : 'Mail'} opened (could not save log to Firestore)`, 'warning');
   }
   return true;
 }
@@ -4857,15 +5203,16 @@ window.sendQueueRecipient = async function(qId, btnEl){
 
   const customNote = ($('omCustomNote')?.value || '').trim();
   const mailType = $('omMailType')?.value || 'invite_apply';
+  const ch = item.channel || (item.email ? 'mail' : 'phone');
 
-  const ok = await dispatchOutreachMailToRecipient(item, selectedRoles, mailType, customNote);
+  const ok = await dispatchOutreachMailToRecipient(item, selectedRoles, mailType, customNote, ch);
   if (!ok) return;
 
   item.sent = true;
   item.sentCount = (Number(item.sentCount) || 0) + 1;
   if (btnEl) {
     btnEl.classList.add('sent');
-    btnEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Sent ✓</span>';
+    btnEl.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${ch === 'phone' ? 'Message Sent ✓' : 'Mail Sent ✓'}</span>`;
   }
   renderOmQueue();
   updateOmSendBtnFromHistory();
@@ -4888,24 +5235,25 @@ function updateOmSendBtnFromHistory(){
   const phone = ($('omPhone')?.value || '').trim();
   const selectedRoles = getSelectedOmRoles();
   const mailType = $('omMailType')?.value || 'invite_apply';
+  const isPhoneMode = omUI.composeChannel === 'phone';
+  const baseLabel = isPhoneMode
+    ? (selectedRoles.length > 1 ? `Send Message (${selectedRoles.length} Roles)` : 'Send Message')
+    : (selectedRoles.length > 1 ? `Send Mail (${selectedRoles.length} Roles)` : 'Send Mail');
+  const baseIcon = isPhoneMode ? 'fa-brands fa-whatsapp' : 'fa-solid fa-paper-plane';
+
   if (!selectedRoles.length || (!email && !phone)) {
     btn.classList.remove('sent');
-    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>${selectedRoles.length > 1 ? `Send Mail (${selectedRoles.length} Roles)` : 'Send Mail'}</span>`;
+    btn.innerHTML = `<i class="${baseIcon}"></i><span>${baseLabel}</span>`;
     return;
   }
-  const selectedIdsKey = selectedRoles.map(r => r.id).sort().join(',');
-  const already = state.outreachLogs.some(x => {
-    const logIdsKey = Array.isArray(x.roleIds) && x.roleIds.length ? x.roleIds.slice().sort().join(',') : String(x.roleId || '');
-    return logIdsKey === selectedIdsKey &&
-      x.mailType === mailType &&
-      ((email && String(x.email || '').toLowerCase() === email) || (phone && String(x.phone || '') === phone));
-  });
+  const already = isRecipientAlreadySentForCurrentSelection(email, phone, isPhoneMode ? 'phone' : 'mail');
   if (already) {
     btn.classList.add('sent');
-    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Sent ✓${selectedRoles.length > 1 ? ` (${selectedRoles.length})` : ''}</span>`;
+    const sentLabel = isPhoneMode ? 'Message Sent ✓' : 'Mail Sent ✓';
+    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${sentLabel}${selectedRoles.length > 1 ? ` (${selectedRoles.length})` : ''}</span>`;
   } else {
     btn.classList.remove('sent');
-    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>${selectedRoles.length > 1 ? `Send Mail (${selectedRoles.length} Roles)` : 'Send Mail'}</span>`;
+    btn.innerHTML = `<i class="${baseIcon}"></i><span>${baseLabel}</span>`;
   }
 }
 
@@ -5125,7 +5473,7 @@ window.updateOmPreview = function(){
   const selectedRoles = getSelectedOmRoles();
   if (!selectedRoles.length) {
     subjEl.textContent = 'No role selected';
-    bodyEl.textContent = 'Check one or more role cards above (or click "Select All") to preview the company recruitment email.';
+    bodyEl.textContent = 'Check one or more role cards above (or click "Select All") to preview the company recruitment email or WhatsApp message.';
     return;
   }
   const mailType = $('omMailType')?.value || 'invite_apply';
@@ -5150,10 +5498,14 @@ window.sendOutreachMail = async function(){
   const rawName = ($('omName')?.value || '').trim();
   const customNote = ($('omCustomNote')?.value || '').trim();
   const mailType = $('omMailType')?.value || 'invite_apply';
+  const isPhoneMode = omUI.composeChannel === 'phone';
 
-  // If the admin typed multiple comma/semicolon-separated Gmails in the input box and clicked Send Mail directly:
+  // If the admin typed multiple comma/semicolon-separated Gmails or phones in the input box and clicked Send directly:
   if (rawEmail.includes(',') || rawEmail.includes(';') || (rawEmail.match(/@/g) || []).length > 1) {
-    const parsed = parseRawTextToRecipientObjects(rawEmail, 'Manual');
+    const parsed = parseRawTextToRecipientObjects(rawEmail, 'Manual').map(p => ({
+      ...p,
+      channel: isPhoneMode ? 'phone' : undefined,
+    }));
     addRecipientsToOmQueue(parsed, 'Manual');
     if ($('omEmail')) $('omEmail').value = '';
     if ($('omPhone')) $('omPhone').value = '';
@@ -5168,13 +5520,28 @@ window.sendOutreachMail = async function(){
     return;
   }
 
-  const ok = await dispatchOutreachMailToRecipient({ name: rawName, email: rawEmail, phone: rawPhone }, selectedRoles, mailType, customNote);
+  // If in Phone mode and user typed the phone number into #omEmail box instead of #omPhone, support it seamlessly
+  let effectivePhone = rawPhone;
+  let effectiveEmail = rawEmail;
+  if (isPhoneMode && !effectivePhone && effectiveEmail && !effectiveEmail.includes('@')) {
+    effectivePhone = effectiveEmail;
+    effectiveEmail = '';
+  }
+
+  const ok = await dispatchOutreachMailToRecipient(
+    { name: rawName, email: effectiveEmail, phone: effectivePhone, channel: isPhoneMode ? 'phone' : 'mail' },
+    selectedRoles,
+    mailType,
+    customNote,
+    isPhoneMode ? 'phone' : 'mail'
+  );
   if (!ok) return;
 
   const btn = $('omSendBtn');
   if (btn) {
     btn.classList.add('sent');
-    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Sent ✓${selectedRoles.length > 1 ? ` (${selectedRoles.length})` : ''}</span>`;
+    const sentLabel = isPhoneMode ? 'Message Sent ✓' : 'Mail Sent ✓';
+    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${sentLabel}${selectedRoles.length > 1 ? ` (${selectedRoles.length})` : ''}</span>`;
   }
   renderOmQueue();
 };
@@ -5189,11 +5556,17 @@ window.resendOutreachMail = async function(logId, btnEl){
     ? { subject: item.subject, body: item.message }
     : buildOutreachEmail(item.mailType || 'invite_apply', roles, { name: item.name, email: item.email, phone: item.phone, customNote: item.customNote });
 
-  openMail(item.email, subject, body);
+  const isPhone = item.channel === 'phone' || (!item.email && item.phone);
+  if (isPhone) {
+    const waText = `*${subject}*\n\n${body}`;
+    openWhatsAppMessage(item.phone || item.email, waText);
+  } else {
+    openMail(item.email, subject, body);
+  }
 
   if (btnEl) {
     btnEl.classList.add('sent');
-    btnEl.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Sent Again</span>';
+    btnEl.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${isPhone ? 'Message Sent Again ✓' : 'Mail Sent Again ✓'}</span>`;
   }
 
   const nextCount = (Number(item.resendCount) || 1) + 1;
@@ -5207,14 +5580,14 @@ window.resendOutreachMail = async function(logId, btnEl){
       resendCount: nextCount,
       sentBy: (CURRENT_USER && CURRENT_USER.email) || item.sentBy || 'admin',
     });
-    toast(`Resent mail to ${item.email}`, 'success');
+    toast(isPhone ? `Resent WhatsApp message to ${item.phone}` : `Resent mail to ${item.email}`, 'success');
   } catch (e) {
     console.warn('Could not update resend timestamp:', e);
   }
 };
 
 window.deleteOutreachLog = async function(logId){
-  if (!confirm('Remove this sent mail entry from Recents?')) return;
+  if (!confirm('Remove this sent entry from Recents?')) return;
   try {
     await deleteDoc(doc(db, 'careerInquiries', logId));
     toast('Removed from Recents', 'info');
@@ -5250,14 +5623,14 @@ window.renderOutreachRecents = function(){
     }
     if (typeF !== 'all' && item.mailType !== typeF) return false;
     if (!q) return true;
-    const hay = `${item.name || ''} ${item.email || ''} ${item.phone || ''} ${item.roleTitle || ''} ${item.department || ''} ${item.mailTypeLabel || ''}`.toLowerCase();
+    const hay = `${item.name || ''} ${item.email || ''} ${item.phone || ''} ${item.channel || ''} ${item.roleTitle || ''} ${item.department || ''} ${item.mailTypeLabel || ''}`.toLowerCase();
     return hay.includes(q);
   });
 
-  if (countEl) countEl.textContent = `Showing ${list.length} of ${total} sent mail${total === 1 ? '' : 's'}`;
+  if (countEl) countEl.textContent = `Showing ${list.length} of ${total} sent item${total === 1 ? '' : 's'}`;
 
   if (!list.length) {
-    host.innerHTML = `<div class="empty-state"><i class="fa-solid fa-paper-plane"></i>${total ? 'No sent mails match this search/filter.' : 'No role outreach mails sent yet.'}</div>`;
+    host.innerHTML = `<div class="empty-state"><i class="fa-solid fa-paper-plane"></i>${total ? 'No sent mails or messages match this search/filter.' : 'No role outreach mails or messages sent yet.'}</div>`;
     return;
   }
 
@@ -5269,12 +5642,19 @@ window.renderOutreachRecents = function(){
     const when = fmtDate(item.sentAt || item.sentMs || item.createdAt);
     const count = Number(item.resendCount) || 1;
     const roleDisplay = isBulk ? (item.roleTitle || `${item.roleIds.length} Roles`) : ((role && role.title) || item.roleTitle || 'Role');
+    const isPhone = item.channel === 'phone' || (!item.email && item.phone);
+    const primaryContact = isPhone ? (item.phone || item.email || '—') : (item.email || item.phone || '—');
+    const channelBadge = isPhone
+      ? `<span class="badge badge-green"><i class="fa-brands fa-whatsapp" style="margin-right:4px;"></i>WhatsApp Message</span>`
+      : `<span class="badge badge-accent"><i class="fa-regular fa-envelope" style="margin-right:4px;"></i>Gmail</span>`;
     return `<div class="tx-row" style="align-items:center;">
       <div class="tx-row-info">
         <div class="tx-row-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span>${esc(item.email || '—')}</span>
-          ${item.name && item.name !== item.email ? `<span style="color:var(--text2);font-weight:600;font-size:12px;">(${esc(item.name)})</span>` : ''}
-          ${item.phone ? `<span class="badge badge-gray"><i class="fa-solid fa-phone" style="margin-right:4px;font-size:9px;"></i>${esc(item.phone)}</span>` : ''}
+          ${channelBadge}
+          <span>${esc(primaryContact)}</span>
+          ${item.name && item.name !== primaryContact ? `<span style="color:var(--text2);font-weight:600;font-size:12px;">(${esc(item.name)})</span>` : ''}
+          ${!isPhone && item.phone ? `<span class="badge badge-gray"><i class="fa-solid fa-phone" style="margin-right:4px;font-size:9px;"></i>${esc(item.phone)}</span>` : ''}
+          ${isPhone && item.email ? `<span class="badge badge-gray"><i class="fa-regular fa-envelope" style="margin-right:4px;font-size:9px;"></i>${esc(item.email)}</span>` : ''}
           <span style="color:var(--text3);font-weight:500;">→ ${esc(roleDisplay)}</span>
           ${isBulk ? `<span class="badge badge-accent">${Array.isArray(item.roleIds) ? item.roleIds.length : item.roleCount} Roles</span>` : `<span class="badge ${closed ? 'badge-gray' : 'badge-green'}">${closed ? 'Closed' : 'Open'}</span>`}
           <span class="badge ${tMeta.badgeCls}">${esc(tMeta.label)}</span>
@@ -5287,9 +5667,9 @@ window.renderOutreachRecents = function(){
         </div>
       </div>
       <div class="tx-row-actions">
-        <button type="button" class="btn btn-mail-send sent btn-sm" onclick="resendOutreachMail('${item.id}', this)" title="Tap to send this email again">
+        <button type="button" class="btn btn-mail-send sent btn-sm" onclick="resendOutreachMail('${item.id}', this)" title="Tap to ${isPhone ? 'send this WhatsApp message' : 'send this email'} again">
           <i class="fa-solid fa-circle-check"></i>
-          <span>Sent · Send Again</span>
+          <span>${isPhone ? 'Message Sent · Send Again' : 'Mail Sent · Send Again'}</span>
         </button>
         <button type="button" class="btn btn-danger btn-sm" onclick="deleteOutreachLog('${item.id}')" title="Remove from Recents">
           <i class="fa-solid fa-trash"></i>
@@ -5300,6 +5680,7 @@ window.renderOutreachRecents = function(){
 };
 
 window.renderOutreachSection = function(){
+  setOmComposeChannel(omUI.composeChannel || 'mail');
   renderOutreachRoleOptions();
   renderOutreachDirectory();
   renderOmQueue();
